@@ -137,16 +137,32 @@ export function openCartModal() {
   
           <!-- 하단 -->
           <div class="sticky bottom-0 bg-white border-t border-gray-200 p-4 space-y-2">
+            <!-- 선택 요약 (초기 hidden) -->
+            <div id="cart-modal-selected-summary" class="flex justify-between items-center text-sm hidden">
+              <span class="text-gray-600">선택한 상품 (<span id="selected-count">0</span>개)</span>
+              <span class="font-medium" id="selected-amount">0원</span>
+            </div>
+  
+            <!-- 총 금액 -->
             <div class="flex justify-between items-center mb-1 text-sm">
               <span class="text-gray-600">총 금액</span>
               <span class="font-bold" id="cart-modal-total-amount">${format(totalPrice)}</span>
             </div>
+  
+            <!-- 액션 버튼 -->
+            <button id="cart-modal-remove-selected-btn"
+                    class="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition-colors text-sm hidden">
+              선택한 상품 삭제 (0개)
+            </button>
+  
             <div class="flex gap-2">
-              <button id="cart-modal-remove-selected-btn" class="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition-colors text-sm" disabled>
-                선택한 상품 삭제 (0개)
-              </button>
-              <button id="cart-modal-clear-cart-btn" class="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 transition-colors text-sm">
+              <button id="cart-modal-clear-cart-btn"
+                      class="flex-1 bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 transition-colors text-sm">
                 전체 비우기
+              </button>
+              <button id="cart-modal-checkout-btn"
+                      class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors text-sm">
+                구매하기
               </button>
             </div>
           </div>
@@ -198,10 +214,32 @@ export function openCartModal() {
 
     const recalcSelection = () => {
       const selectedCnt = [...itemChks].filter((c) => c.checked).length;
+
       selectAllChk.checked = selectedCnt === itemChks.length;
       selectAllChk.indeterminate = selectedCnt > 0 && selectedCnt < itemChks.length;
-      removeSelBtn.disabled = selectedCnt === 0;
-      removeSelBtn.textContent = `선택한 상품 삭제 (${selectedCnt}개)`;
+
+      // 선택 요약 + 버튼 노출 제어
+      const selSummary = modal.querySelector("#cart-modal-selected-summary");
+      const selAmount = modal.querySelector("#selected-amount");
+      const selBtn = modal.querySelector("#cart-modal-remove-selected-btn");
+
+      if (selectedCnt === 0) {
+        selSummary.classList.add("hidden");
+        selBtn.classList.add("hidden");
+      } else {
+        const sum = [...itemChks]
+          .filter((c) => c.checked)
+          .reduce((s, c) => {
+            const pid = c.dataset.productId;
+            return s + cart[pid].product.lprice * cart[pid].quantity;
+          }, 0);
+
+        selSummary.classList.remove("hidden");
+        selBtn.classList.remove("hidden");
+        selSummary.querySelector("#selected-count").textContent = selectedCnt;
+        selAmount.textContent = format(sum);
+        selBtn.textContent = `선택한 상품 삭제 (${selectedCnt}개)`;
+      }
     };
 
     selectAllChk.onchange = () => {
@@ -217,7 +255,7 @@ export function openCartModal() {
       selectedPids.forEach((pid) => delete cart[pid]);
       saveCart();
       updateCartBadge();
-      renderCartModal();
+      renderCartModal(); // 모달 전체 재렌더 → UI 동기화
     };
 
     modal.querySelector("#cart-modal-clear-cart-btn").onclick = () => {
