@@ -1,4 +1,4 @@
-import { router } from "./utils/route";
+import Products from "./pages/Products.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -8,9 +8,9 @@ const enableMocking = () =>
   );
 
 function main() {
-  const route = router.getInitialRoute();
+  const root = document.getElementById("root");
 
-  route.view.render();
+  root.innerHTML = Products();
 }
 
 // 애플리케이션 시작
