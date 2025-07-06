@@ -1,4 +1,5 @@
-import { ProductDetailHeader } from "../components/header";
+import { Footer } from "../components/common/Footer";
+import { ProductDetailHeader } from "../components/common/Header";
 
 export const ProductDetailPage = (id) => {
   console.log("상품 상세 페이지 ID:", id);
@@ -13,11 +14,7 @@ export const ProductDetailPage = (id) => {
           </div>
         </div>
       </main>
-      <footer class="bg-white shadow-sm sticky top-0 z-40">
-        <div class="max-w-md mx-auto py-8 text-center text-gray-500">
-          <p>© 2025 항해플러스 프론트엔드 쇼핑몰</p>
-        </div>
-      </footer>
+      ${Footer()}
     </div>
   `;
 };
