@@ -1,4 +1,4 @@
-export const LoadingIndicator = `
+export const ListLoadingIndicator = `
      <div class="text-center py-4">
           <div class="inline-flex items-center">
             <svg class="animate-spin h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24">

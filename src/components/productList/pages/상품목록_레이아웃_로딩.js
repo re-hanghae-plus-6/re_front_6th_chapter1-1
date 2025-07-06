@@ -1,6 +1,6 @@
 import { Navigation } from "../layout/navigation.js";
 import { SkeletonProduct } from "../skeleton/skeletonProduct.js";
-import { LoadingIndicator } from "../layout/loadingIndicator.js";
+import { ListLoadingIndicator } from "../layout/listLoadingIndicator.js";
 import { Footer } from "../layout/footer.js";
 import { ProductGrid } from "../layout/productGrid.js";
 import { Category } from "../category/category.js";
@@ -24,7 +24,7 @@ export const 상품목록_레이아웃_로딩 = `
           `,
         })}
         </div>
-        ${LoadingIndicator}
+        ${ListLoadingIndicator}
     </div>
   </main>
   ${Footer}
