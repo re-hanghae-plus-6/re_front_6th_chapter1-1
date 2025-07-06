@@ -23,8 +23,6 @@ const initialState = {
   selectedSort: "price_asc",
   selectedLimit: "20",
   currentPage: 1,
-  hasMore: true,
-  scrollLoading: false,
 };
 
 const stateManager = createStateManager(initialState);
@@ -40,12 +38,6 @@ stateManager.subscribe(render);
 stateManager.subscribe(() => {
   const currentState = stateManager.getState();
 
-  // 무한 스크롤 (페이지만 증가)
-  const isInfiniteScroll =
-    currentState.currentPage !== previousState.currentPage &&
-    currentState.currentPage > 1 &&
-    currentState.scrollLoading;
-
   // 필터/검색 변경 (새로운 데이터 필요)
   const isFilterChange =
     currentState.searchValue !== previousState.searchValue ||
@@ -54,9 +46,7 @@ stateManager.subscribe(() => {
     currentState.selectedSort !== previousState.selectedSort ||
     currentState.selectedLimit !== previousState.selectedLimit;
 
-  if (isInfiniteScroll && !currentState.loading) {
-    fetchMoreProducts();
-  } else if (isFilterChange && !currentState.loading) {
+  if (isFilterChange && !currentState.loading) {
     fetchProducts();
   }
 
@@ -85,7 +75,6 @@ function render() {
     selectedCategory2,
     selectedSort,
     selectedLimit,
-    hasMore,
   } = state;
 
   const $root = document.getElementById("root");
@@ -106,7 +95,6 @@ function render() {
       products,
       totalCount: total,
       isLoading: loading,
-      hasMore,
     })}
   `,
     cartCount: 0,
@@ -119,17 +107,6 @@ function render() {
 
 // 이벤트 리스너 등록
 function attachEventListeners() {
-  // 무한 스크롤 이벤트 리스너
-  window.addEventListener("scroll", () => {
-    const state = stateManager.getState();
-    if (state.hasMore && !state.loading && !state.scrollLoading) {
-      stateManager.setState({
-        scrollLoading: true,
-        currentPage: state.currentPage + 1,
-      });
-    }
-  });
-
   // 검색 기능
   const searchInput = document.querySelector("#search-input");
   if (searchInput) {
@@ -138,7 +115,6 @@ function attachEventListeners() {
         stateManager.setState({
           searchValue: e.target.value,
           currentPage: 1,
-          hasMore: true,
         });
       }
     });
@@ -151,7 +127,6 @@ function attachEventListeners() {
       stateManager.setState({
         selectedLimit: e.target.value,
         currentPage: 1,
-        hasMore: true,
       });
     });
   }
@@ -163,7 +138,6 @@ function attachEventListeners() {
       stateManager.setState({
         selectedSort: e.target.value,
         currentPage: 1,
-        hasMore: true,
       });
     });
   }
@@ -177,7 +151,6 @@ function attachEventListeners() {
         selectedCategory1: category1,
         selectedCategory2: "",
         currentPage: 1,
-        hasMore: true,
       });
     });
   });
@@ -192,7 +165,6 @@ function attachEventListeners() {
         selectedCategory1: category1,
         selectedCategory2: category2,
         currentPage: 1,
-        hasMore: true,
       });
     });
   });
@@ -206,7 +178,6 @@ function attachEventListeners() {
         selectedCategory2: "",
         searchValue: "",
         currentPage: 1,
-        hasMore: true,
       });
 
       // 검색 입력 필드도 초기화
@@ -226,7 +197,6 @@ function attachEventListeners() {
         selectedCategory1: category1,
         selectedCategory2: "",
         currentPage: 1,
-        hasMore: true,
       });
     });
   }
@@ -265,42 +235,11 @@ async function fetchProducts() {
       products: response.products,
       total: response.pagination.total,
       loading: false,
-      hasMore: response.pagination.hasMore,
     });
   } catch (error) {
     console.error("상품 데이터 로딩 실패:", error);
     stateManager.setState({
       loading: false,
-    });
-  }
-}
-
-// 무한 스크롤용 상품 데이터 추가 가져오기 함수
-async function fetchMoreProducts() {
-  const state = stateManager.getState();
-  const { products, searchValue, selectedCategory1, selectedCategory2, selectedSort, selectedLimit, currentPage } =
-    state;
-
-  try {
-    const response = await getProducts({
-      page: currentPage,
-      limit: parseInt(selectedLimit),
-      search: searchValue,
-      category1: selectedCategory1,
-      category2: selectedCategory2,
-      sort: selectedSort,
-    });
-
-    stateManager.setState({
-      products: [...products, ...response.products],
-      total: response.pagination.total,
-      scrollLoading: false,
-      hasMore: response.pagination.hasMore,
-    });
-  } catch (error) {
-    console.error("추가 상품 데이터 로딩 실패:", error);
-    stateManager.setState({
-      scrollLoading: false,
     });
   }
 }
