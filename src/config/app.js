@@ -1,19 +1,20 @@
-// MSW 설정
-export const enableMocking = () =>
-  import("../mocks/browser.js").then(({ worker }) =>
-    worker.start({
-      onUnhandledRequest: "bypass",
-    }),
-  );
-
-// 앱 초기화
-export function initializeApp(main) {
-  if (import.meta.env.MODE !== "test") {
-    return enableMocking().then(() => {
-      main();
-    });
-  } else {
-    // 테스트 환경에서는 바로 시작
-    main();
+// mock 설정
+async function enableMocking() {
+  try {
+    const { worker } = await import("../mocks/browser.js");
+    await worker.start({ onUnhandledRequest: "bypass" });
+    console.info("[MSW] Mock service worker started");
+  } catch (error) {
+    console.warn("[MSW] Failed to start mock service worker", error);
   }
+}
+// 앱 초기화
+export async function initializeApp(main) {
+  const isTestEnv = import.meta.env.MODE === "test";
+
+  if (!isTestEnv) {
+    await enableMocking();
+  }
+
+  main(); // 항상 실행
 }
