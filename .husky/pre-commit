@@ -1,1 +1,6 @@
+#!/usr/bin/env sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "commit 이전 lint 검사 실행!"
 npx lint-staged
+echo "commit 이전 lint 검사 성공!"
