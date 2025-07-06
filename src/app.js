@@ -68,9 +68,6 @@ export function createApp() {
     });
   }
 
-  // 상품 상세 페이지 렌더링 (분리된 함수 사용)
-  // renderProductDetailPage 함수를 별도 파일에서 import
-
   // 404 페이지 렌더링
   function render404Page($root) {
     $root.innerHTML = MainLayout({

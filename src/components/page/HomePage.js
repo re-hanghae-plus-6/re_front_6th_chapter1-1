@@ -7,7 +7,7 @@ import { getQueryParams, updateQueryParams } from "../../core/router.js";
 import { stateToQueryParams, queryParamsToState } from "../../utils/urlStateUtils.js";
 
 // 홈 전용 상태
-const homePageState = {
+const initState = {
   products: [],
   categories: [],
   total: 0,
@@ -21,27 +21,26 @@ const homePageState = {
   currentPage: 1,
 };
 
-let homeStateManager = null;
-let previousHomeState = { ...homePageState };
+let stateManager = null;
+let prevState = { ...initState };
 
 // 홈페이지 초기화 및 렌더링
 export default function HomePage({ cartCount = 0, onNavigate = null }) {
-  // 상태 관리자 초기화 (한 번만)
-  if (!homeStateManager) {
-    homeStateManager = createStateManager(homePageState);
+  if (!stateManager) {
+    stateManager = createStateManager(initState);
 
     // 상태 변경 시 DOM 업데이트 구독
-    homeStateManager.subscribe(() => {
-      const currentState = homeStateManager.getState();
+    stateManager.subscribe(() => {
+      const currentState = stateManager.getState();
 
       // 필터/검색 변경 감지
       const isFilterChange =
-        currentState.searchValue !== previousHomeState.searchValue ||
-        currentState.selectedCategory1 !== previousHomeState.selectedCategory1 ||
-        currentState.selectedCategory2 !== previousHomeState.selectedCategory2 ||
-        currentState.selectedSort !== previousHomeState.selectedSort ||
-        currentState.selectedLimit !== previousHomeState.selectedLimit ||
-        currentState.currentPage !== previousHomeState.currentPage;
+        currentState.searchValue !== prevState.searchValue ||
+        currentState.selectedCategory1 !== prevState.selectedCategory1 ||
+        currentState.selectedCategory2 !== prevState.selectedCategory2 ||
+        currentState.selectedSort !== prevState.selectedSort ||
+        currentState.selectedLimit !== prevState.selectedLimit ||
+        currentState.currentPage !== prevState.currentPage;
 
       if (isFilterChange && !currentState.loading) {
         // URL 파라미터 업데이트
@@ -53,11 +52,11 @@ export default function HomePage({ cartCount = 0, onNavigate = null }) {
 
       // DOM 업데이트 (홈페이지인 경우에만)
       if (window.location.pathname === "/") {
-        updateHomePage(cartCount, onNavigate);
+        renderHomePage(cartCount, onNavigate);
       }
 
       // 이전 상태 업데이트
-      previousHomeState = { ...currentState };
+      prevState = { ...currentState };
     });
 
     // 브라우저 뒤로가기/앞으로가기 이벤트 처리
@@ -68,7 +67,7 @@ export default function HomePage({ cartCount = 0, onNavigate = null }) {
   }
 
   // 현재 상태로 렌더링
-  const state = homeStateManager.getState();
+  const state = stateManager.getState();
   const {
     products,
     categories,
@@ -111,51 +110,12 @@ export default function HomePage({ cartCount = 0, onNavigate = null }) {
   });
 }
 
-// 홈페이지 DOM 업데이트 함수
-function updateHomePage(cartCount, onNavigate) {
+// 홈페이지 DOM 업데이트 함수 (컴포넌트 재사용)
+function renderHomePage(cartCount, onNavigate) {
   const $root = document.getElementById("root");
   if ($root) {
-    const state = homeStateManager.getState();
-    const {
-      products,
-      categories,
-      total,
-      loading,
-      categoriesLoading,
-      searchValue,
-      selectedCategory1,
-      selectedCategory2,
-      selectedSort,
-      selectedLimit,
-    } = state;
-
-    $root.innerHTML = MainLayout({
-      children: `
-        ${FilterSection({
-          searchValue,
-          categories,
-          selectedCategory1,
-          selectedCategory2,
-          selectedSort,
-          selectedLimit,
-          isLoading: categoriesLoading,
-        })}
-
-        ${ProductGrid({
-          products,
-          totalCount: total,
-          isLoading: loading,
-        })}
-      `,
-      cartCount,
-      showBackButton: false,
-      title: "쇼핑몰",
-    });
-
-    // 렌더링 완료 후 이벤트 리스너 연결
-    setTimeout(() => {
-      attachHomeEventListeners(onNavigate);
-    }, 0);
+    // HomePage 컴포넌트를 직접 재사용하여 중복 제거
+    $root.innerHTML = HomePage({ cartCount, onNavigate });
   }
 }
 
@@ -165,7 +125,7 @@ async function initializeHomePage() {
   const queryParams = getQueryParams();
   const urlState = queryParamsToState(queryParams);
 
-  homeStateManager.setState({
+  stateManager.setState({
     ...urlState,
     loading: true,
     categoriesLoading: true,
@@ -184,7 +144,7 @@ async function initializeHomePage() {
       getCategories(),
     ]);
 
-    homeStateManager.setState({
+    stateManager.setState({
       products: productsResponse.products,
       categories: categoriesResponse,
       total: productsResponse.pagination.total,
@@ -193,7 +153,7 @@ async function initializeHomePage() {
     });
   } catch (error) {
     console.error("홈페이지 초기 데이터 로딩 실패:", error);
-    homeStateManager.setState({
+    stateManager.setState({
       loading: false,
       categoriesLoading: false,
     });
@@ -202,10 +162,10 @@ async function initializeHomePage() {
 
 // 상품 데이터 가져오기
 async function fetchHomeProducts() {
-  const state = homeStateManager.getState();
+  const state = stateManager.getState();
   const { searchValue, selectedCategory1, selectedCategory2, selectedSort, selectedLimit, currentPage } = state;
 
-  homeStateManager.setState({ loading: true });
+  stateManager.setState({ loading: true });
 
   try {
     const response = await getProducts({
@@ -217,14 +177,14 @@ async function fetchHomeProducts() {
       sort: selectedSort,
     });
 
-    homeStateManager.setState({
+    stateManager.setState({
       products: response.products,
       total: response.pagination.total,
       loading: false,
     });
   } catch (error) {
     console.error("상품 데이터 로딩 실패:", error);
-    homeStateManager.setState({
+    stateManager.setState({
       loading: false,
     });
   }
@@ -236,7 +196,7 @@ function handlePopState() {
     const queryParams = getQueryParams();
     const urlState = queryParamsToState(queryParams);
 
-    homeStateManager.setState({
+    stateManager.setState({
       ...urlState,
       loading: false,
     });
@@ -254,12 +214,12 @@ function attachHomeEventListeners(onNavigate) {
   // 검색 입력 필드 초기값 설정
   const searchInput = document.querySelector("#search-input");
   if (searchInput) {
-    const currentState = homeStateManager.getState();
+    const currentState = stateManager.getState();
     searchInput.value = currentState.searchValue;
 
     searchInput.addEventListener("keypress", (e) => {
       if (e.key === "Enter") {
-        homeStateManager.setState({
+        stateManager.setState({
           searchValue: e.target.value,
           currentPage: 1,
         });
@@ -271,7 +231,7 @@ function attachHomeEventListeners(onNavigate) {
   const limitSelect = document.querySelector("#limit-select");
   if (limitSelect) {
     limitSelect.addEventListener("change", (e) => {
-      homeStateManager.setState({
+      stateManager.setState({
         selectedLimit: e.target.value,
         currentPage: 1,
       });
@@ -282,7 +242,7 @@ function attachHomeEventListeners(onNavigate) {
   const sortSelect = document.querySelector("#sort-select");
   if (sortSelect) {
     sortSelect.addEventListener("change", (e) => {
-      homeStateManager.setState({
+      stateManager.setState({
         selectedSort: e.target.value,
         currentPage: 1,
       });
@@ -294,7 +254,7 @@ function attachHomeEventListeners(onNavigate) {
   category1Buttons.forEach((button) => {
     button.addEventListener("click", (e) => {
       const category1 = e.target.getAttribute("data-category1");
-      homeStateManager.setState({
+      stateManager.setState({
         selectedCategory1: category1,
         selectedCategory2: "",
         currentPage: 1,
@@ -308,7 +268,7 @@ function attachHomeEventListeners(onNavigate) {
     button.addEventListener("click", (e) => {
       const category1 = e.target.getAttribute("data-category1");
       const category2 = e.target.getAttribute("data-category2");
-      homeStateManager.setState({
+      stateManager.setState({
         selectedCategory1: category1,
         selectedCategory2: category2,
         currentPage: 1,
@@ -320,7 +280,7 @@ function attachHomeEventListeners(onNavigate) {
   const resetButton = document.querySelector("[data-breadcrumb='reset']");
   if (resetButton) {
     resetButton.addEventListener("click", () => {
-      homeStateManager.setState({
+      stateManager.setState({
         selectedCategory1: "",
         selectedCategory2: "",
         searchValue: "",
@@ -340,7 +300,7 @@ function attachHomeEventListeners(onNavigate) {
   if (breadcrumbCategory1Button) {
     breadcrumbCategory1Button.addEventListener("click", (e) => {
       const category1 = e.target.getAttribute("data-category1");
-      homeStateManager.setState({
+      stateManager.setState({
         selectedCategory1: category1,
         selectedCategory2: "",
         currentPage: 1,
