@@ -2,6 +2,8 @@ import { router } from "./router.js";
 import { initEventManager } from "./utils/eventManager.js";
 import { NotFoundPage } from "./pages/NotFoundPage.js";
 
+let currentMountedPage = null;
+
 export function render() {
   const $root = document.querySelector("#root");
 
@@ -11,11 +13,21 @@ export function render() {
   }
 
   try {
-    const Page = router.get().getTarget() ?? NotFoundPage;
+    const currentRoute = router.get();
+    const Page = currentRoute.getTarget() ?? NotFoundPage;
+    const routePath = currentRoute.path;
+
     $root.innerHTML = Page();
 
     if (typeof Page.onMount === "function") {
-      Page.onMount();
+      if (routePath !== currentMountedPage) {
+        if (currentMountedPage && typeof Page.onUnmount === "function") {
+          Page.onUnmount();
+        }
+
+        Page.onMount();
+        currentMountedPage = routePath;
+      }
     }
   } catch (error) {
     console.error(error);
