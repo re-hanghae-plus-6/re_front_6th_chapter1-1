@@ -1,3 +1,5 @@
+import page from "./page";
+
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
     worker.start({
@@ -1146,7 +1148,7 @@ function main() {
 
 // 애플리케이션 시작
 if (import.meta.env.MODE !== "test") {
-  enableMocking().then(main);
+  enableMocking().then(() => page());
 } else {
   main();
 }
