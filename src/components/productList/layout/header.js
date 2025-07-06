@@ -1,4 +1,4 @@
-export const Navigation = ({ title, cartItemCount = 0 }) => `
+export const Header = ({ title = "쇼핑몰", cartItemCount = 0 }) => `
  <header class="bg-white shadow-sm sticky top-0 z-40">
         <div class="max-w-md mx-auto px-4 py-4">
           <div class="flex items-center justify-between">
