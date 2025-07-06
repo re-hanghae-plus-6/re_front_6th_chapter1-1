@@ -13,6 +13,7 @@ let state = {
   total: 0,
   loading: false,
   limit: "20",
+  sort: "price_asc",
   categories: [],
   cart: [],
 };
@@ -41,6 +42,18 @@ function initEventListeners() {
         setState({ products: data.products, total: data.pagination.limit });
       } catch (error) {
         console.error("상품 로딩 실패:", error);
+      }
+    }
+
+    if (target.id === "sort-select") {
+      const newSort = target.value;
+      setState({ sort: newSort });
+
+      try {
+        const data = await getProducts({ limit: state.limit, sort: newSort });
+        setState({ products: data.products, sort: newSort });
+      } catch (error) {
+        console.error("상품 정렬 실패:", error);
       }
     }
   });

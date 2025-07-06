@@ -1,6 +1,7 @@
-import { LimitSelect } from "./components/Select";
+import { LimitSelect, SortSelect } from "./components/Select";
 import { ProductListSkeleton } from "./components/Loader";
 import { ProductItem } from "./components/ProductItem";
+import { LIMIT_OPTIONS, SORT_OPTIONS } from "./constants";
 
 export default function HomPage(state) {
   return /*html */ `
@@ -70,20 +71,14 @@ export default function HomPage(state) {
             <div class="flex gap-2 items-center justify-between">
               <!-- 페이지당 상품 수 -->
               ${LimitSelect({
-                limitOptions: ["10", "20", "50", "100"],
+                limitOptions: LIMIT_OPTIONS,
                 selectedValue: state.limit,
               })}
               <!-- 정렬 -->
-              <div class="flex items-center gap-2">
-                <label class="text-sm text-gray-600">정렬:</label>
-                <select id="sort-select" class="text-sm border border-gray-300 rounded px-2 py-1
-                             focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-                  <option value="price_asc" selected="">가격 낮은순</option>
-                  <option value="price_desc">가격 높은순</option>
-                  <option value="name_asc">이름순</option>
-                  <option value="name_desc">이름 역순</option>
-                </select>
-              </div>
+               ${SortSelect({
+                 limitOptions: SORT_OPTIONS,
+                 selectedValue: state.sort,
+               })}
             </div>
           </div>
         </div>
