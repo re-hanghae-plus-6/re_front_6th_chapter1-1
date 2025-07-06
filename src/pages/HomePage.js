@@ -1,11 +1,19 @@
 import ProductCard from "../components/ProductCard.js";
 import { LoadingCardList } from "../components/LoadingCard.js";
 
-export default function HomePage({ products = [], total = 0, loading = false, loadingMore = false, categories = [] }) {
-  return 상품목록_레이아웃_로딩(products, total, loading, loadingMore, categories);
+export default function HomePage({
+  products = [],
+  total = 0,
+  loading = false,
+  loadingMore = false,
+  categories = {},
+  category1 = "",
+  category2 = "",
+}) {
+  return 상품목록_레이아웃_로딩(products, total, loading, loadingMore, categories, category1, category2);
 }
 
-const 상품목록_레이아웃_로딩 = (products, total, loading, loadingMore) => `
+const 상품목록_레이아웃_로딩 = (products, total, loading, loadingMore, categories, category1, category2) => `
     <div class="min-h-screen bg-gray-50">
       <header class="bg-white shadow-sm sticky top-0 z-40">
         <div class="max-w-md mx-auto px-4 py-4">
@@ -45,20 +53,31 @@ const 상품목록_레이아웃_로딩 = (products, total, loading, loadingMore)
           <div class="space-y-3">
             <!-- 카테고리 필터 -->
             <div class="space-y-2">
+              <!-- 브레드크럼 -->
               <div class="flex items-center gap-2">
                 <label class="text-sm text-gray-600">카테고리:</label>
-                <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
+                ${breadcrumb(category1, category2)}
               </div>
-              <!-- 1depth 카테고리 -->
-              <div class="flex flex-wrap gap-2">
+              <!-- 1depth -->
               ${
-                loading
-                  ? `<div class="text-sm text-gray
-500 italic">카테고리 로딩 중...</div>`
+                category1
+                  ? ""
+                  : `<div class="flex flex-wrap gap-2">
+                ${
+                  loading
+                    ? '<div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>'
+                    : renderCategory1(categories, category1)
+                }
+                </div>`
+              }
+              <!-- 2depth -->
+              ${
+                category1
+                  ? `<div class="flex flex-wrap gap-2 mt-2">
+                       ${renderCategory2(categories, category1, category2)}
+                     </div>`
                   : ""
               }
-              </div>
-              <!-- 2depth 카테고리 -->
             </div>
             <!-- 기존 필터들 -->
             <div class="flex gap-2 items-center justify-between">
@@ -140,3 +159,49 @@ const 상품목록_레이아웃_로딩 = (products, total, loading, loadingMore)
       </footer>
     </div>
   `;
+
+const renderCategory1 = (cats, selected) =>
+  Object.keys(cats)
+    .map(
+      (c) => `<button data-category1="${c}"
+            class="category1-filter-btn px-3 py-2 text-sm rounded-md border
+            ${
+              selected === c
+                ? "bg-blue-100 border-blue-300 text-blue-800"
+                : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+            }">
+            ${c}
+          </button>`,
+    )
+    .join("");
+
+const renderCategory2 = (cats, c1, c2) =>
+  c1 && cats[c1]
+    ? Object.keys(cats[c1])
+        .map(
+          (c) => `<button data-category1="${c1}" data-category2="${c}"
+                  class="category2-filter-btn px-3 py-2 text-sm rounded-md border
+                  ${
+                    c2 === c
+                      ? "bg-blue-100 border-blue-300 text-blue-800"
+                      : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                  }">
+                  ${c}
+                </button>`,
+        )
+        .join("")
+    : "";
+
+const breadcrumb = (c1, c2) => {
+  let html = '<button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>';
+  if (c1) {
+    html += `<span class="text-xs text-gray-500">&gt;</span>
+             <button data-breadcrumb="category1" data-category1="${c1}"
+               class="text-xs hover:text-blue-800 hover:underline">${c1}</button>`;
+  }
+  if (c2) {
+    html += `<span class="text-xs text-gray-500">&gt;</span>
+             <span class="text-xs text-gray-600 cursor-default">${c2}</span>`;
+  }
+  return html;
+};

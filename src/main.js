@@ -19,6 +19,8 @@ let state = {
   page: 1,
   cart: {},
   search: "",
+  category1: "",
+  category2: "",
 };
 
 function attachEventListeners() {
@@ -57,6 +59,35 @@ function attachEventListeners() {
   });
 
   document.querySelector("#cart-icon-btn")?.addEventListener("click", openCartModal);
+
+  document.querySelectorAll(".category1-filter-btn").forEach((btn) => {
+    btn.onclick = () => {
+      state.category1 = btn.dataset.category1;
+      state.category2 = "";
+      state.page = 1;
+      fetchProductsAndRender();
+    };
+  });
+  document.querySelectorAll(".category2-filter-btn").forEach((btn) => {
+    btn.onclick = () => {
+      state.category1 = btn.dataset.category1;
+      state.category2 = btn.dataset.category2;
+      state.page = 1;
+      fetchProductsAndRender();
+    };
+  });
+  document.querySelector('[data-breadcrumb="reset"]')?.addEventListener("click", () => {
+    state.category1 = "";
+    state.category2 = "";
+    state.page = 1;
+    fetchProductsAndRender();
+  });
+  document.querySelector('[data-breadcrumb="category1"]')?.addEventListener("click", (e) => {
+    state.category1 = e.target.dataset.category1;
+    state.category2 = "";
+    state.page = 1;
+    fetchProductsAndRender();
+  });
 }
 
 let scrollAttached = false;
@@ -79,6 +110,8 @@ async function fetchProducts() {
     limit: state.limit,
     page: state.page,
     search: state.search,
+    category1: state.category1,
+    category2: state.category2,
   });
   state.products = products;
   state.total = pagination.total;
@@ -101,6 +134,8 @@ async function loadMore() {
     limit: state.limit,
     page: nextPage,
     search: state.search,
+    category1: state.category1,
+    category2: state.category2,
   });
 
   state.products = [...state.products, ...newProducts];
