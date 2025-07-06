@@ -2,7 +2,7 @@ import { navigate } from "../../utils/navigate";
 
 export const ProductItem = (product) => `
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
-                   data-product-id="85067212996">
+                   data-product-id="${product.productId}">
                 <!-- 상품 이미지 -->
                 <div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image">
                   <img src="${product.image}"
