@@ -1,4 +1,7 @@
 import { getProducts, getCategories } from "./api/productApi.js";
+import MainLayout from "./components/layout/MainLayout.js";
+import FilterSection from "./components/filter/FilterSection.js";
+import ProductGrid from "./components/product/ProductGrid.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -9,6 +12,7 @@ const enableMocking = () =>
 
 // 초기 상태 정의
 const initialState = {
+  test: "test",
   products: [],
   categories: [],
   total: 0,
@@ -53,8 +57,48 @@ const stateManager = createStateManager(initialState);
 stateManager.subscribe(render);
 
 function render() {
-  console.log("상품 목록 렌더링 중...");
-  // TODO: 실제 상품 목록 렌더링 로직 구현
+  console.log("render");
+  console.log(stateManager.getState());
+  const $root = document.getElementById("root");
+
+  if (!$root) return;
+
+  const {
+    products,
+    categories,
+    loading,
+    categoriesLoading,
+    selectedCategory1,
+    selectedCategory2,
+    selectedSort,
+    selectedLimit,
+    searchValue,
+    total,
+  } = stateManager.getState();
+
+  $root.innerHTML = MainLayout({
+    children: `
+    ${FilterSection({
+      searchValue,
+      categories,
+      selectedCategory1,
+      selectedCategory2,
+      selectedSort,
+      selectedLimit,
+      isLoading: categoriesLoading,
+    })}
+
+    ${ProductGrid({
+      products,
+      totalCount: total,
+      isLoading: loading,
+      hasMore: true,
+    })}
+  `,
+    cartCount: 0,
+    showBackButton: false,
+    title: "상품 목록",
+  });
 }
 
 // 라우터 관리
@@ -67,8 +111,12 @@ function router() {
 }
 
 async function fetchInitDatas() {
-  const [products, categories] = await Promise.all([getProducts(), getCategories()]);
-  return { products, categories };
+  const [productsResponse, categories] = await Promise.all([getProducts(), getCategories()]);
+  return {
+    products: productsResponse.products || [],
+    total: productsResponse.pagination?.total || 0,
+    categories,
+  };
 }
 
 async function main() {
@@ -84,17 +132,16 @@ async function main() {
   });
 
   // 초기 데이터 로딩
-  const { products, categories } = await fetchInitDatas();
+  const { products, categories, total } = await fetchInitDatas();
 
   // 초기 데이터 로딩 완료
   stateManager.setState({
     products,
     categories,
-    total: products.length,
+    total,
     loading: false,
+    categoriesLoading: false,
   });
-
-  console.log(stateManager.getState());
 }
 
 if (import.meta.env.MODE !== "test") {
