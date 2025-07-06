@@ -18,6 +18,7 @@ let state = {
   limit: 20,
   page: 1,
   cart: {},
+  search: "",
 };
 
 function attachEventListeners() {
@@ -26,31 +27,32 @@ function attachEventListeners() {
     limitSelect.value = String(state.limit);
 
     limitSelect.onchange = async (e) => {
-      const newLimit = Number(e.target.value);
-      if (state.limit === newLimit) return;
-
-      state.limit = newLimit;
+      state.limit = Number(e.target.value);
       state.page = 1;
-      state.products = [];
-      state.loading = true;
-      render();
+      fetchProductsAndRender();
+    };
+  }
 
-      const {
-        products,
-        pagination: { total },
-      } = await getProducts({ limit: state.limit, page: state.page });
+  const searchInput = document.querySelector("#search-input");
+  if (searchInput) {
+    searchInput.value = state.search;
 
-      state.products = products;
-      state.total = total;
-      state.loading = false;
-      render();
+    searchInput.onkeydown = (e) => {
+      if (e.key === "Enter") {
+        const keyword = searchInput.value.trim();
+        if (state.search !== keyword) {
+          state.search = keyword;
+          state.page = 1;
+          fetchProductsAndRender();
+        }
+      }
     };
   }
 
   document.querySelectorAll(".add-to-cart-btn").forEach((btn) => {
     btn.onclick = () => {
-      const product = state.products.find((p) => p.productId === btn.dataset.productId);
-      addToCart(product);
+      const product = state.products.find((p) => String(p.productId) === btn.dataset.productId);
+      if (product) addToCart(product);
     };
   });
 
@@ -72,18 +74,37 @@ function setupInfiniteScroll() {
   });
 }
 
+async function fetchProducts() {
+  const { products, pagination } = await getProducts({
+    limit: state.limit,
+    page: state.page,
+    search: state.search,
+  });
+  state.products = products;
+  state.total = pagination.total;
+}
+
+async function fetchProductsAndRender() {
+  state.loading = true;
+  render();
+  await fetchProducts();
+  state.loading = false;
+  render();
+}
+
 async function loadMore() {
   state.loadingMore = true;
   render();
 
   const nextPage = state.page + 1;
-  const {
-    products: newProducts,
-    pagination: { total },
-  } = await getProducts({ limit: state.limit, page: nextPage });
+  const { products: newProducts, pagination } = await getProducts({
+    limit: state.limit,
+    page: nextPage,
+    search: state.search,
+  });
 
   state.products = [...state.products, ...newProducts];
-  state.total = total;
+  state.total = pagination.total;
   state.page = nextPage;
   state.loadingMore = false;
   render();
@@ -100,20 +121,10 @@ async function main() {
   state.loading = true;
   render();
 
-  const [
-    {
-      products,
-      pagination: { total },
-    },
-    categories,
-  ] = await Promise.all([getProducts({ limit: state.limit, page: state.page }), getCategories()]);
+  await Promise.all([fetchProducts(), getCategories().then((c) => (state.categories = c))]);
 
-  state.products = products;
-  state.total = total;
-  state.categories = categories;
   state.loading = false;
   render();
-
   setupInfiniteScroll();
 }
 
