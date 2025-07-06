@@ -1,26 +1,16 @@
-import Header from "./components/layout/Header.js";
-import Footer from "./components/layout/Footer.js";
-
-const enableMocking = () =>
-  import("./mocks/browser.js").then(({ worker }) =>
-    worker.start({
-      onUnhandledRequest: "bypass",
-    }),
-  );
+import { initializeApp } from "./config/app.js";
+import { Layout } from "./components/layout/Layout.js";
+import { ProductList } from "./pages/ProductList.js";
 
 function main() {
-  document.body.innerHTML = /*html*/ `
-    ${Header(0, false)}
-    <main>
-      <h1>안녕하세요</h1>
-    </main>
-    ${Footer()}
-  `;
+  // 상태 관리
+  const state = {
+    cartCount: 0, // 장바구니 아이템 개수
+    isDetailPage: false, // 상품 상세 페이지 여부
+  };
+
+  document.body.innerHTML = Layout(ProductList, state.cartCount, state.isDetailPage);
 }
 
-// 애플리케이션 시작
-if (import.meta.env.MODE !== "test") {
-  enableMocking().then(main);
-} else {
-  main();
-}
+// 앱 초기화 후 main 실행
+initializeApp(main);
