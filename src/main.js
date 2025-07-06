@@ -28,8 +28,43 @@ const initialState = {
 };
 
 const stateManager = createStateManager(initialState);
+
+// 이전 상태를 추적하기 위한 변수 -> 굳이 필요한지 다시한번 체크
+let previousState = { ...initialState };
+
+// 렌더링 구독
 stateManager.subscribe(render);
 
+// 데이터 가져오기 구독
+// 어떤 데이터가 변경되었을때 Product Fetcing을 해야할까? 고민하기.
+stateManager.subscribe(() => {
+  const currentState = stateManager.getState();
+
+  // 무한 스크롤 (페이지만 증가)
+  const isInfiniteScroll =
+    currentState.currentPage !== previousState.currentPage &&
+    currentState.currentPage > 1 &&
+    currentState.scrollLoading;
+
+  // 필터/검색 변경 (새로운 데이터 필요)
+  const isFilterChange =
+    currentState.searchValue !== previousState.searchValue ||
+    currentState.selectedCategory1 !== previousState.selectedCategory1 ||
+    currentState.selectedCategory2 !== previousState.selectedCategory2 ||
+    currentState.selectedSort !== previousState.selectedSort ||
+    currentState.selectedLimit !== previousState.selectedLimit;
+
+  if (isInfiniteScroll && !currentState.loading) {
+    fetchMoreProducts();
+  } else if (isFilterChange && !currentState.loading) {
+    fetchProducts();
+  }
+
+  // 이전 상태 업데이트
+  previousState = { ...currentState };
+});
+
+// 임시 라우터
 function router() {
   const path = window.location.pathname;
   if (path === "/" || path === "") {
@@ -85,6 +120,15 @@ function render() {
 // 이벤트 리스너 등록
 function attachEventListeners() {
   // 무한 스크롤 이벤트 리스너
+  window.addEventListener("scroll", () => {
+    const state = stateManager.getState();
+    if (state.hasMore && !state.loading && !state.scrollLoading) {
+      stateManager.setState({
+        scrollLoading: true,
+        currentPage: state.currentPage + 1,
+      });
+    }
+  });
 
   // 검색 기능
   const searchInput = document.querySelector("#search-input");
@@ -199,6 +243,69 @@ async function fetchInitDatas() {
     total: productsResponse.pagination.total,
   };
 }
+
+// 상태 기반 상품 데이터 가져오기 함수 추가
+async function fetchProducts() {
+  const state = stateManager.getState();
+  const { searchValue, selectedCategory1, selectedCategory2, selectedSort, selectedLimit, currentPage } = state;
+
+  stateManager.setState({ loading: true });
+
+  try {
+    const response = await getProducts({
+      page: currentPage,
+      limit: parseInt(selectedLimit),
+      search: searchValue,
+      category1: selectedCategory1,
+      category2: selectedCategory2,
+      sort: selectedSort,
+    });
+
+    stateManager.setState({
+      products: response.products,
+      total: response.pagination.total,
+      loading: false,
+      hasMore: response.pagination.hasMore,
+    });
+  } catch (error) {
+    console.error("상품 데이터 로딩 실패:", error);
+    stateManager.setState({
+      loading: false,
+    });
+  }
+}
+
+// 무한 스크롤용 상품 데이터 추가 가져오기 함수
+async function fetchMoreProducts() {
+  const state = stateManager.getState();
+  const { products, searchValue, selectedCategory1, selectedCategory2, selectedSort, selectedLimit, currentPage } =
+    state;
+
+  try {
+    const response = await getProducts({
+      page: currentPage,
+      limit: parseInt(selectedLimit),
+      search: searchValue,
+      category1: selectedCategory1,
+      category2: selectedCategory2,
+      sort: selectedSort,
+    });
+
+    stateManager.setState({
+      products: [...products, ...response.products],
+      total: response.pagination.total,
+      scrollLoading: false,
+      hasMore: response.pagination.hasMore,
+    });
+  } catch (error) {
+    console.error("추가 상품 데이터 로딩 실패:", error);
+    stateManager.setState({
+      scrollLoading: false,
+    });
+  }
+}
+
+window.addEventListener("popstate", router);
 
 async function main() {
   // 라우터 설정
