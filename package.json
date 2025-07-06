@@ -50,5 +50,8 @@
     "workerDirectory": [
       "public"
     ]
+  },
+  "dependencies": {
+    "playwright": "^1.53.2"
   }
 }
