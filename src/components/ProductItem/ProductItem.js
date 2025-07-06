@@ -1,3 +1,5 @@
+import { navigate } from "../../utils/navigate";
+
 export const ProductItem = (product) => `
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
                    data-product-id="85067212996">
@@ -26,3 +28,11 @@ export const ProductItem = (product) => `
                   </button>
                 </div>
               </div>`;
+
+document.addEventListener("click", (e) => {
+  const card = e.target.closest(".product-card");
+  if (card) {
+    const productId = card.dataset.productId;
+    navigate(`/product/${productId}`);
+  }
+});

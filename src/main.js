@@ -1,6 +1,6 @@
 import { render } from "./utils/render.js";
-import { productListState } from "./states/productState.js";
 import { getProducts } from "./api/productApi.js";
+import { productListState } from "./states/productState.js";
 import { Home } from "./pages/Home.js";
 import { Product } from "./pages/Product.js";
 import { NotFound } from "./pages/NotFound.js";
