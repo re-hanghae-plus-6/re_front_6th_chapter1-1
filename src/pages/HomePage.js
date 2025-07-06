@@ -3,8 +3,27 @@ import { Footer } from "../components/common/Footer";
 import { ProductSkeletonCard } from "../components/product/ProductSkeletonCard";
 import { LoadingIndicator } from "../components/common/LoadingIndicator";
 import { ProductFilterPanel } from "../components/product/ProductFilterPanel";
+import { ProductCard } from "../components/product/ProductCard";
 
 export const HomePage = () => {
+  setTimeout(() => {
+    fetchProducts();
+  }, 0);
+
+  const fetchProducts = async () => {
+    try {
+      const res = await fetch("/api/products");
+      const data = await res.json();
+
+      const container = document.getElementById("products-grid");
+      if (!container) return;
+
+      container.innerHTML = data.products.map(ProductCard).join("");
+    } catch (e) {
+      console.error("상품 불러오기 실패", e);
+    }
+  };
+
   return /*html*/ `
   <div class="min-h-screen bg-gray-50">
     ${DefaultHeader()}
