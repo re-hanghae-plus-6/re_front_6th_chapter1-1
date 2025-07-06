@@ -1,6 +1,7 @@
 import HomePage from "./pages/HomePage.js";
 import { getProducts, getCategories } from "./api/productApi.js";
 import { loadCart, updateCartBadge, addToCart, openCartModal } from "./features/cart/index.js";
+import ProductDetailPage from "./pages/ProductDetailPage.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -88,11 +89,19 @@ function attachEventListeners() {
     state.page = 1;
     fetchProductsAndRender();
   });
+
+  document.querySelectorAll(".product-image, .product-info").forEach((el) => {
+    el.onclick = () => {
+      const card = el.closest(".product-card");
+      const pid = card.dataset.productId;
+      navigate(`/product/${pid}`);
+    };
+  });
 }
 
 let scrollAttached = false;
 
-function setupInfiniteScroll() {
+export function setupInfiniteScroll() {
   if (scrollAttached) return;
   scrollAttached = true;
 
@@ -153,18 +162,63 @@ function render() {
 
 async function main() {
   loadCart();
-  state.loading = true;
-  render();
-
   await Promise.all([fetchProducts(), getCategories().then((c) => (state.categories = c))]);
-
-  state.loading = false;
-  render();
-  setupInfiniteScroll();
+  renderRoute();
 }
 
 if (import.meta.env.MODE !== "test") {
   enableMocking().then(main);
 } else {
   main();
+}
+
+function navigate(path) {
+  if (window.location.pathname === path) return;
+  history.pushState({}, "", path);
+  renderRoute();
+}
+
+window.addEventListener("popstate", renderRoute);
+
+async function renderRoute() {
+  const { pathname } = location;
+
+  if (pathname.startsWith("/product/")) {
+    const productId = pathname.split("/product/")[1];
+
+    document.querySelector("#root").innerHTML = ProductDetailPage({ loading: true });
+
+    const product = await (await import("./api/productApi.js")).getProduct(productId);
+    const { products: all } = await (await import("./api/productApi.js")).getProducts({ limit: 100 });
+
+    const related = all.filter((p) => p.productId !== productId).slice(0, 19);
+
+    document.querySelector("#root").innerHTML = ProductDetailPage({
+      loading: false,
+      product,
+      related,
+    });
+    attachDetailEvents(product);
+    updateCartBadge();
+    return;
+  }
+
+  render();
+}
+
+function attachDetailEvents(product) {
+  const qtyInput = document.querySelector("#quantity-input");
+  document.querySelector("#quantity-increase").onclick = () => (qtyInput.value = Number(qtyInput.value) + 1);
+  document.querySelector("#quantity-decrease").onclick = () => {
+    if (qtyInput.value > 1) qtyInput.value = Number(qtyInput.value) - 1;
+  };
+
+  document.querySelector("#add-to-cart-btn").onclick = () => {
+    const qty = Number(qtyInput.value);
+    addToCart(product, qty);
+  };
+
+  document.querySelectorAll(".related-product-card").forEach((card) => {
+    card.onclick = () => navigate(`/product/${card.dataset.productId}`);
+  });
 }
