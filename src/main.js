@@ -2,6 +2,8 @@ import { render } from "./utils/render.js";
 import { productState } from "./states/productState.js";
 import { getProducts } from "./api/productApi.js";
 import { Home } from "./pages/Home.js";
+import { Product } from "./pages/Product.js";
+import { NotFound } from "./pages/NotFound.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -25,6 +27,11 @@ async function main() {
 
   if (path === "/") {
     render(Home(productState));
+  } else if (path.startsWith("/product/")) {
+    const productId = path.split("/product/")[1];
+    render(Product(productId));
+  } else {
+    render(NotFound());
   }
 }
 
