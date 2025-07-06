@@ -71,12 +71,12 @@ export default function HomPage(state) {
             <div class="flex gap-2 items-center justify-between">
               <!-- 페이지당 상품 수 -->
               ${LimitSelect({
-                limitOptions: LIMIT_OPTIONS,
+                options: LIMIT_OPTIONS,
                 selectedValue: state.limit,
               })}
               <!-- 정렬 -->
                ${SortSelect({
-                 limitOptions: SORT_OPTIONS,
+                 options: SORT_OPTIONS,
                  selectedValue: state.sort,
                })}
             </div>

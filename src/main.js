@@ -12,7 +12,7 @@ let state = {
   products: [],
   total: 0,
   loading: false,
-  limit: "20",
+  limit: 20,
   sort: "price_asc",
   categories: [],
   cart: [],
@@ -38,8 +38,9 @@ function initEventListeners() {
       setState({ limit: newLimit });
 
       try {
+        console.log("새로운 limit:", newLimit);
         const data = await getProducts({ limit: newLimit });
-        setState({ products: data.products, total: data.pagination.limit });
+        setState({ products: data.products, limit: newLimit });
       } catch (error) {
         console.error("상품 로딩 실패:", error);
       }
@@ -50,7 +51,7 @@ function initEventListeners() {
       setState({ sort: newSort });
 
       try {
-        const data = await getProducts({ limit: state.limit, sort: newSort });
+        const data = await getProducts({ sort: newSort });
         setState({ products: data.products, sort: newSort });
       } catch (error) {
         console.error("상품 정렬 실패:", error);
@@ -67,7 +68,7 @@ async function main() {
   const data = await getProducts({ limit: state.limit });
   setState({
     products: data.products,
-    total: data.pagination.limit,
+    total: data.pagination.total,
     loading: false,
   });
 
