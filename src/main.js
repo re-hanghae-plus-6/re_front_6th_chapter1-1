@@ -1,5 +1,5 @@
 import { render } from "./utils/render.js";
-import { productState } from "./states/productState.js";
+import { productListState } from "./states/productState.js";
 import { getProducts } from "./api/productApi.js";
 import { Home } from "./pages/Home.js";
 import { Product } from "./pages/Product.js";
@@ -15,21 +15,21 @@ const enableMocking = () =>
 async function main() {
   const path = location.pathname;
 
-  productState.isLoading = true;
-  productState.products = [];
-  productState.total = 0;
+  productListState.isLoading = true;
+  productListState.products = [];
+  productListState.total = 0;
 
-  const productData = await getProducts({});
+  const productListData = await getProducts({});
 
-  productState.isLoading = false;
-  productState.products = productData.products;
-  productState.total = productData.pagination.total;
+  productListState.isLoading = false;
+  productListState.products = productListData.products;
+  productListState.total = productListData.pagination.total;
 
   if (path === "/") {
-    render(Home(productState));
+    render(Home(productListState));
   } else if (path.startsWith("/product/")) {
     const productId = path.split("/product/")[1];
-    render(Product(productId));
+    await Product(productId);
   } else {
     render(NotFound());
   }
