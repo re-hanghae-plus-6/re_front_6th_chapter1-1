@@ -4,8 +4,16 @@ import { addEvent } from "../utils/eventManager.js";
 import { ProductListSkeleton } from "../features/product/components/Skeleton.js";
 import { ProductCard } from "../features/product/components/ProductCard.js";
 import { productStore } from "../features/product/store/productStore.js";
-import { updateParams } from "../utils/updateParams.js";
 import { getProducts, getCategories } from "../api/productApi.js";
+import { getURLParams, updateURLParams } from "../utils/urlParams.js";
+
+const defaultParams = {
+  limit: 20,
+  sort: "price_asc",
+  search: "",
+  category1: "",
+  page: 1,
+};
 
 export const loadProducts = async (params = {}) => {
   productStore.setState({ loading: true });
@@ -23,7 +31,6 @@ export const loadProducts = async (params = {}) => {
         hasNext: false,
         hasPrev: false,
       },
-      params: { ...productStore.getState().params, ...params },
       loading: false,
     });
   } catch (error) {
@@ -77,22 +84,21 @@ const renderCategories = (categories) => {
 };
 
 const eventHandlers = {
-  "input:#search-input": (event) => updateParams(productStore, { search: event.target.value, page: 1 }, loadProducts),
-  "change:#sort-select": (event) => updateParams(productStore, { sort: event.target.value, page: 1 }, loadProducts),
+  "input:#search-input": (event) =>
+    updateURLParams({ search: event.target.value, page: 1 }, defaultParams, loadProducts),
+  "change:#sort-select": (event) => updateURLParams({ sort: event.target.value, page: 1 }, defaultParams, loadProducts),
   "change:#limit-select": (event) =>
-    updateParams(productStore, { limit: parseInt(event.target.value), page: 1 }, loadProducts),
+    updateURLParams({ limit: parseInt(event.target.value), page: 1 }, defaultParams, loadProducts),
   "click:.category1-filter-btn": (event) =>
-    updateParams(
-      productStore,
+    updateURLParams(
       {
         category1: event.target.dataset.category1,
-        category2: "",
         page: 1,
       },
+      defaultParams,
       loadProducts,
     ),
-  'click:[data-breadcrumb="reset"]': () =>
-    updateParams(productStore, { category1: "", category2: "", page: 1 }, loadProducts),
+  'click:[data-breadcrumb="reset"]': () => updateURLParams({ category1: "", page: 1 }, defaultParams, loadProducts),
 };
 
 const initEventHandlers = () => {
@@ -113,6 +119,7 @@ const setupStateSubscriptions = () => {
 
 export const ProductListPage = () => {
   const state = productStore.getState();
+  const params = getURLParams(defaultParams);
 
   return `
     <div class="min-h-screen bg-gray-50">
@@ -123,7 +130,7 @@ export const ProductListPage = () => {
           <!-- 검색창 -->
           <div class="mb-4">
             <div class="relative">
-              <input type="text" id="search-input" placeholder="상품명을 검색해보세요..." value="${state.params.search}" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
+              <input type="text" id="search-input" placeholder="상품명을 검색해보세요..." value="${params.search}" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -157,10 +164,10 @@ export const ProductListPage = () => {
                 <label class="text-sm text-gray-600">개수:</label>
                 <select id="limit-select"
                         class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-                  <option value="10" ${state.params.limit === 10 ? "selected" : ""}>10개</option>
-                  <option value="20" ${state.params.limit === 20 ? "selected" : ""}>20개</option>
-                  <option value="50" ${state.params.limit === 50 ? "selected" : ""}>50개</option>
-                  <option value="100" ${state.params.limit === 100 ? "selected" : ""}>100개</option>
+                  <option value="10" ${params.limit === 10 ? "selected" : ""}>10개</option>
+                  <option value="20" ${params.limit === 20 ? "selected" : ""}>20개</option>
+                  <option value="50" ${params.limit === 50 ? "selected" : ""}>50개</option>
+                  <option value="100" ${params.limit === 100 ? "selected" : ""}>100개</option>
                 </select>
               </div>
               <!-- 정렬 -->
@@ -168,10 +175,10 @@ export const ProductListPage = () => {
                 <label class="text-sm text-gray-600">정렬:</label>
                 <select id="sort-select" class="text-sm border border-gray-300 rounded px-2 py-1
                              focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-                  <option value="price_asc" ${state.params.sort === "price_asc" ? "selected" : ""}>가격 낮은순</option>
-                  <option value="price_desc" ${state.params.sort === "price_desc" ? "selected" : ""}>가격 높은순</option>
-                  <option value="name_asc" ${state.params.sort === "name_asc" ? "selected" : ""}>이름순</option>
-                  <option value="name_desc" ${state.params.sort === "name_desc" ? "selected" : ""}>이름 역순</option>
+                  <option value="price_asc" ${params.sort === "price_asc" ? "selected" : ""}>가격 낮은순</option>
+                  <option value="price_desc" ${params.sort === "price_desc" ? "selected" : ""}>가격 높은순</option>
+                  <option value="name_asc" ${params.sort === "name_asc" ? "selected" : ""}>이름순</option>
+                  <option value="name_desc" ${params.sort === "name_desc" ? "selected" : ""}>이름 역순</option>
                 </select>
               </div>
             </div>
@@ -204,7 +211,7 @@ export const ProductListPage = () => {
                   <svg class="animate-spin h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" 
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                   <span class="text-sm text-gray-600">상품을 불러오는 중...</span>
                 </div>
@@ -230,5 +237,5 @@ ProductListPage.onMount = () => {
   initEventHandlers();
 
   loadCategories();
-  loadProducts(productStore.getState().params);
+  loadProducts(getURLParams(defaultParams));
 };

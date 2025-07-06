@@ -12,12 +12,4 @@ export const productStore = createState({
     hasNext: false,
     hasPrev: false,
   },
-  params: {
-    page: 1,
-    limit: 20,
-    search: "",
-    category1: "",
-    category2: "",
-    sort: "price_asc",
-  },
 });
