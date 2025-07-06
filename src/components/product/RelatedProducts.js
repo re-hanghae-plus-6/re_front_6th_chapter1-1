@@ -1,9 +1,7 @@
 export default function RelatedProducts({ products = [] }) {
-  if (products.length === 0) {
-    return "";
-  }
+  if (products.length === 0) return "";
 
-  return /*html*/ `
+  return /* HTML */ `
     <div class="bg-white rounded-lg shadow-sm">
       <div class="p-4 border-b border-gray-200">
         <h2 class="text-lg font-bold text-gray-900">관련 상품</h2>
