@@ -15,6 +15,8 @@ interface State {
   loading: boolean;
   limit: number;
   sort: string;
+  page: number;
+  isLoadingNextPage: boolean;
 }
 
 export function homePage() {
@@ -28,6 +30,8 @@ export function homePage() {
     loading: true,
     limit: 20,
     sort: "price_asc",
+    page: 1,
+    isLoadingNextPage: false,
   };
 
   // 상태 업데이트 + 렌더 트리거 (React setState와 유사)
@@ -51,6 +55,7 @@ export function homePage() {
         price: Number(product.lprice),
         imageUrl: product.image,
       })),
+      isLoadingNextPage: state.isLoadingNextPage,
     });
 
     // 렌더 후 이벤트 바인딩
@@ -77,7 +82,7 @@ export function homePage() {
     const select = e.target as HTMLSelectElement;
     const newLimit = Number(select.value);
     if (newLimit !== state.limit) {
-      setState({ limit: newLimit });
+      setState({ limit: newLimit, page: 1 });
       loadProducts();
     }
   };
@@ -87,27 +92,61 @@ export function homePage() {
     const select = e.target as HTMLSelectElement;
     const newSort = select.value;
     if (newSort !== state.sort) {
-      setState({ sort: newSort });
+      setState({ sort: newSort, page: 1 });
       loadProducts();
     }
   };
 
-  // 데이터 로드 (렌더 호출 없음, setState만 사용)
-  const loadProducts = async () => {
+  const loadProducts = async (options = { isAppend: false }) => {
+    const { isAppend } = options;
     try {
-      const data = await getProducts({ limit: state.limit, page: 1, sort: state.sort });
-      setState({
-        products: data.products as Product[],
-        total: data.pagination.total ?? data.products.length,
-        loading: false,
-      });
+      const data = await getProducts({ limit: state.limit, page: state.page, sort: state.sort });
+
+      if (isAppend) {
+        setState({
+          products: [...state.products, ...(data.products as Product[])],
+          total: data.pagination.total ?? data.products.length,
+          isLoadingNextPage: false,
+        });
+      } else {
+        setState({
+          products: data.products as Product[],
+          total: data.pagination.total ?? data.products.length,
+          loading: false,
+        });
+      }
     } catch (err) {
       root.textContent = "상품을 불러오는데 실패했습니다.";
       console.error(err);
     }
   };
 
-  // 초기화: 스켈레톤 표시 → 데이터 로드
+  // 무한 스크롤 핸들러
+  const handleScroll = () => {
+    const isLoading = state.isLoadingNextPage || state.loading;
+    const hasAllProducts = state.products.length >= state.total;
+    const shouldSkipScroll = isLoading || hasAllProducts;
+
+    if (shouldSkipScroll) {
+      return;
+    }
+
+    // 스크롤 위치 확인 (하단 근처)
+    const scrollTop = window.scrollY;
+    const scrollHeight = document.documentElement.scrollHeight;
+    const clientHeight = document.documentElement.clientHeight;
+    const isBottom = scrollTop + clientHeight >= scrollHeight - 100;
+
+    if (isBottom) {
+      // 다음 페이지 로드
+      setState({ isLoadingNextPage: true, page: state.page + 1 });
+      loadProducts({ isAppend: true });
+    }
+  };
+
   render();
   loadProducts();
+
+  // 스크롤 이벤트 리스너 등록
+  window.addEventListener("scroll", handleScroll);
 }

@@ -10,10 +10,16 @@ export interface Props {
   total: number;
   products: ProductCard[];
   cartCount?: number;
+  isLoadingNextPage?: boolean;
 }
 
 // NOTE: keep class / id names 그대로 so that existing e2e & unit tests continue to work.
-export const 상품목록_레이아웃_로딩완료 = ({ total, products, cartCount = 0 }: Props): string => {
+export const 상품목록_레이아웃_로딩완료 = ({
+  total,
+  products,
+  cartCount = 0,
+  isLoadingNextPage = false,
+}: Props): string => {
   const cartBadge =
     cartCount > 0
       ? `<span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">${cartCount}</span>`
@@ -121,7 +127,13 @@ export const 상품목록_레이아웃_로딩완료 = ({ total, products, cartCo
             <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
               ${productCards}
             </div>
-            <div class="text-center py-4 text-sm text-gray-500">모든 상품을 확인했습니다</div>
+            ${
+              isLoadingNextPage
+                ? '<div class="text-center py-4 text-sm text-gray-500">상품을 불러오는 중...</div>'
+                : products.length >= total
+                  ? '<div class="text-center py-4 text-sm text-gray-500">모든 상품을 확인했습니다</div>'
+                  : ""
+            }
           </div>
         </div>
       </main>
