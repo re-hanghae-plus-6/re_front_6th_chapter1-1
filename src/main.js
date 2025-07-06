@@ -1,3 +1,6 @@
+import footer from "./components/footer.js";
+import HomeView from "./views/HomeView.js";
+
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
     worker.start({
@@ -1119,7 +1122,11 @@ function main() {
     </main>
   `;
 
-  document.body.innerHTML = `
+  const home = new HomeView();
+
+  document.body.innerHTML = /* html */ `
+    <main></main>
+    ${footer}
     ${상품목록_레이아웃_로딩}
     <br />
     ${상품목록_레이아웃_로딩완료}
@@ -1142,6 +1149,8 @@ function main() {
     <br />
     ${_404_}
   `;
+
+  home.mount();
 }
 
 // 애플리케이션 시작
