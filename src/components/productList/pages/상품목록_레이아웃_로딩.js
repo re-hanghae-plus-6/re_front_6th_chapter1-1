@@ -1,9 +1,9 @@
-import { Navigation } from "./layout/navigation.js";
-import { SkeletonProduct } from "./skeleton/skeletonProduct.js";
-import { LoadingBar } from "./layout/loadingBar.js";
-import { Footer } from "./layout/footer.js";
-import { ProductGrid } from "./layout/productGrid.js";
-import { Category } from "./category/category.js";
+import { Navigation } from "../layout/navigation.js";
+import { SkeletonProduct } from "../skeleton/skeletonProduct.js";
+import { LoadingIndicator } from "../layout/loadingIndicator.js";
+import { Footer } from "../layout/footer.js";
+import { ProductGrid } from "../layout/productGrid.js";
+import { Category } from "../category/category.js";
 
 export const 상품목록_레이아웃_로딩 = `
 <div class="min-h-screen bg-gray-50">
@@ -24,7 +24,7 @@ export const 상품목록_레이아웃_로딩 = `
           `,
         })}
         </div>
-        ${LoadingBar}
+        ${LoadingIndicator}
     </div>
   </main>
   ${Footer}

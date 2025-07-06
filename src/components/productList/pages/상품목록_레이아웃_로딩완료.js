@@ -1,4 +1,5 @@
-import { Product } from "./product/product.js";
+import { Product } from "../product/product.js";
+import { ListEndIndicator } from "../layout/listEndindicator.js";
 
 export const 상품목록_레이아웃_로딩완료 = `
     <div class="bg-gray-50">
@@ -164,10 +165,7 @@ export const 상품목록_레이아웃_로딩완료 = `
                 </div>
               </div>
             </div>
-            
-            <div class="text-center py-4 text-sm text-gray-500">
-              모든 상품을 확인했습니다
-            </div>
+            ${ListEndIndicator}
           </div>
         </div>
       </main>
