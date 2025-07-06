@@ -4,12 +4,12 @@ import { 상품목록_레이아웃_로딩 } from "./components/productList/pages
 import { 상품목록_레이아웃_로딩완료 } from "./components/productList/pages/상품목록_레이아웃_로딩완료.js";
 import { 상품목록_레이아웃_카테고리_1Depth } from "./components/productList/publish/상품목록_레이아웃_카테고리_1Depth.js";
 import { 상품목록_레이아웃_카테고리_2Depth } from "./components/productList/publish/상품목록_레이아웃_카테고리_2Depth.js";
-import { 토스트 } from "./components/toast/토스트.js";
-import { 장바구니_비어있음 } from "./components/cart/장바구니_비어있음.js";
-import { 장바구니_선택없음 } from "./components/cart/장바구니_선택없음.js";
-import { 장바구니_선택있음 } from "./components/cart/장바구니_선택있음.js";
-import { 상세페이지_로딩 } from "./components/detail/상세페이지_로딩.js";
-import { 상세페이지_로딩완료 } from "./components/detail/상세페이지_로딩완료.js";
+import { 토스트 } from "./components/toast/publish/토스트.js";
+import { 장바구니_비어있음 } from "./components/cart/publish/장바구니_비어있음.js";
+import { 장바구니_선택없음 } from "./components/cart/publish/장바구니_선택없음.js";
+import { 장바구니_선택있음 } from "./components/cart/publish/장바구니_선택있음.js";
+import { 상세페이지_로딩 } from "./components/detail/publish/상세페이지_로딩.js";
+import { 상세페이지_로딩완료 } from "./components/detail/publish/상세페이지_로딩완료.js";
 import { _404_ } from "./components/404/_404_.js";
 
 const enableMocking = () =>
