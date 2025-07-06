@@ -14,12 +14,8 @@ const enableMocking = () =>
 async function bootstrap() {
   // 라우터 설정 및 초기 렌더
   initRouter({
-    "/": () => {
-      homePage();
-    },
-    "/product/:id": (params) => {
-      detailPage(params as any);
-    },
+    "/": homePage,
+    "/product/:id": detailPage,
   });
 }
 

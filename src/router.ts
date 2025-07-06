@@ -1,9 +1,16 @@
-// return이 void | (() => void) 두 케이스가 있는 이유: 클린업 할게 없을 경우도 있기 때문
-export type PageFn = (pathParams?: Record<string, string>, queryParams?: Record<string, string>) => void | (() => void);
+// 페이지 모듈: HTML 문자열을 반환하는 render와 선택적인 mount 훅으로 구성됩니다.
+export interface PageModule {
+  render: (pathParams?: Record<string, string>, queryParams?: Record<string, string>) => string;
+  /**
+   * DOM 이 실제로 삽입된 뒤 호출됩니다.
+   * 반환값이 함수라면 언마운트 시(cleanup) 호출됩니다.
+   */
+  mount?: (root: HTMLElement) => void | (() => void);
+}
 
 interface RouteObj {
   routeRegex: RegExp;
-  pageFn: PageFn;
+  page: PageModule;
 }
 
 let routes: RouteObj[] = [];
@@ -17,28 +24,35 @@ function compile(pattern: string): RegExp {
 }
 
 function render(urlStr: string) {
+  // 1) 이전 페이지 정리
   currentCleanup?.();
   currentCleanup = undefined;
 
-  // URL 객체를 사용해 pathname 과 query 분리
+  // 2) URL 분해
   const url = new URL(urlStr, location.origin);
   const pathname = url.pathname;
   const queryParams = Object.fromEntries(url.searchParams.entries()) as Record<string, string>;
 
-  const hasMatched = routes.some(({ routeRegex, pageFn }) => {
-    const match = routeRegex.exec(pathname);
-    if (!match) return false;
+  // 3) 매칭되는 라우트 탐색
+  const matched = routes.find(({ routeRegex }) => routeRegex.test(pathname));
 
-    const pathParams = (match.groups ?? {}) as Record<string, string>;
-
-    // 페이지 렌더 후 cleanup이 필요하다면 ()=> void 형태로 저장
-    const willCleanup = pageFn(pathParams, queryParams);
-    if (typeof willCleanup === "function") currentCleanup = willCleanup;
-    return true;
-  });
-
-  if (!hasMatched) {
+  if (!matched) {
     document.getElementById("root")!.textContent = "404 | 페이지를 찾을 수 없습니다";
+    return;
+  }
+
+  const { routeRegex, page } = matched;
+  const pathParams = (routeRegex.exec(pathname)?.groups ?? {}) as Record<string, string>;
+
+  const rootEl = document.getElementById("root")!;
+
+  // 4) HTML 삽입
+  rootEl.innerHTML = page.render(pathParams, queryParams);
+
+  // 5) mount 훅 실행 후 cleanup 저장
+  if (page.mount) {
+    const maybeCleanup = page.mount(rootEl);
+    if (typeof maybeCleanup === "function") currentCleanup = maybeCleanup;
   }
 }
 
@@ -49,10 +63,10 @@ function navigate(path: string, replace = false) {
 }
 
 // routeMap: { '/': fn, ... }
-function initRouter(routeMap: Record<string, PageFn>) {
+function initRouter(routeMap: Record<string, PageModule>) {
   routes = Object.keys(routeMap).map((pattern) => ({
     routeRegex: compile(pattern),
-    pageFn: routeMap[pattern],
+    page: routeMap[pattern],
   }));
 
   document.addEventListener("click", (e) => {

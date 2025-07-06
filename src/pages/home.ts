@@ -1,6 +1,7 @@
 import { 상품목록_레이아웃_로딩 } from "../components/product-list/product-list-loading.ts";
 import { 상품목록_레이아웃_로딩완료 } from "../components/product-list/index.ts";
 import { getProducts } from "../api/productApi.js";
+import type { PageModule } from "../router.ts";
 
 interface Product {
   title: string;
@@ -20,152 +21,169 @@ interface State {
   search: string;
 }
 
-export function homePage() {
-  const root = document.getElementById("root");
-  if (!root) return;
+export const homePage: PageModule = {
+  // 1) 초기 스켈레톤 마크업만 반환
+  render: function () {
+    return 상품목록_레이아웃_로딩();
+  },
 
-  // 컴포넌트 상태
-  let state: State = {
-    products: [],
-    total: 0,
-    loading: true,
-    limit: 20,
-    sort: "price_asc",
-    page: 1,
-    isLoadingNextPage: false,
-    search: "",
-  };
+  // 2) 실제 로직·이벤트·API 호출은 mount 훅에서 처리
+  mount: function (root) {
+    if (!root) return;
 
-  // 상태 업데이트 + 렌더 트리거 (React setState와 유사)
-  const setState = (newState: Partial<State>) => {
-    state = { ...state, ...newState };
-    render();
-  };
+    // 컴포넌트 상태
+    let state: State = {
+      products: [],
+      total: 0,
+      loading: true,
+      limit: 20,
+      sort: "price_asc",
+      page: 1,
+      isLoadingNextPage: false,
+      search: "",
+    };
 
-  // 순수 렌더 함수 (상태만 읽고 DOM 업데이트)
-  const render = () => {
-    if (state.loading) {
-      root.innerHTML = 상품목록_레이아웃_로딩();
-      return;
-    }
+    // 상태 업데이트 + 화면 갱신 트리거
+    const setState = (newState: Partial<State>) => {
+      state = { ...state, ...newState };
+      rerender();
+    };
 
-    root.innerHTML = 상품목록_레이아웃_로딩완료({
-      total: state.total,
-      products: state.products.map((product) => ({
-        id: product.productId,
-        title: product.title,
-        price: Number(product.lprice),
-        imageUrl: product.image,
-      })),
-      isLoadingNextPage: state.isLoadingNextPage,
-    });
-
-    // 렌더 후 이벤트 바인딩
-    bindEvents();
-  };
-
-  // 이벤트 바인딩 (렌더와 분리)
-  const bindEvents = () => {
-    const limitSelectEl = document.getElementById("limit-select") as HTMLSelectElement | null;
-    if (limitSelectEl) {
-      limitSelectEl.value = String(state.limit);
-      limitSelectEl.addEventListener("change", handleLimitChange);
-    }
-
-    const sortSelectEl = document.getElementById("sort-select") as HTMLSelectElement | null;
-    if (sortSelectEl) {
-      sortSelectEl.value = state.sort;
-      sortSelectEl.addEventListener("change", handleSortChange);
-    }
-
-    const searchInputEl = document.getElementById("search-input") as HTMLInputElement | null;
-    if (searchInputEl) {
-      searchInputEl.value = state.search;
-      searchInputEl.addEventListener("keydown", handleSearchKeydown);
-    }
-  };
-
-  // 드롭다운 변경 핸들러
-  const handleLimitChange = (e: Event) => {
-    const select = e.target as HTMLSelectElement;
-    const newLimit = Number(select.value);
-    if (newLimit !== state.limit) {
-      setState({ limit: newLimit, page: 1 });
-      loadProducts();
-    }
-  };
-
-  // 정렬 변경 핸들러
-  const handleSortChange = (e: Event) => {
-    const select = e.target as HTMLSelectElement;
-    const newSort = select.value;
-    if (newSort !== state.sort) {
-      setState({ sort: newSort, page: 1 });
-      loadProducts();
-    }
-  };
-
-  // 검색 엔터 핸들러
-  const handleSearchKeydown = (e: KeyboardEvent) => {
-    if (e.key !== "Enter") return;
-    const input = e.target as HTMLInputElement;
-    const keyword = input.value.trim();
-    if (keyword === state.search) return; // 변동 없음
-
-    // 검색어 변경 → 페이지 & 상품 초기화
-    setState({ search: keyword, page: 1 });
-    loadProducts();
-  };
-
-  const loadProducts = async (options = { isAppend: false }) => {
-    const { isAppend } = options;
-    try {
-      const data = await getProducts({ limit: state.limit, page: state.page, sort: state.sort, search: state.search });
-
-      if (isAppend) {
-        setState({
-          products: [...state.products, ...(data.products as Product[])],
-          total: data.pagination.total ?? data.products.length,
-          isLoadingNextPage: false,
-        });
-      } else {
-        setState({
-          products: data.products as Product[],
-          total: data.pagination.total ?? data.products.length,
-          loading: false,
-        });
+    // 상태 기반 화면 그리기 (리렌더)
+    const rerender = () => {
+      if (state.loading) {
+        root.innerHTML = 상품목록_레이아웃_로딩();
+        return;
       }
-    } catch (err) {
-      root.textContent = "상품을 불러오는데 실패했습니다.";
-      console.error(err);
-    }
-  };
 
-  // 무한 스크롤 핸들러
-  const handleScroll = () => {
-    const isLoading = state.isLoadingNextPage || state.loading;
-    const hasAllProducts = state.products.length >= state.total;
-    const shouldSkipScroll = isLoading || hasAllProducts;
+      root.innerHTML = 상품목록_레이아웃_로딩완료({
+        total: state.total,
+        products: state.products.map((product) => ({
+          id: product.productId,
+          title: product.title,
+          price: Number(product.lprice),
+          imageUrl: product.image,
+        })),
+        isLoadingNextPage: state.isLoadingNextPage,
+      });
 
-    if (shouldSkipScroll) {
-      return;
-    }
+      // 렌더 후 이벤트 바인딩
+      bindEvents();
+    };
 
-    // 스크롤 위치 확인 (하단 근처)
-    const scrollTop = window.scrollY;
-    const scrollHeight = document.documentElement.scrollHeight;
-    const clientHeight = document.documentElement.clientHeight;
-    const isBottom = scrollTop + clientHeight >= scrollHeight - 100;
+    // 이벤트 바인딩 (렌더와 분리)
+    const bindEvents = () => {
+      const limitSelectEl = document.getElementById("limit-select") as HTMLSelectElement | null;
+      if (limitSelectEl) {
+        limitSelectEl.value = String(state.limit);
+        limitSelectEl.addEventListener("change", handleLimitChange);
+      }
 
-    if (isBottom) {
-      // 다음 페이지 로드
-      setState({ isLoadingNextPage: true, page: state.page + 1 });
-      loadProducts({ isAppend: true });
-    }
-  };
-  render();
-  loadProducts();
+      const sortSelectEl = document.getElementById("sort-select") as HTMLSelectElement | null;
+      if (sortSelectEl) {
+        sortSelectEl.value = state.sort;
+        sortSelectEl.addEventListener("change", handleSortChange);
+      }
 
-  // 스크롤 이벤트 리스너 등록
-  window.addEventListener("scroll", handleScroll);
-}
+      const searchInputEl = document.getElementById("search-input") as HTMLInputElement | null;
+      if (searchInputEl) {
+        searchInputEl.value = state.search;
+        searchInputEl.addEventListener("keydown", handleSearchKeydown);
+      }
+    };
+
+    // 드롭다운 변경 핸들러
+    const handleLimitChange = (e: Event) => {
+      const select = e.target as HTMLSelectElement;
+      const newLimit = Number(select.value);
+      if (newLimit !== state.limit) {
+        setState({ limit: newLimit, page: 1 });
+        loadProducts();
+      }
+    };
+
+    // 정렬 변경 핸들러
+    const handleSortChange = (e: Event) => {
+      const select = e.target as HTMLSelectElement;
+      const newSort = select.value;
+      if (newSort !== state.sort) {
+        setState({ sort: newSort, page: 1 });
+        loadProducts();
+      }
+    };
+
+    // 검색 엔터 핸들러
+    const handleSearchKeydown = (e: KeyboardEvent) => {
+      if (e.key !== "Enter") return;
+      const input = e.target as HTMLInputElement;
+      const keyword = input.value.trim();
+      if (keyword === state.search) return; // 변동 없음
+
+      // 검색어 변경 → 페이지 & 상품 초기화
+      setState({ search: keyword, page: 1 });
+      loadProducts();
+    };
+
+    const loadProducts = async (options = { isAppend: false }) => {
+      const { isAppend } = options;
+      try {
+        const data = await getProducts({
+          limit: state.limit,
+          page: state.page,
+          sort: state.sort,
+          search: state.search,
+        });
+
+        if (isAppend) {
+          setState({
+            products: [...state.products, ...(data.products as Product[])],
+            total: data.pagination.total ?? data.products.length,
+            isLoadingNextPage: false,
+          });
+        } else {
+          setState({
+            products: data.products as Product[],
+            total: data.pagination.total ?? data.products.length,
+            loading: false,
+          });
+        }
+      } catch (err) {
+        root.textContent = "상품을 불러오는데 실패했습니다.";
+        console.error(err);
+      }
+    };
+
+    // 무한 스크롤 핸들러
+    const handleScroll = () => {
+      const isLoading = state.isLoadingNextPage || state.loading;
+      const hasAllProducts = state.products.length >= state.total;
+      const shouldSkipScroll = isLoading || hasAllProducts;
+
+      if (shouldSkipScroll) {
+        return;
+      }
+
+      // 스크롤 위치 확인 (하단 근처)
+      const scrollTop = window.scrollY;
+      const scrollHeight = document.documentElement.scrollHeight;
+      const clientHeight = document.documentElement.clientHeight;
+      const isBottom = scrollTop + clientHeight >= scrollHeight - 100;
+
+      if (isBottom) {
+        // 다음 페이지 로드
+        setState({ isLoadingNextPage: true, page: state.page + 1 });
+        loadProducts({ isAppend: true });
+      }
+    };
+    rerender();
+    loadProducts();
+
+    // 스크롤 이벤트 리스너 등록
+    window.addEventListener("scroll", handleScroll);
+
+    // 언마운트(cleanup) 시 이벤트 해제
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  },
+};
