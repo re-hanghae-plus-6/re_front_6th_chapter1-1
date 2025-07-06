@@ -122,18 +122,18 @@ export const 상품목록_레이아웃_로딩완료 = ({
         <div class="mb-6">
           <div>
             <!-- 상품 개수 정보 -->
-            <div class="mb-4 text-sm text-gray-600">총 의 상품 <span class="font-medium text-gray-900">${total}개</span></div>
+            	<div class="mb-4 text-sm text-gray-600">총 <span class="font-medium text-gray-900">${total}개</span> 의 상품</div>
             <!-- 상품 그리드 -->
             <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
               ${productCards}
             </div>
-            ${
-              isLoadingNextPage
-                ? '<div class="text-center py-4 text-sm text-gray-500">상품을 불러오는 중...</div>'
-                : products.length >= total
-                  ? '<div class="text-center py-4 text-sm text-gray-500">모든 상품을 확인했습니다</div>'
-                  : ""
-            }
+                ${
+                  isLoadingNextPage
+                    ? '<div class="text-center py-4 text-sm text-gray-500">상품을 불러오는 중...</div>'
+                    : products.length >= total
+                      ? '<div class="text-center py-4 text-sm text-gray-500">모든 상품을 확인했습니다</div>'
+                      : ""
+                }
           </div>
         </div>
       </main>

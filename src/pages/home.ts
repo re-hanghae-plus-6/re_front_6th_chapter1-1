@@ -17,6 +17,7 @@ interface State {
   sort: string;
   page: number;
   isLoadingNextPage: boolean;
+  search: string;
 }
 
 export function homePage() {
@@ -32,6 +33,7 @@ export function homePage() {
     sort: "price_asc",
     page: 1,
     isLoadingNextPage: false,
+    search: "",
   };
 
   // 상태 업데이트 + 렌더 트리거 (React setState와 유사)
@@ -75,6 +77,12 @@ export function homePage() {
       sortSelectEl.value = state.sort;
       sortSelectEl.addEventListener("change", handleSortChange);
     }
+
+    const searchInputEl = document.getElementById("search-input") as HTMLInputElement | null;
+    if (searchInputEl) {
+      searchInputEl.value = state.search;
+      searchInputEl.addEventListener("keydown", handleSearchKeydown);
+    }
   };
 
   // 드롭다운 변경 핸들러
@@ -97,10 +105,22 @@ export function homePage() {
     }
   };
 
+  // 검색 엔터 핸들러
+  const handleSearchKeydown = (e: KeyboardEvent) => {
+    if (e.key !== "Enter") return;
+    const input = e.target as HTMLInputElement;
+    const keyword = input.value.trim();
+    if (keyword === state.search) return; // 변동 없음
+
+    // 검색어 변경 → 페이지 & 상품 초기화
+    setState({ search: keyword, page: 1 });
+    loadProducts();
+  };
+
   const loadProducts = async (options = { isAppend: false }) => {
     const { isAppend } = options;
     try {
-      const data = await getProducts({ limit: state.limit, page: state.page, sort: state.sort });
+      const data = await getProducts({ limit: state.limit, page: state.page, sort: state.sort, search: state.search });
 
       if (isAppend) {
         setState({
@@ -143,7 +163,6 @@ export function homePage() {
       loadProducts({ isAppend: true });
     }
   };
-
   render();
   loadProducts();
 

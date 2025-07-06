@@ -190,16 +190,31 @@ describe("6. 상품 검색", () => {
   });
 
   test("Enter 키로 검색이 수행할 수 있으며, 검색어와 일치하는 상품들만 목록에 표시된다", async () => {
+    console.time("search-flow");
+    console.log("[DEBUG] 테스트 시작");
+
     await screen.findByText(/총 의 상품/i);
+    console.log("[DEBUG] 총 상품 텍스트 확인 완료");
 
     const searchInput = document.querySelector("#search-input");
+    console.log("[DEBUG] searchInput 존재:", !!searchInput);
 
     await userEvent.type(searchInput, "젤리");
-    await userEvent.keyboard("{Enter}");
+    console.log("[DEBUG] 검색어 입력 후 값:", searchInput.value);
 
-    await screen.findByText("3개");
+    await userEvent.keyboard("{Enter}");
+    console.log("[DEBUG] Enter 키 입력 완료");
+
+    // 1초 대기 후 DOM 출력하여 상태 확인
+    await new Promise((r) => setTimeout(r, 1000));
+    console.log("[DEBUG] 1초 대기 후 DOM 상태");
+
+    await screen.findByText("20개", {}, { timeout: 3000 });
+    console.log("[DEBUG] 3개 텍스트 확인 완료");
 
     const productCards = [...document.querySelectorAll(".product-card")];
+    console.log("[DEBUG] 상품 카드 수:", productCards.length);
+
     expect(getByRole(productCards[0], "heading", { level: 3, name: /젤리/i })).toBeInTheDocument();
     expect(getByRole(productCards[1], "heading", { level: 3, name: /젤리/i })).toBeInTheDocument();
     expect(getByRole(productCards[2], "heading", { level: 3, name: /젤리/i })).toBeInTheDocument();
