@@ -13,6 +13,10 @@ export function render() {
   try {
     const Page = router.get().getTarget() ?? NotFoundPage;
     $root.innerHTML = Page();
+
+    if (typeof Page.onMount === "function") {
+      Page.onMount();
+    }
   } catch (error) {
     console.error(error);
     $root.innerHTML = NotFoundPage();
