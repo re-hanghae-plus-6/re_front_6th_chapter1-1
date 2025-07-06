@@ -9,7 +9,15 @@ function main() {
     isDetailPage: false, // 상품 상세 페이지 여부
   };
 
-  document.body.innerHTML = Layout(ProductList, state.cartCount, state.isDetailPage);
+  const rootElement = document.getElementById("root");
+  if (rootElement) {
+    rootElement.innerHTML = Layout(ProductList, state.cartCount, state.isDetailPage);
+  }
+
+  // ProductList 컴포넌트 초기화
+  if (typeof ProductList.init === "function") {
+    ProductList.init();
+  }
 }
 
 // 앱 초기화 후 main 실행
