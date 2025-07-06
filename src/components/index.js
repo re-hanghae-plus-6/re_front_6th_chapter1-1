@@ -11,7 +11,6 @@ export { default as ProductSkeleton } from "./product/ProductSkeleton.js";
 // Product Components
 export { default as ProductItem } from "./product/ProductItem.js";
 export { default as ProductGrid } from "./product/ProductGrid.js";
-export { default as ProductDetailPage } from "./page/ProductDetailPage.js";
 export { default as RelatedProducts } from "./product/RelatedProducts.js";
 
 // Filter Components
@@ -30,4 +29,7 @@ export { default as CartEmpty } from "./cart/CartEmpty.js";
 export { default as Toast } from "./ui/Toast.js";
 export { ToastContainer } from "./ui/Toast.js";
 export { default as Breadcrumb } from "./ui/Breadcrumb.js";
+
+// Page Components
 export { default as NotFoundPage } from "./page/NotFoundPage.js";
+export { default as ProductDetailPage } from "./page/ProductDetailPage.js";
