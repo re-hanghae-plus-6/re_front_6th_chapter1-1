@@ -11,22 +11,6 @@ const LoadingCard = `
 
 const LoadingCardList = LoadingCard.repeat(4);
 
-// {
-//     "title": "방충망 미세먼지 롤 창문 모기장 DIY 100cmx10cm",
-//     "link": "https:\/\/smartstore.naver.com\/main\/products\/668979777",
-//     "image": "https:\/\/shopping-phinf.pstatic.net\/main_1112415\/11124150101.10.jpg",
-//     "lprice": "450",
-//     "hprice": "",
-//     "mallName": "동백물산",
-//     "productId": "11124150101",
-//     "productType": "2",
-//     "brand": "메쉬코리아",
-//     "maker": "",
-//     "category1": "생활\/건강",
-//     "category2": "생활용품",
-//     "category3": "생활잡화",
-//     "category4": "모기장"
-//   },
 const ProductCard = (product) => `
  <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
     data-product-id="${product.productId}">
@@ -50,18 +34,18 @@ const ProductCard = (product) => `
     </div>
     <!-- 장바구니 버튼 -->
     <button class="w-full bg-blue-600 text-white text-sm py-2 px-3 rounded-md
-            hover:bg-blue-700 transition-colors add-to-cart-btn" data-product-id="85067212996">
+            hover:bg-blue-700 transition-colors add-to-cart-btn" data-product-id="${product.productId}">
     장바구니 담기
     </button>
 </div>
 </div>
 `;
 
-export default function HomePage({ products = [], total = 0, loading = false, categories = [] }) {
-  return 상품목록_레이아웃_로딩(products, total, loading, categories);
+export default function HomePage({ products = [], total = 0, loading = false, loadingMore = false, categories = [] }) {
+  return 상품목록_레이아웃_로딩(products, total, loading, loadingMore, categories);
 }
 
-const 상품목록_레이아웃_로딩 = (products, total, loading) => `
+const 상품목록_레이아웃_로딩 = (products, total, loading, loadingMore) => `
     <div class="min-h-screen bg-gray-50">
       <header class="bg-white shadow-sm sticky top-0 z-40">
         <div class="max-w-md mx-auto px-4 py-4">
@@ -161,19 +145,26 @@ const 상품목록_레이아웃_로딩 = (products, total, loading) => `
             }
             <!-- 상품 그리드 -->
             <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
-              <!-- 로딩 스켈레톤 -->
-              ${loading ? LoadingCardList : products.map(ProductCard).join("")}
-            
-            <div class="text-center py-4">
-              <div class="inline-flex items-center">
-                <svg class="animate-spin h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" 
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span class="text-sm text-gray-600">상품을 불러오는 중...</span>
-              </div>
+              ${
+                loading
+                  ? LoadingCardList /* 초기 로딩 */
+                  : products.map(ProductCard).join("") + (loadingMore ? LoadingCardList : "") /* 추가 로딩 */
+              }
             </div>
+            ${
+              loadingMore /* 인디케이터 */
+                ? `<div class="text-center py-4">
+                     <div class="inline-flex items-center">
+                       <svg class="animate-spin h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24">
+                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                         <path class="opacity-75" fill="currentColor"
+                               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                       </svg>
+                       <span class="text-sm text-gray-600">상품을 불러오는 중...</span>
+                     </div>
+                   </div>`
+                : ""
+            }
           </div>
         </div>
       </main>
