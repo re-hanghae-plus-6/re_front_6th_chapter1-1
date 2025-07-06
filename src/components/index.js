@@ -14,10 +14,6 @@ export { default as ProductGrid } from "./product/ProductGrid.js";
 export { default as RelatedProducts } from "./product/RelatedProducts.js";
 
 // Filter Components
-export { default as SearchInput } from "./filter/SearchInput.js";
-export { default as Category } from "./filter/Category.js";
-export { default as SortFilter } from "./filter/SortFilter.js";
-export { default as LimitFilter } from "./filter/LimitFilter.js";
 export { default as FilterSection } from "./filter/FilterSection.js";
 
 // Cart Components

@@ -1,4 +1,4 @@
-export default function Header({ cartCount = 0, showBackButton = false }) {
+export default function Header({ cartCount = 0, showBackButton = false, title = "쇼핑몰" }) {
   const backButton = showBackButton
     ? /* HTML */ `
         <button onclick="window.history.back()" class="p-2 text-gray-700 hover:text-gray-900 transition-colors">
@@ -27,7 +27,7 @@ export default function Header({ cartCount = 0, showBackButton = false }) {
           <div class="flex items-center space-x-3">
             ${backButton}
             <h1 class="text-xl font-bold text-gray-900">
-              <a href="/" data-link="">쇼핑몰</a>
+              <a href="/" data-link="">${title}</a>
             </h1>
           </div>
           <div class="flex items-center space-x-2">
