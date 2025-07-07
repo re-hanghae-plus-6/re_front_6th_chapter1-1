@@ -2,7 +2,8 @@ import { createState } from "../../../utils/createState.js";
 
 export const productStore = createState({
   products: [],
-  categories: [],
+  categories: {},
+  selectedCategory1: "",
   isLoading: false,
   isLoadingMore: false,
   pagination: {
