@@ -1,8 +1,8 @@
 import { getCategories, getProducts } from "../api/productApi";
-import { Footer } from "../components/Footer";
-import { Header } from "../components/Header";
-import { ProductCard } from "../components/ProductCard";
-import { ProductSkeleton } from "../components/ProductSkeleton";
+import { Footer } from "../components/layouts/Footer";
+import { Header } from "../components/layouts/Header";
+import { ProductCard } from "../components/productList/ProductCard";
+import { ProductSkeleton } from "../components/productList/ProductSkeleton";
 import { Component } from "../core/Component";
 import { updateURLParams } from "../utils/url";
 
