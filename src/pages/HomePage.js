@@ -159,6 +159,9 @@ export const HomePage = ({ products = [], total = 0, loading = false, categories
           <!-- 로딩 스켈레톤 -->
           ${loading ? LoadingUIList.join("") : currentProducts.map((product) => ProductCard(product)).join("")}
         </div>
+
+        <!-- 무한 스크롤 감지 요소 -->
+        <div id="scroll-sentinel"></div>
         
         <div class="text-center py-4">
           <div class="inline-flex items-center">
