@@ -56,8 +56,6 @@ const CategoryButton = (category) => {
 export const HomePage = ({ products = [], total = 0, loading = false, categories = {}, productCount = 20 }) => {
   const categoryList = Object.keys(categories);
 
-  const currentProducts = products.slice(0, productCount);
-
   return `
 <div class="min-h-screen bg-gray-50">
   <header class="bg-white shadow-sm sticky top-0 z-40">
@@ -157,7 +155,7 @@ export const HomePage = ({ products = [], total = 0, loading = false, categories
         <!-- 상품 그리드 -->
         <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
           <!-- 로딩 스켈레톤 -->
-          ${loading ? LoadingUIList.join("") : currentProducts.map((product) => ProductCard(product)).join("")}
+          ${loading ? LoadingUIList.join("") : products.map((product) => ProductCard(product)).join("")}
         </div>
 
         <!-- 무한 스크롤 감지 요소 -->

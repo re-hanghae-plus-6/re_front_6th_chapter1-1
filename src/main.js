@@ -21,6 +21,7 @@ let state = {
 
 function render() {
   document.body.querySelector("#root").innerHTML = HomePage(state);
+  setupInfiniteScroll();
 }
 
 async function main() {
@@ -76,6 +77,50 @@ async function handleLimitChange(newLimit) {
 
   render();
 }
+
+let globalObserver = null;
+
+async function loadMoreProducts() {
+  if (state.loading || !state.hasNext) return;
+
+  state.loading = true;
+  render();
+
+  // 1. 새 데이터 가져오기
+  const newData = await getProducts({ limit: state.productCount, page: state.page + 1 });
+
+  // 2. 기존 배열에 추가 및 상태 변경
+  state.products = [...state.products, ...newData.products];
+  state.hasNext = newData.pagination.hasNext;
+  state.hasPrev = newData.pagination.hasPrev;
+  state.page = newData.pagination.page;
+  state.loading = false;
+
+  // 3. 다시 그리기
+  render();
+}
+
+function setupInfiniteScroll() {
+  // 기존 observer 정리
+  if (globalObserver) {
+    globalObserver.disconnect();
+  }
+  const callback = (entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting && state.hasNext && !state.loading) {
+        console.log("무한스크롤 트리거됨", state.page);
+        loadMoreProducts();
+      }
+    });
+  };
+  globalObserver = new IntersectionObserver(callback);
+
+  const sentinel = document.getElementById("scroll-sentinel");
+  if (sentinel) {
+    globalObserver.observe(sentinel);
+  }
+}
+
 // 애플리케이션 시작
 if (import.meta.env.MODE !== "test") {
   enableMocking().then(() => {
