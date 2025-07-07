@@ -101,6 +101,10 @@ describe("3. 페이지당 상품 수 선택", () => {
 
     const limitSelect = document.querySelector("#limit-select");
     await userEvent.selectOptions(limitSelect, "10");
+    await waitFor(() => {
+      const productCards = document.querySelectorAll(".product-card");
+      expect(productCards).toHaveLength(10);
+    });
 
     await waitFor(() =>
       expect(
@@ -110,8 +114,6 @@ describe("3. 페이지당 상품 수 선택", () => {
         }),
       ).not.toBeInTheDocument(),
     );
-
-    expect(document.querySelectorAll(".product-card").length).toBe(10);
   });
 });
 
@@ -171,8 +173,8 @@ describe("5. 무한 스크롤 페이지네이션", () => {
 
     // 페이지 하단으로 스크롤
     window.dispatchEvent(new Event("scroll"));
-
     expect(await screen.findByText("상품을 불러오는 중...")).toBeInTheDocument();
+
     expect(
       await screen.findByText("고양이 난간 안전망 복층 베란다 방묘창 방묘문 방충망 캣도어 일반형검정1mx1m"),
     ).toBeInTheDocument();
