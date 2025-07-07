@@ -3,7 +3,7 @@ import { createState } from "../../../utils/createState.js";
 export const productStore = createState({
   products: [],
   categories: [],
-  loading: false,
+  isLoading: false,
   isLoadingMore: false,
   pagination: {
     page: 1,

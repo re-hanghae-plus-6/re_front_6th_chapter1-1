@@ -19,7 +19,7 @@ const defaultParams = {
 };
 
 export const loadProducts = async (params = {}) => {
-  productStore.setState({ loading: true });
+  productStore.setState({ isLoading: true });
 
   try {
     const response = await getProducts(params);
@@ -34,13 +34,13 @@ export const loadProducts = async (params = {}) => {
         hasNext: false,
         hasPrev: false,
       },
-      loading: false,
+      isLoading: false,
     });
   } catch (error) {
     console.error("상품 불러오기 실패:", error);
     productStore.setState({
       products: [],
-      loading: false,
+      isLoading: false,
     });
   }
 };
@@ -186,7 +186,7 @@ export const ProductListPage = () => {
         <!-- 상품 목록 -->
         <div class="mb-6">
           ${
-            state.loading
+            state.isLoading
               ? ""
               : `
           <!-- 상품 개수 정보 -->
@@ -198,13 +198,13 @@ export const ProductListPage = () => {
           
           <!-- 상품 그리드 -->
           <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
-            ${state.loading ? ProductListSkeleton() : renderProducts(state.products)}
+            ${state.isLoading ? ProductListSkeleton() : renderProducts(state.products)}
           </div>
           
           <!-- 하단 메시지 -->
           <div class="text-center py-4 bottom-message">
             ${
-              state.loading
+              state.isLoading
                 ? renderLoadingMessage()
                 : state.isLoadingMore
                   ? renderLoadingMessage()
@@ -226,14 +226,14 @@ const setupStateSubscription = () => {
       updateElement("#category-list", renderCategories(newState.categories));
     }
 
-    if (!prevState || newState.products !== prevState.products || newState.loading !== prevState.loading) {
-      updateElement("#products-grid", newState.loading ? ProductListSkeleton() : renderProducts(newState.products));
+    if (!prevState || newState.products !== prevState.products || newState.isLoading !== prevState.isLoading) {
+      updateElement("#products-grid", newState.isLoading ? ProductListSkeleton() : renderProducts(newState.products));
     }
 
-    if (!prevState || newState.pagination !== prevState.pagination || newState.loading !== prevState.loading) {
+    if (!prevState || newState.pagination !== prevState.pagination || newState.isLoading !== prevState.isLoading) {
       const $productCount = document.querySelector("#product-count");
 
-      if (newState.loading) {
+      if (newState.isLoading) {
         $productCount?.remove();
       } else {
         const content = `총 <span class="font-medium text-gray-900">${newState.pagination?.total || 0}개</span>의 상품`;
@@ -255,11 +255,11 @@ const setupStateSubscription = () => {
 
     if (
       !prevState ||
-      newState.loading !== prevState.loading ||
+      newState.isLoading !== prevState.isLoading ||
       newState.isLoadingMore !== prevState.isLoadingMore ||
       newState.pagination !== prevState.pagination
     ) {
-      const bottomMessage = newState.loading
+      const bottomMessage = newState.isLoading
         ? renderLoadingMessage()
         : newState.isLoadingMore
           ? renderLoadingMessage()
