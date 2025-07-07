@@ -4,16 +4,15 @@ import { Header } from "../components/Header";
 import { ProductCard } from "../components/ProductCard";
 import { ProductSkeleton } from "../components/ProductSkeleton";
 import { Component } from "../core/Component";
+import { updateURLParams } from "../utils/url";
 
 export class ProductListPage extends Component {
-  constructor(router) {
-    super("#root");
+  constructor(props) {
+    super(props);
 
     const params = new URLSearchParams(window.location.search);
-
-    this.router = router;
     this.state = {
-      loading: false,
+      loading: true,
       products: [],
       pagination: {
         limit: parseInt(params.get("limit")) || 20,
@@ -22,15 +21,78 @@ export class ProductListPage extends Component {
       categories: {},
     };
 
-    this.#attachEventListeners();
-    this.#loadProductsAndCategories();
+    this.on(Component.EVENTS.MOUNT, () => {
+      this.#loadProductsAndCategories();
+    });
+  }
+
+  async #loadProductsAndCategories() {
+    try {
+      const [products, categories] = await Promise.all([
+        getProducts({
+          page: 1,
+          limit: this.state.pagination.limit ?? 20,
+          search: this.state.filters.search ?? "",
+          category1: this.state.filters.category1 ?? "",
+          category2: this.state.filters.category2 ?? "",
+          sort: this.state.filters.sort ?? "price_asc",
+        }),
+        getCategories(),
+      ]);
+
+      this.setState({
+        ...products,
+        categories,
+        loading: false,
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("상품 및 카테고리 리스트 로딩 실패:", error.message);
+        this.setState({
+          loading: false,
+          categories: {},
+        });
+      }
+    }
+  }
+
+  async #reloadProducts(params) {
+    try {
+      const products = await getProducts(params);
+      this.setState({ ...products, loading: false });
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("상품 및 카테고리 리스트 로딩 실패:", error.message);
+        this.setState({ loading: false });
+      }
+    }
+  }
+
+  async #handleLimitChange(limit) {
+    updateURLParams({ limit });
+    await this.#reloadProducts({ limit });
+  }
+
+  bindEvents(element) {
+    element.addEventListener("click", (e) => {
+      const route = e.target.dataset.route;
+      if (route) {
+        this.router.navigate(route);
+      }
+    });
+
+    element.addEventListener("change", (e) => {
+      if (e.target.id === "limit-select") {
+        this.#handleLimitChange(e.target.value);
+      }
+    });
   }
 
   render() {
-    this.element.innerHTML =
-      /* HTML */
-      `<div class="min-h-screen bg-gray-50">
+    return /* HTML */ ` //
+      <div class="min-h-screen bg-gray-50">
         ${Header()}
+
         <main class="max-w-md mx-auto px-4 py-4">
           <!-- 검색 및 필터 -->
           <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
@@ -135,82 +197,8 @@ export class ProductListPage extends Component {
             </div>
           </div>
         </main>
+
         ${Footer()}
       </div>`;
-  }
-
-  async #loadProductsAndCategories() {
-    this.setState({ loading: true });
-
-    try {
-      const [products, categories] = await Promise.all([
-        getProducts({
-          page: 1,
-          limit: this.state.pagination.limit ?? 20,
-          search: this.state.filters.search ?? "",
-          category1: this.state.filters.category1 ?? "",
-          category2: this.state.filters.category2 ?? "",
-          sort: this.state.filters.sort ?? "price_asc",
-        }),
-        getCategories(),
-      ]);
-
-      this.setState({
-        ...products,
-        categories,
-        loading: false,
-      });
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error("상품 및 카테고리 리스트 로딩 실패:", error.message);
-        this.setState({ loading: false });
-      }
-    }
-  }
-
-  async #reloadProducts(params) {
-    try {
-      const products = await getProducts(params);
-      this.setState({ ...products, loading: false });
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error("상품 및 카테고리 리스트 로딩 실패:", error.message);
-        this.setState({ loading: false });
-      }
-    }
-  }
-
-  #updateURLParams(newParams) {
-    const url = new URL(window.location);
-
-    Object.entries(newParams).forEach(([key, value]) => {
-      if (value && value !== "") {
-        url.searchParams.set(key, value);
-      } else {
-        url.searchParams.delete(key);
-      }
-    });
-
-    window.history.replaceState(null, "", url.toString());
-  }
-
-  async #handleLimitChange(limit) {
-    this.#updateURLParams({ limit });
-    await this.#reloadProducts({ limit });
-  }
-
-  #attachEventListeners() {
-    this.element.addEventListener("click", (e) => {
-      const route = e.target.dataset.route;
-      if (route) {
-        this.router.navigate(route);
-      }
-    });
-
-    this.element.addEventListener("change", (e) => {
-      if (e.target.id === "limit-select") {
-        this.#handleLimitChange(e.target.value);
-      }
-    });
   }
 }

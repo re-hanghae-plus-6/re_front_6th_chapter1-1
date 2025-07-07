@@ -1,15 +1,14 @@
 import { Component } from "../core/Component";
 
 export class NotFoundPage extends Component {
-  constructor(router) {
-    super("#root");
-    this.router = router;
+  constructor(props) {
+    super(props);
+    this.state = {};
   }
 
   render() {
-    this.element.innerHTML =
-      /* HTML */
-      `<main class="max-w-md mx-auto px-4 py-4">
+    return /* HTML */ ` //
+      <main class="max-w-md mx-auto px-4 py-4">
         <div class="text-center my-4 py-20 shadow-md p-6 bg-white rounded-lg">
           <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
             <defs>
