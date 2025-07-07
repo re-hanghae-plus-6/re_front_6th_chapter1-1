@@ -3,6 +3,7 @@ import { getProducts, getCategories } from "../api/productApi.js";
 import type { Categories } from "../components/category/index.ts";
 import type { PageModule } from "../router.ts";
 import { navigate } from "../router.ts";
+import { openCartModal } from "../components/cart-modal/index.ts";
 
 interface Product {
   title: string;
@@ -131,6 +132,9 @@ export const homePage: PageModule = {
       productClickableEls.forEach((el) => {
         el.addEventListener("click", handleProductClick);
       });
+
+      const cartIconEl = root.querySelector("#cart-icon-btn") as HTMLButtonElement | null;
+      cartIconEl?.addEventListener("click", openCartModal);
     };
 
     const updateProducts = async (options = { isAppend: false }) => {

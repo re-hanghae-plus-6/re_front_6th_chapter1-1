@@ -3,6 +3,7 @@ import { getProduct, getProducts } from "../api/productApi.js";
 import { 상품상세_레이아웃 } from "../components/product-detail/index.ts";
 import { navigate } from "../router.ts";
 import { 토스트 } from "../components/toast/index.ts";
+import { openCartModal } from "../components/cart-modal/index.ts";
 
 interface Product {
   productId: string;
@@ -84,6 +85,7 @@ export const detailPage: PageModule = {
       const incButtonEl = root.querySelector("#quantity-increase") as HTMLButtonElement | null;
       const addButtonEl = root.querySelector("#add-to-cart-btn") as HTMLButtonElement | null;
       const relatedProductEls = root.querySelectorAll(".related-product-card");
+      const cartIconEl = root.querySelector("#cart-icon-btn") as HTMLButtonElement | null;
 
       const handleDecrease = () => {
         if (!inputEl) return;
@@ -120,6 +122,7 @@ export const detailPage: PageModule = {
       if (incButtonEl) incButtonEl.addEventListener("click", handleIncrease);
       if (addButtonEl) addButtonEl.addEventListener("click", handleAddToCart);
       relatedProductEls.forEach((el) => el.addEventListener("click", handleRelatedClick));
+      if (cartIconEl) cartIconEl.addEventListener("click", openCartModal);
     };
 
     initData();
