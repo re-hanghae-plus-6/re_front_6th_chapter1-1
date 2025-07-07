@@ -12,14 +12,11 @@ const enableMocking = () =>
 
 class SPAService {
   constructor() {
-    this.router = new Router();
+    this.router = new Router("#root");
     this.init();
   }
 
   init() {
-    console.log("Create SPAService Instance!");
-
-    // router 설정
     this.router.register("/", ProductListPage);
     this.router.register("/product/:productId", ProductPage);
     this.router.register("*", NotFoundPage);

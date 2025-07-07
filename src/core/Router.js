@@ -9,9 +9,15 @@ import { Component } from "./Component";
 export class Router {
   #routes = new Map();
   #currentRoute = null;
+  #container = null;
   #popstateListener = this.#handleRouteChange.bind(this);
 
-  constructor() {
+  constructor(containerQuerySelector) {
+    this.#container = document.querySelector(containerQuerySelector);
+    if (!this.#container) {
+      throw new Error(`${containerQuerySelector}에 해당되는 엘리먼트를 찾을 수 없습니다.`);
+    }
+
     // popstate 이벤트 리스너를 등록하여 브라우저 뒤로가기/앞으로가기 처리
     window.addEventListener("popstate", this.#popstateListener);
   }
@@ -199,8 +205,7 @@ export class Router {
     }
 
     const component = this.#createComponent(matchResult.componentConstructor);
-    const container = document.getElementById("root");
-    component.mount(container);
+    component.mount(this.#container);
 
     if (typeof component.setRouteParams === "function") {
       // 페이지 컴포넌트에서 params를 사용하기 위해 메소드 실행
