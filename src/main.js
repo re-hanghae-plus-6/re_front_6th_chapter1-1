@@ -28,10 +28,13 @@ function render() {
 }
 
 async function main() {
+  const categoryData = await getCategories();
+
   state.loading = true;
+
   render();
   const productData = await getProducts({ limit: state.limit, search: state.search });
-  const categoryData = await getCategories();
+
   state.products = productData.products;
   state.total = productData.pagination.total;
   state.categories = categoryData;
