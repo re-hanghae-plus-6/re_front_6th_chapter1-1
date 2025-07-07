@@ -1,6 +1,6 @@
 export const ProductSkeletonCard = () => {
   return /* html */ `
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
+    <div class="product-skeleton-card bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
       <div class="aspect-square bg-gray-200"></div>
       <div class="p-3">
         <div class="h-4 bg-gray-200 rounded mb-2"></div>
