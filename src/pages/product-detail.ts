@@ -3,7 +3,8 @@ import { getProduct, getProducts } from "../api/productApi.js";
 import { 상품상세_레이아웃 } from "../components/product-detail/index.ts";
 import { navigate } from "../router.ts";
 import { 토스트 } from "../components/toast/index.ts";
-import { openCartModal } from "../components/cart-modal/index.ts";
+import { 장바구니 } from "../components/cart/index.ts";
+import { addToCart, getCartCount } from "../utils/cart.ts";
 
 interface Product {
   productId: string;
@@ -26,7 +27,7 @@ interface State {
 
 export const detailPage: PageModule = {
   render() {
-    return 상품상세_레이아웃({ loading: true });
+    return 상품상세_레이아웃({ loading: true, cartCount: getCartCount() });
   },
 
   mount(root) {
@@ -50,6 +51,7 @@ export const detailPage: PageModule = {
         product: state.product ?? undefined,
         relatedProducts: state.relatedProducts,
         qty: state.qty,
+        cartCount: getCartCount(),
       });
 
       if (!state.loading) bindEvents();
@@ -102,15 +104,9 @@ export const detailPage: PageModule = {
       const handleAddToCart = () => {
         if (!inputEl || !state.product) return;
         const qty = Math.max(1, parseInt(inputEl.value || "1", 10));
-
-        const CART_KEY = "cart_items";
-        const existing = JSON.parse(localStorage.getItem(CART_KEY) ?? "[]");
-        const idx = existing.findIndex((it: any) => it.id === state.product!.productId);
-        if (idx > -1) existing[idx].qty += qty;
-        else existing.push({ id: state.product!.productId, qty });
-        localStorage.setItem(CART_KEY, JSON.stringify(existing));
-
+        addToCart(state.product.productId, qty);
         토스트("장바구니에 추가되었습니다", "success");
+        rerender();
       };
 
       const handleRelatedClick = (e: Event) => {
@@ -122,7 +118,7 @@ export const detailPage: PageModule = {
       if (incButtonEl) incButtonEl.addEventListener("click", handleIncrease);
       if (addButtonEl) addButtonEl.addEventListener("click", handleAddToCart);
       relatedProductEls.forEach((el) => el.addEventListener("click", handleRelatedClick));
-      if (cartIconEl) cartIconEl.addEventListener("click", openCartModal);
+      if (cartIconEl) cartIconEl.addEventListener("click", 장바구니);
     };
 
     initData();

@@ -1,15 +1,12 @@
 // 장바구니 모달 컴포넌트
 // openCartModal() 을 호출하면 .cart-modal-overlay 를 생성해 모달을 표시합니다.
 
-export function openCartModal() {
-  // 이미 열려 있으면 중복 생성X
+export function 장바구니() {
   if (document.querySelector(".cart-modal-overlay")) return;
 
-  // Overlay
   const overlay = document.createElement("div");
   overlay.className = "cart-modal-overlay fixed inset-0 bg-black/50 flex items-center justify-center z-50";
 
-  // Modal box
   const modal = document.createElement("div");
   modal.className = "bg-white rounded-lg shadow-lg max-w-sm w-full p-6 text-center";
 
@@ -37,7 +34,7 @@ export function openCartModal() {
     if (e.key === "Escape") cleanup();
   };
 
-  closeBtn?.addEventListener("click", cleanup);
+  if (closeBtn) closeBtn.addEventListener("click", cleanup);
   overlay.addEventListener("click", (e) => {
     if (e.target === overlay) cleanup();
   });

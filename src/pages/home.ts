@@ -3,7 +3,9 @@ import { getProducts, getCategories } from "../api/productApi.js";
 import type { Categories } from "../components/category/index.ts";
 import type { PageModule } from "../router.ts";
 import { navigate } from "../router.ts";
-import { openCartModal } from "../components/cart-modal/index.ts";
+import { 토스트 } from "../components/toast/index.ts";
+import { addToCart, getCartCount } from "../utils/cart.ts";
+import { 장바구니 } from "../components/cart/index.ts";
 
 interface Product {
   title: string;
@@ -56,6 +58,7 @@ export const homePage: PageModule = {
     };
 
     const rerender = () => {
+      const cartCount = getCartCount();
       root.innerHTML = 상품목록_레이아웃({
         loading: state.loading,
         total: state.total,
@@ -65,6 +68,7 @@ export const homePage: PageModule = {
           price: Number(product.lprice),
           imageUrl: product.image,
         })),
+        cartCount,
         isLoadingNextPage: state.isLoadingNextPage,
         categories: state.categories ?? undefined,
         category1: state.category1,
@@ -82,6 +86,8 @@ export const homePage: PageModule = {
       const searchInputEl = root.querySelector("#search-input") as HTMLInputElement | null;
       const categoryButtonEls = root.querySelectorAll("[data-category1], [data-breadcrumb]");
       const productClickableEls = root.querySelectorAll(".product-image, .product-info");
+      const addToCartBtnEls = root.querySelectorAll(".add-to-cart-btn");
+      const cartIconEl = root.querySelector("#cart-icon-btn") as HTMLButtonElement | null;
 
       const handleLimitChange = (e: Event) => {
         const select = e.target as HTMLSelectElement;
@@ -110,6 +116,18 @@ export const homePage: PageModule = {
         updateProducts();
       };
 
+      const handleAddToCart = (e: Event) => {
+        e.stopPropagation();
+        const btn = e.currentTarget as HTMLElement;
+        const productId = btn.dataset.productId;
+        if (!productId) return;
+
+        addToCart(productId, 1);
+
+        토스트("장바구니에 추가되었습니다", "success");
+        rerender();
+      };
+
       if (limitSelectEl) {
         limitSelectEl.value = String(state.limit);
         limitSelectEl.addEventListener("change", handleLimitChange);
@@ -133,8 +151,9 @@ export const homePage: PageModule = {
         el.addEventListener("click", handleProductClick);
       });
 
-      const cartIconEl = root.querySelector("#cart-icon-btn") as HTMLButtonElement | null;
-      cartIconEl?.addEventListener("click", openCartModal);
+      addToCartBtnEls.forEach((btn) => btn.addEventListener("click", handleAddToCart));
+
+      if (cartIconEl) cartIconEl.addEventListener("click", 장바구니);
     };
 
     const updateProducts = async (options = { isAppend: false }) => {
