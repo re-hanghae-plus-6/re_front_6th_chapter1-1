@@ -8,6 +8,7 @@ import { getURLParams, updateURLParams } from "../utils/urlParams.js";
 import { addEvent } from "../utils/eventManager.js";
 import { router } from "../router.js";
 import { updateElement } from "../utils/domUtils.js";
+import { setupInfiniteScroll } from "../utils/infiniteScroll.js";
 
 const defaultParams = {
   limit: 20,
@@ -40,6 +41,31 @@ export const loadProducts = async (params = {}) => {
     productStore.setState({
       products: [],
       loading: false,
+    });
+  }
+};
+
+export const loadMoreProducts = async (params = {}) => {
+  const currentState = productStore.getState();
+
+  if (currentState.isLoadingMore || !currentState.pagination.hasNext) {
+    return;
+  }
+
+  productStore.setState({ isLoadingMore: true });
+
+  try {
+    const response = await getProducts({ ...params, page: currentState.pagination.page + 1 });
+
+    productStore.setState({
+      products: [...currentState.products, ...(response.products || [])],
+      pagination: response.pagination || currentState.pagination,
+      isLoadingMore: false,
+    });
+  } catch (error) {
+    console.error("추가 상품 불러오기 실패:", error);
+    productStore.setState({
+      isLoadingMore: false,
     });
   }
 };
@@ -177,7 +203,15 @@ export const ProductListPage = () => {
           
           <!-- 하단 메시지 -->
           <div class="text-center py-4 bottom-message">
-            ${state.loading ? renderLoadingMessage() : '<div class="text-sm text-gray-500">모든 상품을 확인했습니다</div>'}
+            ${
+              state.loading
+                ? renderLoadingMessage()
+                : state.isLoadingMore
+                  ? renderLoadingMessage()
+                  : state.pagination?.hasNext
+                    ? '<div class="text-sm text-gray-500">더 많은 상품을 보려면 스크롤하세요</div>'
+                    : '<div class="text-sm text-gray-500">모든 상품을 확인했습니다</div>'
+            }
           </div>
         </div>
       </main>
@@ -219,11 +253,21 @@ const setupStateSubscription = () => {
       }
     }
 
-    if (!prevState || newState.loading !== prevState.loading) {
-      updateElement(
-        ".bottom-message",
-        newState.loading ? renderLoadingMessage() : '<div class="text-sm text-gray-500">모든 상품을 확인했습니다</div>',
-      );
+    if (
+      !prevState ||
+      newState.loading !== prevState.loading ||
+      newState.isLoadingMore !== prevState.isLoadingMore ||
+      newState.pagination !== prevState.pagination
+    ) {
+      const bottomMessage = newState.loading
+        ? renderLoadingMessage()
+        : newState.isLoadingMore
+          ? renderLoadingMessage()
+          : newState.pagination?.hasNext
+            ? '<div class="text-sm text-gray-500">더 많은 상품을 보려면 스크롤하세요</div>'
+            : '<div class="text-sm text-gray-500">모든 상품을 확인했습니다</div>';
+
+      updateElement(".bottom-message", bottomMessage);
     }
   });
 };
@@ -260,9 +304,24 @@ const setupEventHandlers = () => {
   });
 };
 
+const setupProductInfiniteScroll = () => {
+  return setupInfiniteScroll({
+    onLoadMore: () => {
+      const currentParams = getURLParams(defaultParams);
+      loadMoreProducts(currentParams);
+    },
+    threshold: 100,
+    shouldLoad: () => {
+      const state = productStore.getState();
+      return !state.isLoadingMore && state.pagination?.hasNext;
+    },
+  });
+};
+
 ProductListPage.onMount = () => {
   setupStateSubscription();
   setupEventHandlers();
+  setupProductInfiniteScroll();
   loadCategories();
   loadProducts(getURLParams(defaultParams));
 };
