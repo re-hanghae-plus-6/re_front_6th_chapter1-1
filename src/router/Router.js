@@ -61,16 +61,16 @@ class Router {
     return null;
   }
 
-  render(path) {
+  async render(path) {
     const result = this.findRoute(path);
 
     if (result) {
       const component = this.routes[result.route];
-      component(this.container, result.params);
+      await component(this.container, result.params);
     } else {
       const notFoundHandler = this.routes["*"];
       if (notFoundHandler) {
-        notFoundHandler(this.container);
+        await notFoundHandler(this.container);
       } else {
         this.container.innerHTML = "<h1>404 - 페이지를 찾을 수 없습니다!</h1>";
       }
