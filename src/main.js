@@ -1,6 +1,7 @@
 import { getCategories, getProducts } from "./api/productApi.js";
 import { InfiniteScroll } from "./utils.js";
 import HomPage from "./pages/HomePage/index";
+import { toast } from "./pages/HomePage/components/Toast.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -13,7 +14,7 @@ let appState = {
   products: [],
   total: 0,
   loading: false,
-  hasMore: true,
+  hasNext: false,
   categories: [],
   cart: [],
   currentPage: 1,
@@ -54,8 +55,8 @@ const setAppState = (newState) => {
   appState = { ...appState, ...newState };
   render();
 
-  if (infiniteScroll && newState.hasMore !== undefined) {
-    infiniteScroll.setHasMore(appState.hasMore);
+  if (infiniteScroll && newState.hasNext !== undefined) {
+    infiniteScroll.setHasMore(appState.hasNext);
   }
 };
 
@@ -84,11 +85,11 @@ async function loadProducts(reset = false) {
     };
 
     const data = await getProducts(params);
-    console.log("상품 로딩:", params);
+
     setAppState({
       products: reset ? data.products : [...appState.products, ...data.products],
       total: data.pagination.total,
-      hasMore: data.pagination.hasNext,
+      hasNext: data.pagination.hasNext,
       currentPage: reset ? 2 : appState.currentPage + 1,
       loading: false,
     });
@@ -124,7 +125,7 @@ const applyFilter = async (newFilterValues) => {
   setAppState({
     filters: updatedFilters,
     products: [],
-    hasMore: true,
+    hasNext: false,
     currentPage: 1,
   });
 
@@ -144,7 +145,7 @@ function initEventListeners() {
     setAppState({
       filters: urlFilters,
       products: [],
-      hasMore: true,
+      hasNext: false,
       currentPage: 1,
     });
 
@@ -172,6 +173,15 @@ function initEventListeners() {
     if (event.target.id === "search-input" && event.target.value.trim().length > 0) {
       const search = event.target.value.trim();
       await applyFilter({ search });
+    }
+
+    if (event.target.dataset.productId) {
+      const productId = event.target.dataset.productId;
+      const selectedProducts = appState.products.find((product) => product.productId === productId);
+      if (selectedProducts) {
+        setAppState({ cart: [...appState.cart, selectedProducts] });
+        toast.open("CREATE");
+      }
     }
   });
 

@@ -17,7 +17,7 @@ export class InfiniteScroll {
     this.threshold = options.threshold || 200;
     this.delay = options.delay || 100;
     this.isLoading = false;
-    this.hasMore = true;
+    this.hasMore = false;
 
     this.handleScroll = throttle(() => {
       this.checkScroll();
