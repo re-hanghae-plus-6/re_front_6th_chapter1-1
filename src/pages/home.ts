@@ -1,7 +1,7 @@
 import { 상품목록_레이아웃_로딩 } from "../components/product-list/product-list-loading.ts";
 import { 상품목록_레이아웃_로딩완료 } from "../components/product-list/index.ts";
-import { getProducts, getCategories } from "../api/productApi.js";
 import { 상품목록_레이아웃_카테고리 } from "../components/category/index.ts";
+import { getProducts, getCategories } from "../api/productApi.js";
 import type { CategoryState, Categories } from "../components/category/index.ts";
 import type { PageModule } from "../router.ts";
 
@@ -27,12 +27,10 @@ interface State {
 }
 
 export const homePage: PageModule = {
-  // 1) 초기 스켈레톤 마크업만 반환
   render: function () {
     return 상품목록_레이아웃_로딩();
   },
 
-  // 2) 실제 로직·이벤트·API 호출은 mount 훅에서 처리
   mount: function (root) {
     if (!root) return;
 
@@ -51,20 +49,17 @@ export const homePage: PageModule = {
       categories: null,
     };
 
-    // 상태 업데이트 + 화면 갱신 트리거
     const setState = (newState: Partial<State>) => {
       state = { ...state, ...newState };
       rerender();
     };
 
-    // 상태 기반 화면 그리기 (리렌더)
     const rerender = () => {
       if (state.loading) {
         root.innerHTML = 상품목록_레이아웃_로딩();
         return;
       }
 
-      // 타입 안전한 CategoryState 생성
       let categoryState: CategoryState;
       if (state.category1 && state.category2)
         categoryState = { depth: 2, category1: state.category1, category2: state.category2 };
@@ -88,11 +83,11 @@ export const homePage: PageModule = {
         categoryHtml,
       });
 
-      // 렌더 후 이벤트 바인딩
+      // 이벤트 바인딩 시점: 렌더 마지막
       bindEvents();
     };
 
-    // 이벤트 바인딩 (렌더와 분리)
+    // 이벤트 바인딩
     const bindEvents = () => {
       const limitSelectEl = root.querySelector("#limit-select") as HTMLSelectElement | null;
       if (limitSelectEl) {
@@ -112,46 +107,40 @@ export const homePage: PageModule = {
         searchInputEl.addEventListener("keydown", handleSearchKeydown);
       }
 
-      // 카테고리 관련 클릭 이벤트 바인딩
       const categoryButtonEls = root.querySelectorAll("[data-category1], [data-breadcrumb]");
       categoryButtonEls.forEach((buttonEl) => {
-        buttonEl.addEventListener("click", handleGlobalClick);
+        buttonEl.addEventListener("click", handleCategoryClick);
       });
     };
 
-    // 드롭다운 변경 핸들러
     const handleLimitChange = (e: Event) => {
       const select = e.target as HTMLSelectElement;
       const newLimit = Number(select.value);
       if (newLimit !== state.limit) {
         setState({ limit: newLimit, page: 1 });
-        loadProducts();
+        updateProducts();
       }
     };
 
-    // 정렬 변경 핸들러
     const handleSortChange = (e: Event) => {
       const select = e.target as HTMLSelectElement;
       const newSort = select.value;
       if (newSort !== state.sort) {
         setState({ sort: newSort, page: 1 });
-        loadProducts();
+        updateProducts();
       }
     };
 
-    // 검색 엔터 핸들러
     const handleSearchKeydown = (e: KeyboardEvent) => {
       if (e.key !== "Enter") return;
       const input = e.target as HTMLInputElement;
       const keyword = input.value.trim();
-      if (keyword === state.search) return; // 변동 없음
-
-      // 검색어 변경 → 페이지 & 상품 초기화
+      if (keyword === state.search) return;
       setState({ search: keyword, page: 1 });
-      loadProducts();
+      updateProducts();
     };
 
-    const loadProducts = async (options = { isAppend: false }) => {
+    const updateProducts = async (options = { isAppend: false }) => {
       const { isAppend } = options;
       try {
         const data = await getProducts({
@@ -163,26 +152,25 @@ export const homePage: PageModule = {
           category2: state.category2 ?? "",
         });
 
-        if (isAppend) {
+        if (isAppend)
           setState({
             products: [...state.products, ...(data.products as Product[])],
             total: data.pagination.total ?? data.products.length,
             isLoadingNextPage: false,
           });
-        } else {
+        else
           setState({
             products: data.products as Product[],
             total: data.pagination.total ?? data.products.length,
             loading: false,
           });
-        }
       } catch (err) {
         root.textContent = "상품을 불러오는데 실패했습니다.";
         console.error(err);
       }
     };
 
-    const loadInitial = async () => {
+    const initData = async () => {
       try {
         const [categories, data] = await Promise.all([
           getCategories(),
@@ -212,11 +200,8 @@ export const homePage: PageModule = {
       const hasAllProducts = state.products.length >= state.total;
       const shouldSkipScroll = isLoading || hasAllProducts;
 
-      if (shouldSkipScroll) {
-        return;
-      }
+      if (shouldSkipScroll) return;
 
-      // 스크롤 위치 확인 (하단 근처)
       const scrollTop = window.scrollY;
       const scrollHeight = document.documentElement.scrollHeight;
       const clientHeight = document.documentElement.clientHeight;
@@ -225,53 +210,47 @@ export const homePage: PageModule = {
       if (isBottom) {
         // 다음 페이지 로드
         setState({ isLoadingNextPage: true, page: state.page + 1 });
-        loadProducts({ isAppend: true });
+        updateProducts({ isAppend: true });
       }
     };
 
-    // 전역 클릭 이벤트 (카테고리·브레드크럼)
-    const handleGlobalClick = (e: Event) => {
+    const handleCategoryClick = (e: Event) => {
       const target = e.target as HTMLElement;
 
       if (target.dataset.breadcrumb === "reset") {
         setState({ category1: null, category2: null, page: 1 });
-        loadProducts();
+        updateProducts();
         return;
       }
 
       if (target.dataset.breadcrumb === "category1") {
         const cat1 = target.dataset.category1 ?? "";
         setState({ category1: cat1, category2: null, page: 1 });
-        loadProducts();
+        updateProducts();
         return;
       }
 
-      // 카테고리1 선택 (1depth)
       if (target.dataset.category1 && !target.dataset.category2) {
         const cat1 = target.dataset.category1;
         if (cat1 !== state.category1) {
           setState({ category1: cat1, category2: null, page: 1 });
-          loadProducts();
+          updateProducts();
         }
         return;
       }
 
-      // 카테고리2 선택 (2depth)
       if (target.dataset.category2) {
         const cat1 = target.dataset.category1 ?? state.category1 ?? "";
         const cat2 = target.dataset.category2;
         setState({ category1: cat1, category2: cat2, page: 1 });
-        loadProducts();
+        updateProducts();
       }
     };
 
-    rerender();
-    loadInitial();
+    initData();
 
-    // 스크롤 이벤트 리스너 등록
     window.addEventListener("scroll", handleScroll);
-
-    // 언마운트(cleanup) 시 이벤트 해제
+    // 언마운트(cleanup)
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
