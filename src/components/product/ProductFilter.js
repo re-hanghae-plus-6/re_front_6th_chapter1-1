@@ -10,7 +10,7 @@ const ProductFilter = (searchQuery) => {
     isLoading = false,
     limit = 20,
     sort = "price_asc",
-    // search = "",
+    search = "",
   } = searchQuery;
 
   // limit을 문자열로 변환
@@ -48,7 +48,7 @@ const ProductFilter = (searchQuery) => {
       : category2DepthButton(categories, selectedCategory1, selectedCategory2);
   };
 
-  return /* html */ `
+  return /* HTML */ `
     <!-- 검색 및 필터 -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
       <!-- 검색창 -->
@@ -58,7 +58,7 @@ const ProductFilter = (searchQuery) => {
             type="text"
             id="search-input"
             placeholder="상품명을 검색해보세요..."
-            value=""
+            value="${search}"
             class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
                    focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
@@ -84,9 +84,7 @@ const ProductFilter = (searchQuery) => {
             ${renderBreadcrumb()}
           </div>
           <div class="space-y-2">
-            <div class="flex flex-wrap gap-2">
-              ${renderCategoryButtons()}
-            </div>
+            <div class="flex flex-wrap gap-2">${renderCategoryButtons()}</div>
           </div>
         </div>
 

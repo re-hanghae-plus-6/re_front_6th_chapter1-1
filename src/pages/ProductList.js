@@ -1,4 +1,4 @@
-import { loadCategories, loadProductList } from "../services/productLoader";
+import { loadFilter, loadProductList } from "../services/productLoader";
 import { getProductListFilters } from "../utils/searchUtils";
 import { ProductListLoading } from "../components/product/ProductLoading";
 
@@ -6,7 +6,7 @@ export const ProductList = () => {
   ProductList.init = async () => {
     const query = getProductListFilters();
 
-    await loadCategories(query);
+    await loadFilter(query);
     await loadProductList(query);
   };
 

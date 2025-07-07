@@ -30,7 +30,7 @@ function main() {
 }
 
 window.addEventListener("popstate", () => {
-  // 초기화 후 main 실행
+  //url 변경 시 초기화
   initializeApp(main);
 });
 

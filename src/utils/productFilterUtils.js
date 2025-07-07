@@ -1,5 +1,5 @@
 import { loadProductList } from "../services/productLoader";
-import { getProductListFilters } from "./searchUtils";
+import { getProductListFilters, updateUrlParams } from "./searchUtils";
 
 // 정렬 옵션
 export const SORT_OPTIONS = [
@@ -32,29 +32,21 @@ export const renderOptions = (options, selectedValue) => {
     .join("");
 };
 
-/**
- * URL 파라미터 업데이트
- * @param {string} key - 파라미터 키
- * @param {string} value - 파라미터 값
- * @param {boolean} resetPage - 페이지를 1로 리셋할지 여부
- */
-export const updateUrlParams = (key, value, resetPage = false) => {
-  const params = new URLSearchParams(window.location.search);
-  params.set(key, value);
+/** 검색어 입력 후 엔터 누르면 검색 */
+export const handleSearchSubmit = (e) => {
+  if (e.target.id === "search-input" && e.key === "Enter") {
+    // 검색어 추출
+    const keyword = e.target.value.trim();
 
-  if (resetPage) {
-    params.set("page", "1");
+    updateUrlParams({ key: "search", value: keyword });
+    loadProductList(getProductListFilters());
   }
-
-  const nextURL = `${window.location.pathname}?${params.toString()}`;
-  history.pushState({}, "", nextURL);
 };
 
 /** 정렬 변경 이벤트 핸들러 */
 export const handleSortChange = (e) => {
   if (e.target.id === "sort-select") {
-    const sort = e.target.value;
-    updateUrlParams("sort", sort, true); // 정렬 변경시 페이지 리셋
+    updateUrlParams({ key: "sort", value: e.target.value });
     loadProductList(getProductListFilters());
   }
 };
@@ -62,8 +54,7 @@ export const handleSortChange = (e) => {
 /** 개수 변경 이벤트 핸들러 */
 export const handleLimitChange = (e) => {
   if (e.target.id === "limit-select") {
-    const limit = e.target.value;
-    updateUrlParams("limit", limit, true); // 개수 변경시 페이지 리셋
+    updateUrlParams({ key: "limit", value: e.target.value });
     loadProductList(getProductListFilters());
   }
 };
@@ -74,8 +65,10 @@ export const handleLimitChange = (e) => {
 export const initializeFilterEventListeners = () => {
   // 기존 리스너 제거 (중복 방지)
   document.removeEventListener("change", handleFilterChange);
+  document.removeEventListener("keydown", handleSearchSubmit);
   // 새로운 리스너 등록
   document.addEventListener("change", handleFilterChange);
+  document.addEventListener("keydown", handleSearchSubmit);
 };
 
 /**

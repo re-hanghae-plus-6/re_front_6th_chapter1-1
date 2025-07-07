@@ -1,8 +1,9 @@
 import { getCategories, getProducts } from "../api/productApi";
 import ErrorContent from "../components/error/ErrorContent";
+import { ProductEmpty } from "../components/product/ProductEmpty";
 import ProductFilter from "../components/product/ProductFilter";
 import ProductItem from "../components/product/ProductItem";
-import { ProductListLoading } from "../components/product/ProductLoading";
+
 import { initializeFilterEventListeners } from "../utils/productFilterUtils";
 
 /**
@@ -12,11 +13,14 @@ export const loadProductList = async (query) => {
   const productsContainer = document.getElementById("products-grid");
   if (!productsContainer) return;
 
-  // 초기 로딩 UI 표시
-  productsContainer.innerHTML = ProductListLoading();
-
   try {
     const { products, pagination } = await getProducts(query);
+
+    // 상품이 없는 경우 빈 상태 UI 표시
+    if (!products || products.length === 0) {
+      productsContainer.innerHTML = ProductEmpty(query.search);
+      return;
+    }
 
     const productListHTML = products.map((product) => ProductItem(product)).join("");
 
@@ -42,7 +46,7 @@ export const loadProductList = async (query) => {
   }
 };
 
-export const loadCategories = async (query = {}) => {
+export const loadFilter = async (query = {}) => {
   const filterContainer = document.getElementById("product-filter");
   if (!filterContainer) return;
 
@@ -70,8 +74,8 @@ export const loadCategories = async (query = {}) => {
 
     filterContainer.innerHTML = ErrorContent("카테고리를 불러오지 못했습니다. 😥", "category-retry-button");
 
-    // document.getElementById("category-retry-button")?.addEventListener("click", () => {
-    //   loadCategories({ selectedCategory1, selectedCategory2 });
-    // });
+    document.getElementById("category-retry-button")?.addEventListener("click", () => {
+      loadFilter({ ...categoriesProps });
+    });
   }
 };

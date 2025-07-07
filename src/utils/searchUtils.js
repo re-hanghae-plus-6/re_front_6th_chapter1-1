@@ -22,17 +22,19 @@ export function getProductListFilters() {
 }
 
 /**
- * 필터를 URL에 반영
- * @param {Object} filterParams - 업데이트할 필터 파라미터
+ * URL 파라미터 업데이트
+ * @param {string} key - 파라미터 키
+ * @param {string} value - 파라미터 값
+ * @param {boolean} resetPage - 페이지를 1로 리셋할지 여부
  */
-export function updateURLFilters(filterParams) {
-  const searchParams = new URLSearchParams();
-  Object.entries(filterParams).forEach(([key, value]) => {
-    if (value !== "" && value !== null && value !== undefined) {
-      searchParams.set(key, value);
-    }
-  });
+export const updateUrlParams = ({ key, value, resetPage = true }) => {
+  const params = new URLSearchParams(window.location.search);
+  params.set(key, value);
 
-  const newURL = `${location.pathname}?${searchParams.toString()}`;
-  history.pushState({}, "", newURL);
-}
+  if (resetPage) {
+    params.set("page", "1");
+  }
+
+  const nextURL = `${window.location.pathname}?${params.toString()}`;
+  history.pushState({}, "", nextURL);
+};
