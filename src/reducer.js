@@ -6,7 +6,12 @@ export function reducer(state, action) {
       return { ...state, loading: true, error: null };
 
     case ACTIONS.PRODUCTS_LOADED:
-      return { ...state, loading: false, products: action.payload };
+      return {
+        ...state,
+        loading: false,
+        products: action.payload.products,
+        pagination: action.payload.pagination,
+      };
 
     case ACTIONS.LOAD_ERROR:
       return { ...state, loading: false, error: action.payload };

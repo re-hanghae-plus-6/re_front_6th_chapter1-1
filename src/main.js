@@ -22,7 +22,7 @@ async function main() {
 
   try {
     const data = await getProducts();
-    store.dispatch(actions.productsLoaded(data.products));
+    store.dispatch(actions.productsLoaded(data));
   } catch (error) {
     store.dispatch(actions.loadError(error.message));
   }
