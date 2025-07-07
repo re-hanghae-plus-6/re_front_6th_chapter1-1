@@ -6,4 +6,5 @@ export const productDetailStore = createState({
   error: null,
   quantity: 1,
   relatedProducts: [],
+  isLoadingRelated: false,
 });

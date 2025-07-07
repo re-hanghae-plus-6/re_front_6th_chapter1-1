@@ -129,12 +129,12 @@ const renderRelatedProducts = (relatedProducts) => {
           ${relatedProducts
             .map(
               (product) => `
-            <div class="bg-gray-50 rounded-lg p-3 related-product-card cursor-pointer" data-product-id="${product.id}">
+            <div class="bg-gray-50 rounded-lg p-3 related-product-card cursor-pointer" data-product-id="${product.productId}">
               <div class="aspect-square bg-white rounded-md overflow-hidden mb-2">
-                <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover" loading="lazy">
+                <img src="${product.image}" alt="${product.title}" class="w-full h-full object-cover" loading="lazy">
               </div>
-              <h3 class="text-sm font-medium text-gray-900 mb-1 line-clamp-2">${product.name}</h3>
-              <p class="text-sm font-bold text-blue-600">${product.lprice.toLocaleString()}원</p>
+              <h3 class="text-sm font-medium text-gray-900 mb-1 line-clamp-2">${product.title}</h3>
+              <p class="text-sm font-bold text-blue-600">${parseInt(product.lprice).toLocaleString()}원</p>
             </div>
           `,
             )
@@ -167,7 +167,7 @@ const renderProductContent = (product, relatedProducts, quantity) => {
     </div>
     <!-- 관련 상품 -->
     <div id="related-products-section">
-      ${renderRelatedProducts(relatedProducts)}
+      ${relatedProducts && relatedProducts.length > 0 ? renderRelatedProducts(relatedProducts) : ""}
     </div>
   `;
 };
@@ -198,28 +198,52 @@ const generateStars = (rating) => {
 
 const loadProductDetail = async (productId) => {
   try {
-    productDetailStore.setState({ isLoading: true, error: null });
-
-    const product = await getProduct(productId);
-    const relatedProductsResponse = await getProducts({
-      category1: product.category1,
-      limit: 4,
-      page: 1,
+    productDetailStore.setState({
+      isLoading: true,
+      error: null,
+      relatedProducts: [],
+      isLoadingRelated: false,
     });
 
-    const relatedProducts = relatedProductsResponse.products.filter((p) => p.id !== product.id).slice(0, 2);
+    const product = await getProduct(productId);
 
     productDetailStore.setState({
       product,
-      relatedProducts,
       isLoading: false,
       error: null,
     });
+
+    loadRelatedProducts(product);
   } catch (error) {
     console.error("상품 상세 정보 로딩 실패:", error);
     productDetailStore.setState({
       isLoading: false,
       error: error.message,
+    });
+  }
+};
+
+const loadRelatedProducts = async (product) => {
+  try {
+    productDetailStore.setState({ isLoadingRelated: true });
+
+    const relatedProductsResponse = await getProducts({
+      category1: product.category1,
+      category2: product.category2,
+      limit: 20,
+      page: 1,
+    });
+
+    const relatedProducts = relatedProductsResponse.products.filter((p) => p.productId !== product.productId);
+
+    productDetailStore.setState({
+      relatedProducts,
+      isLoadingRelated: false,
+    });
+  } catch (error) {
+    console.error("관련 상품 로딩 실패:", error);
+    productDetailStore.setState({
+      isLoadingRelated: false,
     });
   }
 };
@@ -290,9 +314,16 @@ const setupStateSubscriptions = () => {
       }
     }
 
-    if (!newState.isLoading && (!prevState || newState.relatedProducts !== prevState.relatedProducts)) {
-      if (newState.relatedProducts) {
+    if (
+      !newState.isLoading &&
+      (!prevState ||
+        newState.relatedProducts !== prevState.relatedProducts ||
+        newState.isLoadingRelated !== prevState.isLoadingRelated)
+    ) {
+      if (!newState.isLoadingRelated && newState.relatedProducts && newState.relatedProducts.length > 0) {
         updateElement("#related-products-section", renderRelatedProducts(newState.relatedProducts));
+      } else {
+        updateElement("#related-products-section", "");
       }
     }
 
