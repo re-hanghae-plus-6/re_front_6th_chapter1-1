@@ -9,8 +9,8 @@ export const createObserver = () => {
     observers.delete(callback);
   };
 
-  const notify = () => {
-    observers.forEach((callback) => callback());
+  const notify = (...args) => {
+    observers.forEach((callback) => callback(...args));
   };
 
   return { subscribe, unsubscribe, notify };
