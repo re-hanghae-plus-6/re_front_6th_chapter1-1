@@ -7,6 +7,7 @@ const enableMocking = () =>
       onUnhandledRequest: "bypass",
     }),
   );
+
 let state = {
   products: [],
   total: 0,
@@ -31,7 +32,7 @@ async function main() {
       pagination: { total },
     },
     categories,
-  ] = await Promise.all([getProducts({}), getCategories()]);
+  ] = await Promise.all([getProducts({ limit: state.productCount }), getCategories()]);
 
   state.total = total;
   state.products = products;
@@ -42,6 +43,29 @@ async function main() {
 
   render();
 }
+
+document.addEventListener("change", async (event) => {
+  if (event.target.matches("#limit-select")) {
+    state.productCount = Number(event.target.value);
+
+    // 로딩 상태로 변경
+    state.loading = true;
+    render();
+
+    // 새로운 limit으로 API 재호출
+    const {
+      products,
+      pagination: { total },
+    } = await getProducts({ limit: state.productCount });
+
+    // 상태 업데이트
+    state.products = products;
+    state.total = total;
+    state.loading = false;
+
+    render();
+  }
+});
 
 // 애플리케이션 시작
 if (import.meta.env.MODE !== "test") {
