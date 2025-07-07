@@ -44,32 +44,39 @@ async function main() {
   render();
 }
 
-document.addEventListener("change", async (event) => {
-  if (event.target.matches("#limit-select")) {
-    state.productCount = Number(event.target.value);
+function setupEventListeners() {
+  document.addEventListener("change", async (event) => {
+    if (event.target.matches("#limit-select")) {
+      handleLimitChange(Number(event.target.value));
+    }
+  });
+}
 
-    // 로딩 상태로 변경
-    state.loading = true;
-    render();
+async function handleLimitChange(newLimit) {
+  state.productCount = newLimit;
+  state.loading = true;
+  render();
 
-    // 새로운 limit으로 API 재호출
-    const {
-      products,
-      pagination: { total },
-    } = await getProducts({ limit: state.productCount });
+  // 새로운 limit으로 API 재호출
+  const {
+    products,
+    pagination: { total },
+  } = await getProducts({ limit: state.productCount });
 
-    // 상태 업데이트
-    state.products = products;
-    state.total = total;
-    state.loading = false;
+  // 상태 업데이트
+  state.products = products;
+  state.total = total;
+  state.loading = false;
 
-    render();
-  }
-});
-
+  render();
+}
 // 애플리케이션 시작
 if (import.meta.env.MODE !== "test") {
-  enableMocking().then(main);
+  enableMocking().then(() => {
+    main();
+    setupEventListeners();
+  });
 } else {
   main();
+  setupEventListeners();
 }
