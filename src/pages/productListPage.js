@@ -1,8 +1,26 @@
 import { ProductCard } from "../components/ProductCard.js";
 
-const LIMIT_OPTIONS = [10, 20, 50, 100];
+const LIMIT_OPTIONS = [
+  { value: 10, label: "10개" },
+  { value: 20, label: "20개" },
+  { value: 50, label: "50개" },
+  { value: 100, label: "100개" },
+];
 
-export const ProductListPage = ({ products = [], loading = false, error = null, pagination = { total: 0 } }) => {
+const SORT_OPTIONS = [
+  { value: "price_asc", label: "가격 낮은순" },
+  { value: "price_desc", label: "가격 높은순" },
+  { value: "name_asc", label: "이름순" },
+  { value: "name_desc", label: "이름 역순" },
+];
+
+export const ProductListPage = ({
+  products = [],
+  loading = false,
+  error = null,
+  pagination = { total: 0, limit: 20 },
+  filters = { sort: "price_asc" },
+}) => {
   const renderProductCards = () => {
     if (loading) {
       return ProductCard({ isLoading: true }).repeat(6);
@@ -79,7 +97,7 @@ export const ProductListPage = ({ products = [], loading = false, error = null, 
                         class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                     ${LIMIT_OPTIONS.map(
                       (limit) =>
-                        `<option value="${limit}" ${pagination.limit === limit ? "selected" : ""}>${limit}개</option>`,
+                        `<option value="${limit.value}" ${pagination.limit === limit.value ? "selected" : ""}>${limit.label}</option>`,
                     ).join("")}
                 </select>
             </div>
@@ -88,10 +106,10 @@ export const ProductListPage = ({ products = [], loading = false, error = null, 
                 <label class="text-sm text-gray-600">정렬:</label>
                 <select id="sort-select" class="text-sm border border-gray-300 rounded px-2 py-1
                             focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-                <option value="price_asc" selected="">가격 낮은순</option>
-                <option value="price_desc">가격 높은순</option>
-                <option value="name_asc">이름순</option>
-                <option value="name_desc">이름 역순</option>
+                    ${SORT_OPTIONS.map(
+                      (sort) =>
+                        `<option value="${sort.value}" ${filters.sort === sort.value ? "selected" : ""}>${sort.label}</option>`,
+                    ).join("")}
                 </select>
             </div>
             </div>
