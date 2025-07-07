@@ -14,6 +14,9 @@ let state = {
   loading: false,
   categories: {},
   productCount: 20,
+  page: 1,
+  hasNext: false,
+  hasPrev: false,
 };
 
 function render() {
@@ -29,7 +32,7 @@ async function main() {
   const [
     {
       products,
-      pagination: { total },
+      pagination: { page, total, hasNext, hasPrev },
     },
     categories,
   ] = await Promise.all([getProducts({ limit: state.productCount }), getCategories()]);
@@ -37,6 +40,9 @@ async function main() {
   state.total = total;
   state.products = products;
   state.categories = categories;
+  state.page = page;
+  state.hasNext = hasNext;
+  state.hasPrev = hasPrev;
 
   // 값 가져왔으니 로딩 상태 해제
   state.loading = false;
