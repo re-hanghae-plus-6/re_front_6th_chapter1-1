@@ -50,7 +50,14 @@ const ProductItem = (product) => {
 
 const limits = [10, 20, 50, 100];
 
-export const Home = ({ products = [], total = 0, loading = false, limit, categories }) => {
+export const Home = ({ products = [], total = 0, loading = false, limit, categories, search, cart }) => {
+  const params = new URLSearchParams(window.location.search);
+  const selectedCategory1 = params.get("category1");
+  const selectedCategory2 = params.get("category2");
+
+  console.log("categories", categories);
+  console.log(selectedCategory1, selectedCategory2);
+
   return `
      <div class="min-h-screen bg-gray-50">
       <header class="bg-white shadow-sm sticky top-0 z-40">
@@ -66,6 +73,8 @@ export const Home = ({ products = [], total = 0, loading = false, limit, categor
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M3 3h2l.4 2M7 13h10l4-8H5.4m2.6 8L6 2H3m4 11v6a1 1 0 001 1h1a1 1 0 001-1v-6M13 13v6a1 1 0 001 1h1a1 1 0 001-1v-6"></path>
                 </svg>
+                <span
+                  class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">${cart.length}</span>
               </button>
             </div>
           </div>
@@ -77,7 +86,7 @@ export const Home = ({ products = [], total = 0, loading = false, limit, categor
           <!-- 검색창 -->
           <div class="mb-4">
             <div class="relative">
-              <input type="text" id="search-input" placeholder="상품명을 검색해보세요..." value="" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
+              <input type="text" id="search-input" placeholder="상품명을 검색해보세요..." value="${search}" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,36 +102,69 @@ export const Home = ({ products = [], total = 0, loading = false, limit, categor
             <div class="space-y-2">
               <div class="flex items-center gap-2">
                 <label class="text-sm text-gray-600">카테고리:</label>
-                <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
+                <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline"   onclick="location.href='/'">전체</button>\
+                ${
+                  selectedCategory1
+                    ? `<span class="text-xs text-gray-500">&gt;</span>
+                  <button data-breadcrumb="category1" data-category1="${selectedCategory1}" class="text-xs hover:text-blue-800 hover:underline"
+                  
+                  >
+                    ${selectedCategory1}
+                  </button>`
+                    : ""
+                }
+                       ${
+                         selectedCategory2
+                           ? `<span class="text-xs text-gray-500">&gt;</span>
+                  <button data-breadcrumb="category1" data-category1="${selectedCategory2}" class="text-xs hover:text-blue-800 hover:underline">
+                    ${selectedCategory2}
+                  </button>`
+                           : ""
+                       }
               </div>
               <!-- 1depth 카테고리 -->
-           ${
-             loading
-               ? `
+              ${
+                loading && !Object.keys(categories).length
+                  ? `
                 <div class="flex flex-wrap gap-2">
                   <div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>
                 </div>
               `
-               : `
-                <div class="flex flex-wrap gap-2">
-                  ${Object.keys(categories)
-                    .map(
-                      (category1) => `
-                        <button
-                          data-category1="${category1}"
-                          class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
-                            bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-                        >
-                          ${category1}
-                        </button>
-                      `,
-                    )
-                    .join("")}
-                </div>
-              `
-           }
-              
-              <!-- 2depth 카테고리 -->
+                  : ""
+              }
+              <div class="flex flex-wrap gap-2">
+                ${
+                  !loading && selectedCategory1
+                    ? //      <!-- 2depth 카테고리 -->
+                      `${Object.keys(categories[selectedCategory1])
+                        .map(
+                          (category2) => `
+                      <button
+                        data-category2="${category2}"
+                        class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
+                          bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                      >
+                        ${category2}
+                      </button>
+                    `,
+                        )
+                        .join("")}`
+                    : //      <!-- 1depth 카테고리 -->
+                      Object.keys(categories)
+                        .map(
+                          (category1) => `
+                      <button
+                        data-category1="${category1}"
+                        class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
+                          bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                      >
+                        ${category1}
+                      </button>
+                    `,
+                        )
+                        .join("")
+                }
+              </div>
             </div>
             <!-- 기존 필터들 -->
             <div class="flex gap-2 items-center justify-between">
@@ -181,6 +223,8 @@ export const Home = ({ products = [], total = 0, loading = false, limit, categor
           </div>
         </div>
       </main>
+      <!-- 포탈 -->
+      <div id="modal-portal"></div>
       <footer class="bg-white shadow-sm sticky top-0 z-40">
         <div class="max-w-md mx-auto py-8 text-center text-gray-500">
           <p>© 2025 항해플러스 프론트엔드 쇼핑몰</p>
