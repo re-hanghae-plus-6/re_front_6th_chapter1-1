@@ -1,7 +1,7 @@
 import { Header } from "../components/Layout/Header";
 import { Footer } from "../components/Layout/Footer";
-import { ProductItem } from "../components/ProductItem/ProductItem";
-import { ProductItemSkeleton } from "../components/ProductItem/ProductItemSkeleton";
+import { ProductItem } from "../components/ProductSection/ProductItem";
+import { ProductItemSkeleton } from "../components/ProductSection/ProductItemSkeleton";
 
 export function Home(state) {
   const { isLoading, products, total } = state;
