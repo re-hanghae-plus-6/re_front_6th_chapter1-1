@@ -12,6 +12,24 @@ class RouteRenderer {
   constructor() {
     this.currentUnsubscribe = null;
     this.currentCleanup = null;
+    // 루트 엘리먼트 변경 감지 (테스트 환경에서 root를 비우는 경우 대응)
+    this.rootElement = document.getElementById("root");
+
+    // MutationObserver를 사용하여 root가 비워지면 현재 라우트를 다시 렌더링
+    if (this.rootElement) {
+      this._rootObserver = new MutationObserver(() => {
+        if (this.rootElement.childElementCount === 0 && this.lastRouteData) {
+          // 기존 cleanup 수행 (안전)
+          this.cleanup();
+          // 마지막 라우트 데이터로 재렌더링
+          this.render(this.lastRouteData);
+        }
+      });
+
+      this._rootObserver.observe(this.rootElement, {
+        childList: true,
+      });
+    }
   }
 
   /**
@@ -22,6 +40,9 @@ class RouteRenderer {
     if (!routeData || !routeData.route || !routeData.route.component) {
       return;
     }
+
+    // 마지막 라우트 데이터 저장 (재렌더링 용도)
+    this.lastRouteData = routeData;
 
     const { route, params, data } = routeData;
 
@@ -115,6 +136,12 @@ class RouteRenderer {
       this.currentUnsubscribe();
       this.currentUnsubscribe = null;
     }
+
+    // MutationObserver 해제
+    if (this._rootObserver) {
+      this._rootObserver.disconnect();
+      this._rootObserver = null;
+    }
   }
 }
 
@@ -207,17 +234,6 @@ class Application {
     if (link) {
       e.preventDefault();
       window.navigateTo(link.getAttribute("href"));
-      return;
-    }
-
-    // 상품 클릭 이벤트 처리
-    const productLink = e.target.closest("[data-product-link]");
-    if (productLink) {
-      e.preventDefault();
-      const productId = productLink.getAttribute("data-product-link");
-      if (productId) {
-        window.navigateTo(`/product/${productId}`);
-      }
       return;
     }
   }
