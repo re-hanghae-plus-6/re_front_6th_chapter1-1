@@ -29,5 +29,10 @@ function main() {
   renderApp(ProductList);
 }
 
+window.addEventListener("popstate", () => {
+  // 초기화 후 main 실행
+  initializeApp(main);
+});
+
 // 초기화 후 main 실행
 initializeApp(main);

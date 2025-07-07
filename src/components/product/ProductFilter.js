@@ -1,5 +1,54 @@
-const ProductFilter = (categories = {}, isCategoriesLoading = true) => {
-  return /* HTML */ `
+import { LIMIT_OPTIONS, renderOptions, SORT_OPTIONS } from "../../utils/productFilterUtils";
+import { category1DepthButton, category2DepthButton } from "../filter/CategoryButton";
+
+const ProductFilter = (searchQuery) => {
+  /**검색 쿼리 */
+  const {
+    categories = {},
+    selectedCategory1 = "",
+    selectedCategory2 = "",
+    isLoading = false,
+    limit = 20,
+    sort = "price_asc",
+    // search = "",
+  } = searchQuery;
+
+  // limit을 문자열로 변환
+  const limitValue = String(limit);
+
+  const renderBreadcrumb = () => {
+    const crumbs = [
+      `<button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>`,
+    ];
+
+    if (selectedCategory1) {
+      crumbs.push(
+        `<span class="text-xs text-gray-500">&gt;</span>`,
+        `<button data-breadcrumb="category1" data-category1="${selectedCategory1}" class="text-xs hover:text-blue-800 hover:underline">${selectedCategory1}</button>`,
+      );
+    }
+
+    if (selectedCategory2) {
+      crumbs.push(
+        `<span class="text-xs text-gray-500">&gt;</span>`,
+        `<span class="text-xs text-gray-600 cursor-default">${selectedCategory2}</span>`,
+      );
+    }
+
+    return crumbs.join("");
+  };
+
+  const renderCategoryButtons = () => {
+    if (isLoading) return `<div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>`;
+    if (Object.keys(categories).length === 0)
+      return `<div class="text-sm text-gray-500">카테고리 데이터가 없습니다.</div>`;
+
+    return !selectedCategory1
+      ? category1DepthButton(categories)
+      : category2DepthButton(categories, selectedCategory1, selectedCategory2);
+  };
+
+  return /* html */ `
     <!-- 검색 및 필터 -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
       <!-- 검색창 -->
@@ -11,7 +60,7 @@ const ProductFilter = (categories = {}, isCategoriesLoading = true) => {
             placeholder="상품명을 검색해보세요..."
             value=""
             class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
-                     focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                   focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
           <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -25,36 +74,22 @@ const ProductFilter = (categories = {}, isCategoriesLoading = true) => {
           </div>
         </div>
       </div>
+
       <!-- 필터 옵션 -->
       <div class="space-y-3">
         <!-- 카테고리 필터 -->
         <div class="space-y-2">
           <div class="flex items-center gap-2">
             <label class="text-sm text-gray-600">카테고리:</label>
-            <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
+            ${renderBreadcrumb()}
           </div>
-          <!-- 1depth 카테고리 -->
-          <div class="flex flex-wrap gap-2">
-            ${isCategoriesLoading
-              ? `<div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>`
-              : Object.keys(categories).length === 0
-                ? `<div class="text-sm text-gray-500">카테고리가 없습니다.</div>`
-                : Object.keys(categories)
-                    .map(
-                      () => /* HTML */ `
-                        <button
-                          data-category1="생활/건강"
-                          data-category2="생활용품"
-                          class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-                        >
-                          생활용품
-                        </button>
-                      `,
-                    )
-                    .join("")}
+          <div class="space-y-2">
+            <div class="flex flex-wrap gap-2">
+              ${renderCategoryButtons()}
+            </div>
           </div>
-          <!-- 2depth 카테고리 -->
         </div>
+
         <!-- 기존 필터들 -->
         <div class="flex gap-2 items-center justify-between">
           <!-- 페이지당 상품 수 -->
@@ -64,24 +99,19 @@ const ProductFilter = (categories = {}, isCategoriesLoading = true) => {
               id="limit-select"
               class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="10">10개</option>
-              <option value="20" selected="">20개</option>
-              <option value="50">50개</option>
-              <option value="100">100개</option>
+              ${renderOptions(LIMIT_OPTIONS, limitValue)}
             </select>
           </div>
+
           <!-- 정렬 -->
           <div class="flex items-center gap-2">
             <label class="text-sm text-gray-600">정렬:</label>
             <select
               id="sort-select"
               class="text-sm border border-gray-300 rounded px-2 py-1
-                        focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                     focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="price_asc" selected="">가격 낮은순</option>
-              <option value="price_desc">가격 높은순</option>
-              <option value="name_asc">이름순</option>
-              <option value="name_desc">이름 역순</option>
+              ${renderOptions(SORT_OPTIONS, sort)}
             </select>
           </div>
         </div>
