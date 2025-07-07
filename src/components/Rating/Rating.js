@@ -8,5 +8,5 @@ export const Rating = (rating) => {
     .map(() => EmptyStar())
     .join("");
 
-  return `<div class="flex items-center">${fullStars}${emptyStars}</div>`;
+  return /* HTML */ `<div class="flex items-center">${fullStars}${emptyStars}</div>`;
 };

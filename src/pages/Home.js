@@ -6,7 +6,7 @@ import { ProductItemSkeleton } from "../components/ProductItem/ProductItemSkelet
 export function Home(state) {
   const { isLoading, products, total } = state;
 
-  return `
+  return /* HTML */ `
     <div class="bg-gray-50">
       ${Header()}
       <main class="max-w-md mx-auto px-4 py-4">
@@ -15,12 +15,22 @@ export function Home(state) {
           <!-- 검색창 -->
           <div class="mb-4">
             <div class="relative">
-              <input type="text" id="search-input" placeholder="상품명을 검색해보세요..." value="" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
-                          focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <input
+                type="text"
+                id="search-input"
+                placeholder="상품명을 검색해보세요..."
+                value=""
+                class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
+                          focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  ></path>
                 </svg>
               </div>
             </div>
@@ -34,13 +44,12 @@ export function Home(state) {
                 <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
               </div>
               <!-- 1depth 카테고리 -->
-              ${
-                isLoading
-                  ? `
+              ${isLoading
+                ? `
               <div class="flex flex-wrap gap-2">
                 <div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>
               </div>`
-                  : `<div class="flex flex-wrap gap-2">
+                : `<div class="flex flex-wrap gap-2">
                 <button data-category1="생활/건강" class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
                    bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
                   생활/건강
@@ -49,9 +58,8 @@ export function Home(state) {
                    bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
                   디지털/가전
                 </button>
-              </div>`
-              }
-              
+              </div>`}
+
               <!-- 2depth 카테고리 -->
             </div>
             <!-- 기존 필터들 -->
@@ -59,27 +67,24 @@ export function Home(state) {
               <!-- 페이지당 상품 수 -->
               <div class="flex items-center gap-2">
                 <label class="text-sm text-gray-600">개수:</label>
-                <select id="limit-select"
-                        class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-                  <option value="10">
-                    10개
-                  </option>
-                  <option value="20" selected="">
-                    20개
-                  </option>
-                  <option value="50">
-                    50개
-                  </option>
-                  <option value="100">
-                    100개
-                  </option>
+                <select
+                  id="limit-select"
+                  class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="10">10개</option>
+                  <option value="20" selected="">20개</option>
+                  <option value="50">50개</option>
+                  <option value="100">100개</option>
                 </select>
               </div>
               <!-- 정렬 -->
               <div class="flex items-center gap-2">
                 <label class="text-sm text-gray-600">정렬:</label>
-                <select id="sort-select" class="text-sm border border-gray-300 rounded px-2 py-1
-                             focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                <select
+                  id="sort-select"
+                  class="text-sm border border-gray-300 rounded px-2 py-1
+                             focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                >
                   <option value="price_asc" selected="">가격 낮은순</option>
                   <option value="price_desc">가격 높은순</option>
                   <option value="name_asc">이름순</option>
@@ -98,18 +103,14 @@ export function Home(state) {
             </div>
             <!-- 상품 그리드 -->
             <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
-              ${
-                isLoading
-                  ? Array.from({ length: 4 })
-                      .map(() => ProductItemSkeleton())
-                      .join("")
-                  : products.map((product) => ProductItem(product)).join("")
-              }
+              ${isLoading
+                ? Array.from({ length: 4 })
+                    .map(() => ProductItemSkeleton())
+                    .join("")
+                : products.map((product) => ProductItem(product)).join("")}
             </div>
-            
-            <div class="text-center py-4 text-sm text-gray-500">
-              모든 상품을 확인했습니다
-            </div>
+
+            <div class="text-center py-4 text-sm text-gray-500">모든 상품을 확인했습니다</div>
           </div>
         </div>
       </main>

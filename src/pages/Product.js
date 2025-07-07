@@ -8,12 +8,11 @@ import { Footer } from "../components/Layout/Footer";
 function renderProduct(state) {
   const { isLoading, product } = state;
 
-  render(`
+  render(/* HTML */ `
     <div class="min-h-screen bg-gray-50">
       ${Header()}
-      ${
-        isLoading
-          ? `<main class="max-w-md mx-auto px-4 py-4">
+      ${isLoading
+        ? `<main class="max-w-md mx-auto px-4 py-4">
         <div class="py-20 bg-gray-50 flex items-center justify-center">
           <div class="text-center">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -21,7 +20,7 @@ function renderProduct(state) {
           </div>
         </div>
       </main>`
-          : `<main class="max-w-md mx-auto px-4 py-4">
+        : `<main class="max-w-md mx-auto px-4 py-4">
         <!-- 브레드크럼 -->
         <nav class="mb-4">
           <div class="flex items-center space-x-2 text-sm text-gray-600">
@@ -130,8 +129,7 @@ function renderProduct(state) {
             </div>
           </div>
         </div>
-      </main>`
-      }
+      </main>`}
       ${Footer()}
     </div>
   `);
