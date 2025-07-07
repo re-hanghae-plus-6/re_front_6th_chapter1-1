@@ -11,6 +11,8 @@ export const Category = (categories = {}, category1 = "", category2 = "", isLoad
     if (category2) {
       breadcrumb += `<span class="text-xs text-gray-500">&gt;</span><button data-breadcrumb="category1" data-category1="${category2}" class="text-xs hover:text-blue-800 hover:underline">${category2}</button>`;
     }
+
+    return breadcrumb;
   };
 
   const renderCategories = () => {
