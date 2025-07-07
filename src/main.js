@@ -23,6 +23,13 @@ async function main() {
   });
 
   router.init();
+
+  document.body.addEventListener('click', (e) => {
+    if (e.target.matches('a[data-link]')) {
+      e.preventDefault();
+      router.navigateTo(e.target.getAttribute('href'));
+    }
+  });
 }
 
 // 애플리케이션 시작
