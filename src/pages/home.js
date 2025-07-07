@@ -1,4 +1,4 @@
-import { categoriesComp } from "../components/categoriesComp.js";
+import { searchNcategoriesComp } from "../components/searchNcategoriesComp.js";
 const homeLoadingUI = /*html*/ `
 <!-- 로딩 스켈레톤 -->
   <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
@@ -12,8 +12,6 @@ const homeLoadingUI = /*html*/ `
   </div>
 `;
 
-// TODO: 초기 값 설정?
-const homeLoadingUIs = homeLoadingUI.repeat(20);
 const productItem = (product) => {
   return /*html*/ `<!-- 상품 정보 -->
   <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card" data-product-id=${product.productId}">
@@ -45,6 +43,8 @@ const productItem = (product) => {
   `;
 };
 export const home = (statusHome) => {
+  // 리스트 개수 필터 초기 값에 따른 로딩 UI 설정
+  const homeLoadingUIs = homeLoadingUI.repeat(statusHome.params.limit);
   return /*html*/ `
     <div class="min-h-screen bg-gray-50">
       <header class="bg-white shadow-sm sticky top-0 z-40">
@@ -67,23 +67,7 @@ export const home = (statusHome) => {
       </header>
       <main class="max-w-md mx-auto px-4 py-4">
         <!-- 검색 및 필터 -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
-          <!-- 검색창 -->
-          <div class="mb-4">
-            <div class="relative">
-              <input type="text" id="search-input" placeholder="상품명을 검색해보세요..." value="" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
-                          focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                </svg>
-              </div>
-            </div>
-          </div>
-          <!-- 필터 옵션 -->
-          ${categoriesComp()}
-        </div>
+        ${searchNcategoriesComp()}
         <!-- 상품 목록 -->
         <div class="mb-6">
           <div>
@@ -108,7 +92,8 @@ export const home = (statusHome) => {
             </div>
             ${
               statusHome.loading
-                ? /*html*/ `<div class="text-center py-4">
+                ? /*html*/ `
+            <div class="text-center py-4">
               <div class="inline-flex items-center">
                 <svg class="animate-spin h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -124,6 +109,7 @@ export const home = (statusHome) => {
           </div>
         </div>
       </main>
+
       <footer class="bg-white shadow-sm sticky top-0 z-40">
         <div class="max-w-md mx-auto py-8 text-center text-gray-500">
           <p>© 2025 항해플러스 프론트엔드 쇼핑몰</p>
