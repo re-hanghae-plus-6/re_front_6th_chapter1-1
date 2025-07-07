@@ -1,8 +1,6 @@
-import { 상품목록_레이아웃_로딩 } from "../components/product-list/product-list-loading.ts";
-import { 상품목록_레이아웃_로딩완료 } from "../components/product-list/index.ts";
-import { 상품목록_레이아웃_카테고리 } from "../components/category/index.ts";
+import { 상품목록_레이아웃 } from "../components/product-list/index.ts";
 import { getProducts, getCategories } from "../api/productApi.js";
-import type { CategoryState, Categories } from "../components/category/index.ts";
+import type { Categories } from "../components/category/index.ts";
 import type { PageModule } from "../router.ts";
 
 interface Product {
@@ -28,7 +26,8 @@ interface State {
 
 export const homePage: PageModule = {
   render: function () {
-    return 상품목록_레이아웃_로딩();
+    // 초기에는 loading 상태로 통합 레이아웃을 보여줌
+    return 상품목록_레이아웃({ loading: true });
   },
 
   mount: function (root) {
@@ -55,23 +54,8 @@ export const homePage: PageModule = {
     };
 
     const rerender = () => {
-      if (state.loading) {
-        root.innerHTML = 상품목록_레이아웃_로딩();
-        return;
-      }
-
-      let categoryState: CategoryState;
-      if (state.category1 && state.category2)
-        categoryState = { depth: 2, category1: state.category1, category2: state.category2 };
-      else if (state.category1) {
-        categoryState = { depth: 1, category1: state.category1 };
-      } else {
-        categoryState = { depth: 0 };
-      }
-
-      const categoryHtml = 상품목록_레이아웃_카테고리(categoryState, state.categories ?? {});
-
-      root.innerHTML = 상품목록_레이아웃_로딩완료({
+      root.innerHTML = 상품목록_레이아웃({
+        loading: state.loading,
         total: state.total,
         products: state.products.map((product) => ({
           id: product.productId,
@@ -80,11 +64,13 @@ export const homePage: PageModule = {
           imageUrl: product.image,
         })),
         isLoadingNextPage: state.isLoadingNextPage,
-        categoryHtml,
+        categories: state.categories ?? undefined,
+        category1: state.category1,
+        category2: state.category2,
       });
 
-      // 이벤트 바인딩 시점: 렌더 마지막
-      bindEvents();
+      // 로딩 ui 노출 시 이벤트 바인딩이 불필요
+      if (!state.loading) bindEvents();
     };
 
     // 이벤트 바인딩

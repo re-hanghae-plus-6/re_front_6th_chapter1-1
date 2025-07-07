@@ -1,3 +1,7 @@
+import { 상품목록_스켈레톤_카드_그리드, 카테고리_플레이스홀더_HTML } from "./product-list-loading.ts";
+import { 상품목록_레이아웃_카테고리 } from "../category/index.ts";
+import type { Categories, CategoryState } from "../category/index.ts";
+
 export interface ProductCard {
   id: string;
   title: string;
@@ -7,29 +11,55 @@ export interface ProductCard {
 }
 
 export interface Props {
-  total: number;
-  products: ProductCard[];
+  total?: number;
+  products?: ProductCard[];
   cartCount?: number;
   isLoadingNextPage?: boolean;
-  categoryHtml?: string;
+  categories?: Categories;
+  category1?: string | null;
+  category2?: string | null;
 }
 
-// NOTE: keep class / id names 그대로 so that existing e2e & unit tests continue to work.
-export const 상품목록_레이아웃_로딩완료 = ({
-  total,
-  products,
+export interface LayoutProps extends Props {
+  loading?: boolean;
+}
+
+export const 상품목록_레이아웃 = ({
+  loading = false,
+  total = 0,
+  products = [],
   cartCount = 0,
   isLoadingNextPage = false,
-  categoryHtml = "",
-}: Props): string => {
+  categories,
+  category1 = null,
+  category2 = null,
+}: LayoutProps): string => {
   const cartBadge =
     cartCount > 0
       ? `<span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">${cartCount}</span>`
       : "";
 
-  const productCards = products
-    .map(({ id, title, price, imageUrl, brand }) => {
-      return `
+  // 카테고리 영역 렌더링
+  let renderedCategoryHtml = 카테고리_플레이스홀더_HTML;
+
+  if (!loading && categories) {
+    let categoryState: CategoryState;
+    if (category1 && category2) {
+      categoryState = { depth: 2, category1, category2 } as const;
+    } else if (category1) {
+      categoryState = { depth: 1, category1 } as const;
+    } else {
+      categoryState = { depth: 0 } as const;
+    }
+
+    renderedCategoryHtml = 상품목록_레이아웃_카테고리(categoryState, categories);
+  }
+
+  const productGridHtml = loading
+    ? 상품목록_스켈레톤_카드_그리드(4)
+    : products
+        .map(({ id, title, price, imageUrl, brand }) => {
+          return `
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card" data-product-id="${id}">
           <!-- 상품 이미지 -->
           <div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image">
@@ -48,8 +78,16 @@ export const 상품목록_레이아웃_로딩완료 = ({
             </button>
           </div>
         </div>`;
-    })
-    .join("");
+        })
+        .join("");
+
+  const listFooterHtml = loading
+    ? `<div class="text-center py-4"><div class="inline-flex items-center"><svg class="animate-spin h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span class="text-sm text-gray-600">상품을 불러오는 중...</span></div></div>`
+    : products.length >= total
+      ? '<div class="text-center py-4 text-sm text-gray-500">모든 상품을 확인했습니다</div>'
+      : isLoadingNextPage
+        ? '<div class="text-center py-4 text-sm text-gray-500">상품을 불러오는 중...</div>'
+        : "";
 
   return `
     <div class="bg-gray-50">
@@ -87,7 +125,7 @@ export const 상품목록_레이아웃_로딩완료 = ({
           </div>
           <!-- 필터 옵션 -->
           <div class="space-y-3">
-            ${categoryHtml}
+            ${renderedCategoryHtml}
             <!-- 기존 필터들 -->
             <div class="flex gap-2 items-center justify-between">
               <!-- 페이지당 상품 수 -->
@@ -117,18 +155,12 @@ export const 상품목록_레이아웃_로딩완료 = ({
         <div class="mb-6">
           <div>
             <!-- 상품 개수 정보 -->
-            	<div class="mb-4 text-sm text-gray-600">총 <span class="font-medium text-gray-900">${total}개</span> 의 상품</div>
+            ${loading ? "" : `<div class="mb-4 text-sm text-gray-600">총 <span class="font-medium text-gray-900">${total}개</span> 의 상품</div>`}
             <!-- 상품 그리드 -->
             <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
-              ${productCards}
+              ${productGridHtml}
             </div>
-                ${
-                  isLoadingNextPage
-                    ? '<div class="text-center py-4 text-sm text-gray-500">상품을 불러오는 중...</div>'
-                    : products.length >= total
-                      ? '<div class="text-center py-4 text-sm text-gray-500">모든 상품을 확인했습니다</div>'
-                      : ""
-                }
+                ${listFooterHtml}
           </div>
         </div>
       </main>
@@ -140,3 +172,5 @@ export const 상품목록_레이아웃_로딩완료 = ({
     </div>
   `;
 };
+
+export default 상품목록_레이아웃;
