@@ -1,39 +1,51 @@
+import { getProducts } from "../api/productApi";
 import Category from "../components/product/list/Category";
 import Layout from "../components/product/list/Layout";
 import ProductList from "../components/product/list/ProductList";
 
 function Products() {
-  const loading = true;
+  const updateProductsUI = ({ products }) => {
+    const productListContainer = document.getElementById("products-grid");
+    // TODO: dom 생성 후 appendChild
+    productListContainer.outerHTML = `
+      ${ProductList({
+        products,
+        loading: false,
+      })}
+    `;
+  };
+
+  const updateTotalProductsCountUI = ({ count }) => {
+    const totalProductsCountContainer = document.getElementById("total-products-count");
+    totalProductsCountContainer.innerHTML = `총 <span class="font-medium text-gray-900">${count}개</span>의 상품`;
+  };
+
+  const loadProducts = async () => {
+    try {
+      const response = await getProducts();
+
+      updateProductsUI({
+        products: response.products,
+      });
+      updateTotalProductsCountUI({ count: response.pagination.total });
+    } catch (error) {
+      console.error("상품 데이터를 가져오는 중 오류가 발생했습니다:", error);
+    }
+  };
+
+  loadProducts();
 
   return Layout({
-    children: `${Category({ loading })}
+    children: `${Category({ loading: true })}
     <div class="mb-6">
-      <div>
-        <!-- 상품 개수 정보 -->
-        <div class="mb-4 text-sm text-gray-600">
-          총 <span class="font-medium text-gray-900">340개</span>의 상품
-        </div>
-        ${ProductList({
-          products: [
-            {
-              id: 1,
-              name: "상품1",
-              price: 10000,
-            },
-            {
-              id: 2,
-              name: "상품2",
-              price: 20000,
-            },
-          ],
-          loading,
-        })}
+      <div id="products-container">
+        <div id="total-products-count" class="mb-4 text-sm text-gray-600"></div>
+        ${ProductList({ loading: true })}
         <div class="text-center py-4 text-sm text-gray-500">
           모든 상품을 확인했습니다
         </div>
       </div>
     </div>`,
-    loading,
   });
 }
 

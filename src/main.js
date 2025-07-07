@@ -12,7 +12,6 @@ function main() {
 
   root.innerHTML = Products();
 }
-
 // 애플리케이션 시작
 if (import.meta.env.MODE !== "test") {
   enableMocking().then(main);
