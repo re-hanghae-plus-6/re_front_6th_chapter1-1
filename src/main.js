@@ -6,11 +6,13 @@ const enableMocking = () =>
       onUnhandledRequest: "bypass",
     }),
   );
+
 let state = {
   isLoading: false,
   error: null,
   products: [],
 };
+
 async function getProducts() {
   state.isLoading = true;
   render();
@@ -26,18 +28,19 @@ async function getProducts() {
   state.isLoading = false;
   render();
 }
+
 function render() {
   const root = document.getElementById("root");
   if (state.isLoading) {
     root.innerHTML = LoadingContent();
-  }
-  if (state.products) {
-    root.innerHTML = ProductContent();
+  } else if (state.products) {
+    root.innerHTML = ProductContent(state.products);
   }
   if (state.error) {
     root.innerHTML = toast("error");
   }
 }
+
 function main() {
   getProducts();
 }
