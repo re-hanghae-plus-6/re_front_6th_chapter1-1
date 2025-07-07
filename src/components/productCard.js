@@ -3,13 +3,13 @@ export const productCard = (product) => {
 
   return `
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
-                   data-product-id="${productId}">
-                <!-- 상품 이미지 -->
+      data-product-id="${productId}">
+    <!-- 상품 이미지 -->
       <div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image">
-        <img src="${image}"
-              alt="${title}"
-              class="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
-              loading="lazy">
+      <img src="${image}"
+          alt="${title}"
+          class="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+          loading="lazy">
       </div>
       <!-- 상품 정보 -->
       <div class="p-3">
