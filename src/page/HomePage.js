@@ -18,6 +18,7 @@ const initialState = {
   selectedSort: "price_asc",
   selectedLimit: "20",
   currentPage: 1,
+  hasMore: true,
 };
 
 let store = null;
@@ -52,13 +53,12 @@ export default function HomePage({ cartCount = 0, onNavigate = null }) {
   return {
     html: render(store.getState(), cartCount, onNavigate),
     cleanup: () => {
-      cleanupHomePage();
+      cleanup();
     },
   };
 }
 
-// 홈페이지 정리 함수
-function cleanupHomePage() {
+function cleanup() {
   if (store) {
     // popstate 이벤트 리스너 정리
     window.removeEventListener("popstate", handlePopState);
@@ -66,6 +66,12 @@ function cleanupHomePage() {
     // 스토어 정리
     store = null;
     prevState = { ...initialState };
+
+    // 스크롤 이벤트 리스너 정리
+    if (attachEventListeners.onScroll) {
+      window.removeEventListener("scroll", attachEventListeners.onScroll);
+      attachEventListeners.onScroll = null;
+    }
   }
 }
 
@@ -89,6 +95,7 @@ function render(state, cartCount, onNavigate) {
         products: state.products,
         totalCount: state.total,
         isLoading: state.loading,
+        hasMore: state.hasMore,
       })}
     `,
     cartCount,
@@ -106,8 +113,7 @@ function shouldRefetchProducts(current, prev) {
       current.selectedCategory1 !== prev.selectedCategory1 ||
       current.selectedCategory2 !== prev.selectedCategory2 ||
       current.selectedSort !== prev.selectedSort ||
-      current.selectedLimit !== prev.selectedLimit ||
-      current.currentPage !== prev.currentPage) &&
+      current.selectedLimit !== prev.selectedLimit) &&
     !current.loading
   );
 }
@@ -139,12 +145,14 @@ async function initialize() {
       }),
       getCategories(),
     ]);
+    const hasMore = urlState.currentPage * parseInt(urlState.selectedLimit) < productsResponse.pagination.total;
     store.setState({
       products: productsResponse.products,
       categories: categoriesResponse,
       total: productsResponse.pagination.total,
       loading: false,
       categoriesLoading: false,
+      hasMore,
     });
   } catch (e) {
     console.error("홈 데이터 로딩 실패:", e);
@@ -168,11 +176,16 @@ async function fetchProducts() {
       category2: state.selectedCategory2,
       sort: state.selectedSort,
     });
+    const hasMore = state.currentPage * parseInt(state.selectedLimit) < response.pagination.total;
     store.setState({
       products: response.products,
       total: response.pagination.total,
       loading: false,
+      hasMore,
     });
+
+    // URL 쿼리스트링 동기화 (current 페이지 반영)
+    syncUrlWithState(store.getState());
   } catch (e) {
     console.error("상품 데이터 로딩 실패:", e);
     store.setState({ loading: false });
@@ -187,6 +200,43 @@ function handlePopState() {
     // 검색 입력 필드 값 동기화
     const searchInput = document.querySelector("#search-input");
     if (searchInput) searchInput.value = urlState.searchValue;
+  }
+}
+
+// 추가 상품 로드 (무한 스크롤)
+async function loadMoreProducts() {
+  const state = store.getState();
+  if (state.loading || !state.hasMore) return;
+
+  const nextPage = state.currentPage + 1;
+  store.setState({ loading: true });
+
+  try {
+    const response = await getProducts({
+      page: nextPage,
+      limit: parseInt(state.selectedLimit),
+      search: state.searchValue,
+      category1: state.selectedCategory1,
+      category2: state.selectedCategory2,
+      sort: state.selectedSort,
+    });
+
+    const newProducts = [...state.products, ...response.products];
+    const hasMore = nextPage * parseInt(state.selectedLimit) < response.pagination.total;
+
+    store.setState({
+      products: newProducts,
+      total: response.pagination.total,
+      currentPage: nextPage,
+      loading: false,
+      hasMore,
+    });
+
+    // URL 쿼리스트링 동기화 (current 페이지 반영)
+    syncUrlWithState(store.getState());
+  } catch (e) {
+    console.error("추가 상품 로딩 실패:", e);
+    store.setState({ loading: false });
   }
 }
 
@@ -274,4 +324,24 @@ function attachEventListeners(onNavigate) {
       if (productId && onNavigate) onNavigate(`/product/${productId}`);
     };
   });
+
+  // 무한 스크롤
+  const onScroll = () => {
+    const { loading, hasMore } = store.getState();
+    if (loading || !hasMore) return;
+
+    // 현재 스크롤 위치가 문서 하단(THRESHOLD) 이내인지 확인
+    const THRESHOLD = 150; // 150px 이내일 때 추가 상품 로드
+    const scrolledHeight = window.innerHeight + window.scrollY;
+    const documentHeight = document.body.offsetHeight;
+
+    if (documentHeight - scrolledHeight <= THRESHOLD) {
+      loadMoreProducts();
+    }
+  };
+
+  window.addEventListener("scroll", onScroll);
+
+  // 클린업 시 스크롤 이벤트 제거를 위해 반환
+  attachEventListeners.onScroll = onScroll;
 }
