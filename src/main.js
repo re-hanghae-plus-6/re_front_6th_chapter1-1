@@ -1,7 +1,6 @@
-import { getProducts } from "./api/productApi.js";
 import { ProductListPage } from "./pages/productListPage.js";
 import { store } from "./store.js";
-import { actions } from "./actions.js";
+import { ProductListController } from "./controllers/productListController.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -18,14 +17,9 @@ function render() {
 store.subscribe(render);
 
 async function main() {
-  store.dispatch(actions.loadProducts());
+  const controller = new ProductListController();
 
-  try {
-    const data = await getProducts();
-    store.dispatch(actions.productsLoaded(data));
-  } catch (error) {
-    store.dispatch(actions.loadError(error.message));
-  }
+  await controller.fetchProducts();
 }
 
 // 애플리케이션 시작
