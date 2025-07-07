@@ -27,3 +27,5 @@ export async function getCategories() {
   const response = await fetch("/api/categories");
   return await response.json();
 }
+
+// FOR TEST
