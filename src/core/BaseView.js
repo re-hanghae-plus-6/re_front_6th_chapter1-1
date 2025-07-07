@@ -1,8 +1,11 @@
+import Router from "./Router";
+
 class BaseView {
   constructor() {
     // main 태그 안에 template 렌더링
 
     this.container = document.createElement("div");
+    this.router = new Router();
   }
 
   // api 호출과 html 템플릿을 담음
@@ -19,6 +22,7 @@ class BaseView {
     this.container.innerHTML = result;
 
     parentElement.appendChild(this.container);
+    this.bindEvents();
   }
 
   // 페이지 이탈
