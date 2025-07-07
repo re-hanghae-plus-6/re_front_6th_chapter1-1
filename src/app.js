@@ -3,11 +3,11 @@ import HomePage from "./page/HomePage";
 import ProductDetailPage from "./page/ProductDetailPage";
 import NotFoundPage from "./page/NotFoundPage";
 import { getProduct } from "./api/productApi";
+import { openCartModal, addToCartById, updateCartBadge } from "./core/cart";
 
 function createRouteRenderer() {
-  let currentCleanup = null;
   let lastRouteData = null;
-
+  let componentCleanup = null;
   const rootElement = document.getElementById("root");
 
   // root가 비워지면 마지막 라우트 재렌더링
@@ -34,19 +34,14 @@ function createRouteRenderer() {
 
     try {
       cleanup();
-
-      const result = route.component({ ...params, ...data });
-      const componentResult = result instanceof Promise ? await result : result;
-
+      const component = route.component({ ...params, ...data });
       const $root = document.getElementById("root");
       if (!$root) return;
+      if (component && typeof component === "object" && component.html) {
+        $root.innerHTML = component.html;
 
-      if (componentResult && typeof componentResult === "object" && componentResult.html) {
-        $root.innerHTML = componentResult.html;
-        currentCleanup = componentResult.cleanup;
-        attachComponentEventListeners();
-      } else if (typeof componentResult === "string") {
-        $root.innerHTML = componentResult;
+        // 지금 생성된 새로운 컴포넌트가 아닌 이전 컴포넌트의 cleanup 함수를 사용
+        componentCleanup = component.cleanup;
         attachComponentEventListeners();
       }
     } catch (err) {
@@ -73,10 +68,8 @@ function createRouteRenderer() {
   }
 
   function cleanup() {
-    if (currentCleanup) {
-      currentCleanup();
-      currentCleanup = null;
-    }
+    componentCleanup?.();
+    componentCleanup = null;
   }
 
   function destroy() {
@@ -90,15 +83,46 @@ function createRouteRenderer() {
   return { render, destroy };
 }
 
-/* ------------------------------------------------------------------
- * Application (functional)
- * ------------------------------------------------------------------ */
 function createApplication() {
   let router = null;
   let renderer = null;
   let routerUnsubscribe = null;
 
   const globalClickHandler = (e) => {
+    const cartBtn = e.target.closest("#cart-icon-btn");
+    if (cartBtn) {
+      e.preventDefault();
+      openCartModal();
+      return;
+    }
+
+    // 상품 목록의 장바구니 담기 버튼
+    const addBtn = e.target.closest(".add-to-cart-btn");
+    if (addBtn) {
+      e.preventDefault();
+      const pid = addBtn.getAttribute("data-product-id");
+      if (pid) {
+        addToCartById(pid, 1);
+        updateCartBadge();
+      }
+      return;
+    }
+
+    // 상세 페이지 장바구니 담기 버튼
+    const detailBtn = e.target.closest("#add-to-cart-btn");
+    if (detailBtn) {
+      e.preventDefault();
+      const pid = detailBtn.getAttribute("data-product-id");
+      let qty = 1;
+      const qtyInput = document.querySelector("#quantity-input");
+      if (qtyInput) qty = parseInt(qtyInput.value) || 1;
+      if (pid) {
+        addToCartById(pid, qty);
+        updateCartBadge();
+      }
+      return;
+    }
+
     const link = e.target.closest("[data-link]");
     if (link) {
       e.preventDefault();
