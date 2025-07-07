@@ -1,7 +1,10 @@
 import HomePage from "./pages/HomePage.js";
-import { getProducts, getCategories } from "./api/productApi.js";
-import { loadCart, updateCartBadge, addToCart, openCartModal } from "./features/cart/index.js";
-import ProductDetailPage from "./pages/ProductDetailPage.js";
+import productService from "./services/ProductService.js";
+import { updateCartBadge, addToCart, openCartModal } from "./features/cart/index.js";
+import router from "./router/Router.js";
+import InfiniteScrollManager from "./services/InfiniteScrollManager.js";
+import homePageController from "./controllers/HomePageController.js";
+import productDetailController from "./controllers/ProductDetailController.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -99,23 +102,20 @@ function attachEventListeners() {
   });
 }
 
-let scrollAttached = false;
+let scrollManager;
 
 export function setupInfiniteScroll() {
-  if (scrollAttached) return;
-  scrollAttached = true;
-
-  window.addEventListener("scroll", () => {
-    const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 200;
-
-    if (nearBottom && !state.loading && !state.loadingMore && state.products.length < state.total) {
-      loadMore();
+  if (scrollManager) return;
+  scrollManager = new InfiniteScrollManager(async () => {
+    if (!state.loading && !state.loadingMore && state.products.length < state.total) {
+      await loadMore();
     }
   });
+  scrollManager.attach();
 }
 
 async function fetchProducts() {
-  const { products, pagination } = await getProducts({
+  const { products, pagination } = await productService.getProducts({
     limit: state.limit,
     page: state.page,
     search: state.search,
@@ -139,7 +139,7 @@ async function loadMore() {
   render();
 
   const nextPage = state.page + 1;
-  const { products: newProducts, pagination } = await getProducts({
+  const { products: newProducts, pagination } = await productService.getProducts({
     limit: state.limit,
     page: nextPage,
     search: state.search,
@@ -161,9 +161,8 @@ function render() {
 }
 
 async function main() {
-  loadCart();
-  await Promise.all([fetchProducts(), getCategories().then((c) => (state.categories = c))]);
-  renderRoute();
+  // 초깃값 렌더링은 컨트롤러/라우터가 담당
+  router.handle(window.location.pathname);
 }
 
 if (import.meta.env.MODE !== "test") {
@@ -173,56 +172,14 @@ if (import.meta.env.MODE !== "test") {
 }
 
 function navigate(path) {
-  if (window.location.pathname === path) return;
-  history.pushState({}, "", path);
-  renderRoute();
+  router.navigate(path);
 }
 
-window.addEventListener("popstate", renderRoute);
-
-async function renderRoute() {
-  const { pathname } = location;
-
-  if (pathname.startsWith("/product/")) {
-    const productId = pathname.split("/product/")[1];
-
-    document.querySelector("#root").innerHTML = ProductDetailPage({ loading: true });
-
-    const product = await (await import("./api/productApi.js")).getProduct(productId);
-    const { products: all } = await (await import("./api/productApi.js")).getProducts({ limit: 100 });
-
-    const related = all.filter((p) => p.productId !== productId).slice(0, 19);
-
-    document.querySelector("#root").innerHTML = ProductDetailPage({
-      loading: false,
-      product,
-      related,
-    });
-    attachDetailEvents(product);
-    updateCartBadge();
-    return;
-  }
-
-  render();
-}
-
-function attachDetailEvents(product) {
-  const qtyInput = document.querySelector("#quantity-input");
-  document.querySelector("#quantity-increase").onclick = () => (qtyInput.value = Number(qtyInput.value) + 1);
-  document.querySelector("#quantity-decrease").onclick = () => {
-    if (qtyInput.value > 1) qtyInput.value = Number(qtyInput.value) - 1;
-  };
-
-  document.querySelector("#add-to-cart-btn").onclick = () => {
-    const qty = Number(qtyInput.value);
-    addToCart(product, qty);
-  };
-
-  document.querySelectorAll(".related-product-card").forEach((card) => {
-    card.onclick = () => navigate(`/product/${card.dataset.productId}`);
-  });
-
-  document.querySelector(".go-to-product-list")?.addEventListener("click", () => {
-    navigate("/");
-  });
-}
+// 라우트 등록 (컨트롤러 활용)
+router.add("/", () => {
+  homePageController.init();
+});
+router.add("/product/:id", async ({ id }) => {
+  await productDetailController.show(id);
+});
+router.setNotFound(() => homePageController.init());

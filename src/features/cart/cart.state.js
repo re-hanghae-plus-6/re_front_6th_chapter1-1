@@ -1,40 +1,21 @@
-import { showToast } from "../../components/Toast.js";
+import cartService from "../../services/CartService.js";
+// showToast 는 CartService 내부에서 호출됨
 
-export let cart = {};
+// CartService 의 카트 객체를 그대로 노출 (레거시 호환)
+export const cart = cartService.getCart();
 
 export function loadCart() {
-  try {
-    cart = JSON.parse(localStorage.getItem("shopping_cart") || "{}");
-  } catch {
-    cart = {};
-  }
+  cartService.loadFromStorage();
 }
 
 export function saveCart() {
-  localStorage.setItem("shopping_cart", JSON.stringify(cart));
+  cartService.saveToStorage();
 }
 
 export function updateCartBadge() {
-  const btn = document.querySelector("#cart-icon-btn");
-  if (!btn) return;
-  btn.querySelector("span")?.remove();
-
-  const count = Object.keys(cart).length;
-  if (count) {
-    const badge = document.createElement("span");
-    badge.textContent = count;
-    badge.className =
-      "absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center";
-    btn.appendChild(badge);
-  }
+  cartService.updateBadge();
 }
 
 export function addToCart(product, qty = 1) {
-  const { productId } = product;
-  if (cart[productId]) cart[productId].quantity += qty;
-  else cart[productId] = { product, quantity: qty };
-
-  saveCart();
-  updateCartBadge();
-  showToast("장바구니에 추가되었습니다", "success");
+  cartService.add(product, qty);
 }
