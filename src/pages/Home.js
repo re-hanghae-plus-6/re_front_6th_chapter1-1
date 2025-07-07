@@ -55,9 +55,6 @@ export const Home = ({ products = [], total = 0, loading = false, limit, categor
   const selectedCategory1 = params.get("category1");
   const selectedCategory2 = params.get("category2");
 
-  console.log("categories", categories);
-  console.log(selectedCategory1, selectedCategory2);
-
   return `
      <div class="min-h-screen bg-gray-50">
       <header class="bg-white shadow-sm sticky top-0 z-40">
