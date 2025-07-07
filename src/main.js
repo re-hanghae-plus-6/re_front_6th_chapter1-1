@@ -20,6 +20,7 @@ let appState = {
   filters: {
     limit: 20,
     sort: "price_asc",
+    search: "",
   },
 };
 
@@ -30,6 +31,7 @@ const getFiltersFromUrl = () => {
   return {
     limit: parseInt(params.get("limit")) || 20,
     sort: params.get("sort") || "price_asc",
+    search: params.get("search") || "",
   };
 };
 
@@ -78,10 +80,11 @@ async function loadProducts(reset = false) {
       page: pageToLoad,
       limit: currentParams.limit,
       sort: currentParams.sort,
+      search: currentParams.search || "",
     };
 
     const data = await getProducts(params);
-
+    console.log("상품 로딩:", params);
     setAppState({
       products: reset ? data.products : [...appState.products, ...data.products],
       total: data.pagination.total,
@@ -162,6 +165,21 @@ function initEventListeners() {
 
     if (target.id === "sort-select") {
       await applyFilter({ sort: target.value });
+    }
+  });
+
+  root.addEventListener("click", async (event) => {
+    if (event.target.id === "search-input" && event.target.value.trim().length > 0) {
+      const search = event.target.value.trim();
+      await applyFilter({ search });
+    }
+  });
+
+  root.addEventListener("keydown", async (event) => {
+    if (event.target.id === "search-input" && event.key === "Enter") {
+      event.preventDefault();
+      const search = event.target.value.trim();
+      await applyFilter({ search });
     }
   });
 }
