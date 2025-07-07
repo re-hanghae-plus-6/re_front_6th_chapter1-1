@@ -17,6 +17,7 @@ let state = {
   page: 1,
   hasNext: false,
   hasPrev: false,
+  sort: "price_asc",
 };
 
 function render() {
@@ -36,7 +37,7 @@ async function main() {
       pagination: { page, total, hasNext, hasPrev },
     },
     categories,
-  ] = await Promise.all([getProducts({ limit: state.productCount }), getCategories()]);
+  ] = await Promise.all([getProducts({ limit: state.productCount, sort: state.sort }), getCategories()]);
 
   state.total = total;
   state.products = products;
@@ -56,6 +57,9 @@ function setupEventListeners() {
     if (event.target.matches("#limit-select")) {
       handleLimitChange(Number(event.target.value));
     }
+    if (event.target.matches("#sort-select")) {
+      handleSortChange(event.target.value);
+    }
   });
 }
 
@@ -68,7 +72,24 @@ async function handleLimitChange(newLimit) {
   const {
     products,
     pagination: { total },
-  } = await getProducts({ limit: state.productCount });
+  } = await getProducts({ limit: state.productCount, sort: state.sort });
+
+  // 상태 업데이트
+  state.products = products;
+  state.total = total;
+  state.loading = false;
+
+  render();
+}
+
+async function handleSortChange(newSort) {
+  state.sort = newSort;
+  state.loading = true;
+
+  const {
+    products,
+    pagination: { total },
+  } = await getProducts({ limit: state.productCount, sort: newSort });
 
   // 상태 업데이트
   state.products = products;
