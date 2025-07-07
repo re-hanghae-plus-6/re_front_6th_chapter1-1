@@ -1,3 +1,5 @@
+import { EventEmitter } from "./EventEmitter";
+
 /**
  * 컴포넌트 이벤트 상수들
  *
@@ -25,7 +27,7 @@ const COMPONENT_EVENTS = Object.freeze({
  * - 이벤트 기반 라이프사이클 관리
  * - 상태 관리 및 자동 렌더링
  */
-export class Component {
+export class Component extends EventEmitter {
   static EVENTS = COMPONENT_EVENTS;
 
   #children = [];
@@ -34,6 +36,7 @@ export class Component {
   #isDestroyed = false;
 
   constructor(props = {}) {
+    super();
     this.props = { ...props };
     this.state = {};
     this.element = null;
@@ -42,49 +45,6 @@ export class Component {
     if (this.constructor === Component) {
       throw new Error("추상 클래스는 인스턴스를 생성할 수 없습니다!");
     }
-  }
-
-  /**
-   * 이벤트 리스너를 등록합니다
-   *
-   * @param {string} event - 이벤트 이름
-   * @param {EventCallback} callback - 이벤트 발생 시 실행될 콜백 함수
-   * @returns {Component} 메서드 체이닝을 위한 this 반환
-   * @throws {Error} callback이 함수가 아닐 때
-   */
-  on(event, callback) {
-    if (typeof callback !== "function") {
-      throw new Error("Callback must be a function");
-    }
-
-    if (!this.#events.has(event)) {
-      this.#events.set(event, []);
-    }
-    this.#events.get(event).push(callback);
-
-    return this;
-  }
-
-  /**
-   * 이벤트를 발생시킵니다
-   *
-   * @param {string} event - 발생시킬 이벤트 이름
-   * @param {...*} args - 콜백 함수에 전달할 인수들
-   * @returns {boolean} 리스너가 하나 이상 존재했는지 여부
-   */
-  emit(event, ...args) {
-    if (!this.#events.has(event)) return false;
-
-    const listeners = this.#events.get(event).slice();
-    listeners.forEach((callback) => {
-      try {
-        callback.apply(this, args);
-      } catch (error) {
-        console.error(`이벤트 리스너 실행 중 오류 (${event}):`, error);
-      }
-    });
-
-    return true;
   }
 
   /**
@@ -205,7 +165,10 @@ export class Component {
       this.#isDestroyed = true;
 
       this.emit(Component.EVENTS.UNMOUNT);
+
+      // 이벤트 정리
       this.#events.clear();
+      this.removeAllListeners();
     } catch (error) {
       console.error("컴포넌트 언마운트 중 오류 발생:", error);
     }
