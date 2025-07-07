@@ -73,18 +73,10 @@ export const loadMoreProducts = async (params = {}) => {
 export const loadCategories = async () => {
   try {
     const categories = await getCategories();
-
-    const categoryArray = [];
-    if (categories && typeof categories === "object") {
-      Object.keys(categories).forEach((categoryName) => {
-        categoryArray.push({ name: categoryName });
-      });
-    }
-
-    productStore.setState({ categories: categoryArray });
+    productStore.setState({ categories });
   } catch (error) {
     console.error("카테고리 불러오기 실패:", error);
-    productStore.setState({ categories: [] });
+    productStore.setState({ categories: {} });
   }
 };
 
