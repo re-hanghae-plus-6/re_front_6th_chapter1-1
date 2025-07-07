@@ -2,18 +2,17 @@ import { ProductDetail } from "../pages/ProductDetail.js";
 import { getProduct } from "../api/productApi.js";
 
 export class ProductDetailController {
-  constructor(container, params) {
+  constructor(container) {
     this.container = container;
-    this.params = params;
   }
 
-  async render() {
+  async render(params = {}) {
     const loadingHTML = ProductDetail({
       isLoading: true,
     });
     this.container.innerHTML = loadingHTML;
 
-    const product = await getProduct(this.params.id);
+    const product = await getProduct(params.id);
 
     const productDetailHTML = ProductDetail({
       product: {

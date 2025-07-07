@@ -5,16 +5,16 @@ import { NotFound } from "../pages/NotFound.js";
 const routes = [
   {
     path: "/",
-    handler: async (container) => {
+    handler: async (container, params) => {
       const homeController = new HomeController(container);
-      await homeController.render();
+      await homeController.render(params);
     },
   },
   {
     path: "/product/:id",
     handler: async (container, params) => {
-      const productDetailController = new ProductDetailController(container, params);
-      await productDetailController.render();
+      const productDetailController = new ProductDetailController(container);
+      await productDetailController.render(params);
     },
   },
   {

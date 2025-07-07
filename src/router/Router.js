@@ -26,6 +26,32 @@ class Router {
     this.render(path);
   }
 
+  updateQuery(key, value) {
+    const url = new URL(window.location);
+    if (value) {
+      url.searchParams.set(key, value);
+    } else {
+      url.searchParams.delete(key);
+    }
+
+    const newUrl = url.pathname + url.search;
+    history.pushState(null, "", newUrl);
+    this.render();
+  }
+
+  getCurrentRoute() {
+    const url = new URL(window.location);
+    const path = url.pathname;
+    const query = {};
+
+    for (const [key, value] of url.searchParams) {
+      console.log("key: ", key, "value: ", value);
+      query[key] = value;
+    }
+
+    return { path, query };
+  }
+
   findRoute(path) {
     if (this.routes[path]) {
       return { route: path, params: {} };
@@ -40,7 +66,6 @@ class Router {
           const params = {};
           let isMatch = true;
 
-          // 각 부분 비교
           for (let i = 0; i < routeParts.length; i++) {
             if (routeParts[i].startsWith(":")) {
               const paramName = routeParts[i].slice(1);
@@ -62,11 +87,17 @@ class Router {
   }
 
   async render(path) {
+    if (!path) {
+      path = window.location.pathname;
+    }
+
     const result = this.findRoute(path);
 
     if (result) {
       const component = this.routes[result.route];
-      await component(this.container, result.params);
+      const { query } = this.getCurrentRoute();
+      const params = { ...result.params, ...query };
+      await component(this.container, params);
     } else {
       const notFoundHandler = this.routes["*"];
       if (notFoundHandler) {
