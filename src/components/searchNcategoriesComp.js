@@ -1,25 +1,21 @@
-export const searchNcategoriesComp = (categories, loading) => {
-  const categoryListHtml =
-    loading === false && Object.keys(categories).length > 0
-      ? Object.keys(categories)
-          .map(
-            (name) => /*html*/ `
+export const searchNcategoriesComp = (obj) => {
+  let isLoading = obj?.loading || obj == null;
+
+  const categoryListHtml = !isLoading
+    ? Object.keys(obj.categories)
+        .map(
+          (name) => /*html*/ `
         <button data-category-id="" class="category-btn text-sm bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded-full">
           ${name}
         </button>
       `,
-          )
-          .join("")
-      : /* html*/ `<div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>`;
+        )
+        .join("")
+    : /* html*/ `<div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>`;
 
   // 개수 필터링 객체
-  const countFilterObj = [
-    {count: 10},
-    {count: 20, selected: true},
-    {count: 50},
-    {count: 100},
-  ]
-  
+  const countFilterObj = [{ count: 10 }, { count: 20, selected: true }, { count: 50 }, { count: 100 }];
+
   return /*html*/ `
   <!-- 검색창 -->
   <div id="filterComp" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
@@ -57,12 +53,15 @@ export const searchNcategoriesComp = (categories, loading) => {
           <select id="limit-select"
                   class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
             
-            ${countFilterObj.map((item, idx) => 
-                /* html */ 
-                `<option id="${idx}" data-limitvalue="${item.count}" value="${item.count}" ${item.selected ? "selected" : null}>
+            ${countFilterObj
+              .map(
+                (item, idx) =>
+                  /* html */
+                  `<option id="${idx}" data-limitvalue="${item.count}" value="${item.count}" ${item.selected ? "selected" : null}>
                   ${item.count}개
-                </option>`
-            ).join("")}
+                </option>`,
+              )
+              .join("")}
             
           </select>
         </div>

@@ -67,7 +67,7 @@ export const home = (statusHome) => {
       </header>
       <main class="max-w-md mx-auto px-4 py-4">
         <!-- 검색 및 필터 -->
-        ${searchNcategoriesComp()}
+        ${searchNcategoriesComp(statusHome)}
         <!-- 상품 목록 -->
         <div class="mb-6">
           <div>
