@@ -3,7 +3,9 @@ import { Footer } from "../components/Layout/Footer";
 import { ProductItem } from "../components/ProductItem/ProductItem";
 import { ProductItemSkeleton } from "../components/ProductItem/ProductItemSkeleton";
 
-export function Home({ isLoading = false, products = [], total = 0 }) {
+export function Home(state) {
+  const { isLoading, products, total } = state;
+
   return `
     <div class="bg-gray-50">
       ${Header()}
