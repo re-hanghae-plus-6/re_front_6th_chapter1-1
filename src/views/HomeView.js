@@ -1,78 +1,31 @@
+import { getProducts } from "../api/productApi";
+import Search from "../components/Search";
 import BaseView from "../core/BaseView";
 
 class HomeView extends BaseView {
   constructor() {
     super();
+
+    this.isLoading = true;
+    this.products = [];
+    this.totalProductCount = 0;
   }
 
   async template() {
     return /* html */ `
       <!-- 검색 및 필터 -->
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
-      <!-- 검색창 -->
-      <div class="mb-4">
-        <div class="relative">
-          <input type="text" id="search-input" placeholder="상품명을 검색해보세요..." value="" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
-                      focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-            </svg>
-          </div>
-        </div>
+      <div id="search-container" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
+        
       </div>
-      <!-- 필터 옵션 -->
-      <div class="space-y-3">
-        <!-- 카테고리 필터 -->
-        <div class="space-y-2">
-          <div class="flex items-center gap-2">
-            <label class="text-sm text-gray-600">카테고리:</label>
-            <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
-          </div>
-          <!-- 1depth 카테고리 -->
-          <div class="flex flex-wrap gap-2">
-            <div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>
-          </div>
-          <!-- 2depth 카테고리 -->
-        </div>
-        <!-- 기존 필터들 -->
-        <div class="flex gap-2 items-center justify-between">
-          <!-- 페이지당 상품 수 -->
-          <div class="flex items-center gap-2">
-            <label class="text-sm text-gray-600">개수:</label>
-            <select id="limit-select"
-                    class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-              <option value="10">
-                10개
-              </option>
-              <option value="20" selected="">
-                20개
-              </option>
-              <option value="50">
-                50개
-              </option>
-              <option value="100">
-                100개
-              </option>
-            </select>
-          </div>
-          <!-- 정렬 -->
-          <div class="flex items-center gap-2">
-            <label class="text-sm text-gray-600">정렬:</label>
-            <select id="sort-select" class="text-sm border border-gray-300 rounded px-2 py-1
-                          focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-              <option value="price_asc" selected="">가격 낮은순</option>
-              <option value="price_desc">가격 높은순</option>
-              <option value="name_asc">이름순</option>
-              <option value="name_desc">이름 역순</option>
-            </select>
-          </div>
-        </div>
+      <!-- 상품 목록 -->
+      <div class="mb-6" id="products-container">
+        ${this.isLoading ? this.renderSkeletons() : this.renderProducts()}
       </div>
-    </div>
-    <!-- 상품 목록 -->
-    <div class="mb-6">
+    `;
+  }
+
+  renderSkeletons() {
+    return /* html */ `
       <div>
         <!-- 상품 그리드 -->
         <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
@@ -114,7 +67,6 @@ class HomeView extends BaseView {
             </div>
           </div>
         </div>
-        
         <div class="text-center py-4">
           <div class="inline-flex items-center">
             <svg class="animate-spin h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24">
@@ -126,11 +78,95 @@ class HomeView extends BaseView {
           </div>
         </div>
       </div>
-    </div>
+    `;
+  }
+
+  renderProducts() {
+    return /* html */ `
+      <div>
+        <!-- 상품 개수 정보 -->
+        <div class="mb-4 text-sm text-gray-600">
+          총 <span class="font-medium text-gray-900">${this.totalProductCount}개</span>의 상품
+        </div>
+        <!-- 상품 그리드 -->
+        <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
+          ${this.products
+            .map(
+              (product) => /* html */ `
+              <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
+                  data-product-id="${product.productId}">
+                <!-- 상품 이미지 -->
+                <div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image">
+                  <img src="${product.image}"
+                      alt="${product.title}"
+                      class="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                      loading="lazy">
+                </div>
+                <!-- 상품 정보 -->
+                <div class="p-3">
+                  <div class="cursor-pointer product-info mb-3">
+                    <h3 class="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
+                      ${product.title}
+                    </h3>
+                    <p class="text-xs text-gray-500 mb-2"></p>
+                    <p class="text-lg font-bold text-gray-900">
+                      ${product.lprice}원
+                    </p>
+                  </div>
+                  <!-- 장바구니 버튼 -->
+                  <button class="w-full bg-blue-600 text-white text-sm py-2 px-3 rounded-md
+                        hover:bg-blue-700 transition-colors add-to-cart-btn" data-product-id="${product.productId}">
+                    장바구니 담기
+                  </button>
+                </div>
+              </div>
+            `,
+            )
+            .join("")}
+        </div>
+        
+        <div class="text-center py-4 text-sm text-gray-500">
+          모든 상품을 확인했습니다
+        </div>
+      </div>
     `;
   }
 
   bindEvents() {}
+
+  async fetchProducts(params = {}) {
+    this.isLoading = true;
+    try {
+      const data = await getProducts(params);
+      this.totalProductCount = data.pagination.total;
+      this.products = [...data.products];
+    } catch (error) {
+      throw new Error(error);
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  async render() {
+    this.container.innerHTML = await this.template();
+  }
+
+  async mount(parentElement = document.querySelector("main")) {
+    await this.render();
+
+    parentElement.appendChild(this.container);
+
+    const search = new Search();
+    const searchContainer = this.container.querySelector("#search-container");
+    await search.mount(searchContainer);
+
+    await this.fetchProducts();
+
+    const productContainer = this.container.querySelector("#products-container");
+    productContainer.innerHTML = this.renderProducts();
+
+    this.bindEvents();
+  }
 
   unmount() {}
 }
