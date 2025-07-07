@@ -11,6 +11,7 @@ export interface Props {
   products: ProductCard[];
   cartCount?: number;
   isLoadingNextPage?: boolean;
+  categoryHtml?: string;
 }
 
 // NOTE: keep class / id names 그대로 so that existing e2e & unit tests continue to work.
@@ -19,6 +20,7 @@ export const 상품목록_레이아웃_로딩완료 = ({
   products,
   cartCount = 0,
   isLoadingNextPage = false,
+  categoryHtml = "",
 }: Props): string => {
   const cartBadge =
     cartCount > 0
@@ -85,14 +87,7 @@ export const 상품목록_레이아웃_로딩완료 = ({
           </div>
           <!-- 필터 옵션 -->
           <div class="space-y-3">
-            <!-- 카테고리 필터 (1depth 예시 - 실제 데이터 필요 시 동적 주입) -->
-            <div class="space-y-2">
-              <div class="flex items-center gap-2">
-                <label class="text-sm text-gray-600">카테고리:</label>
-                <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
-              </div>
-              <div class="flex flex-wrap gap-2" id="category1-container"><!-- 카테고리 1depth 버튼 렌더 영역 --></div>
-            </div>
+            ${categoryHtml}
             <!-- 기존 필터들 -->
             <div class="flex gap-2 items-center justify-between">
               <!-- 페이지당 상품 수 -->

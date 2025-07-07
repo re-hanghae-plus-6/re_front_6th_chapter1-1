@@ -1,6 +1,8 @@
 import { 상품목록_레이아웃_로딩 } from "../components/product-list/product-list-loading.ts";
 import { 상품목록_레이아웃_로딩완료 } from "../components/product-list/index.ts";
-import { getProducts } from "../api/productApi.js";
+import { getProducts, getCategories } from "../api/productApi.js";
+import { 상품목록_레이아웃_카테고리 } from "../components/category/index.ts";
+import type { CategoryState, Categories } from "../components/category/index.ts";
 import type { PageModule } from "../router.ts";
 
 interface Product {
@@ -19,6 +21,9 @@ interface State {
   page: number;
   isLoadingNextPage: boolean;
   search: string;
+  category1: string | null;
+  category2: string | null;
+  categories: Categories | null;
 }
 
 export const homePage: PageModule = {
@@ -41,6 +46,9 @@ export const homePage: PageModule = {
       page: 1,
       isLoadingNextPage: false,
       search: "",
+      category1: null,
+      category2: null,
+      categories: null,
     };
 
     // 상태 업데이트 + 화면 갱신 트리거
@@ -56,6 +64,18 @@ export const homePage: PageModule = {
         return;
       }
 
+      // 타입 안전한 CategoryState 생성
+      let categoryState: CategoryState;
+      if (state.category1 && state.category2)
+        categoryState = { depth: 2, category1: state.category1, category2: state.category2 };
+      else if (state.category1) {
+        categoryState = { depth: 1, category1: state.category1 };
+      } else {
+        categoryState = { depth: 0 };
+      }
+
+      const categoryHtml = 상품목록_레이아웃_카테고리(categoryState, state.categories ?? {});
+
       root.innerHTML = 상품목록_레이아웃_로딩완료({
         total: state.total,
         products: state.products.map((product) => ({
@@ -65,6 +85,7 @@ export const homePage: PageModule = {
           imageUrl: product.image,
         })),
         isLoadingNextPage: state.isLoadingNextPage,
+        categoryHtml,
       });
 
       // 렌더 후 이벤트 바인딩
@@ -73,23 +94,29 @@ export const homePage: PageModule = {
 
     // 이벤트 바인딩 (렌더와 분리)
     const bindEvents = () => {
-      const limitSelectEl = document.getElementById("limit-select") as HTMLSelectElement | null;
+      const limitSelectEl = root.querySelector("#limit-select") as HTMLSelectElement | null;
       if (limitSelectEl) {
         limitSelectEl.value = String(state.limit);
         limitSelectEl.addEventListener("change", handleLimitChange);
       }
 
-      const sortSelectEl = document.getElementById("sort-select") as HTMLSelectElement | null;
+      const sortSelectEl = root.querySelector("#sort-select") as HTMLSelectElement | null;
       if (sortSelectEl) {
         sortSelectEl.value = state.sort;
         sortSelectEl.addEventListener("change", handleSortChange);
       }
 
-      const searchInputEl = document.getElementById("search-input") as HTMLInputElement | null;
+      const searchInputEl = root.querySelector("#search-input") as HTMLInputElement | null;
       if (searchInputEl) {
         searchInputEl.value = state.search;
         searchInputEl.addEventListener("keydown", handleSearchKeydown);
       }
+
+      // 카테고리 관련 클릭 이벤트 바인딩
+      const categoryButtonEls = root.querySelectorAll("[data-category1], [data-breadcrumb]");
+      categoryButtonEls.forEach((buttonEl) => {
+        buttonEl.addEventListener("click", handleGlobalClick);
+      });
     };
 
     // 드롭다운 변경 핸들러
@@ -132,6 +159,8 @@ export const homePage: PageModule = {
           page: state.page,
           sort: state.sort,
           search: state.search,
+          category1: state.category1 ?? "",
+          category2: state.category2 ?? "",
         });
 
         if (isAppend) {
@@ -149,6 +178,30 @@ export const homePage: PageModule = {
         }
       } catch (err) {
         root.textContent = "상품을 불러오는데 실패했습니다.";
+        console.error(err);
+      }
+    };
+
+    const loadInitial = async () => {
+      try {
+        const [categories, data] = await Promise.all([
+          getCategories(),
+          getProducts({
+            limit: state.limit,
+            page: state.page,
+            sort: state.sort,
+            search: state.search,
+          }),
+        ]);
+
+        setState({
+          categories,
+          products: data.products as Product[],
+          total: data.pagination.total ?? data.products.length,
+          loading: false,
+        });
+      } catch (err) {
+        root.textContent = "데이터를 불러오는데 실패했습니다.";
         console.error(err);
       }
     };
@@ -175,8 +228,45 @@ export const homePage: PageModule = {
         loadProducts({ isAppend: true });
       }
     };
+
+    // 전역 클릭 이벤트 (카테고리·브레드크럼)
+    const handleGlobalClick = (e: Event) => {
+      const target = e.target as HTMLElement;
+
+      if (target.dataset.breadcrumb === "reset") {
+        setState({ category1: null, category2: null, page: 1 });
+        loadProducts();
+        return;
+      }
+
+      if (target.dataset.breadcrumb === "category1") {
+        const cat1 = target.dataset.category1 ?? "";
+        setState({ category1: cat1, category2: null, page: 1 });
+        loadProducts();
+        return;
+      }
+
+      // 카테고리1 선택 (1depth)
+      if (target.dataset.category1 && !target.dataset.category2) {
+        const cat1 = target.dataset.category1;
+        if (cat1 !== state.category1) {
+          setState({ category1: cat1, category2: null, page: 1 });
+          loadProducts();
+        }
+        return;
+      }
+
+      // 카테고리2 선택 (2depth)
+      if (target.dataset.category2) {
+        const cat1 = target.dataset.category1 ?? state.category1 ?? "";
+        const cat2 = target.dataset.category2;
+        setState({ category1: cat1, category2: cat2, page: 1 });
+        loadProducts();
+      }
+    };
+
     rerender();
-    loadProducts();
+    loadInitial();
 
     // 스크롤 이벤트 리스너 등록
     window.addEventListener("scroll", handleScroll);
