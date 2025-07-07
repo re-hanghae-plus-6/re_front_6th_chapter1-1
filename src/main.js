@@ -18,6 +18,7 @@ let state = {
   hasNext: false,
   hasPrev: false,
   sort: "price_asc",
+  cart: [],
 };
 
 function render() {
@@ -45,6 +46,7 @@ async function main() {
   state.page = page;
   state.hasNext = hasNext;
   state.hasPrev = hasPrev;
+  state.cart = [];
 
   // 값 가져왔으니 로딩 상태 해제
   state.loading = false;
@@ -61,6 +63,23 @@ function setupEventListeners() {
       handleSortChange(event.target.value);
     }
   });
+
+  document.addEventListener("click", (event) => {
+    if (event.target.matches(".add-to-cart-btn")) {
+      const productId = event.target.dataset.productId;
+      addToCart(productId);
+      showToast("장바구니에 추가되었습니다.");
+    }
+  });
+}
+
+function addToCart(productId) {
+  state.cart.push(productId);
+  render();
+}
+
+function showToast(message) {
+  console.log("showToast", message);
 }
 
 async function handleLimitChange(newLimit) {
