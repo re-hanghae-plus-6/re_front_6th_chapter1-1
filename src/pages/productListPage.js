@@ -1,4 +1,23 @@
-export const ProductListPage = () => {
+import { ProductCard } from "../components/ProductCard.js";
+
+export const ProductListPage = ({ products = [], loading = false, error = null }) => {
+  const renderProductCards = () => {
+    if (loading) {
+      return ProductCard({ isLoading: true }).repeat(6);
+    }
+
+    if (error) {
+      console.log(error);
+      return `<p class="text-red-600">에러</p>`;
+    }
+
+    if (products.length === 0) {
+      return null;
+    }
+
+    return products.map((product) => ProductCard({ product })).join("");
+  };
+
   return `
     <div class="min-h-screen bg-gray-50">
     <header class="bg-white shadow-sm sticky top-0 z-40">
@@ -89,43 +108,7 @@ export const ProductListPage = () => {
         <div>
             <!-- 상품 그리드 -->
             <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
-            <!-- 로딩 스켈레톤 -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
-                <div class="aspect-square bg-gray-200"></div>
-                <div class="p-3">
-                <div class="h-4 bg-gray-200 rounded mb-2"></div>
-                <div class="h-3 bg-gray-200 rounded w-2/3 mb-2"></div>
-                <div class="h-5 bg-gray-200 rounded w-1/2 mb-3"></div>
-                <div class="h-8 bg-gray-200 rounded"></div>
-                </div>
-            </div>
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
-                <div class="aspect-square bg-gray-200"></div>
-                <div class="p-3">
-                <div class="h-4 bg-gray-200 rounded mb-2"></div>
-                <div class="h-3 bg-gray-200 rounded w-2/3 mb-2"></div>
-                <div class="h-5 bg-gray-200 rounded w-1/2 mb-3"></div>
-                <div class="h-8 bg-gray-200 rounded"></div>
-                </div>
-            </div>
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
-                <div class="aspect-square bg-gray-200"></div>
-                <div class="p-3">
-                <div class="h-4 bg-gray-200 rounded mb-2"></div>
-                <div class="h-3 bg-gray-200 rounded w-2/3 mb-2"></div>
-                <div class="h-5 bg-gray-200 rounded w-1/2 mb-3"></div>
-                <div class="h-8 bg-gray-200 rounded"></div>
-                </div>
-            </div>
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
-                <div class="aspect-square bg-gray-200"></div>
-                <div class="p-3">
-                <div class="h-4 bg-gray-200 rounded mb-2"></div>
-                <div class="h-3 bg-gray-200 rounded w-2/3 mb-2"></div>
-                <div class="h-5 bg-gray-200 rounded w-1/2 mb-3"></div>
-                <div class="h-8 bg-gray-200 rounded"></div>
-                </div>
-            </div>
+                ${renderProductCards()}
             </div>
             
             <div class="text-center py-4">
