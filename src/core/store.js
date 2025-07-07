@@ -1,4 +1,4 @@
-const createStateManager = (initialState) => {
+const createStore = (initialState) => {
   let state = { ...initialState };
 
   const listeners = new Set();
@@ -22,4 +22,4 @@ const createStateManager = (initialState) => {
   };
 };
 
-export default createStateManager;
+export default createStore;
