@@ -18,8 +18,8 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha }}
       - run: |
-          npm install
-          npm run test
+          pnpm install
+          pnpm run test
   e2e:
     timeout-minutes: 60
     runs-on: ubuntu-latest
