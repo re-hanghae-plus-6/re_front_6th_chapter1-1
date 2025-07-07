@@ -170,11 +170,6 @@ function initEventListeners() {
   });
 
   root.addEventListener("click", async (event) => {
-    if (event.target.id === "search-input" && event.target.value.trim().length > 0) {
-      const search = event.target.value.trim();
-      await applyFilter({ search });
-    }
-
     if (event.target.dataset.productId) {
       const productId = event.target.dataset.productId;
       const selectedProducts = appState.products.find((product) => product.productId === productId);
