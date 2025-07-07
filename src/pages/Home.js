@@ -14,7 +14,6 @@ export const Home = ({
   limit = 20,
   sort = "price_asc",
 } = {}) => {
-  // console.log(categories);
   const contentHtml = /* html */ `
     <main class="max-w-md mx-auto px-4 py-4">
       <!-- 검색 및 필터 -->
@@ -161,5 +160,6 @@ export const Home = ({
       </div>
     </main>
 `;
+
   return Layout(contentHtml);
 };
