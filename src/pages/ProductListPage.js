@@ -101,21 +101,51 @@ const renderCategoryBreadcrumb = (selectedCategory1, category2) => {
   return breadcrumb;
 };
 
-const renderCategories = (categories) => {
-  if (!categories?.length) {
+const renderCategories = (categories, selectedCategory1) => {
+  if (!categories || typeof categories !== "object" || Object.keys(categories).length === 0) {
     return '<div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>';
   }
-  return categories
-    .map(
-      (category) => `
-      <button 
-        data-category1="${category.name}" 
-        class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-      >
-        ${category.name}
-      </button>
-    `,
-    )
+
+  if (!selectedCategory1) {
+    return Object.keys(categories)
+      .map(
+        (categoryName) => `
+        <button 
+          data-category1="${categoryName}" 
+          class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+        >
+          ${categoryName}
+        </button>
+      `,
+      )
+      .join("");
+  }
+
+  const subCategories = categories[selectedCategory1];
+  if (!subCategories || typeof subCategories !== "object") {
+    return '<div class="text-sm text-gray-500 italic">하위 카테고리가 없습니다</div>';
+  }
+
+  const currentParams = getURLParams(defaultParams);
+  const selectedCategory2 = currentParams.category2;
+
+  return Object.keys(subCategories)
+    .map((subCategoryName) => {
+      const isSelected = subCategoryName === selectedCategory2;
+      const buttonClass = isSelected
+        ? "category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-blue-100 border-blue-300 text-blue-800"
+        : "category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50";
+
+      return `
+        <button 
+          data-category1="${selectedCategory1}" 
+          data-category2="${subCategoryName}" 
+          class="${buttonClass}"
+        >
+          ${subCategoryName}
+        </button>
+      `;
+    })
     .join("");
 };
 
@@ -157,11 +187,23 @@ export const ProductListPage = () => {
             <!-- 카테고리 필터 -->
             <div class="space-y-2">
               <div class="flex items-center gap-2" id="category-breadcrumb">
-                ${renderCategoryBreadcrumb(state.selectedCategory1, getURLParams(defaultParams).category2)}
+                ${renderCategoryBreadcrumb(params.category1, params.category2)}
               </div>
+              ${
+                params.category1
+                  ? `
+              <div class="space-y-2">
+                <div id="category-list" class="flex flex-wrap gap-2">
+                  ${renderCategories(state.categories, params.category1)}
+                </div>
+              </div>
+              `
+                  : `
               <div id="category-list" class="flex flex-wrap gap-2">
-                ${renderCategories(state.categories)}
+                ${renderCategories(state.categories, params.category1)}
               </div>
+              `
+              }
             </div>
             
             <!-- 기존 필터들 -->
@@ -231,15 +273,9 @@ export const ProductListPage = () => {
 const setupStateSubscription = () => {
   productStore.subscribe((newState, prevState) => {
     if (!prevState || newState.categories !== prevState.categories) {
-      updateElement("#category-list", renderCategories(newState.categories));
-    }
-
-    if (!prevState || newState.selectedCategory1 !== prevState.selectedCategory1) {
       const currentParams = getURLParams(defaultParams);
-      updateElement(
-        "#category-breadcrumb",
-        renderCategoryBreadcrumb(newState.selectedCategory1, currentParams.category2),
-      );
+      updateElement("#category-list", renderCategories(newState.categories, currentParams.category1));
+      updateElement("#category-breadcrumb", renderCategoryBreadcrumb(currentParams.category1, currentParams.category2));
     }
 
     if (!prevState || newState.products !== prevState.products || newState.isLoading !== prevState.isLoading) {
@@ -303,18 +339,42 @@ const setupEventHandlers = () => {
 
   addEvent("click", ".category1-filter-btn", (event) => {
     const category1 = event.target.dataset.category1;
-    productStore.setState({ selectedCategory1: category1 });
-    updateURLParams({ category1, page: 1 }, defaultParams, loadProducts);
+    updateURLParams({ category1, category2: "", page: 1 }, defaultParams, loadProducts);
+
+    const currentParams = getURLParams(defaultParams);
+    const categories = productStore.getState().categories;
+    updateElement("#category-list", renderCategories(categories, currentParams.category1));
+    updateElement("#category-breadcrumb", renderCategoryBreadcrumb(currentParams.category1, currentParams.category2));
+  });
+
+  addEvent("click", ".category2-filter-btn", (event) => {
+    const category1 = event.target.dataset.category1;
+    const category2 = event.target.dataset.category2;
+    updateURLParams({ category1, category2, page: 1 }, defaultParams, loadProducts);
+
+    const currentParams = getURLParams(defaultParams);
+    const categories = productStore.getState().categories;
+    updateElement("#category-list", renderCategories(categories, currentParams.category1));
+    updateElement("#category-breadcrumb", renderCategoryBreadcrumb(currentParams.category1, currentParams.category2));
   });
 
   addEvent("click", '[data-breadcrumb="reset"]', () => {
-    productStore.setState({ selectedCategory1: "" });
-    updateURLParams({ category1: "", page: 1 }, defaultParams, loadProducts);
+    updateURLParams({ category1: "", category2: "", page: 1 }, defaultParams, loadProducts);
+
+    const currentParams = getURLParams(defaultParams);
+    const categories = productStore.getState().categories;
+    updateElement("#category-list", renderCategories(categories, currentParams.category1));
+    updateElement("#category-breadcrumb", renderCategoryBreadcrumb(currentParams.category1, currentParams.category2));
   });
 
   addEvent("click", '[data-breadcrumb="category1"]', () => {
-    const category1 = productStore.getState().selectedCategory1;
-    updateURLParams({ category1, page: 1 }, defaultParams, loadProducts);
+    const currentParams = getURLParams(defaultParams);
+    updateURLParams({ category1: currentParams.category1, category2: "", page: 1 }, defaultParams, loadProducts);
+
+    const newParams = getURLParams(defaultParams);
+    const categories = productStore.getState().categories;
+    updateElement("#category-list", renderCategories(categories, newParams.category1));
+    updateElement("#category-breadcrumb", renderCategoryBreadcrumb(newParams.category1, newParams.category2));
   });
 
   addEvent("click", ".product-card", (event) => {
@@ -343,9 +403,11 @@ const setupProductInfiniteScroll = () => {
 };
 
 ProductListPage.onMount = () => {
+  const currentParams = getURLParams(defaultParams);
+
   setupStateSubscription();
   setupEventHandlers();
   setupProductInfiniteScroll();
   loadCategories();
-  loadProducts(getURLParams(defaultParams));
+  loadProducts(currentParams);
 };
