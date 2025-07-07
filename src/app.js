@@ -31,13 +31,26 @@ class RouteRenderer {
 
       // 컴포넌트 실행 (동기/비동기 대응)
       const result = route.component({ ...params, ...data });
-      const html = result instanceof Promise ? await result : result;
+      const componentResult = result instanceof Promise ? await result : result;
 
-      // HTML 문자열이면 DOM 삽입
-      if (typeof html === "string") {
+      // 컴포넌트가 { html, cleanup } 객체를 반환하는 경우
+      if (componentResult && typeof componentResult === "object" && componentResult.html) {
         const $root = document.getElementById("root");
         if ($root) {
-          $root.innerHTML = html;
+          $root.innerHTML = componentResult.html;
+        }
+
+        // cleanup 함수 저장
+        this.currentCleanup = componentResult.cleanup;
+
+        // 컴포넌트별 이벤트 리스너 연결
+        this.attachComponentEventListeners();
+      }
+      // 단순 HTML 문자열인 경우 (기존 방식)
+      else if (typeof componentResult === "string") {
+        const $root = document.getElementById("root");
+        if ($root) {
+          $root.innerHTML = componentResult;
         }
 
         // 컴포넌트별 이벤트 리스너 연결
