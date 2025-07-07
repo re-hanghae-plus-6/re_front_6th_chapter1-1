@@ -2,6 +2,7 @@ import { 상품목록_레이아웃 } from "../components/product-list/index.ts";
 import { getProducts, getCategories } from "../api/productApi.js";
 import type { Categories } from "../components/category/index.ts";
 import type { PageModule } from "../router.ts";
+import { navigate } from "../router.ts";
 
 interface Product {
   title: string;
@@ -75,55 +76,61 @@ export const homePage: PageModule = {
 
     // 이벤트 바인딩
     const bindEvents = () => {
+      const sortSelectEl = root.querySelector("#sort-select") as HTMLSelectElement | null;
       const limitSelectEl = root.querySelector("#limit-select") as HTMLSelectElement | null;
+      const searchInputEl = root.querySelector("#search-input") as HTMLInputElement | null;
+      const categoryButtonEls = root.querySelectorAll("[data-category1], [data-breadcrumb]");
+      const productClickableEls = root.querySelectorAll(".product-image, .product-info");
+
+      const handleLimitChange = (e: Event) => {
+        const select = e.target as HTMLSelectElement;
+        const newLimit = Number(select.value);
+        if (newLimit !== state.limit) {
+          setState({ limit: newLimit, page: 1 });
+          updateProducts();
+        }
+      };
+
+      const handleSortChange = (e: Event) => {
+        const select = e.target as HTMLSelectElement;
+        const newSort = select.value;
+        if (newSort !== state.sort) {
+          setState({ sort: newSort, page: 1 });
+          updateProducts();
+        }
+      };
+
+      const handleSearchKeydown = (e: KeyboardEvent) => {
+        if (e.key !== "Enter") return;
+        const input = e.target as HTMLInputElement;
+        const keyword = input.value.trim();
+        if (keyword === state.search) return;
+        setState({ search: keyword, page: 1 });
+        updateProducts();
+      };
+
       if (limitSelectEl) {
         limitSelectEl.value = String(state.limit);
         limitSelectEl.addEventListener("change", handleLimitChange);
       }
 
-      const sortSelectEl = root.querySelector("#sort-select") as HTMLSelectElement | null;
       if (sortSelectEl) {
         sortSelectEl.value = state.sort;
         sortSelectEl.addEventListener("change", handleSortChange);
       }
 
-      const searchInputEl = root.querySelector("#search-input") as HTMLInputElement | null;
       if (searchInputEl) {
         searchInputEl.value = state.search;
         searchInputEl.addEventListener("keydown", handleSearchKeydown);
       }
 
-      const categoryButtonEls = root.querySelectorAll("[data-category1], [data-breadcrumb]");
       categoryButtonEls.forEach((buttonEl) => {
         buttonEl.addEventListener("click", handleCategoryClick);
       });
-    };
 
-    const handleLimitChange = (e: Event) => {
-      const select = e.target as HTMLSelectElement;
-      const newLimit = Number(select.value);
-      if (newLimit !== state.limit) {
-        setState({ limit: newLimit, page: 1 });
-        updateProducts();
-      }
-    };
-
-    const handleSortChange = (e: Event) => {
-      const select = e.target as HTMLSelectElement;
-      const newSort = select.value;
-      if (newSort !== state.sort) {
-        setState({ sort: newSort, page: 1 });
-        updateProducts();
-      }
-    };
-
-    const handleSearchKeydown = (e: KeyboardEvent) => {
-      if (e.key !== "Enter") return;
-      const input = e.target as HTMLInputElement;
-      const keyword = input.value.trim();
-      if (keyword === state.search) return;
-      setState({ search: keyword, page: 1 });
-      updateProducts();
+      productClickableEls.forEach((el) => {
+        el.addEventListener("click", handleProductClick);
+      });
     };
 
     const updateProducts = async (options = { isAppend: false }) => {
@@ -230,6 +237,15 @@ export const homePage: PageModule = {
         const cat2 = target.dataset.category2;
         setState({ category1: cat1, category2: cat2, page: 1 });
         updateProducts();
+      }
+    };
+
+    const handleProductClick = (e: Event) => {
+      const targetEl = (e.target as HTMLElement).closest(".product-card") as HTMLElement | null;
+      if (!targetEl) return;
+      const productId = targetEl.dataset.productId;
+      if (productId) {
+        navigate(`/product/${productId}`);
       }
     };
 
