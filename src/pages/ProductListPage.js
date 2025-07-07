@@ -73,6 +73,11 @@ export class ProductListPage extends Component {
     await this.#reloadProducts({ limit });
   }
 
+  async #handleSortChange(sort) {
+    updateURLParams({ sort });
+    await this.#reloadProducts({ sort });
+  }
+
   bindEvents(element) {
     element.addEventListener("click", (e) => {
       const route = e.target.dataset.route;
@@ -82,8 +87,13 @@ export class ProductListPage extends Component {
     });
 
     element.addEventListener("change", (e) => {
-      if (e.target.id === "limit-select") {
-        this.#handleLimitChange(e.target.value);
+      switch (e.target.id) {
+        case "limit-select":
+          this.#handleLimitChange(e.target.value);
+          break;
+        case "sort-select":
+          this.#handleSortChange(e.target.value);
+          break;
       }
     });
   }
