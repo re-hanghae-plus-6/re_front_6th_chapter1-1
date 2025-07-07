@@ -1,3 +1,5 @@
+import { showToast } from "../../components/Toast.js";
+
 export let cart = {};
 
 export function loadCart() {
@@ -10,14 +12,6 @@ export function loadCart() {
 
 export function saveCart() {
   localStorage.setItem("shopping_cart", JSON.stringify(cart));
-}
-
-export function showToast(msg = "장바구니에 추가되었습니다") {
-  const toast = document.createElement("div");
-  toast.textContent = msg;
-  toast.className = "fixed top-4 left-1/2 -translate-x-1/2 bg-green-600 text-white px-4 py-2 rounded shadow z-50";
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 2500);
 }
 
 export function updateCartBadge() {
@@ -42,5 +36,5 @@ export function addToCart(product, qty = 1) {
 
   saveCart();
   updateCartBadge();
-  showToast();
+  showToast("장바구니에 추가되었습니다", "success");
 }

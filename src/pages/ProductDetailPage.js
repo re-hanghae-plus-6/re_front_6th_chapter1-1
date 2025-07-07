@@ -26,7 +26,27 @@ export default function ProductDetailPage({ loading = true, product = null, rela
           <img src="${product.image}" alt="${product.title}" class="w-full h-full object-cover">
         </div>
         <h1 class="text-xl font-bold text-gray-900 mb-3">${product.title}</h1>
+
+        <!-- 평점 및 리뷰 수 -->
+        <div class="flex items-center mb-3">
+          <div class="flex items-center">
+            ${[1, 2, 3, 4, 5]
+              .map(
+                (n) => `<svg class="w-4 h-4 ${
+                  product.rating >= n ? "text-yellow-400" : "text-gray-300"
+                }" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                       </svg>`,
+              )
+              .join("")}
+          </div>
+          <span class="ml-2 text-sm text-gray-600">${product.rating.toFixed(1)} (${product.reviewCount}개 리뷰)</span>
+        </div>
+
         <p class="text-2xl font-bold text-blue-600 mb-4">${Number(product.lprice).toLocaleString()}원</p>
+
+        <!-- 재고 -->
+        <div class="text-sm text-gray-600 mb-4">재고 ${product.stock}개</div>
 
         <div class="flex items-center justify-between mb-4">
           <span class="text-sm font-medium text-gray-900">수량</span>
@@ -43,6 +63,13 @@ export default function ProductDetailPage({ loading = true, product = null, rela
         <button id="add-to-cart-btn" data-product-id="${product.productId}"
           class="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 transition-colors font-medium">
           장바구니 담기
+        </button>
+      </div>
+
+      <!-- 목록 돌아가기 -->
+      <div class="mb-6">
+        <button class="block w-full text-center bg-gray-100 text-gray-700 py-3 px-4 rounded-md hover:bg-gray-200 transition-colors go-to-product-list">
+          상품 목록으로 돌아가기
         </button>
       </div>
 

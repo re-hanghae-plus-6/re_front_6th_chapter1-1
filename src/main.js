@@ -221,4 +221,8 @@ function attachDetailEvents(product) {
   document.querySelectorAll(".related-product-card").forEach((card) => {
     card.onclick = () => navigate(`/product/${card.dataset.productId}`);
   });
+
+  document.querySelector(".go-to-product-list")?.addEventListener("click", () => {
+    navigate("/");
+  });
 }

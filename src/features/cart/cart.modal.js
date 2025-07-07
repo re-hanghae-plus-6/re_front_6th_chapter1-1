@@ -1,4 +1,5 @@
 import { cart, saveCart, updateCartBadge } from "./cart.state.js";
+import { showToast } from "../../components/Toast.js";
 
 const format = (won) => `${Number(won).toLocaleString()}원`;
 
@@ -205,6 +206,7 @@ export function openCartModal() {
         saveCart();
         updateCartBadge();
         renderCartModal();
+        showToast("삭제되었습니다", "info");
       };
     });
 
@@ -218,7 +220,6 @@ export function openCartModal() {
       selectAllChk.checked = selectedCnt === itemChks.length;
       selectAllChk.indeterminate = selectedCnt > 0 && selectedCnt < itemChks.length;
 
-      // 선택 요약 + 버튼 노출 제어
       const selSummary = modal.querySelector("#cart-modal-selected-summary");
       const selAmount = modal.querySelector("#selected-amount");
       const selBtn = modal.querySelector("#cart-modal-remove-selected-btn");
@@ -255,7 +256,8 @@ export function openCartModal() {
       selectedPids.forEach((pid) => delete cart[pid]);
       saveCart();
       updateCartBadge();
-      renderCartModal(); // 모달 전체 재렌더 → UI 동기화
+      renderCartModal();
+      showToast("선택한 상품이 삭제되었습니다", "info");
     };
 
     modal.querySelector("#cart-modal-clear-cart-btn").onclick = () => {
@@ -263,6 +265,7 @@ export function openCartModal() {
       saveCart();
       updateCartBadge();
       renderCartModal();
+      showToast("장바구니를 비웠습니다", "info");
     };
   }
 }
