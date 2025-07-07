@@ -3,7 +3,7 @@ import ProductGrid from "../components/product/ProductGrid.js";
 import MainLayout from "../components/layout/MainLayout.js";
 import { getProducts, getCategories } from "../api/productApi.js";
 import createStore from "../core/store.js";
-import { getQueryParams, updateQueryParams, useNavigate } from "../core/router.js";
+import { getQueryParams, updateQueryParams } from "../core/router.js";
 import { stateToQueryParams, queryParamsToState } from "../utils/urlStateUtils.js";
 
 const initialState = {
@@ -320,11 +320,10 @@ function attachEventListeners() {
   }
 
   // 상품 상세 이동
-  const navigate = useNavigate();
   document.querySelectorAll("[data-product-link]").forEach((link) => {
     link.onclick = (e) => {
       const productId = e.currentTarget.getAttribute("data-product-link");
-      navigate(`/product/${productId}`);
+      window.navigateTo(`/product/${productId}`);
     };
   });
 

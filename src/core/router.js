@@ -199,12 +199,6 @@ export function cleanupRouter() {
   if (window.router) delete window.router;
 }
 
-export const useNavigate = () => (path, options) => {
-  if (globalRouter && !globalRouter._isDestroyed) {
-    globalRouter.navigate(path, options);
-  }
-};
-
 export const getQueryParams = () => {
   const params = new URLSearchParams(window.location.search);
   const result = {};
@@ -225,7 +219,7 @@ export const updateQueryParams = (params, { replace = false } = {}) => {
   else window.history.pushState({}, "", newUrl);
 };
 
-// ------------------------- Auto Clean-up --------------------------
+// 자동 클린업 함수
 window.addEventListener("beforeunload", () => {
   cleanupRouter();
 });
