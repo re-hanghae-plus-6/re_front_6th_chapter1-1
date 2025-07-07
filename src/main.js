@@ -1,4 +1,7 @@
+import { getProducts } from "./api/productApi.js";
 import { ProductListPage } from "./pages/productListPage.js";
+import { store } from "./store.js";
+import { actions } from "./actions.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -7,8 +10,22 @@ const enableMocking = () =>
     }),
   );
 
+function render() {
+  const state = store.getState();
+  document.body.querySelector("#root").innerHTML = ProductListPage(state);
+}
+
+store.subscribe(render);
+
 async function main() {
-  document.body.querySelector("#root").innerHTML = ProductListPage();
+  store.dispatch(actions.loadProducts());
+
+  try {
+    const data = await getProducts();
+    store.dispatch(actions.productsLoaded(data.products));
+  } catch (error) {
+    store.dispatch(actions.loadError(error.message));
+  }
 }
 
 // 애플리케이션 시작
