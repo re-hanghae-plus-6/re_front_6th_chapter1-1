@@ -1,5 +1,6 @@
 import { getCategories, getProducts } from "./api/productApi.js";
-import HomPage from "./pages/HomePage/index.js";
+import { InfiniteScroll } from "./utils.js";
+import HomPage from "./pages/HomePage/index";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -8,72 +9,184 @@ const enableMocking = () =>
     }),
   );
 
-let state = {
+let appState = {
   products: [],
   total: 0,
   loading: false,
-  limit: 20,
-  sort: "price_asc",
+  hasMore: true,
   categories: [],
   cart: [],
+  currentPage: 1,
+  filters: {
+    limit: 20,
+    sort: "price_asc",
+  },
 };
 
-const setState = (newState) => {
-  state = { ...state, ...newState };
-  render();
+let infiniteScroll = null;
+
+const getFiltersFromUrl = () => {
+  const params = new URLSearchParams(window.location.search);
+  return {
+    limit: parseInt(params.get("limit")) || 20,
+    sort: params.get("sort") || "price_asc",
+  };
 };
+
+const updateUrl = (newParams) => {
+  const current = getFiltersFromUrl();
+  const updated = { ...current, ...newParams };
+
+  const searchParams = new URLSearchParams();
+  Object.entries(updated).forEach(([key, value]) => {
+    if (value && value !== "") {
+      searchParams.set(key, value.toString());
+    }
+  });
+
+  const newUrl = `${window.location.pathname}${searchParams.toString() ? "?" + searchParams.toString() : ""}`;
+  window.history.replaceState({}, "", newUrl);
+};
+
+const setAppState = (newState) => {
+  appState = { ...appState, ...newState };
+  render();
+
+  if (infiniteScroll && newState.hasMore !== undefined) {
+    infiniteScroll.setHasMore(appState.hasMore);
+  }
+};
+
+const getFullState = () => appState;
 
 function render() {
-  document.body.querySelector("#root").innerHTML = HomPage(state);
+  const state = getFullState();
+  const html = HomPage(state);
+  document.body.querySelector("#root").innerHTML = html;
 }
+
+async function loadProducts(reset = false) {
+  if (appState.loading) return false;
+  setAppState({ loading: true });
+
+  try {
+    const currentParams = getFiltersFromUrl();
+
+    const pageToLoad = reset ? 1 : appState.currentPage;
+
+    const params = {
+      page: pageToLoad,
+      limit: currentParams.limit,
+      sort: currentParams.sort,
+    };
+
+    const data = await getProducts(params);
+
+    setAppState({
+      products: reset ? data.products : [...appState.products, ...data.products],
+      total: data.pagination.total,
+      hasMore: data.pagination.hasNext,
+      currentPage: reset ? 2 : appState.currentPage + 1,
+      loading: false,
+    });
+
+    return data.pagination.hasNext;
+  } catch (error) {
+    console.error("상품 로딩 실패:", error);
+    setAppState({ loading: false });
+    return false;
+  }
+}
+
+function initInfiniteScroll() {
+  if (infiniteScroll) {
+    infiniteScroll.destroy();
+  }
+
+  infiniteScroll = new InfiniteScroll(loadProducts, {
+    threshold: 200,
+    delay: 100,
+  });
+  infiniteScroll.init();
+}
+
+const applyFilter = async (newFilterValues) => {
+  const updatedFilters = {
+    ...appState.filters,
+    ...newFilterValues,
+  };
+
+  updateUrl(updatedFilters);
+
+  setAppState({
+    filters: updatedFilters,
+    products: [],
+    hasMore: true,
+    currentPage: 1,
+  });
+
+  try {
+    await loadProducts(true);
+    initInfiniteScroll();
+  } catch (error) {
+    console.error("필터 적용 실패:", error);
+  }
+};
 
 function initEventListeners() {
   const root = document.querySelector("#root");
+  const urlFilters = getFiltersFromUrl();
+
+  window.addEventListener("popstate", async () => {
+    setAppState({
+      filters: urlFilters,
+      products: [],
+      hasMore: true,
+      currentPage: 1,
+    });
+
+    try {
+      await loadProducts(true);
+      initInfiniteScroll();
+    } catch (error) {
+      console.error("페이지 네비게이션 실패:", error);
+    }
+  });
 
   root.addEventListener("change", async (event) => {
     const { target } = event;
 
     if (target.id === "limit-select") {
-      const newLimit = target.value;
-      setState({ limit: newLimit });
-
-      try {
-        console.log("새로운 limit:", newLimit);
-        const data = await getProducts({ limit: newLimit });
-        setState({ products: data.products, limit: newLimit });
-      } catch (error) {
-        console.error("상품 로딩 실패:", error);
-      }
+      await applyFilter({ limit: parseInt(target.value, 10) });
     }
 
     if (target.id === "sort-select") {
-      const newSort = target.value;
-      setState({ sort: newSort });
-
-      try {
-        const data = await getProducts({ sort: newSort });
-        setState({ products: data.products, sort: newSort });
-      } catch (error) {
-        console.error("상품 정렬 실패:", error);
-      }
+      await applyFilter({ sort: target.value });
     }
   });
 }
 
 async function main() {
-  setState({ loading: true });
+  setAppState({ loading: true });
+
+  const initialFilters = getFiltersFromUrl();
+
+  try {
+    const categories = await getCategories();
+    setAppState({ categories, loading: false, filters: initialFilters });
+  } catch (error) {
+    console.error("카테고리 로딩 실패:", error);
+    setAppState({ loading: false });
+  }
 
   initEventListeners();
 
-  const data = await getProducts({ limit: state.limit });
-  setState({
-    products: data.products,
-    total: data.pagination.total,
-    loading: false,
-  });
-
-  const category = await getCategories();
-  setState({ categories: category });
+  try {
+    await loadProducts(true);
+    initInfiniteScroll();
+  } catch (error) {
+    console.error("초기 상품 로딩 실패:", error);
+  }
 }
 
 // 애플리케이션 시작

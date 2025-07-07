@@ -72,12 +72,12 @@ export default function HomPage(state) {
               <!-- 페이지당 상품 수 -->
               ${LimitSelect({
                 options: LIMIT_OPTIONS,
-                selectedValue: state.limit,
+                selectedValue: state.filters.limit,
               })}
               <!-- 정렬 -->
                ${SortSelect({
                  options: SORT_OPTIONS,
-                 selectedValue: state.sort,
+                 selectedValue: state.filters.sort,
                })}
             </div>
           </div>
@@ -93,7 +93,15 @@ export default function HomPage(state) {
             <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
                 ${state.loading ? ProductListSkeleton : state.products.map(ProductItem).join("")}
             </div>
-            
+            ${
+              state.loading && state.products.length > 0
+                ? /*html*/ `
+                  <div class="text-center py-4">
+                    <div class="text-sm text-gray-600">상품을 불러오는 중...</div>
+                  </div>
+                `
+                : ""
+            }
             <div class="text-center py-4 text-sm text-gray-500">
               모든 상품을 확인했습니다
             </div>
