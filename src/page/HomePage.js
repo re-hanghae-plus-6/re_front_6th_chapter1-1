@@ -24,7 +24,7 @@ const initialState = {
 let store = null;
 let prevState = { ...initialState };
 
-export default function HomePage({ cartCount = 0, onNavigate = null }) {
+export default function HomePage({ cartCount = 0 }) {
   if (!store) {
     store = createStore(initialState);
 
@@ -37,7 +37,7 @@ export default function HomePage({ cartCount = 0, onNavigate = null }) {
       }
       // 렌더링 (라우터에서 직접 호출 시 중복 렌더 방지)
       if (window.location.pathname === "/") {
-        render(state, cartCount, onNavigate);
+        render(state, cartCount);
       }
       prevState = { ...state };
     });
@@ -51,7 +51,7 @@ export default function HomePage({ cartCount = 0, onNavigate = null }) {
 
   // HTML과 cleanup 함수를 함께 반환
   return {
-    html: render(store.getState(), cartCount, onNavigate),
+    html: render(store.getState(), cartCount),
     cleanup: () => {
       cleanup();
     },
@@ -76,7 +76,7 @@ function cleanup() {
 }
 
 // 렌더링 함수
-function render(state, cartCount, onNavigate) {
+function render(state, cartCount) {
   const $root = document.getElementById("root");
   if (!$root) return "";
 
@@ -103,7 +103,7 @@ function render(state, cartCount, onNavigate) {
     title: "쇼핑몰",
   });
 
-  attachEventListeners(onNavigate);
+  attachEventListeners();
 }
 
 // 이전 상태와 현재 상태 변경을 감지
@@ -241,7 +241,8 @@ async function loadMoreProducts() {
 }
 
 // 이벤트 리스너 등록
-function attachEventListeners(onNavigate) {
+function attachEventListeners() {
+  console.log("이베");
   // 검색
   const searchInput = document.querySelector("#search-input");
   if (searchInput) {
@@ -295,6 +296,7 @@ function attachEventListeners(onNavigate) {
   const resetBtn = document.querySelector("[data-breadcrumb='reset']");
   if (resetBtn) {
     resetBtn.onclick = () => {
+      window.pushState({}, "", "/");
       store.setState({
         selectedCategory1: "",
         selectedCategory2: "",
@@ -309,6 +311,7 @@ function attachEventListeners(onNavigate) {
   const bcCategory1Btn = document.querySelector("[data-breadcrumb='category1']");
   if (bcCategory1Btn) {
     bcCategory1Btn.onclick = (e) => {
+      console.log("bcCategory1Btn.onclick", e.target.getAttribute("data-category1"));
       store.setState({
         selectedCategory1: e.target.getAttribute("data-category1"),
         selectedCategory2: "",
@@ -320,8 +323,9 @@ function attachEventListeners(onNavigate) {
   // 상품 상세 이동
   document.querySelectorAll("[data-product-link]").forEach((link) => {
     link.onclick = (e) => {
+      console.log("link.onclick", e.currentTarget.getAttribute("data-product-link"));
       const productId = e.currentTarget.getAttribute("data-product-link");
-      if (productId && onNavigate) onNavigate(`/product/${productId}`);
+      window.navigateTo(`/product/${productId}`);
     };
   });
 
