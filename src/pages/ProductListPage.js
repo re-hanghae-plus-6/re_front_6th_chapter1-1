@@ -15,6 +15,7 @@ const defaultParams = {
   sort: "price_asc",
   search: "",
   category1: "",
+  category2: "",
   page: 1,
 };
 
