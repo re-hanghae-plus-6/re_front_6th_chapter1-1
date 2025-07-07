@@ -1,6 +1,4 @@
-import { LimitSelect } from "../components/limitSelect.js";
-import { getProducts } from "../api/productApi.js";
-import { getCategories } from "../api/productApi.js";
+import { LimitSelect } from "../components/LimitSelect.js";
 
 const LoadingUI = `
   <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
@@ -15,39 +13,6 @@ const LoadingUI = `
 `;
 
 const LoadingUIList = LoadingUI.repeat(4);
-
-const limitSelect = document.getElementById("limit-select");
-console.log("limitSelect:", limitSelect);
-
-// 상품 기본 노출 개수 초기값 20
-let defaultLimit = 20;
-
-export async function renderMainPage(props = {}) {
-  console.log("renderMainPage called with props:", props);
-  const app = document.getElementById("root");
-
-  // 로딩 표시
-  app.innerHTML = MainPage({ ...props, loading: true, limit: defaultLimit, products: [] });
-
-  // 데이터 fetch
-  const [
-    {
-      products,
-      pagination: { total },
-    },
-    categories,
-  ] = await Promise.all([getProducts({ limit: defaultLimit }), getCategories()]);
-
-  // 실제 렌더링
-  app.innerHTML = MainPage({ products, total, categories, loading: false, limit: defaultLimit });
-
-  if (limitSelect) {
-    limitSelect.onchange = (e) => {
-      defaultLimit = Number(e.target.value);
-      renderMainPage();
-    };
-  }
-}
 
 const ProductItem = (product) => {
   return `
