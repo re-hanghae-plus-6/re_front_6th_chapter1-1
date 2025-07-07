@@ -1,4 +1,5 @@
 export default function RelatedProducts({ products = [] }) {
+  console.log("[RelatedProducts] render", products.length);
   if (products.length === 0) return "";
 
   return /* HTML */ `
