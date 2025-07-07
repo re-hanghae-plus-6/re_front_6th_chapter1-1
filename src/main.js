@@ -1,4 +1,4 @@
-import { createApp } from "./app.js";
+import App from "./app.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -8,8 +8,7 @@ const enableMocking = () =>
   );
 
 async function main() {
-  const app = createApp();
-  await app.init();
+  App();
 }
 
 if (import.meta.env.MODE !== "test") {
