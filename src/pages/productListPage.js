@@ -1,5 +1,7 @@
 import { ProductCard } from "../components/ProductCard.js";
 
+const LIMIT_OPTIONS = [10, 20, 50, 100];
+
 export const ProductListPage = ({ products = [], loading = false, error = null, pagination = { total: 0 } }) => {
   const renderProductCards = () => {
     if (loading) {
@@ -75,18 +77,10 @@ export const ProductListPage = ({ products = [], loading = false, error = null, 
                 <label class="text-sm text-gray-600">개수:</label>
                 <select id="limit-select"
                         class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-                <option value="10">
-                    10개
-                </option>
-                <option value="20" selected="">
-                    20개
-                </option>
-                <option value="50">
-                    50개
-                </option>
-                <option value="100">
-                    100개
-                </option>
+                    ${LIMIT_OPTIONS.map(
+                      (limit) =>
+                        `<option value="${limit}" ${pagination.limit === limit ? "selected" : ""}>${limit}개</option>`,
+                    ).join("")}
                 </select>
             </div>
             <!-- 정렬 -->
