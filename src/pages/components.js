@@ -85,7 +85,7 @@ export function productItem(product) {
     </div>
   </div> `;
 }
-export function ProductContent(products) {
+export function ProductContent(products, searchParams) {
   return /* HTML */ `
     <div class="bg-gray-50">
       <header class="bg-white shadow-sm sticky top-0 z-40">
@@ -124,7 +124,7 @@ export function ProductContent(products) {
                 type="text"
                 id="search-input"
                 placeholder="상품명을 검색해보세요..."
-                value=""
+                value="${searchParams.search}"
                 class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
@@ -176,10 +176,10 @@ export function ProductContent(products) {
                   id="limit-select"
                   class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="10">10개</option>
-                  <option value="20" selected="">20개</option>
-                  <option value="50">50개</option>
-                  <option value="100">100개</option>
+                  <option value="10" ${searchParams.limit == 10 ? "selected" : ""}>10개</option>
+                  <option value="20" ${searchParams.limit == 20 ? "selected" : ""}>20개</option>
+                  <option value="50" ${searchParams.limit == 50 ? "selected" : ""}>50개</option>
+                  <option value="100" ${searchParams.limit == 100 ? "selected" : ""}>100개</option>
                 </select>
               </div>
               <!-- 정렬 -->
@@ -190,10 +190,10 @@ export function ProductContent(products) {
                   class="text-sm border border-gray-300 rounded px-2 py-1
                              focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="price_asc" selected="">가격 낮은순</option>
-                  <option value="price_desc">가격 높은순</option>
-                  <option value="name_asc">이름순</option>
-                  <option value="name_desc">이름 역순</option>
+                  <option value="price_asc" ${searchParams.sort == "price_asc" ? "selected" : ""}>가격 낮은순</option>
+                  <option value="price_desc" ${searchParams.sort == "price_desc" ? "selected" : ""}>가격 높은순</option>
+                  <option value="name_asc" ${searchParams.sort == "name_asc" ? "selected" : ""}>이름순</option>
+                  <option value="name_desc" ${searchParams.sort == "name_desc" ? "selected" : ""}>이름 역순</option>
                 </select>
               </div>
             </div>
