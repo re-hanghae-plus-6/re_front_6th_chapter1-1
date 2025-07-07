@@ -3,7 +3,7 @@ import ProductGrid from "../components/product/ProductGrid.js";
 import MainLayout from "../components/layout/MainLayout.js";
 import { getProducts, getCategories } from "../api/productApi.js";
 import createStore from "../core/store.js";
-import { getQueryParams, updateQueryParams } from "../core/router.js";
+import { getQueryParams, updateQueryParams, useNavigate } from "../core/router.js";
 import { stateToQueryParams, queryParamsToState } from "../utils/urlStateUtils.js";
 
 const initialState = {
@@ -242,7 +242,6 @@ async function loadMoreProducts() {
 
 // 이벤트 리스너 등록
 function attachEventListeners() {
-  console.log("이베");
   // 검색
   const searchInput = document.querySelector("#search-input");
   if (searchInput) {
@@ -296,7 +295,7 @@ function attachEventListeners() {
   const resetBtn = document.querySelector("[data-breadcrumb='reset']");
   if (resetBtn) {
     resetBtn.onclick = () => {
-      window.pushState({}, "", "/");
+      window.navigateTo("/");
       store.setState({
         selectedCategory1: "",
         selectedCategory2: "",
@@ -321,11 +320,11 @@ function attachEventListeners() {
   }
 
   // 상품 상세 이동
+  const navigate = useNavigate();
   document.querySelectorAll("[data-product-link]").forEach((link) => {
     link.onclick = (e) => {
-      console.log("link.onclick", e.currentTarget.getAttribute("data-product-link"));
       const productId = e.currentTarget.getAttribute("data-product-link");
-      window.navigateTo(`/product/${productId}`);
+      navigate(`/product/${productId}`);
     };
   });
 

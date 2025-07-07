@@ -1,101 +1,61 @@
-import { createRouter, setupRouter } from "./core/router";
+import { createRouter, setupRouter as registerRouter } from "./core/router";
 import HomePage from "./page/HomePage";
 import ProductDetailPage from "./page/ProductDetailPage";
 import NotFoundPage from "./page/NotFoundPage";
 import { getProduct } from "./api/productApi";
 
-/**
- * 라우트 렌더러 클래스
- * 라우터와 DOM 조작을 분리하여 관심사 분리
- */
-class RouteRenderer {
-  constructor() {
-    this.currentUnsubscribe = null;
-    this.currentCleanup = null;
-    // 루트 엘리먼트 변경 감지 (테스트 환경에서 root를 비우는 경우 대응)
-    this.rootElement = document.getElementById("root");
+function createRouteRenderer() {
+  let currentCleanup = null;
+  let lastRouteData = null;
 
-    // MutationObserver를 사용하여 root가 비워지면 현재 라우트를 다시 렌더링
-    if (this.rootElement) {
-      this._rootObserver = new MutationObserver(() => {
-        if (this.rootElement.childElementCount === 0 && this.lastRouteData) {
-          // 기존 cleanup 수행 (안전)
-          this.cleanup();
-          // 마지막 라우트 데이터로 재렌더링
-          this.render(this.lastRouteData);
-        }
-      });
+  const rootElement = document.getElementById("root");
 
-      this._rootObserver.observe(this.rootElement, {
-        childList: true,
-      });
-    }
+  // root가 비워지면 마지막 라우트 재렌더링
+  let rootObserver = null;
+  if (rootElement) {
+    rootObserver = new MutationObserver(() => {
+      if (rootElement.childElementCount === 0 && lastRouteData) {
+        cleanup();
+        render(lastRouteData);
+      }
+    });
+    rootObserver.observe(rootElement, { childList: true });
   }
 
-  /**
-   * 컴포넌트 렌더링
-   * @param {Object} routeData - 라우트 데이터
-   */
-  async render(routeData) {
-    if (!routeData || !routeData.route || !routeData.route.component) {
-      return;
-    }
+  function attachComponentEventListeners() {
+    // 내부 처리 필요 시 확장
+  }
 
-    // 마지막 라우트 데이터 저장 (재렌더링 용도)
-    this.lastRouteData = routeData;
+  async function render(routeData) {
+    if (!routeData || !routeData.route || !routeData.route.component) return;
 
+    lastRouteData = routeData;
     const { route, params, data } = routeData;
 
     try {
-      // 이전 컴포넌트 정리
-      this.cleanup();
+      cleanup();
 
-      // 컴포넌트 실행 (동기/비동기 대응)
       const result = route.component({ ...params, ...data });
       const componentResult = result instanceof Promise ? await result : result;
 
-      // 컴포넌트가 { html, cleanup } 객체를 반환하는 경우
+      const $root = document.getElementById("root");
+      if (!$root) return;
+
       if (componentResult && typeof componentResult === "object" && componentResult.html) {
-        const $root = document.getElementById("root");
-        if ($root) {
-          $root.innerHTML = componentResult.html;
-        }
-
-        // cleanup 함수 저장
-        this.currentCleanup = componentResult.cleanup;
-
-        // 컴포넌트별 이벤트 리스너 연결
-        this.attachComponentEventListeners();
+        $root.innerHTML = componentResult.html;
+        currentCleanup = componentResult.cleanup;
+        attachComponentEventListeners();
+      } else if (typeof componentResult === "string") {
+        $root.innerHTML = componentResult;
+        attachComponentEventListeners();
       }
-      // 단순 HTML 문자열인 경우 (기존 방식)
-      else if (typeof componentResult === "string") {
-        const $root = document.getElementById("root");
-        if ($root) {
-          $root.innerHTML = componentResult;
-        }
-
-        // 컴포넌트별 이벤트 리스너 연결
-        this.attachComponentEventListeners();
-      }
-    } catch (error) {
-      console.error("Component render error:", error);
-      this.renderError(error);
+    } catch (err) {
+      console.error("Component render error:", err);
+      renderError(err);
     }
   }
 
-  /**
-   * 컴포넌트별 이벤트 리스너 연결
-   */
-  attachComponentEventListeners() {
-    // ProductDetailPage는 내부에서 이벤트 리스너를 처리하므로 별도 처리 불필요
-    // 추가 컴포넌트 이벤트 리스너는 여기에 추가
-  }
-
-  /**
-   * 에러 렌더링
-   * @param {Error} error - 에러 객체
-   */
-  renderError(error) {
+  function renderError(error) {
     const $root = document.getElementById("root");
     if ($root) {
       $root.innerHTML = `
@@ -104,12 +64,7 @@ class RouteRenderer {
             <div class="text-center">
               <h1 class="text-2xl font-bold text-red-600 mb-4">오류가 발생했습니다</h1>
               <p class="text-gray-600 mb-6">${error.message}</p>
-              <button 
-                onclick="window.location.reload()" 
-                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-              >
-                페이지 새로고침
-              </button>
+              <button onclick="window.location.reload()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">페이지 새로고침</button>
             </div>
           </div>
         </div>
@@ -117,168 +72,114 @@ class RouteRenderer {
     }
   }
 
-  /**
-   * 현재 컴포넌트 정리
-   */
-  cleanup() {
-    if (this.currentCleanup) {
-      this.currentCleanup();
-      this.currentCleanup = null;
+  function cleanup() {
+    if (currentCleanup) {
+      currentCleanup();
+      currentCleanup = null;
     }
   }
 
-  /**
-   * 렌더러 리소스 정리
-   */
-  destroy() {
-    this.cleanup();
-    if (this.currentUnsubscribe) {
-      this.currentUnsubscribe();
-      this.currentUnsubscribe = null;
-    }
-
-    // MutationObserver 해제
-    if (this._rootObserver) {
-      this._rootObserver.disconnect();
-      this._rootObserver = null;
+  function destroy() {
+    cleanup();
+    if (rootObserver) {
+      rootObserver.disconnect();
+      rootObserver = null;
     }
   }
+
+  return { render, destroy };
 }
 
-/**
- * 애플리케이션 메인 클래스
- */
-class Application {
-  constructor() {
-    this.router = null;
-    this.renderer = null;
-    this.routerUnsubscribe = null;
-    this.globalClickHandler = this.handleGlobalClick.bind(this);
-  }
+/* ------------------------------------------------------------------
+ * Application (functional)
+ * ------------------------------------------------------------------ */
+function createApplication() {
+  let router = null;
+  let renderer = null;
+  let routerUnsubscribe = null;
 
-  /**
-   * 애플리케이션 초기화
-   */
-  async init() {
-    try {
-      // 라우터 설정
-      this.setupRouter();
-
-      // 렌더러 설정
-      this.renderer = new RouteRenderer();
-
-      // 글로벌 이벤트 리스너 설정
-      this.setupGlobalEventListeners();
-
-      // 라우터 초기화
-      await this.router.init();
-
-      console.log("App initialized successfully");
-    } catch (error) {
-      console.error("App initialization failed:", error);
-    }
-  }
-
-  /**
-   * 라우터 설정
-   */
-  setupRouter() {
-    const routes = [
-      {
-        path: "/",
-        component: () => HomePage({ cartCount: 0, onNavigate: null }),
-      },
-      {
-        path: "/product/:id",
-        component: ({ product }) => ProductDetailPage({ product, cartCount: 0, onNavigate: null }),
-        loader: async ({ id }) => {
-          try {
-            const product = await getProduct(id);
-            return { product };
-          } catch (error) {
-            console.error("Failed to load product detail:", error);
-            throw error;
-          }
-        },
-      },
-      {
-        path: "/404",
-        component: NotFoundPage,
-      },
-    ];
-
-    this.router = createRouter();
-    this.router.addRoutes(routes);
-    setupRouter(this.router);
-
-    // 라우터 변경 리스너 등록
-    this.routerUnsubscribe = this.router.subscribe(async (routeData) => {
-      await this.renderer.render(routeData);
-    });
-  }
-
-  /**
-   * 글로벌 이벤트 리스너 설정
-   */
-  setupGlobalEventListeners() {
-    document.addEventListener("click", this.globalClickHandler);
-  }
-
-  /**
-   * 글로벌 클릭 이벤트 핸들러
-   * @param {Event} e - 클릭 이벤트
-   */
-  handleGlobalClick(e) {
-    // 링크 클릭 이벤트 처리
+  const globalClickHandler = (e) => {
     const link = e.target.closest("[data-link]");
     if (link) {
       e.preventDefault();
       window.navigateTo(link.getAttribute("href"));
-      return;
+    }
+  };
+
+  function setupGlobalEventListeners() {
+    document.addEventListener("click", globalClickHandler);
+  }
+  function removeGlobalEventListeners() {
+    document.removeEventListener("click", globalClickHandler);
+  }
+
+  function configureRouter() {
+    const routes = [
+      { path: "/", component: () => HomePage({ cartCount: 0 }) },
+      {
+        path: "/product/:id",
+        component: ({ product }) => ProductDetailPage({ product, cartCount: 0 }),
+        loader: async ({ id }) => {
+          try {
+            const product = await getProduct(id);
+            return { product };
+          } catch (err) {
+            console.error("Failed to load product detail:", err);
+            throw err;
+          }
+        },
+      },
+      { path: "/404", component: NotFoundPage },
+    ];
+
+    router = createRouter();
+    router.addRoutes(routes);
+    registerRouter(router);
+
+    routerUnsubscribe = router.subscribe(async (routeData) => {
+      await renderer.render(routeData);
+    });
+  }
+
+  async function init() {
+    try {
+      renderer = createRouteRenderer();
+      setupGlobalEventListeners();
+      configureRouter();
+      await router.init();
+      console.log("App initialized successfully");
+    } catch (err) {
+      console.error("App initialization failed:", err);
     }
   }
 
-  /**
-   * 애플리케이션 정리
-   */
-  destroy() {
-    // 이벤트 리스너 정리
-    document.removeEventListener("click", this.globalClickHandler);
-
-    // 라우터 구독 해제
-    if (this.routerUnsubscribe) {
-      this.routerUnsubscribe();
-      this.routerUnsubscribe = null;
+  function destroy() {
+    removeGlobalEventListeners();
+    if (routerUnsubscribe) {
+      routerUnsubscribe();
+      routerUnsubscribe = null;
     }
-
-    // 렌더러 정리
-    if (this.renderer) {
-      this.renderer.destroy();
-      this.renderer = null;
+    if (renderer) {
+      renderer.destroy();
+      renderer = null;
     }
-
-    // 라우터 정리는 setupRouter에서 자동으로 처리됨
-    this.router = null;
+    router = null; // cleanupRouter는 core/router 내부에서 처리
   }
+
+  return { init, destroy };
 }
 
-// 애플리케이션 인스턴스
+// 싱글톤 인스턴트
 let appInstance = null;
 
-/**
- * 애플리케이션 시작
- */
 export default function App() {
   if (!appInstance) {
-    appInstance = new Application();
+    appInstance = createApplication();
     appInstance.init();
   }
   return appInstance;
 }
 
-/**
- * 애플리케이션 정리 (테스트나 개발 시 사용)
- */
 export function destroyApp() {
   if (appInstance) {
     appInstance.destroy();
