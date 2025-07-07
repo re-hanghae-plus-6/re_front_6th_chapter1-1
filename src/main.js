@@ -28,12 +28,10 @@ class SPAService {
 }
 
 function main() {
-  const spaService = new SPAService();
-
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", spaService);
+    document.addEventListener("DOMContentLoaded", () => new SPAService());
   } else {
-    spaService;
+    new SPAService();
   }
 }
 
