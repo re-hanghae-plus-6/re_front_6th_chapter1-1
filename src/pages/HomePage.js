@@ -55,12 +55,8 @@ const CategoryButton = (category) => {
 
 export const HomePage = ({ products = [], total = 0, loading = false, categories = {}, productCount = 20 }) => {
   const categoryList = Object.keys(categories);
-  console.log("categoryList", categoryList);
-
-  console.log("productCount", productCount);
 
   const currentProducts = products.slice(0, productCount);
-  console.log("currentProducts", currentProducts);
 
   return `
 <div class="min-h-screen bg-gray-50">
