@@ -7,13 +7,20 @@ const enableMocking = () =>
     }),
   );
 
-let searchState = {
-  page: 1,
+let pageState = {
+  hasNext: false,
+  hasPrev: false,
   limit: 20,
-  search: "",
-  sort: "price_asc",
+  page: 1,
+  total: 0,
+  totalPages: 0,
+};
+
+let filterState = {
   category1: "",
   category2: "",
+  search: "",
+  sort: "price_asc",
 };
 
 let state = {
@@ -31,8 +38,11 @@ async function getProducts(searchState) {
     const response = await fetch(`/api/products?${params.toString()}`);
     if (!response.ok) throw new Error("네트워크 오류");
     const data = await response.json();
-    state.products = [...state.products, ...data.products];
-    console.log(data.products);
+    const { products, pagination, filters } = data;
+    state.products = [...state.products, ...products];
+    pageState = { ...pageState, ...pagination };
+    filterState = { ...filterState, ...filters };
+    // console.log(data);
     state.error = null;
   } catch (error) {
     state.error = error.message;
@@ -47,52 +57,57 @@ function render() {
   if (state.isLoading) {
     root.innerHTML = LoadingContent();
   } else if (state.products) {
-    root.innerHTML = ProductContent(state.products, searchState);
+    root.innerHTML = ProductContent(state.products, { ...filterState, ...pageState });
   }
   if (state.error) {
     root.innerHTML = toast("error");
   }
 }
+
 function setEventListener() {
   const debouncedGetProducts = debounce(() => {
-    getProducts(searchState);
+    getProducts(filterState);
   }, 1500);
 
   document.getElementById("root").addEventListener("input", (e) => {
     if (e.target && e.target.id === "search-input") {
-      searchState.search = e.target.value;
+      filterState.search = e.target.value;
       debouncedGetProducts();
     }
   });
 
   document.getElementById("root").addEventListener("change", (e) => {
     if (e.target && e.target.id === "limit-select") {
-      searchState.limit = parseInt(e.target.value, 10);
-      getProducts(searchState);
+      pageState.limit = parseInt(e.target.value, 10);
+      getProducts(pageState);
     }
   });
 
   document.getElementById("root").addEventListener("change", (e) => {
     if (e.target && e.target.id === "sort-select") {
-      searchState.sort = e.target.value;
-      getProducts(searchState);
+      filterState.sort = e.target.value;
+      getProducts(filterState);
     }
   });
 
   window.addEventListener("scroll", () => {
-    const scrollTop = window.scrollY; // 현재 스크롤 위치
-    const windowHeight = window.innerHeight; // 브라우저 창 높이
-    const documentHeight = document.body.scrollHeight; // 전체 문서 높이
-    if (scrollTop + windowHeight >= documentHeight - 10 && !state.isFetching) {
+    const scrollTop = window.scrollY;
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.body.scrollHeight;
+    if (
+      scrollTop + windowHeight >= documentHeight - 10 &&
+      !state.isFetching &&
+      pageState.hasNext // 다음 페이지가 있을 때만 요청
+    ) {
       state.isFetching = true;
-      searchState.page = searchState.page + 1;
-      getProducts(searchState);
+      pageState.page += 1; // pageState에 page가 있으므로 여기서 증가
+      getProducts();
     }
   });
 }
 
 function main() {
-  getProducts(searchState);
+  getProducts(filterState);
   setEventListener();
 }
 
