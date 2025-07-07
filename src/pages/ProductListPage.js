@@ -8,22 +8,25 @@ import { Component } from "../core/Component";
 export class ProductListPage extends Component {
   constructor(router) {
     super("#root");
+
+    const params = new URLSearchParams(window.location.search);
+
+    this.router = router;
     this.state = {
       loading: false,
       products: [],
-      pagination: {},
+      pagination: {
+        limit: parseInt(params.get("limit")) || 20,
+      },
       filters: {},
       categories: {},
     };
 
-    this.router = router;
     this.#attachEventListeners();
     this.#loadProductsAndCategories();
   }
 
   render() {
-    console.log("### state", this.state);
-
     this.element.innerHTML =
       /* HTML */
       `<div class="min-h-screen bg-gray-50">
@@ -77,10 +80,10 @@ export class ProductListPage extends Component {
                     id="limit-select"
                     class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                   >
-                    <option value="10">10개</option>
-                    <option value="20" selected="">20개</option>
-                    <option value="50">50개</option>
-                    <option value="100">100개</option>
+                    <option value="10" ${this.state.pagination.limit === 10 ? "selected" : ""}>10개</option>
+                    <option value="20" ${this.state.pagination.limit === 20 ? "selected" : ""}>20개</option>
+                    <option value="50" ${this.state.pagination.limit === 50 ? "selected" : ""}>50개</option>
+                    <option value="100" ${this.state.pagination.limit === 100 ? "selected" : ""}>100개</option>
                   </select>
                 </div>
                 <!-- 정렬 -->
@@ -137,26 +140,76 @@ export class ProductListPage extends Component {
   }
 
   async #loadProductsAndCategories() {
+    this.setState({ loading: true });
+
     try {
-      this.setState({ loading: true });
-      const [products, categories] = await Promise.all([getProducts(), getCategories()]);
-      this.setState({ ...products, categories });
+      const [products, categories] = await Promise.all([
+        getProducts({
+          page: 1,
+          limit: this.state.pagination.limit ?? 20,
+          search: this.state.filters.search ?? "",
+          category1: this.state.filters.category1 ?? "",
+          category2: this.state.filters.category2 ?? "",
+          sort: this.state.filters.sort ?? "price_asc",
+        }),
+        getCategories(),
+      ]);
+
+      this.setState({
+        ...products,
+        categories,
+        loading: false,
+      });
     } catch (error) {
       if (error instanceof Error) {
         console.error("상품 및 카테고리 리스트 로딩 실패:", error.message);
+        this.setState({ loading: false });
       }
-    } finally {
-      this.setState({ loading: false });
     }
   }
 
-  #attachEventListeners() {
-    if (this.state.loading) return;
+  async #reloadProducts(params) {
+    try {
+      const products = await getProducts(params);
+      this.setState({ ...products, loading: false });
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("상품 및 카테고리 리스트 로딩 실패:", error.message);
+        this.setState({ loading: false });
+      }
+    }
+  }
 
+  #updateURLParams(newParams) {
+    const url = new URL(window.location);
+
+    Object.entries(newParams).forEach(([key, value]) => {
+      if (value && value !== "") {
+        url.searchParams.set(key, value);
+      } else {
+        url.searchParams.delete(key);
+      }
+    });
+
+    window.history.replaceState(null, "", url.toString());
+  }
+
+  async #handleLimitChange(limit) {
+    this.#updateURLParams({ limit });
+    await this.#reloadProducts({ limit });
+  }
+
+  #attachEventListeners() {
     this.element.addEventListener("click", (e) => {
       const route = e.target.dataset.route;
       if (route) {
         this.router.navigate(route);
+      }
+    });
+
+    this.element.addEventListener("change", (e) => {
+      if (e.target.id === "limit-select") {
+        this.#handleLimitChange(e.target.value);
       }
     });
   }
