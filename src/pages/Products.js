@@ -5,14 +5,9 @@ import ProductList from "../components/product/list/ProductList";
 
 function Products() {
   const updateProductsUI = ({ products }) => {
-    const productListContainer = document.getElementById("products-grid");
-    // TODO: dom 생성 후 appendChild
-    productListContainer.outerHTML = `
-      ${ProductList({
-        products,
-        loading: false,
-      })}
-    `;
+    const productListElement = document.getElementById("products-grid");
+
+    productListElement.replaceWith(ProductList({ products, loading: false }));
   };
 
   const updateTotalProductsCountUI = ({ count }) => {

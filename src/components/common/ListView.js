@@ -1,7 +1,20 @@
-function ListView({ id = "", list, renderItem, className = "" }) {
-  return /* HTML */ `
-    <div class="${className}" id="${id}">${list.map((item, index) => renderItem(item, index)).join("")}</div>
-  `;
+function ListView({ id = "", tag = "ul", list, renderItem, className = "" }) {
+  const container = document.createElement(tag);
+  container.setAttribute("class", className);
+  container.setAttribute("id", id);
+
+  list.forEach((item) => {
+    const itemElement = document.createElement("li");
+    const itemContent = renderItem(item);
+    if (itemContent instanceof Node) {
+      itemElement.appendChild(itemContent);
+    } else {
+      itemElement.innerHTML = itemContent;
+    }
+    container.appendChild(itemElement);
+  });
+
+  return container;
 }
 
 export default ListView;

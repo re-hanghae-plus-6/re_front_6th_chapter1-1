@@ -1,12 +1,8 @@
-import { View } from "../utils/view";
-
 function Product() {
-  return new View({
-    view: `
+  return `
     ${상세페이지_로딩}
     ${상세페이지_로딩완료}
-    `,
-  });
+    `;
 }
 
 const 상세페이지_로딩 = `
