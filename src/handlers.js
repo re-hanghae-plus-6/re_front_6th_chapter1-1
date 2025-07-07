@@ -32,17 +32,30 @@ function closeCartModal() {
   }
 }
 
-/** 장바구니 닫는 함수 */
-// function closeCartModal() {
-//   const cartModalCloseBtn = document.getElementById("cart-modal-close-btn");
-
-//   cartModalCloseBtn.addEventListener("click", () => {
-//     const modalPortal = document.getElementById("modal-portal");
-//     if (modalPortal) {
-//       modalPortal.innerHTML = "";
-//     }
-//   });
-// }
+/** 장바구니 상품 수량 클릭 함수 */
+function cartQuantityHandler(state, render) {
+  document.addEventListener("click", (e) => {
+    // 플러스 버튼
+    if (e.target.closest(".quantity-increase-btn")) {
+      const productId = e.target.closest(".quantity-increase-btn").dataset.productId;
+      const product = state.products.find((p) => p.productId === productId);
+      if (product) {
+        state.cart = [...state.cart, product];
+        render();
+      }
+    }
+    // 마이너스 버튼
+    if (e.target.closest(".quantity-decrease-btn")) {
+      const productId = e.target.closest(".quantity-decrease-btn").dataset.productId;
+      // cart에서 해당 productId를 가진 첫 번째 항목만 제거
+      const idx = state.cart.findIndex((c) => c.productId === productId);
+      if (idx !== -1) {
+        state.cart = [...state.cart.slice(0, idx), ...state.cart.slice(idx + 1)];
+        render();
+      }
+    }
+  });
+}
 
 /** 개수 변경 함수 */
 function limitHandler(state, render) {
@@ -344,6 +357,7 @@ export default function handlers(state, render) {
   handleCategory1Filter(state, render);
   handleCategory2Filter(state, render);
   handleSetupBreadcrumb(state, render);
+  cartQuantityHandler(state, render);
 
   const searchInput = document.getElementById("search-input");
   if (searchInput) {
