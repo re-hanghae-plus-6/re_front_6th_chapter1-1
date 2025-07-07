@@ -27,11 +27,28 @@ export function reducer(state, action) {
         },
       };
 
+    case ACTIONS.CHANGE_LIMIT:
+      return {
+        ...state,
+        filters: { ...state.filters, limit: action.payload },
+        pagination: {
+          ...state.pagination,
+          page: 1,
+          limit: action.payload,
+        },
+      };
+
     case ACTIONS.SLICE_LIST:
       return {
         ...state,
         products: state.products.slice(0, action.payload),
         pagination: { ...state.pagination, limit: action.payload },
+      };
+
+    case ACTIONS.CHANGE_SORT:
+      return {
+        ...state,
+        filters: { ...state.filters, sort: action.payload },
       };
 
     default:

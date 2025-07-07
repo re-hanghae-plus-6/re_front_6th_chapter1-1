@@ -7,23 +7,35 @@ export class ProductListController {
     this.setupEventListeners();
   }
 
+  get state() {
+    return store.getState();
+  }
+
   setupEventListeners() {
     document.addEventListener("change", (event) => {
       if (event.target.id === "limit-select") {
         this.handleLimitChange(event);
+      }
+      if (event.target.id === "sort-select") {
+        this.handleSortChange(event);
       }
     });
   }
 
   handleLimitChange(event) {
     const newSelectLimit = parseInt(event.target.value);
-    const state = store.getState();
 
-    if (state.products.length >= newSelectLimit) {
+    if (this.state.products.length >= newSelectLimit) {
       store.dispatch(actions.sliceList(newSelectLimit));
     }
 
-    store.dispatch(actions.changeFilters({ limit: newSelectLimit }));
+    store.dispatch(actions.changeLimit(newSelectLimit));
+    this.fetchProducts();
+  }
+
+  handleSortChange(event) {
+    const newSelectSort = event.target.value;
+    store.dispatch(actions.changeSorts(newSelectSort));
     this.fetchProducts();
   }
 
@@ -31,12 +43,12 @@ export class ProductListController {
     store.dispatch(actions.loadProducts());
 
     try {
-      const state = store.getState();
-      const { pagination } = state;
+      const { pagination, filters } = this.state;
 
       const params = {
         page: pagination.page,
         limit: pagination.limit,
+        sort: filters?.sort,
       };
 
       const data = await getProducts(params);
