@@ -1,7 +1,5 @@
-import { Router } from './utils/router.js';
-import HomePage from './pages/HomePage.js';
-import NotFoundPage from './pages/NotFoundPage.js';
-import ExamplePage from './pages/ExamplePage.js';
+import { createRouter } from './utils/router.js';
+import { ROUTES } from './constants/routes.js';
 
 const enableMocking = () =>
   import('./mocks/browser.js').then(({ worker }) =>
@@ -10,26 +8,8 @@ const enableMocking = () =>
     }),
   );
 
-async function main() {
-  const router = new Router();
-  router.addRoute('/', {
-    component: HomePage,
-  });
-  router.addRoute('/example', {
-    component: ExamplePage,
-  });
-  router.addRoute('/404', {
-    component: NotFoundPage,
-  });
-
-  router.init();
-
-  document.body.addEventListener('click', (e) => {
-    if (e.target.matches('a[data-link]')) {
-      e.preventDefault();
-      router.navigateTo(e.target.getAttribute('href'));
-    }
-  });
+function main() {
+  createRouter(ROUTES);
 }
 
 // 애플리케이션 시작
