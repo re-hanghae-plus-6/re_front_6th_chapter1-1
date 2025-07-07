@@ -6,21 +6,7 @@ import { getProduct } from "./api/productApi";
 import { openCartModal, addToCartById, updateCartBadge } from "./core/cart";
 
 function createRouteRenderer() {
-  let lastRouteData = null;
   let componentCleanup = null;
-  const rootElement = document.getElementById("root");
-
-  // root가 비워지면 마지막 라우트 재렌더링
-  let rootObserver = null;
-  if (rootElement) {
-    rootObserver = new MutationObserver(() => {
-      if (rootElement.childElementCount === 0 && lastRouteData) {
-        cleanup();
-        render(lastRouteData);
-      }
-    });
-    rootObserver.observe(rootElement, { childList: true });
-  }
 
   function attachComponentEventListeners() {
     // 내부 처리 필요 시 확장
@@ -29,7 +15,6 @@ function createRouteRenderer() {
   async function render(routeData) {
     if (!routeData || !routeData.route || !routeData.route.component) return;
 
-    lastRouteData = routeData;
     const { route, params, data } = routeData;
 
     try {
@@ -74,10 +59,6 @@ function createRouteRenderer() {
 
   function destroy() {
     cleanup();
-    if (rootObserver) {
-      rootObserver.disconnect();
-      rootObserver = null;
-    }
   }
 
   return { render, destroy };
