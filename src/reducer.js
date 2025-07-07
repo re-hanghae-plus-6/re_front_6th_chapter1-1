@@ -16,6 +16,24 @@ export function reducer(state, action) {
     case ACTIONS.LOAD_ERROR:
       return { ...state, loading: false, error: action.payload };
 
+    case ACTIONS.CHANGE_FILTERS:
+      return {
+        ...state,
+        filters: { ...state.filters, ...action.payload },
+        pagination: {
+          ...state.pagination,
+          page: 1,
+          ...(action.payload.limit && { limit: action.payload.limit }),
+        },
+      };
+
+    case ACTIONS.SLICE_LIST:
+      return {
+        ...state,
+        products: state.products.slice(0, action.payload),
+        pagination: { ...state.pagination, limit: action.payload },
+      };
+
     default:
       return state;
   }

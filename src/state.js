@@ -12,5 +12,12 @@ export const initialState = {
     hasPrev: false,
   },
 
+  filters: {
+    search: "",
+    category1: "",
+    category2: "",
+    sort: "price_asc",
+  },
+
   currentPage: "list",
 };
