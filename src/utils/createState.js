@@ -1,25 +1,19 @@
+import { createObserver } from "./createObserver.js";
+
 export function createState(initialState) {
   let state = { ...initialState };
-  const subscribers = [];
+  const observer = createObserver();
 
   const subscribe = (callback) => {
-    subscribers.push(callback);
-
-    return () => {
-      const index = subscribers.indexOf(callback);
-      if (index > -1) {
-        subscribers.splice(index, 1);
-      }
-    };
+    observer.subscribe(callback);
+    return () => observer.unsubscribe(callback);
   };
 
   const setState = (newState) => {
     const prevState = { ...state };
     state = { ...state, ...newState };
 
-    subscribers.forEach((callback) => {
-      callback(state, prevState);
-    });
+    observer.notify(state, prevState);
   };
 
   const getState = () => ({ ...state });
