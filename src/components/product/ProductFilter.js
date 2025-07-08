@@ -3,15 +3,7 @@ import { category1DepthButton, category2DepthButton } from "../filter/CategoryBu
 
 const ProductFilter = (searchQuery) => {
   /**검색 쿼리 */
-  const {
-    categories = {},
-    selectedCategory1 = "",
-    selectedCategory2 = "",
-    isLoading = false,
-    limit = 20,
-    sort = "price_asc",
-    search = "",
-  } = searchQuery;
+  const { categories, category1, category2, isLoading, limit, sort, search } = searchQuery;
 
   // limit을 문자열로 변환
   const limitValue = String(limit);
@@ -21,17 +13,17 @@ const ProductFilter = (searchQuery) => {
       `<button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>`,
     ];
 
-    if (selectedCategory1) {
+    if (category1) {
       crumbs.push(
         `<span class="text-xs text-gray-500">&gt;</span>`,
-        `<button data-breadcrumb="category1" data-category1="${selectedCategory1}" class="text-xs hover:text-blue-800 hover:underline">${selectedCategory1}</button>`,
+        `<button data-breadcrumb="category1" data-category1="${category1}" class="text-xs hover:text-blue-800 hover:underline">${category1}</button>`,
       );
     }
 
-    if (selectedCategory2) {
+    if (category2) {
       crumbs.push(
         `<span class="text-xs text-gray-500">&gt;</span>`,
-        `<span class="text-xs text-gray-600 cursor-default">${selectedCategory2}</span>`,
+        `<span class="text-xs text-gray-600 cursor-default">${category2}</span>`,
       );
     }
 
@@ -40,12 +32,8 @@ const ProductFilter = (searchQuery) => {
 
   const renderCategoryButtons = () => {
     if (isLoading) return `<div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>`;
-    if (Object.keys(categories).length === 0)
-      return `<div class="text-sm text-gray-500">카테고리 데이터가 없습니다.</div>`;
 
-    return !selectedCategory1
-      ? category1DepthButton(categories)
-      : category2DepthButton(categories, selectedCategory1, selectedCategory2);
+    return !category1 ? category1DepthButton(categories) : category2DepthButton(categories, category1, category2);
   };
 
   return /* HTML */ `

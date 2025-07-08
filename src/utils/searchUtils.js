@@ -29,11 +29,24 @@ export function getProductListFilters() {
  */
 export const updateUrlParams = ({ key, value, resetPage = true }) => {
   const params = new URLSearchParams(window.location.search);
-  params.set(key, value);
+
+  // 빈 값이면 파라미터를 제거하고, 아니면 설정
+  if (!value || value.trim() === "") {
+    params.delete(key);
+  } else {
+    params.set(key, value);
+  }
 
   if (resetPage) {
     params.set("page", "1");
   }
+
+  // // 빈 값의 파라미터들을 모두 제거
+  // for (const [paramKey, paramValue] of params.entries()) {
+  //   if (!paramValue || paramValue.trim() === "") {
+  //     params.delete(paramKey);
+  //   }
+  // }
 
   const nextURL = `${window.location.pathname}?${params.toString()}`;
   history.pushState({}, "", nextURL);

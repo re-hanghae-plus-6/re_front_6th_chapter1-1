@@ -1,4 +1,4 @@
-import { loadProductList } from "../services/productLoader";
+import { loadProductList, loadFilter } from "../services/productLoader";
 import { getProductListFilters, updateUrlParams } from "./searchUtils";
 
 // 정렬 옵션
@@ -59,6 +59,53 @@ export const handleLimitChange = (e) => {
   }
 };
 
+export const handleCategoryClick = (e) => {
+  const target = e.target;
+
+  if (!target.matches("[data-category1]")) return;
+
+  const category1 = target.dataset.category1;
+  const category2 = target.dataset.category2;
+
+  if (category2) {
+    // 카테고리 2Depth 선택
+    updateUrlParams({ key: "category1", value: category1, resetPage: true });
+    updateUrlParams({ key: "category2", value: category2, resetPage: true });
+  } else {
+    // 카테고리 1Depth 선택 (2Depth 초기화)
+    updateUrlParams({ key: "category1", value: category1, resetPage: true });
+    updateUrlParams({ key: "category2", value: "", resetPage: true });
+  }
+
+  const query = getProductListFilters();
+  loadFilter(query);
+  loadProductList(query);
+};
+
+/** 브레드크럼 클릭 이벤트 핸들러 */
+export const handleBreadcrumbClick = (e) => {
+  const target = e.target;
+
+  if (!target.matches("[data-breadcrumb]")) return;
+
+  const breadcrumbType = target.dataset.breadcrumb;
+
+  if (breadcrumbType === "reset") {
+    // 전체로 돌아가기 (모든 카테고리 초기화)
+    updateUrlParams({ key: "category1", value: "", resetPage: true });
+    updateUrlParams({ key: "category2", value: "", resetPage: true });
+  } else if (breadcrumbType === "category1") {
+    // 상위 카테고리로 돌아가기 (category2만 초기화)
+    const category1 = target.dataset.category1;
+    updateUrlParams({ key: "category1", value: category1, resetPage: true });
+    updateUrlParams({ key: "category2", value: "", resetPage: true });
+  }
+
+  const query = getProductListFilters();
+  loadFilter(query);
+  loadProductList(query);
+};
+
 /**
  * 필터 이벤트 리스너 등록
  */
@@ -66,9 +113,14 @@ export const initializeFilterEventListeners = () => {
   // 기존 리스너 제거 (중복 방지)
   document.removeEventListener("change", handleFilterChange);
   document.removeEventListener("keydown", handleSearchSubmit);
+  document.removeEventListener("click", handleCategoryClick);
+  document.removeEventListener("click", handleBreadcrumbClick);
+
   // 새로운 리스너 등록
   document.addEventListener("change", handleFilterChange);
   document.addEventListener("keydown", handleSearchSubmit);
+  document.addEventListener("click", handleCategoryClick);
+  document.addEventListener("click", handleBreadcrumbClick);
 };
 
 /**

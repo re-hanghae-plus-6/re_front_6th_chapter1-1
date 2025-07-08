@@ -56,8 +56,8 @@ export const loadFilter = async (query = {}) => {
     limit: query.limit || 20,
     sort: query.sort || "price_asc",
     search: query.search || "",
-    selectedCategory1: query.selectedCategory1 || "",
-    selectedCategory2: query.selectedCategory2 || "",
+    category1: query.category1 || "",
+    category2: query.category2 || "",
   };
 
   // 로딩 상태 표시
