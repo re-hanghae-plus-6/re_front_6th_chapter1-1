@@ -24,6 +24,11 @@ class Store {
       this.listeners = this.listeners.filter((l) => l !== listener);
     };
   }
+
+  reset() {
+    this.state = JSON.parse(JSON.stringify(initialState));
+    this.listeners.forEach((listener) => listener(this.state));
+  }
 }
 
 export const store = new Store();

@@ -9,6 +9,8 @@ const enableMocking = () =>
     }),
   );
 
+let currentController = null;
+
 function render() {
   const state = store.getState();
   document.body.querySelector("#root").innerHTML = ProductListPage(state);
@@ -16,9 +18,40 @@ function render() {
 
 store.subscribe(render);
 
+if (import.meta.env.MODE === "test") {
+  const observer = new MutationObserver((mutations) => {
+    try {
+      if (typeof document === "undefined" || !document.body) {
+        return;
+      }
+
+      mutations.forEach(async (mutation) => {
+        if (mutation.type === "childList") {
+          const rootElement = document.body.querySelector("#root");
+          if (rootElement && rootElement.innerHTML === "") {
+            store.reset();
+            if (currentController) {
+              await currentController.initialize();
+            }
+          }
+        }
+      });
+    } catch (error) {
+      console.warn(error.message);
+    }
+  });
+
+  if (typeof document !== "undefined" && document.body) {
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+  }
+}
+
 async function main() {
-  const controller = new ProductListController();
-  await controller.initialize();
+  currentController = new ProductListController();
+  await currentController.initialize();
 }
 
 // 애플리케이션 시작
