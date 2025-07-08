@@ -1,7 +1,41 @@
 import { limitSelector } from "./limitSelector";
 import { productCard } from "./productCard";
 
-export const productListLoaded = (products, limit, searchTerm = "") => {
+export const productListLoaded = (products, limit, searchTerm = "", categories = {}, selectedCategories = {}) => {
+  const generateBreadcrumb = (selectedCategories) => {
+    const breadcrumbs = ["전체"];
+    if (selectedCategories.category1) {
+      breadcrumbs.push(selectedCategories.category1);
+    }
+    if (selectedCategories.category2) {
+      breadcrumbs.push(selectedCategories.category2);
+    }
+    return breadcrumbs;
+  };
+
+  const breadcrumbs = generateBreadcrumb(selectedCategories);
+
+  const generateCategoryButtons = (categories, depth = 1) => {
+    if (!categories || Object.keys(categories).length === 0) return "";
+
+    const buttons = Object.keys(categories)
+      .map((categoryName) => {
+        const isSelected = selectedCategories[`category${depth}`] === categoryName;
+        const selectedClass = isSelected
+          ? "bg-blue-500 text-white border-blue-500"
+          : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50";
+
+        return `
+        <button data-category${depth}="${categoryName}" class="category${depth}-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors ${selectedClass}">
+          ${categoryName}
+        </button>
+      `;
+      })
+      .join("");
+
+    return `<div class="flex flex-wrap gap-2">${buttons}</div>`;
+  };
+
   return `
     <div class="bg-gray-50">
       <header class="bg-white shadow-sm sticky top-0 z-40">
@@ -61,22 +95,33 @@ export const productListLoaded = (products, limit, searchTerm = "") => {
           <div class="space-y-3">
             <!-- 카테고리 필터 -->
             <div class="space-y-2">
-              <div class="flex items-center gap-2">
-                <label class="text-sm text-gray-600">카테고리:</label>
-                <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
+              <!-- 브레드크럼 네비게이션 -->
+              <div class="flex items-center gap-2 text-sm">
+                <span class="text-gray-600">카테고리:</span>
+                <div class="flex items-center gap-1">
+                  ${breadcrumbs
+                    .map((crumb, index) => {
+                      if (index === 0) {
+                        return `<button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">${crumb}</button>`;
+                      } else {
+                        return `
+                        <span class="text-gray-400">/</span>
+                        <button data-breadcrumb="${index}" class="text-xs hover:text-blue-800 hover:underline">${crumb}</button>
+                      `;
+                      }
+                    })
+                    .join("")}
+                </div>
               </div>
-              <!-- 1depth 카테고리 -->
+              
+              <!-- 카테고리 버튼들 -->
               <div class="flex flex-wrap gap-2">
-                <button data-category1="생활/건강" class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
-                   bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
-                  생활/건강
-                </button>
-                <button data-category1="디지털/가전" class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
-                   bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
-                  디지털/가전
-                </button>
+                ${
+                  selectedCategories.category1 && categories[selectedCategories.category1]
+                    ? generateCategoryButtons(categories[selectedCategories.category1], 2)
+                    : generateCategoryButtons(categories, 1)
+                }
               </div>
-              <!-- 2depth 카테고리 -->
             </div>
             <!-- 기존 필터들 -->
             <div class="flex gap-2 items-center justify-between">
@@ -102,6 +147,7 @@ export const productListLoaded = (products, limit, searchTerm = "") => {
             <div class="mb-4 text-sm text-gray-600">
               총 <span class="font-medium text-gray-900">${products.length}개</span>의 상품
               ${searchTerm ? ` (검색어: "${searchTerm}")` : ""}
+              ${selectedCategories.category1 ? ` (카테고리: ${breadcrumbs.slice(1).join(" > ")})` : ""}
             </div>
             <!-- 상품 그리드 -->
             <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
