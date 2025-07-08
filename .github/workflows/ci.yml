@@ -17,24 +17,9 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha }}
-
-      # ✅ 순서 바뀜: Node.js → pnpm
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: "pnpm"
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: latest
-
-      - name: Check pnpm version
-        run: pnpm --version
-
       - run: |
           pnpm install
           pnpm run test
-
   e2e:
     timeout-minutes: 60
     runs-on: ubuntu-latest
@@ -43,19 +28,13 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha }}
-
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: "pnpm"
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: latest
-
-      - name: Check pnpm version
-        run: pnpm --version
-
       - name: Install dependencies
         run: |
           pnpm install
