@@ -53,10 +53,12 @@ export function toast(action) {
       ${toastContent(action)}
     </div>`;
 }
-export function productItem(product) {
-  return /* HTML */ `<div
+export function productItem(products) {
+  return /* HTML */ products
+    .map(
+      (product) => `<div
     class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
-    data-product-id="85067212996"
+    data-product-id="${product.productId}"
   >
     <!-- 상품 이미지 -->
     <div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image">
@@ -83,9 +85,11 @@ export function productItem(product) {
         장바구니 담기
       </button>
     </div>
-  </div> `;
+  </div> `,
+    )
+    .join("");
 }
-export function ProductContent(products, searchParams) {
+export function ProductContent(searchParams) {
   return /* HTML */ `
     <div class="bg-gray-50">
       <header class="bg-white shadow-sm sticky top-0 z-40">
@@ -207,9 +211,7 @@ export function ProductContent(products, searchParams) {
               총 <span class="font-medium text-gray-900">${searchParams.total || 0}개</span>의 상품
             </div>
             <!-- 상품 그리드 -->
-            <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
-              ${products.map((product) => productItem(product)).join("")}
-            </div>
+            <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid"></div>
             <div class="text-center py-4 text-sm text-gray-500">모든 상품을 확인했습니다</div>
           </div>
         </div>

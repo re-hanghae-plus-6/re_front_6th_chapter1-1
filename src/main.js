@@ -1,4 +1,4 @@
-import { LoadingContent, ProductContent, toast } from "./pages/components.js";
+import { LoadingContent, ProductContent, productItem, toast } from "./pages/components.js";
 import { debounce } from "./utils.js";
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -62,8 +62,15 @@ function render() {
   const root = document.getElementById("root");
   if (state.isLoading) {
     root.innerHTML = LoadingContent();
-  } else if (state.products) {
-    root.innerHTML = ProductContent(state.products, { ...filterState, ...pageState });
+  } else {
+    // 로딩 완료
+    root.innerHTML = ProductContent({ ...filterState, ...pageState });
+    const productGrid = document.getElementById("products-grid");
+    if (state.products && productGrid) {
+      // console.time("productItem");
+      productGrid.innerHTML = productItem(state.products);
+      // console.timeEnd("productItem");
+    }
   }
   if (state.error) {
     root.innerHTML = toast("error");
@@ -73,22 +80,23 @@ function render() {
 function setEventListener() {
   const debouncedGetProducts = debounce(() => {
     getProducts();
-  }, 1500);
+  }, 1000);
 
   document.getElementById("root").addEventListener("input", (e) => {
     if (e.target && e.target.id === "search-input") {
       filterState.search = e.target.value;
-      pageState.page = 1;
       state.products = [];
+      state.page = 1;
       debouncedGetProducts();
     }
   });
+
   document.getElementById("root").addEventListener("keydown", (e) => {
     if (e.target && e.target.id === "search-input" && e.key === "Enter") {
       e.preventDefault();
       filterState.search = e.target.value;
-      pageState.page = 1;
       state.products = [];
+      state.page = 1;
       getProducts();
     }
   });
@@ -96,8 +104,8 @@ function setEventListener() {
   document.getElementById("root").addEventListener("change", (e) => {
     if (e.target && e.target.id === "limit-select") {
       pageState.limit = parseInt(e.target.value, 10);
-      pageState.page = 1;
       state.products = [];
+      state.page = 1;
       getProducts();
     }
   });
@@ -105,8 +113,8 @@ function setEventListener() {
   document.getElementById("root").addEventListener("change", (e) => {
     if (e.target && e.target.id === "sort-select") {
       filterState.sort = e.target.value;
-      pageState.page = 1;
       state.products = [];
+      state.page = 1;
       getProducts();
     }
   });
