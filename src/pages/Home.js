@@ -7,6 +7,7 @@ import { createStore } from "../states/store";
 import { getQueryState } from "../utils/getQueryState";
 import { getProducts, getCategories } from "../api/productApi";
 import { isStateChanged } from "../utils/isStateChanged";
+import { navigate } from "../utils/navigate";
 
 const initialState = {
   products: [],
@@ -132,6 +133,52 @@ function addEvents() {
   if (sortItem) {
     sortItem.onchange = (e) => {
       store.setState({ sort: e.target.value, page: 1 });
+    };
+  }
+
+  document.querySelectorAll("[data-category1]:not([data-category2])").forEach((category) => {
+    category.onclick = (e) => {
+      store.setState({
+        category1: e.target.dataset.category1,
+        category2: "",
+        page: 1,
+      });
+    };
+  });
+
+  document.querySelectorAll("[data-category2]").forEach((category) => {
+    category.onclick = (e) => {
+      store.setState({
+        category1: e.target.dataset.category1,
+        category2: e.target.dataset.category2,
+        page: 1,
+      });
+    };
+  });
+
+  const resetBtn = document.querySelector("[data-breadcrumb='reset']");
+  if (resetBtn) {
+    resetBtn.onclick = () => {
+      navigate("/");
+
+      store.setState({
+        category1: "",
+        category2: "",
+        search: "",
+        page: 1,
+      });
+      if (inputItem) inputItem.value = "";
+    };
+  }
+
+  const categoryBtn = document.querySelector("[data-breadcrumb='category1']");
+  if (categoryBtn) {
+    categoryBtn.onclick = (e) => {
+      store.setState({
+        category1: e.target.dataset.category1,
+        category2: "",
+        page: 1,
+      });
     };
   }
 }
