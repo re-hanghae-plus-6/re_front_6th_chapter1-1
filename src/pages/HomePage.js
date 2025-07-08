@@ -1,3 +1,5 @@
+import { CategoryButton, SubCategoryButton, ProductCountPerPage, ProductArrange } from "../components/Filters";
+
 const LoadingUI = () => {
   return `<div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
             <div class="aspect-square bg-gray-200"></div>
@@ -44,15 +46,6 @@ const ProductCard = (product) => {
   `;
 };
 
-const CategoryButton = (category) => {
-  return `
-     <button data-category1="${category}" class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
-               bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
-              ${category}
-            </button>
-  `;
-};
-
 const PageLoadingSpinner = () => {
   return `
      <div class="text-center py-4">
@@ -65,15 +58,6 @@ const PageLoadingSpinner = () => {
             <span class="text-sm text-gray-600">상품을 불러오는 중...</span>
           </div>
         </div>
-  `;
-};
-
-const SubCategoryButton = (category) => {
-  return `
-    <button data-category2="${category}" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
-               bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
-              ${category}
-            </button>
   `;
 };
 
@@ -157,44 +141,18 @@ export const HomePage = ({
         <!-- 기존 필터들 -->
         <div class="flex gap-2 items-center justify-between">
           <!-- 페이지당 상품 수 -->
-          <div class="flex items-center gap-2">
-            <label class="text-sm text-gray-600">개수:</label>
-            <select id="limit-select"
-                    class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-              <option value="10" ${productCount === 10 ? "selected" : ""}>
-                10개
-              </option>
-              <option value="20" ${productCount === 20 ? "selected" : ""}>
-                20개
-              </option>
-              <option value="50" ${productCount === 50 ? "selected" : ""}>
-                50개
-              </option>
-              <option value="100" ${productCount === 100 ? "selected" : ""}>
-                100개
-              </option>
-            </select>
-          </div>
+          
+            ${ProductCountPerPage({ productCount })}
+       
           <!-- 정렬 -->
-          <div class="flex items-center gap-2">
-            <label class="text-sm text-gray-600">정렬:</label>
-            <select id="sort-select" class="text-sm border border-gray-300 rounded px-2 py-1
-                         focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-              <option value="price_asc" ${sort === "price_asc" ? "selected" : ""}>가격 낮은순</option>
-              <option value="price_desc" ${sort === "price_desc" ? "selected" : ""}>가격 높은순</option>
-              <option value="name_asc" ${sort === "name_asc" ? "selected" : ""}>이름순</option>
-              <option value="name_desc" ${sort === "name_desc" ? "selected" : ""}>이름 역순</option>
-            </select>
-          </div>
+          ${ProductArrange({ sort })}
         </div>
       </div>
     </div>
     <!-- 상품 목록 -->
     <div class="mb-6">
       <div>
-    
           ${loading ? "" : ` <div class="mb-4 text-sm text-gray-600">총 <span class="font-medium text-gray-900">${total}</span>개의 상품  </div>`}
-       
         <!-- 상품 그리드 -->
         <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
           <!-- 로딩 스켈레톤 -->
