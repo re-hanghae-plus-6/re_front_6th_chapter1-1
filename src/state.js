@@ -3,7 +3,7 @@ export const initialState = {
   loading: false,
   error: null,
 
-  categories: [],
+  categories: {},
   loadingCategories: false,
   categoriesError: null,
 

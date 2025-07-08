@@ -14,13 +14,18 @@ const SORT_OPTIONS = [
   { value: "name_desc", label: "이름 역순" },
 ];
 
-export const ProductListPage = ({
-  products = [],
-  loading = false,
-  error = null,
-  pagination = { total: 0, limit: 20 },
-  filters = { sort: "price_asc" },
-}) => {
+export const ProductListPage = (state) => {
+  const {
+    products = [],
+    loading = false,
+    error = null,
+    pagination = { total: 0, limit: 20 },
+    filters = { sort: "price_asc" },
+    categories = [],
+    loadingCategories = false,
+    categoriesError = null,
+  } = state;
+
   const renderProductCards = () => {
     if (error) {
       console.log(error);
@@ -32,6 +37,63 @@ export const ProductListPage = ({
     const loadingSkeletons = loading ? ProductCard({ isLoading: true }).repeat(6) : "";
 
     return currentProducts + loadingSkeletons;
+  };
+
+  const renderCategories = () => {
+    if (categoriesError) {
+      return `<div class="text-sm text-red-500">카테고리 로딩 실패</div>`;
+    }
+
+    if (loadingCategories) {
+      return `<div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>`;
+    }
+
+    if (Object.keys(categories).length === 0) {
+      return "";
+    }
+
+    const category1Buttons = Object.keys(categories)
+      .map((category1) => {
+        const isSelected = filters.category1 === category1;
+        return `
+          <button data-category1="${category1}" class="px-3 py-1 text-sm rounded-md transition-colors ${
+            isSelected ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+          }">
+            ${category1}
+          </button>`;
+      })
+      .join("");
+
+    return category1Buttons;
+  };
+
+  const renderSubCategories = () => {
+    if (!filters.category1 || !categories[filters.category1]) return "";
+
+    const subCategories = Object.keys(categories[filters.category1]);
+
+    if (subCategories.length === 0) return "";
+
+    return `
+      <div class="flex flex-wrap gap-2 mt-2">
+        ${subCategories
+          .map((category2) => {
+            const isSelected = filters.category2 === category2;
+            return `
+              <button 
+                data-category1="${filters.category1}" 
+                data-category2="${category2}" 
+                class="px-3 py-1 text-sm rounded-md border transition-colors ${
+                  isSelected
+                    ? "bg-blue-500 text-white border-blue-500"
+                    : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                }">
+                  ${category2}
+              </button>`;
+          })
+          .join("")}
+      </div>
+    `;
   };
 
   return `
@@ -77,12 +139,15 @@ export const ProductListPage = ({
             <div class="flex items-center gap-2">
                 <label class="text-sm text-gray-600">카테고리:</label>
                 <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
+                ${filters.category1 ? `<span class="text-xs text-gray-500">&gt;</span><button data-breadcrumb="category1" class="text-xs hover:text-blue-800 hover:underline">${filters.category1}</button>` : ""}
+                ${filters.category2 ? `<span class="text-xs text-gray-500">&gt;</span><span class="text-xs text-gray-700">${filters.category2}</span>` : ""}
             </div>
             <!-- 1depth 카테고리 -->
             <div class="flex flex-wrap gap-2">
-                <div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>
+                ${renderCategories()}
             </div>
-            <!-- 2depth 카테고리 -->
+              <!-- 2depth 카테고리 -->
+              ${renderSubCategories()}
             </div>
             <!-- 기존 필터들 -->
             <div class="flex gap-2 items-center justify-between">
