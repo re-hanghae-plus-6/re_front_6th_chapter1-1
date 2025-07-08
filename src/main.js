@@ -12,16 +12,18 @@ const enableMocking = () =>
 
 let appState = {
   products: [],
+  categories: {},
   total: 0,
   loading: false,
   hasNext: false,
-  categories: [],
   cart: [],
   currentPage: 1,
   filters: {
     limit: 20,
     sort: "price_asc",
     search: "",
+    category1: "",
+    category2: "",
   },
 };
 
@@ -33,6 +35,8 @@ const getFiltersFromUrl = () => {
     limit: parseInt(params.get("limit")) || 20,
     sort: params.get("sort") || "price_asc",
     search: params.get("search") || "",
+    category1: params.get("category1") || "",
+    category2: params.get("category2") || "",
   };
 };
 
@@ -81,9 +85,12 @@ async function loadProducts(reset = false) {
       limit: currentParams.limit,
       sort: currentParams.sort,
       search: currentParams.search || "",
+      category1: currentParams.category1 || "",
+      category2: currentParams.category2 || "",
     };
 
     const data = await getProducts(params);
+    console.log("상품 로딩 성공:", data);
 
     setAppState({
       products: reset ? data.products : [...appState.products, ...data.products],
@@ -178,6 +185,22 @@ function initEventListeners() {
         toast.open("CREATE");
       }
     }
+
+    if (event.target.dataset.category1) {
+      const category1 = event.target.dataset.category1;
+      await applyFilter({ category1, category2: "" });
+    }
+    if (event.target.dataset.category2) {
+      const category2 = event.target.dataset.category2;
+      await applyFilter({ category2 });
+    }
+
+    if (event.target.dataset.breadcrumb === "reset") {
+      await applyFilter({ category1: "", category2: "" });
+    }
+    if (event.target.dataset.breadcrumb === "reset-category1") {
+      await applyFilter({ category2: "" });
+    }
   });
 
   root.addEventListener("keydown", async (event) => {
@@ -196,6 +219,8 @@ async function main() {
 
   try {
     const categories = await getCategories();
+    console.log("카테고리 로딩 성공:", categories);
+
     setAppState({ categories, loading: false, filters: initialFilters });
   } catch (error) {
     console.error("카테고리 로딩 실패:", error);

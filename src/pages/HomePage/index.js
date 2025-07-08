@@ -4,6 +4,7 @@ import { ProductItem } from "./components/ProductItem";
 import { LIMIT_OPTIONS, SORT_OPTIONS } from "./constants";
 import SearchInput from "./components/SearchInput";
 import CartButton from "./components/CartButton";
+import CategoryFilter from "./components/CategoryFilter";
 
 export default function HomPage(state) {
   return /*html */ `
@@ -27,30 +28,7 @@ export default function HomPage(state) {
           <!-- 검색창 -->
           ${SearchInput({ state })}
           <!-- 필터 옵션 -->
-          <div class="space-y-3">
-            <!-- 카테고리 필터 -->
-            <div class="space-y-2">
-              <div class="flex items-center gap-2">
-                <label class="text-sm text-gray-600">카테고리:</label>
-                <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
-              </div>
-                ${
-                  state.loading
-                    ? '<div class="text-sm text-gray-500">카테고리 로딩 중...</div>'
-                    : /*html*/ `<!-- 1depth 카테고리 -->
-              <div class="flex flex-wrap gap-2">
-                <button data-category1="생활/건강" class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
-                   bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
-                  생활/건강
-                </button>
-                <button data-category1="디지털/가전" class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
-                   bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
-                  디지털/가전
-                </button>
-              </div>`
-                }
-              <!-- 2depth 카테고리 -->
-            </div>
+          ${CategoryFilter({ state })}
             <!-- 기존 필터들 -->
             <div class="flex gap-2 items-center justify-between">
               <!-- 페이지당 상품 수 -->
