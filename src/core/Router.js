@@ -59,6 +59,7 @@ export class Router {
   clear() {
     this.#routes.clear();
     this.#currentRoute = null;
+    this.#container = null;
     window.removeEventListener("popstate", this.#popstateListener);
   }
 
@@ -226,7 +227,7 @@ export class Router {
   #createComponent(componentConstructor) {
     try {
       // 컴포넌트 인스턴스 생성 시 라우터 의존성 주입
-      const component = new componentConstructor({ router: this });
+      const component = new componentConstructor({ router: this.navigate });
 
       if (!(component instanceof Component)) {
         throw new Error("컴포넌트는 추상클래스 Component를 상속해야 합니다!!");
