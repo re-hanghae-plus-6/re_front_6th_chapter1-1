@@ -6,7 +6,7 @@ import { render } from "../utils/render";
 import { createStore } from "../states/store";
 import { getQueryState } from "../states/getQueryState";
 import { getProducts, getCategories } from "../api/productApi";
-import { isStateChanged } from "../utils/isStateChanged";
+import { isStateChanged } from "../states/isStateChanged";
 import { navigate } from "../utils/navigate";
 import { updateSelectionOnFocus } from "@testing-library/user-event/dist/cjs/event/selection/updateSelectionOnFocus.js";
 import { updateUrlState } from "../states/updateUrlState";
