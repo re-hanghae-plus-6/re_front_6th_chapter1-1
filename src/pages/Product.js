@@ -7,10 +7,11 @@ import { Footer } from "../components/Layout/Footer";
 
 function renderProduct(state) {
   const { isLoading, product } = state;
+  console.log(state);
 
   render(/* HTML */ `
     <div class="min-h-screen bg-gray-50">
-      ${Header()}
+      ${Header({ type: "product" })}
       ${isLoading
         ? `<main class="max-w-md mx-auto px-4 py-4">
         <div class="py-20 bg-gray-50 flex items-center justify-center">

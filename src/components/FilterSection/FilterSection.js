@@ -19,7 +19,6 @@ export const FilterSection = ({
     <div class="space-y-3">
       <!-- 카테고리 필터 -->
       ${Category(categories, category1, category2, isLoading)}
-      </div>
       <!-- 기존 필터들 -->
       <div class="flex gap-2 items-center justify-between">
         <!-- 페이지당 상품 수 -->
