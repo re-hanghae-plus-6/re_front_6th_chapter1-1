@@ -30,10 +30,15 @@ let state = {
   products: [],
 };
 
-async function getProducts(searchState) {
+async function getProducts() {
+  const { limit, page } = pageState;
+  const { search, sort, category1, category2 } = filterState;
+  const searchParams = { limit, page, search, sort, category1, category2 };
   state.isLoading = true;
   render();
-  const params = new URLSearchParams(searchState);
+  const params = new URLSearchParams(
+    Object.entries(searchParams).filter(([k, v]) => v !== undefined && v !== null && k),
+  );
   try {
     const response = await fetch(`/api/products?${params.toString()}`);
     if (!response.ok) throw new Error("네트워크 오류");
@@ -42,12 +47,13 @@ async function getProducts(searchState) {
     state.products = [...state.products, ...products];
     pageState = { ...pageState, ...pagination };
     filterState = { ...filterState, ...filters };
-    // console.log(data);
+    // console.log("data:", data);
     state.error = null;
   } catch (error) {
     state.error = error.message;
   } finally {
     state.isLoading = false;
+    state.isFetching = false;
     render();
   }
 }
@@ -66,27 +72,42 @@ function render() {
 
 function setEventListener() {
   const debouncedGetProducts = debounce(() => {
-    getProducts(filterState);
+    getProducts();
   }, 1500);
 
   document.getElementById("root").addEventListener("input", (e) => {
     if (e.target && e.target.id === "search-input") {
       filterState.search = e.target.value;
+      pageState.page = 1;
+      state.products = [];
       debouncedGetProducts();
+    }
+  });
+  document.getElementById("root").addEventListener("keydown", (e) => {
+    if (e.target && e.target.id === "search-input" && e.key === "Enter") {
+      e.preventDefault();
+      filterState.search = e.target.value;
+      pageState.page = 1;
+      state.products = [];
+      getProducts();
     }
   });
 
   document.getElementById("root").addEventListener("change", (e) => {
     if (e.target && e.target.id === "limit-select") {
       pageState.limit = parseInt(e.target.value, 10);
-      getProducts(pageState);
+      pageState.page = 1;
+      state.products = [];
+      getProducts();
     }
   });
 
   document.getElementById("root").addEventListener("change", (e) => {
     if (e.target && e.target.id === "sort-select") {
       filterState.sort = e.target.value;
-      getProducts(filterState);
+      pageState.page = 1;
+      state.products = [];
+      getProducts();
     }
   });
 
@@ -107,7 +128,7 @@ function setEventListener() {
 }
 
 function main() {
-  getProducts(filterState);
+  getProducts();
   setEventListener();
 }
 
