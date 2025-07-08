@@ -15,6 +15,7 @@ let state = {
   sort: 'price_asc',
   page: 1,
   hasMore: true,
+  search: '',
 };
 
 let isEventListenerSetUp = false;
@@ -34,6 +35,7 @@ async function loadMoreProducts() {
       page: state.page + 1,
       limit: state.limit,
       sort: state.sort,
+      search: state.search,
     });
 
     state.products = [...state.products, ...data.products];
@@ -57,6 +59,30 @@ function handleScroll() {
 function setUpEventListeners() {
   if (isEventListenerSetUp) return;
 
+  document.body
+    .querySelector('#root')
+    .addEventListener('keydown', async (e) => {
+      if (e.target.id === 'search-input' && e.key === 'Enter') {
+        const searchValue = e.target.value.trim();
+        state.search = searchValue;
+        state.page = 1;
+        state.loading = true;
+        render();
+
+        const data = await getProducts({
+          search: searchValue,
+          page: 1,
+          limit: state.limit,
+          sort: state.sort,
+        });
+        state.products = data.products;
+        state.total = data.pagination.total;
+        state.hasMore = data.products.length === state.limit;
+        state.loading = false;
+        render();
+      }
+    });
+
   document.body.querySelector('#root').addEventListener('change', async (e) => {
     if (e.target.id === 'limit-select') {
       const newLimit = parseInt(e.target.value);
@@ -65,7 +91,12 @@ function setUpEventListeners() {
       state.loading = true;
       render();
 
-      const data = await getProducts({ limit: newLimit, page: 1 });
+      const data = await getProducts({
+        limit: newLimit,
+        page: 1,
+        search: state.search,
+        sort: state.sort,
+      });
       state.products = data.products;
       state.total = data.pagination.total;
       state.hasMore = data.products.length === newLimit;
@@ -79,7 +110,12 @@ function setUpEventListeners() {
       state.loading = true;
       render();
 
-      const data = await getProducts({ sort: newSort, page: 1 });
+      const data = await getProducts({
+        sort: newSort,
+        page: 1,
+        search: state.search,
+        limit: state.limit,
+      });
       state.products = data.products;
       state.total = data.pagination.total;
       state.hasMore = data.products.length === state.limit;
