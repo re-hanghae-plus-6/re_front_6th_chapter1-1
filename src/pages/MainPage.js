@@ -23,6 +23,7 @@ export const MainPage = ({
   limit = 20,
   search = "",
   sort = "price_asc",
+  isFirstLoad = true,
 }) => {
   const categorylist = Object.entries(categories);
   return `
@@ -117,9 +118,15 @@ export const MainPage = ({
           <div>
             <!-- 상품 개수 정보 -->
             ${
-              loading
+              isFirstLoad
                 ? ""
-                : `
+                : loading
+                  ? `
+              <div class="mb-4 text-sm text-gray-600">
+                총 <span class="font-medium text-gray-900">0개</span>의 상품
+              </div>
+              `
+                  : `
               <div class="mb-4 text-sm text-gray-600">
                 총 <span class="font-medium text-gray-900">${total}개</span>의 상품
               </div>

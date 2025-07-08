@@ -22,6 +22,7 @@ let state = {
   loading: false,
   page: 1,
   hasMore: true,
+  isFirstLoad: true, // 최초 진입 여부
   // ...필요한 상태 추가
 };
 
@@ -32,6 +33,7 @@ function render() {
        products: state.products,
        total: state.total,
        loading: state.loading,
+       isFirstLoad: state.isFirstLoad, // 전달
        categories: state.categories,
        limit: state.limit,
        search: state.search,
@@ -43,7 +45,7 @@ function render() {
   // 장바구니 개수 뱃지 업데이트
   updateCartCountBadge();
 
-  // ✅ select DOM이 다시 생성되므로 여기서 이벤트 등록
+  // select DOM이 다시 생성되므로 여기서 이벤트 등록
   const limitSelect = document.getElementById("limit-select");
   if (limitSelect) {
     limitSelect.addEventListener("change", (e) => {
@@ -106,8 +108,9 @@ function render() {
 // 3. 데이터 fetch 및 상태 갱신 함수
 async function fetchAndRender() {
   state.loading = true;
-  state.page = state.page || 1;
+  state.total = 0; // 로딩 시작 시 0으로 초기화
   render();
+  // 데이터 fetch
   const [
     {
       products,
@@ -130,6 +133,7 @@ async function fetchAndRender() {
     categories,
     loading: false,
     hasMore: products.length < total,
+    isFirstLoad: false,
   };
   render();
 }
@@ -194,6 +198,8 @@ function updateCartCountBadge() {
 
 // 5. 앱 시작
 function startApp() {
+  state.isFirstLoad = true;
+  render();
   if (import.meta.env.MODE !== "test") {
     enableMocking().then(fetchAndRender);
   } else {
