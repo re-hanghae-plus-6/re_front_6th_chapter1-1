@@ -25,13 +25,16 @@ jobs:
           node-version: 22
           cache: "pnpm"
 
-      - name: Install pnpm
+      - name: Install pnpm manually
         run: npm install -g pnpm
 
-      - name: Check pnpm version
-        run: pnpm --version
+      - name: Print PATH and pnpm location
+        run: |
+          echo "PATH is: $PATH"
+          which pnpm
+          pnpm --version
 
-      - name: Install dependencies and run unit tests
+      - name: Install deps and run unit tests
         run: |
           pnpm install
           pnpm run test
@@ -52,13 +55,16 @@ jobs:
           node-version: 22
           cache: "pnpm"
 
-      - name: Install pnpm
+      - name: Install pnpm manually
         run: npm install -g pnpm
 
-      - name: Check pnpm version
-        run: pnpm --version
+      - name: Print PATH and pnpm location
+        run: |
+          echo "PATH is: $PATH"
+          which pnpm
+          pnpm --version
 
-      - name: Install dependencies and run E2E tests
+      - name: Install deps and run E2E tests
         run: |
           pnpm install
           npx playwright install --with-deps
