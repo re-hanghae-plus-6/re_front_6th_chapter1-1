@@ -3,8 +3,100 @@ import ErrorContent from "../components/error/ErrorContent";
 import { ProductEmpty } from "../components/product/ProductEmpty";
 import ProductFilter from "../components/product/ProductFilter";
 import ProductItem from "../components/product/ProductItem";
+import { InfiniteScrollSpinner } from "../components/product/ProductLoading";
 
 import { createCategoryCache, initializeFilterEventListeners } from "../utils/productFilterUtils";
+
+// 무한 스크롤 상태 관리
+let currentPage = 1;
+let isLoading = false;
+let hasMore = true;
+
+/**
+ * 스크롤이 페이지 하단에 도달했는지 확인하는 함수
+ */
+function isNearBottom() {
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  const windowHeight = window.innerHeight;
+  const documentHeight = document.documentElement.scrollHeight;
+
+  // 페이지 하단 100px 전에 도달했을 때 로드 시작
+  return scrollTop + windowHeight >= documentHeight - 100;
+}
+
+/**
+ * 스크롤 이벤트 핸들러
+ */
+function handleScroll() {
+  if (isLoading || !hasMore) return;
+
+  if (isNearBottom()) {
+    loadMoreProducts();
+  }
+}
+
+/**
+ * 추가 상품을 로드하는 함수
+ */
+async function loadMoreProducts() {
+  if (isLoading || !hasMore) return;
+
+  isLoading = true;
+  currentPage++;
+
+  // 로딩 스피너 추가
+  const productsContainer = document.getElementById("products-grid");
+  if (productsContainer) {
+    const loadingSpinner = document.createElement("div");
+    loadingSpinner.innerHTML = InfiniteScrollSpinner();
+    productsContainer.appendChild(loadingSpinner);
+  }
+
+  try {
+    // 현재 필터 상태 가져오기
+    const searchInput = document.querySelector("#search-input");
+    const limitSelect = document.querySelector("#limit-select");
+    const sortSelect = document.querySelector("#sort-select");
+
+    const query = {
+      page: currentPage,
+      limit: parseInt(limitSelect?.value) || 20,
+      search: searchInput?.value || "",
+      sort: sortSelect?.value || "price_asc",
+    };
+
+    const { products, pagination } = await getProducts(query);
+
+    if (!products || products.length === 0) {
+      hasMore = false;
+      return;
+    }
+
+    // 기존 로딩 스피너 제거
+    const existingSpinner = document.querySelector(".text-center.py-4");
+    if (existingSpinner) {
+      existingSpinner.remove();
+    }
+
+    // 새 상품들을 기존 목록에 추가
+    const productListHTML = products.map((product) => ProductItem(product)).join("");
+    const productsGrid = document.querySelector("#products-grid .grid");
+
+    if (productsGrid) {
+      productsGrid.insertAdjacentHTML("beforeend", productListHTML);
+    }
+
+    // 더 이상 로드할 상품이 없는지 확인
+    if (currentPage >= pagination.totalPages) {
+      hasMore = false;
+    }
+  } catch (error) {
+    console.error("추가 상품 불러오기 실패:", error);
+    currentPage--; // 실패 시 페이지 번호 되돌리기
+  } finally {
+    isLoading = false;
+  }
+}
 
 /**
  * @param {Object} query - { page, limit, search, category1, category2, sort }
@@ -12,6 +104,11 @@ import { createCategoryCache, initializeFilterEventListeners } from "../utils/pr
 export const loadProductList = async (query) => {
   const productsContainer = document.getElementById("products-grid");
   if (!productsContainer) return;
+
+  // 무한 스크롤 상태 초기화
+  currentPage = 1;
+  isLoading = false;
+  hasMore = true;
 
   try {
     const { products, pagination } = await getProducts(query);
@@ -32,6 +129,9 @@ export const loadProductList = async (query) => {
         <div class="grid grid-cols-2 gap-4 mb-6">${productListHTML}</div>
       </div>
     `;
+
+    // 스크롤 이벤트 리스너 등록
+    window.addEventListener("scroll", handleScroll);
   } catch (error) {
     console.error("상품 불러오기 실패:", error);
 
