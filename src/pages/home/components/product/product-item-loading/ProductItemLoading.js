@@ -1,5 +1,12 @@
-function ProductItemLoading() {
-  return `
+import Component from '../../../../../core/Component.js';
+
+class ProductItemLoading extends Component {
+  constructor(element, props) {
+    super(element, props);
+  }
+
+  render() {
+    this.element.innerHTML = `
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
       <div class="aspect-square bg-gray-200"></div>
       <div class="p-3">
@@ -9,7 +16,8 @@ function ProductItemLoading() {
         <div class="h-8 bg-gray-200 rounded"></div>
       </div>
     </div>
-  `;
+    `;
+  }
 }
 
 export default ProductItemLoading;
