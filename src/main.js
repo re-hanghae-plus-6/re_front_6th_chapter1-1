@@ -13,6 +13,7 @@ function renderLayout() {
 
   // 초기화
   root.innerHTML = "";
+  root.className = "min-h-screen bg-gray-50";
 
   // 공통 요소 렌더링
   const header = Header.init(); // 객체형 컴포넌트
