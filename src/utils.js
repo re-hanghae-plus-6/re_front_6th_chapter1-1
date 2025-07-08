@@ -17,7 +17,7 @@ export class InfiniteScroll {
     this.threshold = options.threshold || 200;
     this.delay = options.delay || 100;
     this.isLoading = false;
-    this.hasMore = false;
+    this.hasNext = options.hasNext !== undefined ? options.hasNext : true;
 
     this.handleScroll = throttle(() => {
       this.checkScroll();
@@ -29,7 +29,7 @@ export class InfiniteScroll {
   }
 
   checkScroll() {
-    if (this.isLoading || !this.hasMore) return;
+    if (this.isLoading || !this.hasNext) return;
 
     const scrollTop = window.pageYOffset;
     const windowHeight = window.innerHeight;
@@ -41,13 +41,13 @@ export class InfiniteScroll {
   }
 
   async load() {
-    if (this.isLoading || !this.hasMore) return;
+    if (this.isLoading || !this.hasNext) return;
 
     this.isLoading = true;
 
     try {
-      const hasMoreData = await this.loadMore(false);
-      this.hasMore = hasMoreData;
+      const hasNextData = await this.loadMore(false);
+      this.hasNext = hasNextData;
     } catch (error) {
       console.error("로딩 실패:", error);
     } finally {
@@ -55,8 +55,8 @@ export class InfiniteScroll {
     }
   }
 
-  setHasMore(value) {
-    this.hasMore = value;
+  sethasNext(value) {
+    this.hasNext = value;
   }
 
   destroy() {

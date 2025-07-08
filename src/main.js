@@ -56,7 +56,7 @@ const setAppState = (newState) => {
   render();
 
   if (infiniteScroll && newState.hasNext !== undefined) {
-    infiniteScroll.setHasMore(appState.hasNext);
+    infiniteScroll.sethasNext(appState.hasNext);
   }
 };
 
@@ -76,7 +76,6 @@ async function loadProducts(reset = false) {
     const currentParams = getFiltersFromUrl();
 
     const pageToLoad = reset ? 1 : appState.currentPage;
-
     const params = {
       page: pageToLoad,
       limit: currentParams.limit,
@@ -110,6 +109,7 @@ function initInfiniteScroll() {
   infiniteScroll = new InfiniteScroll(loadProducts, {
     threshold: 200,
     delay: 100,
+    hasNext: appState.hasNext,
   });
   infiniteScroll.init();
 }
