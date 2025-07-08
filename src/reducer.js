@@ -2,6 +2,36 @@ import { ACTIONS } from "./actions.js";
 
 export function reducer(state, action) {
   switch (action.type) {
+    case ACTIONS.LOAD_INITIAL_DATA:
+      return {
+        ...state,
+        loading: true,
+        loadingCategories: true,
+        error: null,
+        categoriesError: null,
+      };
+
+    case ACTIONS.INITIAL_DATA_LOADED: {
+      const { categories, products, pagination } = action.payload;
+      return {
+        ...state,
+        loading: false,
+        loadingCategories: false,
+        categories,
+        products,
+        pagination,
+      };
+    }
+
+    case ACTIONS.LOAD_INITIAL_DATA_ERROR:
+      return {
+        ...state,
+        loading: false,
+        loadingCategories: false,
+        error: action.payload,
+        categoriesError: action.payload,
+      };
+
     case ACTIONS.LOAD_PRODUCTS:
       return { ...state, loading: true, error: null };
 

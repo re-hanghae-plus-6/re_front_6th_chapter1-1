@@ -1,4 +1,8 @@
 export const ACTIONS = {
+  LOAD_INITIAL_DATA: "LOAD_INITIAL_DATA",
+  INITIAL_DATA_LOADED: "INITIAL_DATA_LOADED",
+  LOAD_INITIAL_DATA_ERROR: "LOAD_INITIAL_DATA_ERROR",
+
   LOAD_PRODUCTS: "LOAD_PRODUCTS",
   PRODUCTS_LOADED: "PRODUCTS_LOADED",
   LOAD_ERROR: "LOAD_ERROR",
@@ -10,6 +14,10 @@ export const ACTIONS = {
 };
 
 export const actions = {
+  loadInitialData: () => ({ type: ACTIONS.LOAD_INITIAL_DATA }),
+  initialDataLoaded: (data) => ({ type: ACTIONS.INITIAL_DATA_LOADED, payload: data }),
+  loadInitialDataError: (error) => ({ type: ACTIONS.LOAD_INITIAL_DATA_ERROR, payload: error }),
+
   loadProducts: () => ({ type: ACTIONS.LOAD_PRODUCTS }),
   productsLoaded: (data) => ({ type: ACTIONS.PRODUCTS_LOADED, payload: data }),
   loadError: (error) => ({ type: ACTIONS.LOAD_ERROR, payload: error }),

@@ -3,6 +3,10 @@ export const initialState = {
   loading: false,
   error: null,
 
+  categories: [],
+  loadingCategories: false,
+  categoriesError: null,
+
   pagination: {
     total: 0,
     page: 1,
