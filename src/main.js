@@ -2,6 +2,7 @@ import { MainPage } from "./pages/MainPage.js";
 import { Footer } from "./pages/Footer.js";
 import { getProducts } from "./api/productApi.js";
 import { getCategories } from "./api/productApi.js";
+import { showToast } from "./components/Toast.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -39,6 +40,9 @@ function render() {
     ${Footer()}
   `;
 
+  // 장바구니 개수 뱃지 업데이트
+  updateCartCountBadge();
+
   // ✅ select DOM이 다시 생성되므로 여기서 이벤트 등록
   const limitSelect = document.getElementById("limit-select");
   if (limitSelect) {
@@ -62,6 +66,25 @@ function render() {
       }
     });
   }
+
+  // 장바구니 담기 버튼 이벤트 등록
+  document.querySelectorAll(".add-to-cart-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const productId = btn.getAttribute("data-product-id");
+      let cart = JSON.parse(localStorage.getItem("cart") || "[]");
+
+      if (!cart.includes(productId)) {
+        cart.push(productId);
+        localStorage.setItem("cart", JSON.stringify(cart));
+        showToast("add");
+        updateCartCountBadge();
+      } else if (cart.includes(productId)) {
+        showToast("already");
+      } else {
+        showToast("error");
+      }
+    });
+  });
 
   // 무한 스크롤 이벤트 리스너 (한 번만 등록)
   if (!window.scrollHandlerAdded) {
@@ -153,6 +176,20 @@ function onSortChange(newSort) {
 function onSearchChange(newSearch) {
   state.search = newSearch;
   return fetchAndRender();
+}
+
+// 장바구니 개수 뱃지 표시 함수
+function updateCartCountBadge() {
+  const badge = document.getElementById("cart-count-badge");
+  if (!badge) return;
+  let cart = JSON.parse(localStorage.getItem("cart") || "[]");
+  if (cart.length > 0) {
+    badge.textContent = cart.length;
+    badge.style.display = "inline-block";
+  } else {
+    badge.textContent = "0";
+    badge.style.display = "none";
+  }
 }
 
 // 5. 앱 시작
