@@ -1,5 +1,7 @@
 import { LoadingContent, ProductContent, productItem, toast } from "./pages/components.js";
+import { router } from "./router/index.js";
 import { debounce } from "./utils.js";
+
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
     worker.start({
@@ -35,7 +37,7 @@ async function getProducts() {
   const { search, sort, category1, category2 } = filterState;
   const searchParams = { limit, page, search, sort, category1, category2 };
   state.isLoading = true;
-  render();
+  // render();
   const params = new URLSearchParams(
     Object.entries(searchParams).filter(([k, v]) => v !== undefined && v !== null && k),
   );
@@ -59,6 +61,7 @@ async function getProducts() {
 }
 
 function render() {
+  console.log("render start");
   const root = document.getElementById("root");
   if (state.isLoading) {
     root.innerHTML = LoadingContent();
@@ -67,9 +70,7 @@ function render() {
     root.innerHTML = ProductContent({ ...filterState, ...pageState });
     const productGrid = document.getElementById("products-grid");
     if (state.products && productGrid) {
-      // console.time("productItem");
       productGrid.innerHTML = productItem(state.products);
-      // console.timeEnd("productItem");
     }
   }
   if (state.error) {
@@ -136,6 +137,7 @@ function setEventListener() {
 }
 
 function main() {
+  router();
   getProducts();
   setEventListener();
 }
