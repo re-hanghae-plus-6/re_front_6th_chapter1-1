@@ -4,6 +4,7 @@ export const createProductStore = (initialState = {}) => {
     loading: false,
     error: null,
     totalCount: 0,
+    limit: 20,
     ...initialState,
   };
 
@@ -28,6 +29,7 @@ export const createProductStore = (initialState = {}) => {
   const setLoading = (loading) => setState({ loading });
   const setError = (error) => setState({ error });
   const setTotalCount = (totalCount) => setState({ totalCount });
+  const setLimit = (limit) => setState({ limit });
 
   return {
     getState,
@@ -37,6 +39,7 @@ export const createProductStore = (initialState = {}) => {
     setLoading,
     setError,
     setTotalCount,
+    setLimit,
   };
 };
 

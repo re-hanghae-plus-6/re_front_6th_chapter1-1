@@ -5,7 +5,6 @@ import Footer from "../components/common/Footer";
 import { getProducts } from "../api/productApi.js";
 import { productStore } from "../store/productStore.js";
 
-// 상품 목록 렌더링 함수
 function renderProducts() {
   const productsGrid = document.getElementById("products-grid");
   const totalCountContainer = document.getElementById("total-count-container");
@@ -30,12 +29,12 @@ function renderProducts() {
   }
 }
 
-// 상품 목록 로드 함수
 async function loadProducts() {
   productStore.setLoading(true);
   productStore.setError(null);
   try {
-    const response = await getProducts();
+    const state = productStore.getState();
+    const response = await getProducts({ limit: state.limit });
     if (response.products) {
       productStore.setProducts(response.products);
       productStore.setTotalCount(response.pagination?.total ?? response.products.length);
@@ -50,9 +49,10 @@ async function loadProducts() {
   }
 }
 
-// Home 컴포넌트
 export default function Home() {
-  // 템플릿을 직접 문자열로 작성
+  const state = productStore.getState();
+  const limitOptions = [10, 20, 50, 100];
+
   const template = `
     ${Header()}
     <main class="max-w-md mx-auto px-4 py-4">
@@ -92,10 +92,12 @@ export default function Home() {
               <label class="text-sm text-gray-600">개수:</label>
               <select id="limit-select"
                       class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-                <option value="10">10개</option>
-                <option value="20" selected="">20개</option>
-                <option value="50">50개</option>
-                <option value="100">100개</option>
+                ${limitOptions
+                  .map(
+                    (limit) =>
+                      `<option value="${limit}" ${state.limit === limit ? "selected" : ""}>${limit}개</option>`,
+                  )
+                  .join("")}
               </select>
             </div>
             <!-- 정렬 -->
@@ -133,6 +135,16 @@ export default function Home() {
   function mount() {
     renderProducts();
     loadProducts();
+
+    const limitSelect = document.getElementById("limit-select");
+    if (limitSelect) {
+      limitSelect.addEventListener("change", (e) => {
+        const newLimit = parseInt(e.target.value);
+        productStore.setLimit(newLimit);
+        loadProducts();
+      });
+    }
+
     const unsubscribe = productStore.subscribe(renderProducts);
     return () => unsubscribe();
   }
