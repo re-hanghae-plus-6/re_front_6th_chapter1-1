@@ -15,4 +15,14 @@ export const bindAllEvents = () => {
       });
     };
   }
+
+  // 상품 정렬 선택 이벤트
+  const sortSelectElement = document.getElementById("sort-select");
+  if (sortSelectElement) {
+    sortSelectElement.value = productsStore.state.filters.sort + "";
+    sortSelectElement.onchange = (e) => {
+      const sort = e.target.value;
+      fetchProducts({ sort });
+    };
+  }
 };
