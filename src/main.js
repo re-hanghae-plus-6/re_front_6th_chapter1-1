@@ -1,4 +1,6 @@
 import { Router } from "./router/Router.js";
+import { productsStore } from "./store.js";
+import { fetchProducts } from "./entities/products.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -7,8 +9,15 @@ const enableMocking = () =>
     }),
   );
 
-async function main() {
+const renderHtml = async () => {
   document.body.querySelector("#root").innerHTML = await Router();
+};
+
+async function main() {
+  fetchProducts();
+  // document.body.querySelector("#root").innerHTML = await Router();
+  productsStore.subscribe(renderHtml);
+  renderHtml();
 }
 
 // 애플리케이션 시작

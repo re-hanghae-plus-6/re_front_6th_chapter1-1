@@ -31,3 +31,9 @@ export const productsStore = createStore({
   isLoading: false,
   error: null,
 });
+
+export const categoriesStore = createStore({
+  categories: {},
+  isLoading: false,
+  error: null,
+});
