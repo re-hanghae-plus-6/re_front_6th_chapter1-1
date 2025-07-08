@@ -17,6 +17,7 @@ let state = {
   products: [],
   categories: {},
   selectedCategories: {},
+  totalProducts: 0,
 };
 
 const renderLoading = () => {
@@ -30,14 +31,33 @@ const renderContent = () => {
     state.search,
     state.categories,
     state.selectedCategories,
+    state.totalProducts,
   );
   setupProductLimitControl();
   setupSortControl();
   setupCategoryEventListeners();
   setupSearchEventListeners(state, renderContent);
-  window.addEventListener("scroll", () => {
-    setupInfiniteScroll();
-  });
+  setupInfiniteScroll();
+};
+
+// 테스트 환경에서 state 초기화 함수
+const resetState = () => {
+  if (import.meta.env.TEST) {
+    state = {
+      page: 1,
+      limit: 20,
+      sort: "price_asc",
+      search: "",
+      category1: "",
+      category2: "",
+      isLoading: false,
+      hasMore: true,
+      products: [],
+      categories: {},
+      selectedCategories: {},
+      totalProducts: 0,
+    };
+  }
 };
 
 const loadCategories = async () => {
@@ -57,7 +77,7 @@ const renderInitialContent = async () => {
     // 카테고리 데이터 로드
     await loadCategories();
 
-    const { products } = await getProducts({
+    const { products, pagination } = await getProducts({
       page: state.page,
       limit: state.limit,
       sort: state.sort,
@@ -69,6 +89,7 @@ const renderInitialContent = async () => {
     state.products = products;
     state.page = 1;
     state.hasMore = products.length === state.limit;
+    state.totalProducts = pagination.total;
 
     renderContent();
   } catch (err) {
@@ -84,7 +105,7 @@ const loadMoreProducts = async () => {
 
   renderLoading();
   try {
-    const { products: nextProducts } = await getProducts({
+    const { products: nextProducts, pagination } = await getProducts({
       page: state.page,
       limit: state.limit,
       sort: state.sort,
@@ -99,6 +120,7 @@ const loadMoreProducts = async () => {
     }
 
     state.products = [...state.products, ...nextProducts];
+    state.totalProducts = pagination.total;
     renderContent();
   } catch (err) {
     console.error("다음 상품 로딩 실패:", err);
@@ -211,22 +233,34 @@ const setupProductLimitControl = () => {
 };
 
 const setupInfiniteScroll = () => {
-  if (typeof window === "undefined" || location.pathname !== "/" || import.meta.env.TEST) return;
+  if (typeof window === "undefined" || location.pathname !== "/") return;
 
-  const sentinel = document.createElement("div");
-  sentinel.id = "scroll-sentinel";
-  sentinel.className = "h-4";
-  document.body.appendChild(sentinel);
+  if (!import.meta.env.TEST) {
+    // 실제 브라우저 환경
+    const sentinel = document.createElement("div");
+    sentinel.id = "scroll-sentinel";
+    sentinel.className = "h-4";
+    document.body.appendChild(sentinel);
 
-  const observer = new IntersectionObserver((entries) => {
-    if (entries[0].isIntersecting) {
-      loadMoreProducts();
-    }
-  });
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        loadMoreProducts();
+      }
+    });
 
-  observer.observe(sentinel);
+    observer.observe(sentinel);
+  } else {
+    // 테스트 환경에서는 스크롤 이벤트로 처리
+    window.addEventListener("scroll", () => {
+      if (!state.isLoading && state.hasMore) {
+        loadMoreProducts();
+      }
+    });
+  }
 };
 
 export const productListPage = async () => {
+  // 테스트 환경에서 state 초기화
+  resetState();
   await renderInitialContent();
 };

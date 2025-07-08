@@ -10,15 +10,18 @@ export const performSearch = async (state, searchTerm, renderCallback) => {
     state.products = [];
 
     // 검색 결과 가져오기
-    const { products } = await getProducts({
+    const { products, pagination } = await getProducts({
       page: state.page,
       limit: state.limit,
       sort: state.sort,
       search: searchTerm,
+      category1: state.category1,
+      category2: state.category2,
     });
 
     state.products = products;
     state.hasMore = products.length === state.limit;
+    state.totalProducts = pagination.total;
 
     // 화면 다시 렌더링
     renderCallback();
@@ -35,14 +38,17 @@ export const clearSearch = async (state, renderCallback) => {
   state.products = [];
 
   try {
-    const { products } = await getProducts({
+    const { products, pagination } = await getProducts({
       page: state.page,
       limit: state.limit,
       sort: state.sort,
+      category1: state.category1,
+      category2: state.category2,
     });
 
     state.products = products;
     state.hasMore = products.length === state.limit;
+    state.totalProducts = pagination.total;
     renderCallback();
   } catch (error) {
     console.error("검색 초기화 실패:", error);
