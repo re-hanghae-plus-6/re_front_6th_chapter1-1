@@ -119,7 +119,7 @@ describe("3. 페이지당 상품 수 선택", () => {
 });
 
 describe("4. 상품 정렬 기능", () => {
-  test("상품을 가격순/인기순으로 정렬할 수 있다", async () => {
+  test("상품을 가격순으로 정렬할 수 있다", async () => {
     await screen.findByText(/총 의 상품/i);
 
     // 정렬 드롭다운 찾기
