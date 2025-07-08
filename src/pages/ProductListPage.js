@@ -9,6 +9,8 @@ import { addEvent } from "../utils/eventManager.js";
 import { router } from "../router.js";
 import { updateElement } from "../utils/domUtils.js";
 import { setupInfiniteScroll } from "../utils/infiniteScroll.js";
+import { addToCart } from "../shared/actions/cartActions.js";
+import { showSuccessToast } from "../utils/toastManager.js";
 
 const defaultParams = {
   limit: 20,
@@ -68,16 +70,6 @@ export const loadMoreProducts = async (params = {}) => {
     productStore.setState({
       isLoadingMore: false,
     });
-  }
-};
-
-export const loadCategories = async () => {
-  try {
-    const categories = await getCategories();
-    productStore.setState({ categories });
-  } catch (error) {
-    console.error("카테고리 불러오기 실패:", error);
-    productStore.setState({ categories: {} });
   }
 };
 
@@ -378,6 +370,20 @@ const setupEventHandlers = () => {
     updateElement("#category-breadcrumb", renderCategoryBreadcrumb(newParams.category1, newParams.category2));
   });
 
+  addEvent("click", ".add-to-cart-btn", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const productId = event.target.dataset.productId;
+    const products = productStore.getState().products;
+    const product = products.find((p) => (p.productId || p.id) === productId);
+
+    if (product) {
+      addToCart(product, 1);
+      showSuccessToast("장바구니에 추가되었습니다");
+    }
+  });
+
   addEvent("click", ".product-card", (event) => {
     if (event.target.closest(".add-to-cart-btn")) return;
 
@@ -403,12 +409,44 @@ const setupProductInfiniteScroll = () => {
   });
 };
 
-ProductListPage.onMount = () => {
-  const currentParams = getURLParams(defaultParams);
+const loadProductListPageInitialData = async (params) => {
+  try {
+    productStore.setState({ isLoading: true });
 
+    const [categoriesResult, productsResult] = await Promise.all([getCategories(), getProducts(params)]);
+
+    productStore.setState({
+      categories: categoriesResult,
+      products: productsResult.products || [],
+      pagination: productsResult.pagination || {
+        page: 1,
+        limit: 20,
+        total: 0,
+        totalPages: 1,
+        hasNext: false,
+        hasPrev: false,
+      },
+      isLoading: false,
+    });
+  } catch (error) {
+    console.error("데이터 로딩 실패:", error);
+    productStore.setState({
+      categories: {},
+      products: [],
+      isLoading: false,
+    });
+  }
+};
+
+const setupPageComponents = () => {
   setupStateSubscription();
   setupEventHandlers();
   setupProductInfiniteScroll();
-  loadCategories();
-  loadProducts(currentParams);
+};
+
+ProductListPage.onMount = async () => {
+  const currentParams = getURLParams(defaultParams);
+
+  setupPageComponents();
+  await loadProductListPageInitialData(currentParams);
 };
