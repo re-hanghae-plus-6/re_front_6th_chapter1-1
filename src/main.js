@@ -132,13 +132,10 @@ async function handleNotFound() {
   currentController = null;
 
   const { NotFoundPage } = await import("./pages/notFoundPage.js");
-  const state = store.getState();
 
   const container = document.getElementById("root");
   if (container) {
-    container.innerHTML = NotFoundPage({
-      cartCount: state.cart.count,
-    });
+    container.innerHTML = NotFoundPage();
   }
 }
 

@@ -1,5 +1,5 @@
 import { store } from "../store.js";
-import { actions } from "../actions.js";
+import { actions } from "../actions/index.js";
 import { getProducts, getCategories } from "../api/productApi.js";
 
 export class ProductListController {

@@ -1,8 +1,8 @@
-import { ACTIONS } from "./actions.js";
+import { PRODUCT_ACTIONS } from "../actions/productActions.js";
 
-export function reducer(state, action) {
+export function productReducer(state, action) {
   switch (action.type) {
-    case ACTIONS.LOAD_INITIAL_DATA:
+    case PRODUCT_ACTIONS.LOAD_INITIAL_DATA:
       return {
         ...state,
         loading: true,
@@ -11,7 +11,7 @@ export function reducer(state, action) {
         categoriesError: null,
       };
 
-    case ACTIONS.INITIAL_DATA_LOADED: {
+    case PRODUCT_ACTIONS.INITIAL_DATA_LOADED: {
       const { categories, products, pagination } = action.payload;
       return {
         ...state,
@@ -23,7 +23,7 @@ export function reducer(state, action) {
       };
     }
 
-    case ACTIONS.LOAD_INITIAL_DATA_ERROR:
+    case PRODUCT_ACTIONS.LOAD_INITIAL_DATA_ERROR:
       return {
         ...state,
         loading: false,
@@ -32,10 +32,10 @@ export function reducer(state, action) {
         categoriesError: action.payload,
       };
 
-    case ACTIONS.LOAD_PRODUCTS:
+    case PRODUCT_ACTIONS.LOAD_PRODUCTS:
       return { ...state, loading: true, error: null };
 
-    case ACTIONS.PRODUCTS_LOADED: {
+    case PRODUCT_ACTIONS.PRODUCTS_LOADED: {
       const { products, pagination } = action.payload;
 
       return {
@@ -46,10 +46,10 @@ export function reducer(state, action) {
       };
     }
 
-    case ACTIONS.LOAD_ERROR:
+    case PRODUCT_ACTIONS.LOAD_ERROR:
       return { ...state, loading: false, error: action.payload };
 
-    case ACTIONS.CHANGE_FILTERS:
+    case PRODUCT_ACTIONS.CHANGE_FILTERS:
       return {
         ...state,
         filters: { ...state.filters, ...action.payload },
@@ -60,7 +60,7 @@ export function reducer(state, action) {
         },
       };
 
-    case ACTIONS.CHANGE_LIMIT:
+    case PRODUCT_ACTIONS.CHANGE_LIMIT:
       return {
         ...state,
         filters: { ...state.filters, limit: action.payload },
@@ -71,20 +71,20 @@ export function reducer(state, action) {
         },
       };
 
-    case ACTIONS.SLICE_LIST:
+    case PRODUCT_ACTIONS.SLICE_LIST:
       return {
         ...state,
         products: state.products.slice(0, action.payload),
         pagination: { ...state.pagination, limit: action.payload },
       };
 
-    case ACTIONS.CHANGE_SORT:
+    case PRODUCT_ACTIONS.CHANGE_SORT:
       return {
         ...state,
         filters: { ...state.filters, sort: action.payload },
       };
 
-    case ACTIONS.SEARCH_PRODUCTS:
+    case PRODUCT_ACTIONS.SEARCH_PRODUCTS:
       return {
         ...state,
         filters: { ...state.filters, search: action.payload },
@@ -94,7 +94,7 @@ export function reducer(state, action) {
         },
       };
 
-    case ACTIONS.LOAD_PRODUCT_DETAIL:
+    case PRODUCT_ACTIONS.LOAD_PRODUCT_DETAIL:
       return {
         ...state,
         productDetail: {
@@ -104,7 +104,7 @@ export function reducer(state, action) {
         },
       };
 
-    case ACTIONS.PRODUCT_DETAIL_LOADED:
+    case PRODUCT_ACTIONS.PRODUCT_DETAIL_LOADED:
       return {
         ...state,
         productDetail: {
@@ -115,7 +115,7 @@ export function reducer(state, action) {
         },
       };
 
-    case ACTIONS.LOAD_PRODUCT_DETAIL_ERROR:
+    case PRODUCT_ACTIONS.LOAD_PRODUCT_DETAIL_ERROR:
       return {
         ...state,
         productDetail: {
@@ -126,7 +126,7 @@ export function reducer(state, action) {
         },
       };
 
-    case ACTIONS.LOAD_RELATED_PRODUCTS:
+    case PRODUCT_ACTIONS.LOAD_RELATED_PRODUCTS:
       return {
         ...state,
         productDetail: {
@@ -135,12 +135,21 @@ export function reducer(state, action) {
         },
       };
 
-    case ACTIONS.RELATED_PRODUCTS_LOADED:
+    case PRODUCT_ACTIONS.RELATED_PRODUCTS_LOADED:
       return {
         ...state,
         productDetail: {
           ...state.productDetail,
           relatedProducts: action.payload,
+        },
+      };
+
+    case PRODUCT_ACTIONS.UPDATE_QUANTITY:
+      return {
+        ...state,
+        productDetail: {
+          ...state.productDetail,
+          quantity: action.payload,
         },
       };
 
