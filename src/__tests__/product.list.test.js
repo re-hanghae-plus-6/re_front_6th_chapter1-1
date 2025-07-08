@@ -69,7 +69,7 @@ describe("2. 상품 목록 조회", () => {
   });
 });
 
-describe("3. 페이지당 상품 수 선택", () => {
+describe.only("3. 페이지당 상품 수 선택", () => {
   test("드롭다운에서 10, 20, 50, 100개 중 선택할 수 있으며 기본값은 20개이다", async () => {
     // 상품이 로드될 때까지 대기
     await screen.findByText(/총 의 상품/i);
@@ -100,6 +100,7 @@ describe("3. 페이지당 상품 수 선택", () => {
     ).toBeInTheDocument();
 
     const limitSelect = document.querySelector("#limit-select");
+    // debugger;
     await userEvent.selectOptions(limitSelect, "10");
 
     await waitFor(() =>

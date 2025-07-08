@@ -23,38 +23,9 @@ export const HomePage = () => {
     renderFilter();
   }
 
-  async function loadProducts() {
-    const qs = new URLSearchParams({
-      page: 1,
-      limit: productState.filters.limit,
-      search: productState.filters.search,
-      category1: productState.filters.category1,
-      category2: productState.filters.category2,
-      sort: productState.filters.sort,
-    });
-    const res = await fetch(`/api/products?${qs.toString()}`);
-    console.log("API 호출:", `/api/products?${qs.toString()}`);
-    const data = await res.json();
-
-    console.log(data);
-
-    productState.products = data.products;
-    productState.total = data.pagination.total;
-    renderProducts();
-  }
-
   function renderFilter() {
     document.getElementById("filter-panel").innerHTML = ProductFilterPanel();
     bindFilterEvents();
-  }
-
-  function renderProducts() {
-    const grid = document.getElementById("products-grid");
-    grid.innerHTML = productState.products.map(ProductCard).join("");
-
-    const infoEl = document.getElementById("total-info");
-    infoEl.innerHTML = `총 <span class="font-medium text-gray-900">${productState.total}개</span>의 상품`;
-    infoEl.style.display = "block";
   }
 
   /* ---------------- 이벤트 바인딩 ---------------- */
@@ -79,21 +50,52 @@ export const HomePage = () => {
       }),
     );
 
+    const panel = document.getElementById("filter-panel");
+
     // limit & sort
-    document.getElementById("limit-select").onchange = (e) => {
-      productState.filters.limit = +e.target.value;
-      loadProducts();
-    };
-    document.getElementById("sort-select").onchange = (e) => {
-      productState.filters.sort = e.target.value;
-      loadProducts();
-    };
+    // debugger;
+    panel.addEventListener("change", (e) => {
+      if (e.target.id === "limit-select") {
+        productState.filters.limit = +e.target.value;
+        loadProducts();
+      }
+      if (e.target.id === "sort-select") {
+        productState.filters.sort = e.target.value;
+        loadProducts();
+      }
+    });
 
     // 검색
     document.getElementById("search-input").oninput = (e) => {
       productState.filters.search = e.target.value.trim();
       loadProducts();
     };
+  }
+
+  async function loadProducts() {
+    const qs = new URLSearchParams({
+      page: 1,
+      limit: productState.filters.limit,
+      search: productState.filters.search,
+      category1: productState.filters.category1,
+      category2: productState.filters.category2,
+      sort: productState.filters.sort,
+    });
+
+    const data = await fetch(`/api/products?${qs.toString()}`).then((res) => res.json());
+
+    productState.products = data.products;
+    productState.total = data.pagination.total;
+    renderProducts();
+  }
+
+  function renderProducts() {
+    const grid = document.getElementById("products-grid");
+    grid.innerHTML = productState.products.map(ProductCard).join("");
+
+    const infoEl = document.getElementById("total-info");
+    infoEl.innerHTML = `총 <span class="font-medium text-gray-900">${productState.total}개</span>의 상품`;
+    infoEl.style.display = "block";
   }
 
   return /*html*/ `
