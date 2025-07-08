@@ -61,13 +61,20 @@ class Router {
     }
   }
 
-  navigate(path) {
+  navigate(path, options = {}) {
     if (path === -1) {
       window.history.back();
       return;
     }
 
-    window.history.pushState(null, "", path);
+    const { replace = false } = options;
+
+    if (replace) {
+      window.history.replaceState(null, "", path);
+    } else {
+      window.history.pushState(null, "", path);
+    }
+
     this.handlePopState();
   }
 
