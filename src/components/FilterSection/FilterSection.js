@@ -4,17 +4,17 @@ import { SearchBar } from "./SearchBar";
 import { ItemCount } from "./ItemCount";
 
 export const FilterSection = ({
-  keyword = "",
+  search = "",
   categories = {},
   category1 = "",
   category2 = "",
   isLoading = false,
-  count = 20,
+  limit = "20",
   sort = "price_asc",
 }) => {
   return /* HTML */ ` <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
     <!-- 검색창 -->
-    ${SearchBar(keyword)}
+    ${SearchBar(search)}
     <!-- 필터 옵션 -->
     <div class="space-y-3">
       <!-- 카테고리 필터 -->
@@ -22,7 +22,7 @@ export const FilterSection = ({
       <!-- 기존 필터들 -->
       <div class="flex gap-2 items-center justify-between">
         <!-- 페이지당 상품 수 -->
-        ${ItemCount(count)}
+        ${ItemCount(limit)}
         <!-- 정렬 -->
         ${Sort(sort)}
       </div>

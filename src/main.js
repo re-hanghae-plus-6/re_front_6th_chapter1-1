@@ -15,23 +15,13 @@ const enableMocking = () =>
 async function main() {
   const path = location.pathname;
 
-  productListState.isLoading = true;
-  productListState.products = [];
-  productListState.total = 0;
-
-  const productListData = await getProducts({});
-
-  productListState.isLoading = false;
-  productListState.products = productListData.products;
-  productListState.total = productListData.pagination.total;
-
   if (path === "/") {
-    render(Home(productListState));
+    Home();
   } else if (path.startsWith("/product/")) {
     const productId = path.split("/product/")[1];
     await Product(productId);
   } else {
-    render(NotFound());
+    NotFound();
   }
 }
 

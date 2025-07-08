@@ -21,32 +21,36 @@ export const Category = (categories = {}, category1 = "", category2 = "", isLoad
     if (category1) {
       const subCategories = Object.keys(categories[category1]);
 
-      return subCategories.map(
-        (category) =>
-          /* HTML */ `<button
-            data-category1="${category1}"
-            data-category2="${category2}"
-            class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-blue-100 ${category ===
-            category2
-              ? "border-blue-300 text-blue-800"
-              : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}"
-          >
-            ${category2}
-          </button>`,
-      );
+      return subCategories
+        .map(
+          (category) =>
+            /* HTML */ `<button
+              data-category1="${category1}"
+              data-category2="${category2}"
+              class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-blue-100 ${category ===
+              category2
+                ? "border-blue-300 text-blue-800"
+                : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}"
+            >
+              ${category2}
+            </button>`,
+        )
+        .join("");
     } else {
       const mainCategories = Object.keys(categories);
 
-      return mainCategories.map(
-        (category) =>
-          /* HTML */ `<button
-            data-category1="${category}"
-            class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
+      return mainCategories
+        .map(
+          (category) =>
+            /* HTML */ `<button
+              data-category1="${category}"
+              class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
                    bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-          >
-            ${category}
-          </button>`,
-      );
+            >
+              ${category}
+            </button>`,
+        )
+        .join("");
     }
   };
 

@@ -1,12 +1,11 @@
 const CountOptions = [
-  { value: 10, label: "10개" },
-  { value: 20, label: "20개" },
-  { value: 50, label: "50개" },
-  { value: 100, label: "100개" },
+  { value: "10", label: "10개" },
+  { value: "20", label: "20개" },
+  { value: "50", label: "50개" },
+  { value: "100", label: "100개" },
 ];
 
-export const ItemCount = (count) => {
-  console.log(count);
+export const ItemCount = (limit) => {
   return /* HTML */ `
     <div class="flex items-center gap-2">
       <label class="text-sm text-gray-600">개수:</label>
@@ -16,7 +15,7 @@ export const ItemCount = (count) => {
       >
         ${CountOptions.map(
           (option) => `
-                  <option value="${option.value}" ${count === option.value ? "selected" : ""}>
+                  <option value="${option.value}" ${limit === option.value ? "selected" : ""}>
                     ${option.label}
                   </option>
                 `,
