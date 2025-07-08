@@ -88,13 +88,16 @@ function matchRoute(pathSegments, routes, params = {}) {
     // 1. 끝까지 다 온 경우
     if (restSegments.length === 0 && route.component) {
       if (route.layout) {
-        return (props = {}) =>
-          route.layout({
-            ...props,
-            children: route.component({ ...props, ...paramMap }),
-          });
+        return {
+          layout: route.layout,
+          component: route.component,
+          params: paramMap,
+        };
       }
-      return (props = {}) => route.component({ ...props, ...paramMap });
+      return {
+        component: route.component,
+        params: paramMap,
+      };
     }
 
     // 2. children이 있고, 경로 세그먼트가 모두 소진된 경우
@@ -104,26 +107,30 @@ function matchRoute(pathSegments, routes, params = {}) {
       const indexChild = route.children.find((child) => child.path === '');
       if (indexChild) {
         if (route.layout) {
-          return (props = {}) =>
-            route.layout({
-              ...props,
-              children: indexChild.component({ ...props, ...paramMap }),
-            });
+          return {
+            layout: route.layout,
+            component: indexChild.component,
+            params: paramMap,
+          };
         }
-        return (props = {}) => indexChild.component({ ...props, ...paramMap });
+        return {
+          component: indexChild.component,
+          params: paramMap,
+        };
       }
     }
 
     // 3. children이 있고, 아직 매칭되지 않은 경로 세그먼트(restSegments)가 남아 있다면
     if (route.children && restSegments.length > 0) {
-      // 남은 경로(restSegments)와 현재 route의 children을 이용해 matchRoute를 재귀 호출
       const childMatch = matchRoute(restSegments, route.children, paramMap);
       if (childMatch) {
         if (route.layout) {
-          // 현재 route에 layout이 있다면, 자식 결과(childMatch)를 children으로 감싸서 반환 (react router에 Outlet 패턴)
-          return (props = {}) => route.layout({ ...props, children: childMatch(props) });
+          return {
+            layout: route.layout,
+            component: childMatch.component,
+            params: childMatch.params,
+          };
         }
-        // layout이 없으면, 자식에서 매칭된 결과 그대로 반환
         return childMatch;
       }
     }
@@ -140,6 +147,7 @@ function matchRoute(pathSegments, routes, params = {}) {
  * @returns {{ renderRoute: (path: string) => void }} 주어진 경로를 렌더하는 헬퍼.
  */
 export function createRouter(routes) {
+  let currentInstance = null;
   /**
    * 주어진 경로에 해당하는 컴포넌트 트리를 렌더합니다.
    *
@@ -149,10 +157,33 @@ export function createRouter(routes) {
     const pathSegments = splitPath(path);
     const match = matchRoute(pathSegments, routes);
     const root = document.getElementById('root');
+    root.innerHTML = '';
+    const target = document.createElement('div');
+    root.appendChild(target);
+
+    if (currentInstance && typeof currentInstance.unmount === 'function') {
+      currentInstance.unmount();
+    }
+
     if (match) {
-      root.innerHTML = match();
+      // layout + children(page)
+      if (match.layout) {
+        currentInstance = new match.layout(target, {
+          ...match.params,
+          children: match.component,
+        });
+        currentInstance.mount();
+      } else if (match.component) {
+        currentInstance = new match.component(target, match.params);
+        currentInstance.mount();
+      }
     } else {
-      root.innerHTML = routes.find((r) => r.path === '404').component();
+      // 404
+      const notFoundRoute = routes.find((r) => r.path === '404');
+      if (notFoundRoute) {
+        currentInstance = new notFoundRoute.component(target);
+        currentInstance.mount();
+      }
     }
   };
 

@@ -1,8 +1,7 @@
 import DefaultLayout from '../components/layout/DefaultLayout.js';
-import HomePage from '../pages/home/HomePage.js';
 import DetailPage from '../pages/home/detail/DetailPage.js';
 import NotFoundPage from '../pages/NotFoundPage.js';
-import ExamplePage from '../pages/ExamplePage.js';
+import HomePage from '../pages/home/HomePage.js';
 
 export const ROUTES = [
   {
@@ -14,7 +13,7 @@ export const ROUTES = [
         component: HomePage,
       },
       { path: 'detail/:id', component: DetailPage },
-      { path: 'example', component: ExamplePage },
+      // { path: 'example', component: ExamplePage },
     ],
   },
   {
