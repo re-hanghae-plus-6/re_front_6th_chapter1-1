@@ -1,6 +1,7 @@
 import { Router } from "./router/Router.js";
-import { productsStore } from "./store.js";
+import { categoriesStore, productsStore } from "./store.js";
 import { fetchProducts } from "./entities/products.js";
+import { fetchCategories } from "./entities/categories.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -15,8 +16,10 @@ const renderHtml = async () => {
 
 async function main() {
   fetchProducts();
+  fetchCategories();
   // document.body.querySelector("#root").innerHTML = await Router();
   productsStore.subscribe(renderHtml);
+  categoriesStore.subscribe(renderHtml);
   renderHtml();
 }
 
