@@ -6,6 +6,8 @@ import { getProduct, getProducts } from "../api/productApi.js";
 import { useParams, router } from "../router.js";
 import { addEvent } from "../utils/eventManager.js";
 import { updateElement } from "../utils/domUtils.js";
+import { addToCart } from "../features/cart/services/cartService.js";
+import { showSuccessToast } from "../utils/toastManager.js";
 
 const renderLoadingContent = () => {
   return `
@@ -291,6 +293,14 @@ const setupEventHandlers = () => {
       router.get().push(`/?category2=${category2}`);
     }
   });
+
+  addEvent("click", "#add-to-cart-btn", () => {
+    const state = productDetailStore.getState();
+    if (state.product) {
+      addToCart(state.product, state.quantity);
+      showSuccessToast("장바구니에 추가되었습니다");
+    }
+  });
 };
 
 const setupStateSubscriptions = () => {
@@ -341,7 +351,7 @@ export const ProductDetailPage = () => {
 
   return `
     <div class="min-h-screen bg-gray-50">
-      ${Header({ title: "상품 상세", showBackButton: true, cartCount: 0 })}
+      ${Header({ title: "상품 상세", showBackButton: true })}
       <main class="max-w-md mx-auto px-4 py-4">
         ${state.isLoading ? renderLoadingContent() : renderProductContent(state.product, state.relatedProducts, state.quantity)}
       </main>
