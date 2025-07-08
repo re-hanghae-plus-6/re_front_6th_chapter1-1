@@ -1,5 +1,5 @@
 import { getCategories, getProducts } from "./api/productApi.js";
-import handlers from "./handlers.js";
+import initializeHandlers from "./handlers/index.js";
 import { Home } from "./pages/Home.js";
 
 const enableMocking = () =>
@@ -14,31 +14,41 @@ let state = {
   products: [],
   categories: [],
   total: 0,
-  loading: false,
-  limit: 20,
+  isLoading: false,
+  selectedLimit: "20",
   allLoaded: false,
   cart: [],
   search: "",
+  selectedCategory1: "",
+  selectedCategory2: "",
+  selectedSort: "price_asc",
+  cartCount: 0,
 };
 
 function render() {
   document.body.querySelector("#root").innerHTML = Home(state);
 
-  handlers(state, render);
+  initializeHandlers(state, render);
 }
 
 async function main() {
-  const categoryData = await getCategories();
-
-  state.loading = true;
-
+  state.isLoading = true;
   render();
-  const productData = await getProducts({ limit: state.limit, search: state.search });
-
+  const [categoryData, productData] = await Promise.all([
+    getCategories(),
+    getProducts({
+      limit: parseInt(state.selectedLimit),
+      search: state.search,
+      category1: state.selectedCategory1,
+      category2: state.selectedCategory2,
+      sort: state.selectedSort,
+    }),
+  ]);
   state.products = productData.products;
   state.total = productData.pagination.total;
   state.categories = categoryData;
-  state.loading = false;
+  state.isLoading = false;
+
   render();
 }
 
