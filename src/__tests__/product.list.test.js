@@ -24,9 +24,12 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   goTo('/');
-  // 각 테스트마다 main 함수 재호출하여 상품 로드
-  if (mainModule && typeof mainModule.main === 'function') {
-    await mainModule.main();
+  // 첫 번째 로딩 테스트를 제외하고는 main 함수 호출하여 상품 로드
+  const testName = expect.getState().currentTestName;
+  if (!testName || !testName.includes('페이지 접속 시 로딩 상태가 표시되고')) {
+    if (mainModule && typeof mainModule.main === 'function') {
+      await mainModule.main();
+    }
   }
 });
 
@@ -39,8 +42,15 @@ afterEach(() => {
 
 describe('1. 상품 목록 로딩', () => {
   test('페이지 접속 시 로딩 상태가 표시되고, 데이터 로드 완료 후 상품 목록이 렌더링된다', async () => {
+    // 수동으로 main 함수 호출하여 로딩 상태 확인
+    const mainPromise = mainModule.main();
+
+    // 로딩 상태 확인 (아직 완료되지 않은 상태)
     expect(screen.getByText('카테고리 로딩 중...')).toBeInTheDocument();
     expect(screen.queryByText(/총 의 상품/i)).not.toBeInTheDocument();
+
+    // main 함수 완료 대기
+    await mainPromise;
 
     // 상품 모두 렌더링되었는지 확인
     expect(
