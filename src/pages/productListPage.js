@@ -14,18 +14,16 @@ const SORT_OPTIONS = [
   { value: "name_desc", label: "이름 역순" },
 ];
 
-export const ProductListPage = (state) => {
-  const {
-    products = [],
-    loading = false,
-    error = null,
-    pagination = { total: 0, limit: 20 },
-    filters = { sort: "price_asc" },
-    categories = [],
-    loadingCategories = false,
-    categoriesError = null,
-  } = state;
-
+export const ProductListPage = ({
+  products = [],
+  loading = false,
+  error = null,
+  pagination = { total: 0, limit: 20 },
+  filters = { sort: "price_asc" },
+  categories = [],
+  loadingCategories = false,
+  categoriesError = null,
+}) => {
   const renderProductCards = () => {
     if (error) {
       console.log(error);
