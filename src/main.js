@@ -205,6 +205,28 @@ function startApp() {
   } else {
     fetchAndRender();
   }
+
+  // popstate 이벤트 리스너 추가 (브라우저 뒤로가기/앞으로가기 및 테스트에서 사용)
+  window.addEventListener("popstate", () => {
+    // 앱 상태 초기화
+    state = {
+      products: [],
+      total: 0,
+      categories: [],
+      limit: 20,
+      sort: "price_asc",
+      search: "",
+      loading: false,
+      page: 1,
+      hasMore: true,
+      isFirstLoad: true,
+    };
+
+    // 스크롤 이벤트 리스너 초기화
+    window.scrollHandlerAdded = false;
+
+    fetchAndRender();
+  });
 }
 
 startApp();
