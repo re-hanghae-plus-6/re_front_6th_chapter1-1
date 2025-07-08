@@ -20,6 +20,7 @@ let state = {
   sort: "price_asc",
   cart: [],
   search: "",
+  selectedCategory1: null,
 };
 
 function render() {
@@ -52,6 +53,7 @@ async function main() {
   state.hasPrev = hasPrev;
   state.cart = [];
   state.search = "";
+  state.selectedCategory1 = null;
 
   // 값 가져왔으니 로딩 상태 해제
   state.loading = false;
@@ -75,6 +77,11 @@ function setupEventListeners() {
       addToCart(productId);
       showToast({ type: "add" });
     }
+
+    if (event.target.matches(".category1-filter-btn")) {
+      const category1 = event.target.dataset.category1;
+      handleCategory1Filter(category1);
+    }
   });
 
   document.addEventListener("keydown", (event) => {
@@ -83,6 +90,13 @@ function setupEventListeners() {
       handleSearch(searchValue);
     }
   });
+}
+
+async function handleCategory1Filter(category1) {
+  state.selectedCategory1 = category1;
+  const categoryDetail = state.categories[category1];
+  state.categories = categoryDetail;
+  render();
 }
 
 async function handleSearch(searchValue) {
