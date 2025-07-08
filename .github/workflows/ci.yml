@@ -13,25 +13,25 @@ jobs:
   unit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: latest
-          standalone: true # 안정성 확보용
-
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: "pnpm"
 
+      - name: Install pnpm
+        run: npm install -g pnpm
+
       - name: Check pnpm version
         run: pnpm --version
 
-      - name: Install and run unit tests
+      - name: Install dependencies and run unit tests
         run: |
           pnpm install
           pnpm run test
@@ -40,25 +40,25 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: latest
-          standalone: true # e2e에서도 일관성 유지
-
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: "pnpm"
 
+      - name: Install pnpm
+        run: npm install -g pnpm
+
       - name: Check pnpm version
         run: pnpm --version
 
-      - name: Install dependencies
+      - name: Install dependencies and run E2E tests
         run: |
           pnpm install
           npx playwright install --with-deps
