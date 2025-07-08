@@ -1,6 +1,6 @@
-export default function page() {
-  document.body.innerHTML = `
-    <div class="bg-gray-50">
+export default function page(state) {
+  return `
+    <div class="min-h-screen bg-gray-50">
       <header class="bg-white shadow-sm sticky top-0 z-40">
         <div class="max-w-md mx-auto px-4 py-4">
           <div class="flex items-center justify-between">
@@ -14,8 +14,6 @@ export default function page() {
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M3 3h2l.4 2M7 13h10l4-8H5.4m2.6 8L6 2H3m4 11v6a1 1 0 001 1h1a1 1 0 001-1v-6M13 13v6a1 1 0 001 1h1a1 1 0 001-1v-6"></path>
                 </svg>
-                <span
-                  class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">4</span>
               </button>
             </div>
           </div>
@@ -44,17 +42,37 @@ export default function page() {
               <div class="flex items-center gap-2">
                 <label class="text-sm text-gray-600">카테고리:</label>
                 <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
+                ${
+                  state.category1
+                    ? `
+                    <span class="text-xs text-gray-500">&gt;</span>
+                    <button data-breadcrumb="category1" data-category1="${state.category1}" class="text-xs hover:text-blue-800 hover:underline">${state.category1}</button>  
+                  `
+                    : ""
+                }
+                
               </div>
               <!-- 1depth 카테고리 -->
+              
               <div class="flex flex-wrap gap-2">
-                <button data-category1="생활/건강" class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
-                   bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
-                  생활/건강
-                </button>
-                <button data-category1="디지털/가전" class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
-                   bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
-                  디지털/가전
-                </button>
+                ${
+                  !state.loading
+                    ? `<div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>`
+                    : `
+                    ${state.categories
+                      .map(
+                        (cat) => `
+                                <button data-category1="${cat.category}" class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
+                                  ${cat.category}
+                                </button>
+                              `,
+                      )
+                      .join("")}
+                  `
+                }
+                
+                
+                
               </div>
               <!-- 2depth 카테고리 -->
             </div>
@@ -63,18 +81,17 @@ export default function page() {
               <!-- 페이지당 상품 수 -->
               <div class="flex items-center gap-2">
                 <label class="text-sm text-gray-600">개수:</label>
-                <select id="limit-select"
-                        class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-                  <option value="10">
+                <select id="limit-select" class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                  <option value="10" >
                     10개
                   </option>
-                  <option value="20" selected="">
+                  <option value="20" >
                     20개
                   </option>
                   <option value="50">
                     50개
                   </option>
-                  <option value="100">
+                  <option value="100" >
                     100개
                   </option>
                 </select>
@@ -95,19 +112,80 @@ export default function page() {
         </div>
         <!-- 상품 목록 -->
         <div class="mb-6">
+        ${
+          !state.loading
+            ? `
+          <div>
+            <!-- 상품 그리드 -->
+            <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
+              <!-- 로딩 스켈레톤 -->
+              <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
+                <div class="aspect-square bg-gray-200"></div>
+                <div class="p-3">
+                  <div class="h-4 bg-gray-200 rounded mb-2"></div>
+                  <div class="h-3 bg-gray-200 rounded w-2/3 mb-2"></div>
+                  <div class="h-5 bg-gray-200 rounded w-1/2 mb-3"></div>
+                  <div class="h-8 bg-gray-200 rounded"></div>
+                </div>
+              </div>
+              <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
+                <div class="aspect-square bg-gray-200"></div>
+                <div class="p-3">
+                  <div class="h-4 bg-gray-200 rounded mb-2"></div>
+                  <div class="h-3 bg-gray-200 rounded w-2/3 mb-2"></div>
+                  <div class="h-5 bg-gray-200 rounded w-1/2 mb-3"></div>
+                  <div class="h-8 bg-gray-200 rounded"></div>
+                </div>
+              </div>
+              <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
+                <div class="aspect-square bg-gray-200"></div>
+                <div class="p-3">
+                  <div class="h-4 bg-gray-200 rounded mb-2"></div>
+                  <div class="h-3 bg-gray-200 rounded w-2/3 mb-2"></div>
+                  <div class="h-5 bg-gray-200 rounded w-1/2 mb-3"></div>
+                  <div class="h-8 bg-gray-200 rounded"></div>
+                </div>
+              </div>
+              <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
+                <div class="aspect-square bg-gray-200"></div>
+                <div class="p-3">
+                  <div class="h-4 bg-gray-200 rounded mb-2"></div>
+                  <div class="h-3 bg-gray-200 rounded w-2/3 mb-2"></div>
+                  <div class="h-5 bg-gray-200 rounded w-1/2 mb-3"></div>
+                  <div class="h-8 bg-gray-200 rounded"></div>
+                </div>
+              </div>
+            </div>
+            <div class="text-center py-4">
+              <div class="inline-flex items-center">
+                <svg class="animate-spin h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" 
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span class="text-sm text-gray-600">상품을 불러오는 중...</span>
+              </div>
+            </div>
+          </div>
+          `
+            : `
+            
           <div>
             <!-- 상품 개수 정보 -->
             <div class="mb-4 text-sm text-gray-600">
-              총 <span class="font-medium text-gray-900">340개</span>의 상품
+              총 <span class="font-medium text-gray-900">${state.total}개</span>의 상품
             </div>
             <!-- 상품 그리드 -->
             <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
-              <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
+              ${state.products
+                .map((product) => {
+                  return `
+                  <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
                    data-product-id="85067212996">
                 <!-- 상품 이미지 -->
                 <div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image">
-                  <img src="https://shopping-phinf.pstatic.net/main_8506721/85067212996.1.jpg"
-                       alt="PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장"
+                  <img src=${product.image}
+                       alt=${product.title}
                        class="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
                        loading="lazy">
                 </div>
@@ -115,11 +193,11 @@ export default function page() {
                 <div class="p-3">
                   <div class="cursor-pointer product-info mb-3">
                     <h3 class="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
-                      PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장
+                      ${product.title}
                     </h3>
                     <p class="text-xs text-gray-500 mb-2"></p>
                     <p class="text-lg font-bold text-gray-900">
-                      220원
+                      ${product.lprice}원
                     </p>
                   </div>
                   <!-- 장바구니 버튼 -->
@@ -129,39 +207,32 @@ export default function page() {
                   </button>
                 </div>
               </div>
-              <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
-                   data-product-id="86940857379">
-                <!-- 상품 이미지 -->
-                <div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image">
-                  <img src="https://shopping-phinf.pstatic.net/main_8694085/86940857379.1.jpg"
-                       alt="샷시 풍지판 창문 바람막이 베란다 문 틈막이 창틀 벌레 차단 샤시 방충망 틈새막이"
-                       class="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
-                       loading="lazy">
-                </div>
-                <!-- 상품 정보 -->
-                <div class="p-3">
-                  <div class="cursor-pointer product-info mb-3">
-                    <h3 class="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
-                      샷시 풍지판 창문 바람막이 베란다 문 틈막이 창틀 벌레 차단 샤시 방충망 틈새막이
-                    </h3>
-                    <p class="text-xs text-gray-500 mb-2">이지웨이건축자재</p>
-                    <p class="text-lg font-bold text-gray-900">
-                      230원
-                    </p>
-                  </div>
-                  <!-- 장바구니 버튼 -->
-                  <button class="w-full bg-blue-600 text-white text-sm py-2 px-3 rounded-md
-                         hover:bg-blue-700 transition-colors add-to-cart-btn" data-product-id="86940857379">
-                    장바구니 담기
-                  </button>
-                </div>
-              </div>
+                `;
+                })
+                .join("")}
             </div>
-            
-            <div class="text-center py-4 text-sm text-gray-500">
+${
+  !state.hasNext
+    ? `<div class="text-center py-4 text-sm text-gray-500">
               모든 상품을 확인했습니다
-            </div>
+            </div>`
+    : `<div class="text-center py-4">
+              <div class="inline-flex items-center">
+                <svg class="animate-spin h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" 
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span class="text-sm text-gray-600">상품을 불러오는 중...</span>
+              </div>
+            </div>`
+}
+            
+
+            
           </div>
+          `
+        }
         </div>
       </main>
       <footer class="bg-white shadow-sm sticky top-0 z-40">
@@ -172,47 +243,13 @@ export default function page() {
     </div>
   `;
 
-  document.getElementById("cart-icon-btn").addEventListener("click", () => {
-    console.log("장바구니 모달 호출");
+  // //장바구니 모달 호출
+  // document.getElementById("cart-icon-btn").addEventListener("click", () => {
+  //   document.body.insertAdjacentHTML("beforeend", modal());
 
-    const 장바구니_비어있음 = `
-    <div id="cart-modal-overlay" class="cart-modal-overlay fixed inset-0 z-[9999] bg-black bg-opacity-50 flex items-end justify-center p-0 sm:items-center sm:p-4">
-      <div class="relative bg-white rounded-t-lg sm:rounded-lg shadow-xl w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-hidden">
-        <!-- 헤더 -->
-        <div class="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
-          <h2 class="text-lg font-bold text-gray-900 flex items-center">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m2.6 8L6 2H3m4 11v6a1 1 0 001 1h1a1 1 0 001-1v-6M13 13v6a1 1 0 001 1h1a1 1 0 001-1v-6"></path>
-            </svg>
-            장바구니 
-          </h2>
-          
-          <button id="cart-modal-close-btn" class="text-gray-400 hover:text-gray-600 p-1">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-          </button>
-        </div>
-        
-        <!-- 컨텐츠 -->
-        <div class="flex flex-col max-h-[calc(90vh-120px)]">
-          <!-- 빈 장바구니 -->
-          <div class="flex-1 flex items-center justify-center p-8">
-            <div class="text-center">
-              <div class="text-gray-400 mb-4">
-                <svg class="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m2.6 8L6 2H3m4 11v6a1 1 0 001 1h1a1 1 0 001-1v-6M13 13v6a1 1 0 001 1h1a1 1 0 001-1v-6"></path>
-                </svg>
-              </div>
-              <h3 class="text-lg font-medium text-gray-900 mb-2">장바구니가 비어있습니다</h3>
-              <p class="text-gray-600">원하는 상품을 담아보세요!</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-
-    document.body.insertAdjacentHTML("beforeend", 장바구니_비어있음);
-  });
+  //   //장바구니 모달 닫기
+  //   document.getElementById("cart-modal-close-btn").addEventListener("click", () => {
+  //     document.querySelector(".cart-modal-overlay").remove();
+  //   });
+  // });
 }
