@@ -101,9 +101,7 @@ export const HomePage = ({
         <!-- 기존 필터들 -->
         <div class="flex gap-2 items-center justify-between">
           <!-- 페이지당 상품 수 -->
-          
             ${ProductCountPerPage({ productCount })}
-       
           <!-- 정렬 -->
           ${ProductArrange({ sort })}
         </div>
@@ -118,7 +116,6 @@ export const HomePage = ({
           <!-- 로딩 스켈레톤 -->
           ${loading ? LoadingUIList.join("") : products.map((product) => ProductCard(product)).join("")}
         </div>
-
         <!-- 무한 스크롤 감지 요소 -->
         <div id="scroll-sentinel"></div>
         ${hasNext ? PageLoadingSpinner() : ""}
