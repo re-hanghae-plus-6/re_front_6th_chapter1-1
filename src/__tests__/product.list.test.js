@@ -214,6 +214,14 @@ describe('5. 무한 스크롤 페이지네이션', () => {
   test('페이지 하단 스크롤 시 추가 상품이 로드된다', async () => {
     await screen.findByText(/총 의 상품/i);
 
+    const limitSelect = document.querySelector('#limit-select');
+    await userEvent.selectOptions(limitSelect, '20');
+
+    await waitFor(() => {
+      const cards = document.querySelectorAll('.product-card');
+      expect(cards.length).toBe(20);
+    });
+
     // 초기 상품 카드 수 확인
     const initialCards = document.querySelectorAll('.product-card').length;
     expect(initialCards).toBe(20);

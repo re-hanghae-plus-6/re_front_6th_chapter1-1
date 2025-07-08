@@ -13,12 +13,45 @@ let state = {
   loading: false,
   limit: 20,
   sort: 'price_asc',
+  page: 1,
+  hasMore: true,
 };
 
 let isEventListenerSetUp = false;
 
 function render() {
   document.body.querySelector('#root').innerHTML = HomePage(state);
+}
+
+async function loadMoreProducts() {
+  if (state.loading || !state.hasMore) return;
+
+  state.loading = true;
+  render();
+
+  try {
+    const data = await getProducts({
+      page: state.page + 1,
+      limit: state.limit,
+      sort: state.sort,
+    });
+
+    state.products = [...state.products, ...data.products];
+    state.page += 1;
+    state.hasMore = data.products.length === state.limit;
+    state.loading = false;
+    render();
+  } catch (error) {
+    console.error('추가 상품 로드 실패:', error);
+    state.loading = false;
+    render();
+  }
+}
+
+function handleScroll() {
+  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+    loadMoreProducts();
+  }
 }
 
 function setUpEventListeners() {
@@ -28,28 +61,34 @@ function setUpEventListeners() {
     if (e.target.id === 'limit-select') {
       const newLimit = parseInt(e.target.value);
       state.limit = newLimit;
+      state.page = 1;
       state.loading = true;
       render();
 
-      const data = await getProducts({ limit: newLimit });
+      const data = await getProducts({ limit: newLimit, page: 1 });
       state.products = data.products;
       state.total = data.pagination.total;
+      state.hasMore = data.products.length === newLimit;
       state.loading = false;
       render();
     }
     if (e.target.id === 'sort-select') {
       const newSort = e.target.value;
       state.sort = newSort;
+      state.page = 1;
       state.loading = true;
       render();
 
-      const data = await getProducts({ sort: newSort });
+      const data = await getProducts({ sort: newSort, page: 1 });
       state.products = data.products;
       state.total = data.pagination.total;
+      state.hasMore = data.products.length === state.limit;
       state.loading = false;
       render();
     }
   });
+
+  window.addEventListener('scroll', handleScroll);
 
   isEventListenerSetUp = true;
 }
@@ -57,10 +96,12 @@ function setUpEventListeners() {
 export async function main() {
   state.loading = true;
   render();
-  const data = await getProducts({});
+  const data = await getProducts({ page: 1, limit: state.limit });
   console.log(data);
   state.products = data.products;
   state.total = data.pagination.total;
+  state.page = 1;
+  state.hasMore = data.products.length === state.limit;
   state.loading = false;
   render();
 
