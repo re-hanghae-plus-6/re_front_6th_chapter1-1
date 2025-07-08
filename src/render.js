@@ -1,8 +1,10 @@
 import { router } from "./router.js";
 import { initEventManager } from "./utils/eventManager.js";
 import { NotFoundPage } from "./pages/NotFoundPage.js";
+import { Header } from "./app/components/Header.js";
 
 let currentMountedPage = null;
+let isHeaderInitialized = false;
 
 export function render() {
   const $root = document.querySelector("#root");
@@ -18,6 +20,11 @@ export function render() {
     const routePath = currentRoute.path;
 
     $root.innerHTML = Page();
+
+    if (!isHeaderInitialized && typeof Header.onMount === "function") {
+      Header.onMount();
+      isHeaderInitialized = true;
+    }
 
     if (typeof Page.onMount === "function") {
       if (routePath !== currentMountedPage) {
