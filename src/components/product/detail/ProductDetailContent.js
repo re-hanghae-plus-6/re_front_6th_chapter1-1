@@ -1,6 +1,7 @@
 import { router } from "../../../routes";
 import { getProducts } from "../../../api/productApi";
 import RelatedProductList from "./RelatedProductList";
+import Toast from "../../common/Toast";
 
 function ProductDetailContent({ product, loading = true }) {
   if (loading) {
@@ -13,6 +14,30 @@ function ProductDetailContent({ product, loading = true }) {
       </div>
     `;
   }
+
+  const toast = Toast();
+
+  const addToCart = (quantity) => {
+    const cart = JSON.parse(window.localStorage.getItem("cart") || "{}");
+    const newCart = {
+      ...cart,
+      [product.productId]: {
+        ...product,
+        quantity: cart[product.productId]?.quantity + quantity || quantity,
+      },
+    };
+    window.localStorage.setItem("cart", JSON.stringify(newCart));
+  };
+
+  queueMicrotask(() => {
+    const addToCartButton = document.getElementById("add-to-cart-btn");
+
+    addToCartButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      addToCart(Number(document.getElementById("quantity-input").value));
+      toast.show("success", "장바구니에 추가되었습니다");
+    });
+  });
 
   queueMicrotask(() => {
     const goToProductListButton = document.getElementById("go-to-product-list-btn");
