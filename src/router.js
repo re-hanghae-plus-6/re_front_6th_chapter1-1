@@ -1,19 +1,35 @@
-export function getLimitFromURL() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const limit = parseInt(urlParams.get("limit"));
-  return limit && [10, 20, 50, 100].includes(limit) ? limit : 20;
-}
+import Home from "./pages/Home.js";
+import NotFound from "./pages/NotFound.js";
 
-export function updateURLParams(limit) {
-  const url = new URL(window.location);
-  url.searchParams.set("limit", limit);
-  window.history.pushState({}, "", url);
-}
+const routes = {
+  "/": Home,
+  "*": NotFound,
+};
 
-// 라우터 초기화
-export function initRouter() {
-  return {
-    getLimitFromURL,
-    updateURLParams,
-  };
+const componentInstances = {};
+
+export function router() {
+  const path = window.location.pathname;
+  const route = routes[path] || routes["*"];
+
+  if (componentInstances.current && componentInstances.current.cleanup) {
+    componentInstances.current.cleanup();
+  }
+
+  const component = route();
+
+  const root = document.getElementById("root");
+  if (!root) {
+    return;
+  }
+
+  if (component && component.template && component.mount) {
+    root.innerHTML = component.template;
+
+    const cleanup = component.mount();
+
+    componentInstances.current = { cleanup };
+  } else {
+    root.innerHTML = component;
+  }
 }

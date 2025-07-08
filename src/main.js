@@ -1,4 +1,4 @@
-import app from "./app.js";
+import { router } from "./router.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -8,7 +8,15 @@ const enableMocking = () =>
   );
 
 async function main() {
-  await app.init();
+  window.addEventListener("popstate", router);
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+      router();
+    });
+  } else {
+    router();
+  }
 }
 
 // 애플리케이션 시작
