@@ -20,6 +20,12 @@ export class ProductListController {
         this.handleSortChange(event);
       }
     });
+
+    window.addEventListener("scroll", () => {
+      if (window.scrollY + window.innerHeight >= document.body.scrollHeight - 100) {
+        this.loadNextPage();
+      }
+    });
   }
 
   handleLimitChange(event) {
@@ -39,24 +45,40 @@ export class ProductListController {
     this.fetchProducts();
   }
 
-  async fetchProducts() {
+  async fetchProducts(page = 1) {
     store.dispatch(actions.loadProducts());
 
     try {
       const { pagination, filters } = this.state;
 
       const params = {
-        page: pagination.page,
+        page,
         limit: pagination.limit,
         sort: filters?.sort,
       };
 
       const data = await getProducts(params);
 
-      store.dispatch(actions.productsLoaded(data));
+      store.dispatch(
+        actions.productsLoaded({
+          products: data.products,
+          pagination: data.pagination,
+        }),
+      );
     } catch (error) {
       console.error(error);
       store.dispatch(actions.loadError(error.message));
     }
+  }
+
+  async loadNextPage() {
+    const { pagination } = this.state;
+    const nextPage = pagination.page + 1;
+
+    if (nextPage > Math.ceil(pagination.total / pagination.limit)) {
+      return;
+    }
+
+    await this.fetchProducts(nextPage);
   }
 }
