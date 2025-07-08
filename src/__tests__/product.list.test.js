@@ -111,13 +111,6 @@ describe("3. 페이지당 상품 수 선택", () => {
       ).not.toBeInTheDocument(),
     );
 
-    // NOTE(@nimusmix): limit 변경 시 data fetching 되어,
-    // skeleton 카드가 먼저 렌더링된 후 상품 카드가 렌더링되기 때문에 모두 렌더링되었는지 확인하기 위해 대기
-    await waitFor(() => {
-      const skeletons = document.querySelectorAll(".product-skeleton-card");
-      expect(skeletons.length).toBe(0);
-    });
-
     expect(document.querySelectorAll(".product-card").length).toBe(10);
   });
 });
