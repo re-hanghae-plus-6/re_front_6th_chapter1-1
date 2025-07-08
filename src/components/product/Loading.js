@@ -1,5 +1,5 @@
 export default function Loading() {
-    return `
+  return `
         <div class="py-20 bg-gray-50 flex items-center justify-center">
           <div class="text-center">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -10,7 +10,7 @@ export default function Loading() {
 }
 
 export function LoadingSpinner() {
-    return `
+  return `
         <div class="text-center py-4">
             <div class="inline-flex items-center">
             <svg class="animate-spin h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24">

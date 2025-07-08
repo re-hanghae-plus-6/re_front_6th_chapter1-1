@@ -1,5 +1,7 @@
 export default function ProductSkeleton({ count = 4 }) {
-    const skeletons = Array.from({ length: count }, () => `
+  const skeletons = Array.from(
+    { length: count },
+    () => `
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
             <div class="aspect-square bg-gray-200"></div>
             <div class="p-3">
@@ -9,7 +11,8 @@ export default function ProductSkeleton({ count = 4 }) {
                 <div class="h-8 bg-gray-200 rounded"></div>
             </div>
         </div>
-    `).join("");
+    `,
+  ).join("");
 
-    return `<div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">${skeletons}</div>`;
+  return `<div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">${skeletons}</div>`;
 }

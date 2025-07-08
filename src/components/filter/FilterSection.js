@@ -1,30 +1,30 @@
 export default function FilterSection({
-    searchValue = "",
-    categories = [],
-    selectedCategory1 = "",
-    selectedCategory2 = "",
-    sort = "price_asc",
-    limit = 20,
-    loading = false,
+  searchValue = "",
+  categories = [],
+  selectedCategory1 = "",
+  selectedCategory2 = "",
+  sort = "price_asc",
+  limit = 20,
+  loading = false,
 }) {
-    // 브레드크럼(breadcrumb) 영역 렌더링
-    // 1depth, 2depth 카테고리 선택에 따라 동적으로 표시
-    const renderBreadcrumb = () => {
-        let breadcrumb = '';
-        // 항상 '전체'에서 시작
-        breadcrumb += `<button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>`;
-        if (selectedCategory1) {
-            breadcrumb += `<span class="mx-1 text-gray-400">/</span>`;
-            breadcrumb += `<button data-breadcrumb="category1" class="text-xs hover:text-blue-800 hover:underline">${selectedCategory1}</button>`;
-        }
-        if (selectedCategory2) {
-            breadcrumb += `<span class="mx-1 text-gray-400">/</span>`;
-            breadcrumb += `<button data-breadcrumb="category2" class="text-xs hover:text-blue-800 hover:underline">${selectedCategory2}</button>`;
-        }
-        return breadcrumb;
+  // 브레드크럼(breadcrumb) 영역 렌더링
+  // 1depth, 2depth 카테고리 선택에 따라 동적으로 표시
+  const renderBreadcrumb = () => {
+    let breadcrumb = "";
+    // 항상 '전체'에서 시작
+    breadcrumb += `<button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>`;
+    if (selectedCategory1) {
+      breadcrumb += `<span class="mx-1 text-gray-400">/</span>`;
+      breadcrumb += `<button data-breadcrumb="category1" class="text-xs hover:text-blue-800 hover:underline">${selectedCategory1}</button>`;
     }
+    if (selectedCategory2) {
+      breadcrumb += `<span class="mx-1 text-gray-400">/</span>`;
+      breadcrumb += `<button data-breadcrumb="category2" class="text-xs hover:text-blue-800 hover:underline">${selectedCategory2}</button>`;
+    }
+    return breadcrumb;
+  };
 
-    // 카테고리 버튼 렌더링
+  // 카테고리 버튼 렌더링
   const renderCategoryButtons = () => {
     if (loading) {
       return `<div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>`;
@@ -74,23 +74,23 @@ export default function FilterSection({
     }
   };
 
-    // 정렬 옵션
-    const sortOptions = [
-        { value: "price_asc", label: "가격 낮은순" },
-        { value: "price_desc", label: "가격 높은순" },
-        { value: "name_asc", label: "이름순" },
-        { value: "name_desc", label: "이름 역순" },
-    ];
+  // 정렬 옵션
+  const sortOptions = [
+    { value: "price_asc", label: "가격 낮은순" },
+    { value: "price_desc", label: "가격 높은순" },
+    { value: "name_asc", label: "이름순" },
+    { value: "name_desc", label: "이름 역순" },
+  ];
 
-    // 개수 옵션
-    const limitOptions = [
-        { value: "10", label: "10개" },
-        { value: "20", label: "20개" },
-        { value: "30", label: "30개" },
-        { value: "40", label: "40개" },
-    ];
+  // 개수 옵션
+  const limitOptions = [
+    { value: "10", label: "10개" },
+    { value: "20", label: "20개" },
+    { value: "30", label: "30개" },
+    { value: "40", label: "40개" },
+  ];
 
-    return `
+  return `
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
         <!-- 검색창 -->
         <div class="mb-4">
@@ -136,12 +136,15 @@ export default function FilterSection({
                     class="text-sm border border-gray-300 rounded px-2 py-1 
                            focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 >
-                ${limitOptions.map((option) => `
+                ${limitOptions
+                  .map(
+                    (option) => `
                     <option value="${option.value}" ${limit === option.value ? "selected" : ""}>
                         ${option.label}
                     </option>
-                    `
-                ).join("")}
+                    `,
+                  )
+                  .join("")}
                 </select>
             </div>
 
@@ -153,12 +156,15 @@ export default function FilterSection({
                     class="text-sm border border-gray-300 rounded px-2 py-1
                            focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 >
-                ${sortOptions.map((option) => `
+                ${sortOptions
+                  .map(
+                    (option) => `
                     <option value="${option.value}" ${sort === option.value ? "selected" : ""}>
                     ${option.label}
                     </option>
-                `
-                ).join("")}
+                `,
+                  )
+                  .join("")}
                 </select>
             </div>
             </div>

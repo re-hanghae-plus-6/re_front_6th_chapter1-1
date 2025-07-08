@@ -4,11 +4,11 @@ import ProductGrid from "./components/product/ProductGrid.js";
 import { getProducts, getCategories } from "./api/productApi.js";
 
 const enableMocking = () =>
-import("./mocks/browser.js").then(({ worker }) =>
-  worker.start({
-    onUnhandledRequest: "bypass",
-  }),
-);
+  import("./mocks/browser.js").then(({ worker }) =>
+    worker.start({
+      onUnhandledRequest: "bypass",
+    }),
+  );
 
 // const , let 차이점
 // const -> 값을 변경(재할당) 할 수 없음 , let -> 값을 변경(재할당) 할 수 있음.
@@ -47,22 +47,20 @@ function render(state, cartCount) {
         hasMore: state.hasMore,
       })}
       `,
-      cartCount,
-      showBackButton: false,
+    cartCount,
+    showBackButton: false,
   });
-
 }
 
 async function main({ cartCount = 0 }) {
-  
   state.loading = true;
   render(state, cartCount);
   const [
-    {  
-      products, 
-      pagination:{ total },
-    }, 
-    categories 
+    {
+      products,
+      pagination: { total },
+    },
+    categories,
   ] = await Promise.all([getProducts({}), getCategories()]);
 
   state.products = products;

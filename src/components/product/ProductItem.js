@@ -1,7 +1,7 @@
 export default function ProductItem({ product }) {
-    const { productId, image, title, lprice, mallName = "" } = product;
-  
-    return `
+  const { productId, image, title, lprice, mallName = "" } = product;
+
+  return `
       <div
         class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
         data-product-id="${productId}"
@@ -36,4 +36,4 @@ export default function ProductItem({ product }) {
         </div>
       </div>
     `;
-  }
+}
