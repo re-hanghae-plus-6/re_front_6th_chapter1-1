@@ -1,5 +1,5 @@
 import { createProductListPage } from "./pages";
-import mockItems from "./mocks/items.json";
+import { getProducts } from "./api";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -8,13 +8,25 @@ const enableMocking = () =>
     }),
   );
 
-function main() {
+async function main() {
   const root = document.getElementById("root");
 
-  const products = mockItems.slice(0, 20);
+  root.innerHTML = createProductListPage([], {
+    totalCount: 0,
+    isLoading: true,
+    searchValue: "",
+    selectedLimit: "20",
+    selectedSort: "price_asc",
+  });
+
+  const { products, totalCount } = await getProducts({
+    page: 1,
+    limit: 20,
+    sort: "price_asc",
+  });
 
   root.innerHTML = createProductListPage(products, {
-    totalCount: mockItems.length,
+    totalCount,
     isLoading: false,
     searchValue: "",
     selectedLimit: "20",
@@ -22,7 +34,6 @@ function main() {
   });
 }
 
-// 애플리케이션 시작
 if (import.meta.env.MODE !== "test") {
   enableMocking().then(main);
 } else {
