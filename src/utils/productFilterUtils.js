@@ -1,6 +1,18 @@
 import { loadProductList, loadFilter } from "../services/productLoader";
 import { getProductListFilters, updateUrlParams } from "./searchUtils";
 
+// 카테고리 캐시 클로저
+export const createCategoryCache = () => {
+  let cachedData = null;
+  return {
+    get: () => cachedData,
+    set: (data) => {
+      cachedData = data;
+    },
+    has: () => cachedData !== null,
+  };
+};
+
 // 정렬 옵션
 export const SORT_OPTIONS = [
   { value: "price_asc", label: "가격 낮은순" },

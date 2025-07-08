@@ -4,7 +4,7 @@ import { ProductEmpty } from "../components/product/ProductEmpty";
 import ProductFilter from "../components/product/ProductFilter";
 import ProductItem from "../components/product/ProductItem";
 
-import { initializeFilterEventListeners } from "../utils/productFilterUtils";
+import { createCategoryCache, initializeFilterEventListeners } from "../utils/productFilterUtils";
 
 /**
  * @param {Object} query - { page, limit, search, category1, category2, sort }
@@ -46,6 +46,8 @@ export const loadProductList = async (query) => {
   }
 };
 
+const categoryCache = createCategoryCache();
+
 export const loadFilter = async (query = {}) => {
   const filterContainer = document.getElementById("product-filter");
   if (!filterContainer) return;
@@ -64,7 +66,15 @@ export const loadFilter = async (query = {}) => {
   filterContainer.innerHTML = ProductFilter(categoriesProps);
 
   try {
-    const categories = await getCategories();
+    // 캐시된 카테고리가 있으면 사용, 없으면 새로 로드
+    let categories;
+    if (categoryCache.has()) {
+      categories = categoryCache.get();
+    } else {
+      categories = await getCategories();
+      categoryCache.set(categories);
+    }
+
     filterContainer.innerHTML = ProductFilter({ ...categoriesProps, isLoading: false, categories });
 
     // HTML 렌더링 후 이벤트 리스너 등록
