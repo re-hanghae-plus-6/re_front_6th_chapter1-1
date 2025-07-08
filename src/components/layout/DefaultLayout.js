@@ -1,18 +1,3 @@
-// import footer from './footer/Footer.js';
-// import header from './header/Header.js';
-//
-// function DefaultLayout({ children }) {
-//   return `
-//     <div class="min-h-screen bg-gray-50">
-//       ${header()}
-//       ${children}
-//       ${footer()}
-//     </div>
-//   `;
-// }
-//
-// export default DefaultLayout;
-
 import Component from '../../core/Component.js';
 import Header from './header/Header.js';
 import Footer from './footer/Footer.js';
