@@ -47,7 +47,7 @@ const routes = {
 
 // 라우터 인스턴스 생성 및 관리 함수
 export const createRouter = (initialmainStatus) => {
-  let currentmainStatus = initialmainStatus; // main.js에서 전달받은 mainStatus 객체
+  let currentmainStatus = JSON.parse(JSON.stringify(initialmainStatus)); // main.js에서 전달받은 mainStatus 객체
   const appRoot = document.querySelector("#root"); // 콘텐츠가 렌더링될 DOM 요소
 
   // 현재 URL 경로에 맵핑된 컴포넌트 렌더링 함수
@@ -70,7 +70,7 @@ export const createRouter = (initialmainStatus) => {
 
   // 외부에서 mainStatus을 업데이트하고 렌더링을 트리거할 수 있는 함수
   const updateStateAndRender = (newmainStatus) => {
-    currentmainStatus = newmainStatus; // 상태 업데이트
+    currentmainStatus = JSON.parse(JSON.stringify(newmainStatus)); // 상태 업데이트
     render(); // 업데이트된 상태로 다시 렌더링
   };
 

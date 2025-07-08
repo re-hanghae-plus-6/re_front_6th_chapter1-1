@@ -28,10 +28,11 @@ const mainStatus = {
 
 // 라우터 인스턴스를 전역적으로 접근 가능하도록 선언
 let appRouter;
-
+let isInit = true;
 // API 호출 및 렌더링을 담당하는 함수
 async function loadProductsAndUpdateUI() {
-  mainStatus.loading = true;
+  isInit && (mainStatus.loading = true);
+
   appRouter.updateStateAndRender(mainStatus); // 로딩 상태 먼저 반영
 
   try {
@@ -45,6 +46,7 @@ async function loadProductsAndUpdateUI() {
     console.error("loadProductsAndUpdateUI", "데이터를 불러오는 중 오류가 발생했습니다:", error);
   } finally {
     mainStatus.loading = false;
+    isInit = false;
     appRouter.updateStateAndRender(mainStatus); // 최종 상태 반영
   }
 }
@@ -52,9 +54,9 @@ async function loadProductsAndUpdateUI() {
 // 이벤트 핸들러 설정 함수
 function setupEventListeners() {
   /** change */
+  let shouldUpdate = false;
   document.body.addEventListener("change", (e) => {
     const target = e.target;
-    let shouldUpdate = false;
 
     if (target.id === "limit-select") {
       mainStatus.params.limit = parseInt(target.value, 10);
@@ -70,6 +72,18 @@ function setupEventListeners() {
     }
   });
 
+  document.body.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && e.target.id === "search-input") {
+      mainStatus.params.search = e.target.value;
+      shouldUpdate = true;
+    } else {
+      return;
+    }
+    if (shouldUpdate) {
+      mainStatus.params.page = 1; // 필터 변경 시 첫 페이지로 초기화
+      loadProductsAndUpdateUI();
+    }
+  });
   // TODO: 그 외 다른 이벤트 설정.....
 }
 
