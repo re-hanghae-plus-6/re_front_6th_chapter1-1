@@ -19,6 +19,7 @@ let state = {
   hasPrev: false,
   sort: "price_asc",
   cart: [],
+  search: "",
 };
 
 function render() {
@@ -38,7 +39,10 @@ async function main() {
       pagination: { page, total, hasNext, hasPrev },
     },
     categories,
-  ] = await Promise.all([getProducts({ limit: state.productCount, sort: state.sort }), getCategories()]);
+  ] = await Promise.all([
+    getProducts({ limit: state.productCount, sort: state.sort, search: state.search }),
+    getCategories(),
+  ]);
 
   state.total = total;
   state.products = products;
@@ -47,6 +51,7 @@ async function main() {
   state.hasNext = hasNext;
   state.hasPrev = hasPrev;
   state.cart = [];
+  state.search = "";
 
   // 값 가져왔으니 로딩 상태 해제
   state.loading = false;
@@ -71,6 +76,33 @@ function setupEventListeners() {
       showToast({ type: "add" });
     }
   });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && event.target.matches("#search-input")) {
+      const searchValue = event.target.value;
+      handleSearch(searchValue);
+    }
+  });
+}
+
+async function handleSearch(searchValue) {
+  state.search = searchValue;
+
+  state.loading = true;
+  const { products, pagination } = await getProducts({
+    limit: state.productCount,
+    sort: state.sort,
+    search: state.search,
+  });
+
+  state.products = products;
+  state.page = pagination.page;
+  state.hasNext = pagination.hasNext;
+  state.hasPrev = pagination.hasPrev;
+  state.loading = false;
+  state.total = pagination.total;
+
+  render();
 }
 
 function addToCart(productId) {
