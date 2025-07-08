@@ -26,7 +26,7 @@ class Router {
     this.render(path);
   }
 
-  updateQuery(key, value) {
+  updateQuery(key, value, options = {}) {
     const url = new URL(window.location);
     if (value) {
       url.searchParams.set(key, value);
@@ -36,16 +36,18 @@ class Router {
 
     const newUrl = url.pathname + url.search;
     history.pushState(null, "", newUrl);
-    this.render();
+
+    if (options.rerender !== false) {
+      this.render();
+    }
   }
 
-  getCurrentRoute() {
+  parseCurrentUrl() {
     const url = new URL(window.location);
     const path = url.pathname;
     const query = {};
 
     for (const [key, value] of url.searchParams) {
-      console.log("key: ", key, "value: ", value);
       query[key] = value;
     }
 
@@ -95,16 +97,12 @@ class Router {
 
     if (result) {
       const component = this.routes[result.route];
-      const { query } = this.getCurrentRoute();
+      const { query } = this.parseCurrentUrl();
       const params = { ...result.params, ...query };
       await component(this.container, params);
     } else {
       const notFoundHandler = this.routes["*"];
-      if (notFoundHandler) {
-        await notFoundHandler(this.container);
-      } else {
-        this.container.innerHTML = "<h1>404 - 페이지를 찾을 수 없습니다!</h1>";
-      }
+      await notFoundHandler(this.container);
     }
   }
 }
