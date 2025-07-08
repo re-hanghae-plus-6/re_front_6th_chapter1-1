@@ -4,10 +4,12 @@ import { ProductSection } from "../components/ProductSection/ProductSection";
 import { Footer } from "../components/Layout/Footer";
 import { render } from "../utils/render";
 import { createStore } from "../states/store";
-import { getQueryState } from "../utils/getQueryState";
+import { getQueryState } from "../states/getQueryState";
 import { getProducts, getCategories } from "../api/productApi";
 import { isStateChanged } from "../utils/isStateChanged";
 import { navigate } from "../utils/navigate";
+import { updateSelectionOnFocus } from "@testing-library/user-event/dist/cjs/event/selection/updateSelectionOnFocus.js";
+import { updateUrlState } from "../states/updateUrlState";
 
 const initialState = {
   products: [],
@@ -100,9 +102,10 @@ export function Home() {
 
     store.subscribe((state) => {
       if (isStateChanged(prev, state)) {
+        updateUrlState(state);
         loadProducts();
-        prev = { ...state };
       }
+      prev = { ...state };
     });
 
     loadProducts({ isInit: true });
@@ -181,4 +184,13 @@ function addEvents() {
       });
     };
   }
+
+  window.addEventListener("popstate", () => {
+    const queryState = getQueryState();
+
+    store.setState({
+      ...queryState,
+      page: parseInt(queryState.page) || 1,
+    });
+  });
 }
