@@ -34,7 +34,7 @@ async function loadProducts() {
   productStore.setError(null);
   try {
     const state = productStore.getState();
-    const response = await getProducts({ limit: state.limit });
+    const response = await getProducts({ limit: state.limit, sort: state.sort });
     if (response.products) {
       productStore.setProducts(response.products);
       productStore.setTotalCount(response.pagination?.total ?? response.products.length);
@@ -52,6 +52,12 @@ async function loadProducts() {
 export default function Home() {
   const state = productStore.getState();
   const limitOptions = [10, 20, 50, 100];
+  const sortOptions = [
+    { value: "price_asc", label: "가격 낮은순" },
+    { value: "price_desc", label: "가격 높은순" },
+    { value: "name_asc", label: "이름순" },
+    { value: "name_desc", label: "이름 역순" },
+  ];
 
   const template = `
     ${Header()}
@@ -105,10 +111,12 @@ export default function Home() {
               <label class="text-sm text-gray-600">정렬:</label>
               <select id="sort-select" class="text-sm border border-gray-300 rounded px-2 py-1
                            focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-                <option value="price_asc" selected="">가격 낮은순</option>
-                <option value="price_desc">가격 높은순</option>
-                <option value="name_asc">이름순</option>
-                <option value="name_desc">이름 역순</option>
+                ${sortOptions
+                  .map(
+                    (option) =>
+                      `<option value="${option.value}" ${state.sort === option.value ? "selected" : ""}>${option.label}</option>`,
+                  )
+                  .join("")}
               </select>
             </div>
           </div>
@@ -141,6 +149,15 @@ export default function Home() {
       limitSelect.addEventListener("change", (e) => {
         const newLimit = parseInt(e.target.value);
         productStore.setLimit(newLimit);
+        loadProducts();
+      });
+    }
+
+    const sortSelect = document.getElementById("sort-select");
+    if (sortSelect) {
+      sortSelect.addEventListener("change", (e) => {
+        const newSort = e.target.value;
+        productStore.setSort(newSort);
         loadProducts();
       });
     }
