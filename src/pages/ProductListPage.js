@@ -9,7 +9,7 @@ import { addEvent } from "../utils/eventManager.js";
 import { router } from "../router.js";
 import { updateElement } from "../utils/domUtils.js";
 import { setupInfiniteScroll } from "../utils/infiniteScroll.js";
-import { addToCart } from "../shared/actions/cartActions.js";
+import { addToCart } from "../features/cart/services/cartService.js";
 import { showSuccessToast } from "../utils/toastManager.js";
 
 const defaultParams = {
