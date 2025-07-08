@@ -1,26 +1,8 @@
 import router from "./router.js";
-import Header from "./components/Header.js";
-import Footer from "./components/Footer.js";
 
-class Main {
-  constructor() {
-    this.header = new Header();
-    this.footer = new Footer();
-
-    this.initializePage();
-    router.init();
-  }
-
-  initializePage() {
-    const root = /*html*/ `
-      <div class="min-h-screen bg-gray-50">
-        ${this.header.render()}
-        <main id="page-content" class="max-w-md mx-auto px-4 py-4"></main>
-        ${this.footer.render()}
-      </div>
-    `;
-    document.getElementById("root").innerHTML = root;
-  }
+// 앱 초기화 함수
+function initializeApp() {
+  router.init();
 }
 
 const enableMocking = () =>
@@ -33,8 +15,9 @@ const enableMocking = () =>
 // 애플리케이션 시작
 if (import.meta.env.MODE !== "test") {
   enableMocking().then(() => {
-    new Main();
+    initializeApp();
   });
 } else {
-  new Main();
+  // 테스트 환경에서는 즉시 초기화
+  initializeApp();
 }
