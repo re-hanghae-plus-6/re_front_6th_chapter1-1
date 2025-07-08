@@ -163,4 +163,35 @@ function addEvents() {
       }
     });
   });
+
+  const quantityInput = document.querySelector("#quantity-input");
+  const maxStock = parseInt(quantityInput?.max) || 1;
+  if (quantityInput) {
+    quantityInput.addEventListener("input", () => {
+      const value = parseInt(quantityInput.value);
+      if (value < 1 || value > maxStock) {
+        quantityInput.value = 1;
+      }
+    });
+  }
+
+  const decreaseBtn = document.querySelector("#quantity-decrease");
+  if (decreaseBtn) {
+    decreaseBtn.addEventListener("click", () => {
+      const current = parseInt(quantityInput.value) || 1;
+      if (current > 1) {
+        quantityInput.value = current - 1;
+      }
+    });
+  }
+
+  const increaseBtn = document.querySelector("#quantity-increase");
+  if (increaseBtn) {
+    increaseBtn.addEventListener("click", () => {
+      const current = parseInt(quantityInput.value) || 1;
+      if (current < maxStock) {
+        quantityInput.value = current + 1;
+      }
+    });
+  }
 }
