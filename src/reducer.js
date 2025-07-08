@@ -94,6 +94,56 @@ export function reducer(state, action) {
         },
       };
 
+    case ACTIONS.LOAD_PRODUCT_DETAIL:
+      return {
+        ...state,
+        productDetail: {
+          ...state.productDetail,
+          loading: true,
+          error: null,
+        },
+      };
+
+    case ACTIONS.PRODUCT_DETAIL_LOADED:
+      return {
+        ...state,
+        productDetail: {
+          ...state.productDetail,
+          loading: false,
+          product: action.payload,
+          error: null,
+        },
+      };
+
+    case ACTIONS.LOAD_PRODUCT_DETAIL_ERROR:
+      return {
+        ...state,
+        productDetail: {
+          ...state.productDetail,
+          loading: false,
+          error: action.payload,
+          product: null,
+        },
+      };
+
+    case ACTIONS.LOAD_RELATED_PRODUCTS:
+      return {
+        ...state,
+        productDetail: {
+          ...state.productDetail,
+          relatedProducts: [],
+        },
+      };
+
+    case ACTIONS.RELATED_PRODUCTS_LOADED:
+      return {
+        ...state,
+        productDetail: {
+          ...state.productDetail,
+          relatedProducts: action.payload,
+        },
+      };
+
     default:
       return state;
   }

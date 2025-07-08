@@ -23,5 +23,13 @@ export const initialState = {
     sort: "price_asc",
   },
 
+  productDetail: {
+    product: null,
+    loading: false,
+    error: null,
+    relatedProducts: [],
+    quantity: 1,
+  },
+
   currentPage: "list",
 };

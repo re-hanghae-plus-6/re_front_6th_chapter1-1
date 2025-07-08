@@ -11,6 +11,12 @@ export const ACTIONS = {
   SLICE_LIST: "SLICE_LIST",
   CHANGE_SORT: "CHANGE_SORT",
   SEARCH_PRODUCTS: "SEARCH_PRODUCTS",
+
+  LOAD_PRODUCT_DETAIL: "LOAD_PRODUCT_DETAIL",
+  PRODUCT_DETAIL_LOADED: "PRODUCT_DETAIL_LOADED",
+  LOAD_PRODUCT_DETAIL_ERROR: "LOAD_PRODUCT_DETAIL_ERROR",
+  LOAD_RELATED_PRODUCTS: "LOAD_RELATED_PRODUCTS",
+  RELATED_PRODUCTS_LOADED: "RELATED_PRODUCTS_LOADED",
 };
 
 export const actions = {
@@ -29,4 +35,10 @@ export const actions = {
   sliceList: (limit) => ({ type: ACTIONS.SLICE_LIST, payload: limit }),
   changeSorts: (sort) => ({ type: ACTIONS.CHANGE_SORT, payload: sort }),
   searchProducts: (searchTerm) => ({ type: ACTIONS.SEARCH_PRODUCTS, payload: searchTerm }),
+
+  loadProductDetail: () => ({ type: ACTIONS.LOAD_PRODUCT_DETAIL }),
+  productDetailLoaded: (data) => ({ type: ACTIONS.PRODUCT_DETAIL_LOADED, payload: data }),
+  loadProductDetailError: (error) => ({ type: ACTIONS.LOAD_PRODUCT_DETAIL_ERROR, payload: error }),
+  loadRelatedProducts: () => ({ type: ACTIONS.LOAD_RELATED_PRODUCTS }),
+  relatedProductsLoaded: (products) => ({ type: ACTIONS.RELATED_PRODUCTS_LOADED, payload: products }),
 };
