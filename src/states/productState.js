@@ -8,4 +8,7 @@ export let productListState = {
 export let productDetailState = {
   isLoading: false,
   product: {},
+  category1: "",
+  category2: "",
+  relatedProducts: [],
 };

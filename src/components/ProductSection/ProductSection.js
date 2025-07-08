@@ -14,7 +14,6 @@ export const ProductSection = ({ products = [], isLoading = false, total = 0, ha
               .join("")
           : products.map((product) => ProductItem(product)).join("")}
       </div>
-
       <div class="text-center py-4 text-sm text-gray-500">모든 상품을 확인했습니다</div>
     </div>
   </div>`;
