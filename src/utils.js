@@ -12,10 +12,10 @@ export function throttle(fn, delay) {
 }
 
 export class InfiniteScroll {
-  constructor(loadMore, options = { threshold: 200, delay: 100 }) {
+  constructor(loadMore, options = { threshold: 400, delay: 100 }) {
     this.loadMore = loadMore;
-    this.threshold = options.threshold || 200;
-    this.delay = options.delay || 100;
+    this.threshold = options.threshold;
+    this.delay = options.delay;
     this.isLoading = false;
     this.hasNext = options.hasNext !== undefined ? options.hasNext : true;
 

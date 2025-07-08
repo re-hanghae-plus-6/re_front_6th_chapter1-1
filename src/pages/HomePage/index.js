@@ -53,7 +53,7 @@ export default function HomPage(state) {
             </div>
             <!-- 상품 그리드 -->
             <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
-                ${state.loading ? ProductListSkeleton : state.products.map(ProductItem).join("")}
+                ${state.loading && state.products.length === 0 ? ProductListSkeleton : state.products.map(ProductItem).join("")}
             </div>
             ${
               state.loading && state.products.length > 0

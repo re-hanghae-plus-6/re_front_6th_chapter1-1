@@ -22,7 +22,7 @@ export default function CategoryFilter({ state }) {
         }
         </div>
         ${
-          !categories
+          state.loading
             ? '<div class="text-sm text-gray-500">카테고리 로딩 중...</div>'
             : /*html*/ `<!-- 1depth 카테고리 -->
         <div class="flex flex-wrap gap-2">

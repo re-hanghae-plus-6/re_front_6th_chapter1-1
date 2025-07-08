@@ -17,7 +17,7 @@ let appState = {
   loading: false,
   hasNext: false,
   cart: [],
-  currentPage: 1,
+  page: 1,
   filters: {
     limit: 20,
     sort: "price_asc",
@@ -31,8 +31,9 @@ let infiniteScroll = null;
 
 const getFiltersFromUrl = () => {
   const params = new URLSearchParams(window.location.search);
+
   return {
-    limit: parseInt(params.get("limit")) || 20,
+    limit: params.get("limit") || 20,
     sort: params.get("sort") || "price_asc",
     search: params.get("search") || "",
     category1: params.get("category1") || "",
@@ -72,37 +73,91 @@ function render() {
   document.body.querySelector("#root").innerHTML = html;
 }
 
-async function loadProducts(reset = false) {
-  if (appState.loading) return false;
+async function loadInitialData() {
+  if (appState.loading) return;
   setAppState({ loading: true });
 
   try {
     const currentParams = getFiltersFromUrl();
-
-    const pageToLoad = reset ? 1 : appState.currentPage;
-    const params = {
-      page: pageToLoad,
-      limit: currentParams.limit,
+    const productParams = {
+      page: 1,
+      limit: parseInt(currentParams.limit, 10),
       sort: currentParams.sort,
-      search: currentParams.search || "",
-      category1: currentParams.category1 || "",
-      category2: currentParams.category2 || "",
+      search: currentParams.search,
+      category1: currentParams.category1,
+      category2: currentParams.category2,
     };
 
-    const data = await getProducts(params);
-    console.log("상품 로딩 성공:", data);
+    const [categoriesData, productsData] = await Promise.all([getCategories(), getProducts(productParams)]);
+    setAppState({
+      categories: categoriesData,
+      products: productsData.products,
+      total: productsData.pagination.total,
+      hasNext: productsData.pagination.hasNext,
+      page: productsData.pagination.hasNext ? 2 : 1,
+      loading: false,
+      filters: currentParams,
+    });
+  } catch (error) {
+    console.error("초기 데이터 로딩 실패:", error);
+    setAppState({ loading: false });
+  }
+}
+
+async function loadProductsOnly(filters) {
+  try {
+    const productParams = {
+      page: 1,
+      limit: parseInt(filters.limit, 10),
+      sort: filters.sort,
+      search: filters.search,
+      category1: filters.category1,
+      category2: filters.category2,
+    };
+
+    const productsData = await getProducts(productParams);
 
     setAppState({
-      products: reset ? data.products : [...appState.products, ...data.products],
+      products: productsData.products,
+      total: productsData.pagination.total,
+      hasNext: productsData.pagination.hasNext,
+      page: productsData.pagination.hasNext ? 2 : 1,
+      loading: false,
+      filters: filters,
+    });
+  } catch (error) {
+    console.error("상품 로딩 실패:", error);
+    setAppState({ loading: false });
+  }
+}
+
+async function loadNextPage() {
+  if (appState.loading || !appState.hasNext) return false;
+  setAppState({ loading: true });
+
+  try {
+    const params = {
+      page: appState.page,
+      limit: parseInt(appState.filters.limit, 10),
+      sort: appState.filters.sort,
+      search: appState.filters.search,
+      category1: appState.filters.category1,
+      category2: appState.filters.category2,
+    };
+    updateUrl(params);
+    const data = await getProducts(params);
+
+    setAppState({
+      products: [...appState.products, ...data.products],
       total: data.pagination.total,
       hasNext: data.pagination.hasNext,
-      currentPage: reset ? 2 : appState.currentPage + 1,
+      page: appState.page + 1,
       loading: false,
     });
 
     return data.pagination.hasNext;
   } catch (error) {
-    console.error("상품 로딩 실패:", error);
+    console.error("다음 페이지 로딩 실패:", error);
     setAppState({ loading: false });
     return false;
   }
@@ -113,7 +168,7 @@ function initInfiniteScroll() {
     infiniteScroll.destroy();
   }
 
-  infiniteScroll = new InfiniteScroll(loadProducts, {
+  infiniteScroll = new InfiniteScroll(loadNextPage, {
     threshold: 200,
     delay: 100,
     hasNext: appState.hasNext,
@@ -133,11 +188,11 @@ const applyFilter = async (newFilterValues) => {
     filters: updatedFilters,
     products: [],
     hasNext: false,
-    currentPage: 1,
+    page: 1,
   });
 
   try {
-    await loadProducts(true);
+    await loadProductsOnly(updatedFilters);
     initInfiniteScroll();
   } catch (error) {
     console.error("필터 적용 실패:", error);
@@ -146,18 +201,19 @@ const applyFilter = async (newFilterValues) => {
 
 function initEventListeners() {
   const root = document.querySelector("#root");
-  const urlFilters = getFiltersFromUrl();
 
   window.addEventListener("popstate", async () => {
+    const urlFilters = getFiltersFromUrl();
+
     setAppState({
       filters: urlFilters,
       products: [],
       hasNext: false,
-      currentPage: 1,
+      page: 1,
     });
 
     try {
-      await loadProducts(true);
+      await loadInitialData();
       initInfiniteScroll();
     } catch (error) {
       console.error("페이지 네비게이션 실패:", error);
@@ -177,19 +233,21 @@ function initEventListeners() {
   });
 
   root.addEventListener("click", async (event) => {
-    if (event.target.dataset.productId) {
+    if (event.target.classList.contains("add-to-cart-btn") && event.target.dataset.productId) {
       const productId = event.target.dataset.productId;
       const selectedProducts = appState.products.find((product) => product.productId === productId);
       if (selectedProducts) {
         setAppState({ cart: [...appState.cart, selectedProducts] });
         toast.open("CREATE");
       }
+      return;
     }
 
     if (event.target.dataset.category1) {
       const category1 = event.target.dataset.category1;
       await applyFilter({ category1, category2: "" });
     }
+
     if (event.target.dataset.category2) {
       const category2 = event.target.dataset.category2;
       await applyFilter({ category2 });
@@ -198,6 +256,7 @@ function initEventListeners() {
     if (event.target.dataset.breadcrumb === "reset") {
       await applyFilter({ category1: "", category2: "" });
     }
+
     if (event.target.dataset.breadcrumb === "reset-category1") {
       await applyFilter({ category2: "" });
     }
@@ -213,24 +272,13 @@ function initEventListeners() {
 }
 
 async function main() {
-  setAppState({ loading: true });
-
   const initialFilters = getFiltersFromUrl();
-
-  try {
-    const categories = await getCategories();
-    console.log("카테고리 로딩 성공:", categories);
-
-    setAppState({ categories, loading: false, filters: initialFilters });
-  } catch (error) {
-    console.error("카테고리 로딩 실패:", error);
-    setAppState({ loading: false });
-  }
+  setAppState({ filters: initialFilters });
 
   initEventListeners();
 
   try {
-    await loadProducts(true);
+    await loadInitialData();
     initInfiniteScroll();
   } catch (error) {
     console.error("초기 상품 로딩 실패:", error);
