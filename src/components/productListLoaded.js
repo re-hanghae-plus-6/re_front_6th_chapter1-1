@@ -1,7 +1,7 @@
 import { limitSelector } from "./limitSelector";
 import { productCard } from "./productCard";
 
-export const productListLoaded = (products, limit) => {
+export const productListLoaded = (products, limit, searchTerm = "") => {
   return `
     <div class="bg-gray-50">
       <header class="bg-white shadow-sm sticky top-0 z-40">
@@ -30,7 +30,7 @@ export const productListLoaded = (products, limit) => {
           <!-- 검색창 -->
           <div class="mb-4">
             <div class="relative">
-              <input type="text" id="search-input" placeholder="상품명을 검색해보세요..." value="" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
+              <input type="text" id="search-input" placeholder="상품명을 검색해보세요..." value="${searchTerm}" class="w-full pl-10 pr-20 py-2 border border-gray-300 rounded-lg
                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -38,7 +38,24 @@ export const productListLoaded = (products, limit) => {
                         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
               </div>
+              <!-- 검색 버튼 -->
+              <button id="search-button" class="absolute inset-y-0 right-0 px-3 py-2 bg-blue-500 text-white rounded-r-lg hover:bg-blue-600 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+              </button>
             </div>
+            <!-- 검색어가 있을 때 초기화 버튼 표시 -->
+            ${
+              searchTerm
+                ? `
+            <div class="mt-2 flex items-center gap-2">
+              <span class="text-sm text-gray-600">검색어: "${searchTerm}"</span>
+              <button id="clear-search-button" class="text-xs text-red-500 hover:text-red-700 underline">초기화</button>
+            </div>
+            `
+                : ""
+            }
           </div>
           <!-- 필터 옵션 -->
           <div class="space-y-3">
@@ -83,13 +100,14 @@ export const productListLoaded = (products, limit) => {
           <div>
             <!-- 상품 개수 정보 -->
             <div class="mb-4 text-sm text-gray-600">
-              총 <span class="font-medium text-gray-900">340개</span>의 상품
+              총 <span class="font-medium text-gray-900">${products.length}개</span>의 상품
+              ${searchTerm ? ` (검색어: "${searchTerm}")` : ""}
             </div>
             <!-- 상품 그리드 -->
             <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
             ${products.map(productCard).join("")}
             <div class="text-center py-4 text-sm text-gray-500">
-              모든 상품을 확인했습니다
+              ${products.length === 0 ? "검색 결과가 없습니다." : "모든 상품을 확인했습니다"}
             </div>
           </div>
         </div>

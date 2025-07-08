@@ -1,6 +1,7 @@
 import { getProducts } from "../api/productApi";
 import { productListLoaded } from "../components/productListLoaded";
 import { productListLoading } from "../components/productListLoading";
+import { setupSearchEventListeners } from "../utils/searchHandler";
 
 const root = document.getElementById("root");
 
@@ -8,6 +9,7 @@ let state = {
   page: 1,
   limit: 20,
   sort: "price_asc",
+  search: "",
   isLoading: false,
   hasMore: true,
   products: [],
@@ -17,23 +19,32 @@ const renderLoading = () => {
   root.innerHTML = productListLoading;
 };
 
+const renderContent = () => {
+  root.innerHTML = productListLoaded(state.products, state.limit, state.search);
+  setupProductLimitControl();
+  setupSortControl();
+  setupSearchEventListeners(state, renderContent);
+  window.addEventListener("scroll", () => {
+    setupInfiniteScroll();
+  });
+};
+
 const renderInitialContent = async () => {
   renderLoading();
 
   try {
-    const { products } = await getProducts({ page: state.page, limit: state.limit, sort: state.sort });
+    const { products } = await getProducts({
+      page: state.page,
+      limit: state.limit,
+      sort: state.sort,
+      search: state.search,
+    });
 
     state.products = products;
     state.page = 1;
     state.hasMore = products.length === state.limit;
 
-    root.innerHTML = productListLoaded(state.products, state.limit);
-
-    setupProductLimitControl();
-    setupSortControl();
-    window.addEventListener("scroll", () => {
-      setupInfiniteScroll();
-    });
+    renderContent();
   } catch (err) {
     console.error("초기 상품 목록 로딩 실패:", err);
     root.innerHTML = `<div class="p-4 text-red-600">상품을 불러오지 못했습니다.</div>`;
@@ -47,7 +58,12 @@ const loadMoreProducts = async () => {
 
   renderLoading();
   try {
-    const { products: nextProducts } = await getProducts({ page: state.page, limit: state.limit, sort: state.sort });
+    const { products: nextProducts } = await getProducts({
+      page: state.page,
+      limit: state.limit,
+      sort: state.sort,
+      search: state.search,
+    });
 
     if (!nextProducts || nextProducts.length === 0) {
       state.hasMore = false;
@@ -55,10 +71,7 @@ const loadMoreProducts = async () => {
     }
 
     state.products = [...state.products, ...nextProducts];
-    root.innerHTML = productListLoaded(state.products, state.limit);
-    setupProductLimitControl();
-    setupSortControl();
-    setupInfiniteScroll();
+    renderContent();
   } catch (err) {
     console.error("다음 상품 로딩 실패:", err);
   } finally {
