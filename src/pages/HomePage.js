@@ -1,6 +1,7 @@
 import { Header } from "../components/Header";
 import { SearchBar } from "../components/SearchBar";
 import { CategoryFilter, ProductCountPerPage, ProductArrange } from "../components/Filters";
+import { Footer } from "../components/Footer";
 
 const LoadingUI = () => {
   return `<div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
@@ -109,15 +110,10 @@ export const HomePage = ({
         <!-- 무한 스크롤 감지 요소 -->
         <div id="scroll-sentinel"></div>
         ${hasNext ? PageLoadingSpinner() : ""}
-
       </div>
     </div>
   </main>
-  <footer class="bg-white shadow-sm sticky top-0 z-40">
-    <div class="max-w-md mx-auto py-8 text-center text-gray-500">
-      <p>© 2025 항해플러스 프론트엔드 쇼핑몰</p>
-    </div>
-  </footer>
+  ${Footer()}
 </div>
 `;
 };
