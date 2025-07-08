@@ -1,3 +1,4 @@
+import { getProducts } from "./api/productApi.js";
 import page from "./page";
 
 const enableMocking = () =>
@@ -7,7 +8,167 @@ const enableMocking = () =>
     }),
   );
 
-function main() {
+let state = {
+  page: 1,
+  product: [],
+  total: 0,
+  loading: false,
+  limit: 0,
+  sort: "price_asc",
+  hasNext: true,
+  categories: [],
+  category1: null,
+  category2: null,
+};
+
+window.onscroll = async function () {
+  // 스크롤이 거의 끝에 도달했는지 확인
+
+  if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+    if (state.hasNext) {
+      const params = {
+        page: state.page + 1,
+        limit: state.limit,
+        search: "",
+        category1: "",
+        category2: "",
+        sort: state.sort,
+      };
+      const data = await getProducts(params);
+
+      state.products = [...state.products, ...data.products];
+      state.page = data.pagination.page;
+      state.hasNext = data.pagination.hasNext;
+
+      render();
+    }
+  }
+};
+
+//
+async function SelectCategory(value) {
+  console.log("선택 카테고리", value);
+  const params = {
+    page: 1,
+    limit: state.limit,
+    search: "",
+    category1: value,
+    category2: "",
+    sort: state.sort,
+  };
+  const data = await getProducts(params);
+  state.products = data.products;
+  state.total = data.pagination.total;
+  state.limit = data.pagination.limit;
+  state.category1 = value;
+  render();
+}
+
+//상품 검색 함수
+async function SearchProduct(value) {
+  console.log("검색 값", value);
+  const params = {
+    page: 1,
+    limit: state.limit,
+    search: value,
+    category1: "",
+    category2: "",
+    sort: state.sort,
+  };
+  const data = await getProducts(params);
+  console.log(data);
+  state.products = data.products;
+  state.total = data.pagination.total;
+  state.limit = data.pagination.limit;
+
+  render();
+}
+
+//개수 변경 함수
+async function selectNumber(value) {
+  const params = {
+    page: 1,
+    limit: value,
+    search: "",
+    category1: "",
+    category2: "",
+    sort: "price_asc",
+  };
+  const data = await getProducts(params);
+
+  state.products = data.products;
+  state.total = data.pagination.total;
+  state.loading = true;
+  state.limit = data.pagination.limit;
+  console.log(data);
+  render();
+}
+
+//정렬 변경 함수
+async function selectSort(value) {
+  console.log("정렬", value);
+  const params = {
+    page: 1,
+    limit: state.limit,
+    search: "",
+    category1: "",
+    category2: "",
+    sort: value,
+  };
+  const data = await getProducts(params);
+  console.log(data);
+  state.products = data.products;
+  state.total = data.pagination.total;
+  state.limit = data.pagination.limit;
+  state.loading = true;
+  state.sort = data.filters.sort;
+
+  render();
+}
+
+async function render() {
+  document.body.querySelector("#root").innerHTML = page(state);
+
+  //개수 클릭 시 함수
+  const limitSelect = document.getElementById("limit-select");
+  // 현재 state.limit 값에 맞게 selected 처리
+  Array.from(limitSelect.options).forEach((option) => {
+    option.selected = Number(option.value) === Number(state.limit);
+  });
+
+  limitSelect.addEventListener("change", (e) => {
+    selectNumber(e.target.value);
+  });
+
+  const sortSelect = document.getElementById("sort-select");
+  // 현재 state.limit 값에 맞게 selected 처리
+  Array.from(sortSelect.options).forEach((option) => {
+    option.selected = option.value === state.sort;
+  });
+
+  sortSelect.addEventListener("change", (e) => {
+    selectSort(e.target.value);
+  });
+
+  // 검색 입력창에서 엔터키 입력 시 검색 실행
+  const searchInput = document.getElementById("search-input");
+  if (searchInput) {
+    searchInput.addEventListener("keydown", async (e) => {
+      if (e.key === "Enter") {
+        SearchProduct(e.target.value);
+      }
+    });
+  }
+
+  // 1depth 카테고리 버튼 클릭 시 함수
+  document.querySelectorAll(".category1-filter-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      SelectCategory(btn.getAttribute("data-category1"));
+    });
+  });
+}
+
+async function main() {
   const 상품목록_레이아웃_로딩 = `
     <div class="min-h-screen bg-gray-50">
       <header class="bg-white shadow-sm sticky top-0 z-40">
@@ -1144,11 +1305,34 @@ function main() {
     <br />
     ${_404_}
   `;
+  // render();
+
+  // const data = await getProducts();
+  // const categoryData = await getCategories();
+  // console.log("data", data);
+  // console.log(
+  //   "categoryData",
+  //   Object.entries(categoryData).map(([parentKey, children]) => ({
+  //     category: parentKey,
+  //     list: Object.keys(children).map((childKey) => ({ category: childKey })),
+  //   })),
+  // );
+  // state.products = data.products;
+  // state.total = data.pagination.total;
+  // state.loading = true;
+  // state.limit = data.pagination.limit;
+  // state.hasNext = data.pagination.hasNext;
+  // state.categories = Object.entries(categoryData).map(([parentKey, children]) => ({
+  //   category: parentKey,
+  //   list: Object.keys(children).map((childKey) => ({ category: childKey })),
+  // }));
+
+  // render();
 }
 
 // 애플리케이션 시작
 if (import.meta.env.MODE !== "test") {
-  enableMocking().then(() => page());
+  enableMocking().then(main);
 } else {
   main();
 }
