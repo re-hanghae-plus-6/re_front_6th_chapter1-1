@@ -1,6 +1,12 @@
-function ProductItem() {
-  return `
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
+import Component from '../../../../../core/Component.js';
+
+class ProductItem extends Component {
+  constructor(element, props) {
+    super(element, props);
+  }
+  render() {
+    this.element.innerHTML = `
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
          data-product-id="85067212996">
       <!-- 상품 이미지 -->
       <div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image">
@@ -27,7 +33,8 @@ function ProductItem() {
         </button>
       </div>
     </div>
-  `;
+    `;
+  }
 }
 
 export default ProductItem;
