@@ -63,7 +63,7 @@ function setupEventListeners() {
     filterCompEl.addEventListener("change", (e) => {
       if (e.target.id === "limit-select") {
         const newLimit = parseInt(e.target.value, 10);
-        statusHome.params.limit = newList;
+        statusHome.params.limit = newLimit;
         loadProductsAndUpdateUI();
       }
     });
