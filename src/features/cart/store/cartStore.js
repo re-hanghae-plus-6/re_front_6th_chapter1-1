@@ -1,5 +1,5 @@
-import { createState } from "../../utils/createState.js";
-import { loadFromStorage } from "../../utils/localStorage.js";
+import { createState } from "../../../utils/createState.js";
+import { loadFromStorage } from "../../../utils/localStorage.js";
 
 const CART_STORAGE_KEY = "shopping_cart";
 
