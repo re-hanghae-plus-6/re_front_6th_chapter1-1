@@ -4,7 +4,14 @@
  * @returns {string} 검색/필터 HTML
  */
 export function createSearchFilter(options = {}) {
-  const { searchValue = "", selectedLimit = "20", selectedSort = "price_asc" } = options;
+  const {
+    searchValue = "",
+    selectedLimit = "20",
+    selectedSort = "price_asc",
+    selectedCategory1 = "",
+    selectedCategory2 = "",
+    isLoading = false,
+  } = options;
 
   return `
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
@@ -31,17 +38,39 @@ export function createSearchFilter(options = {}) {
           <div class="flex items-center gap-2">
             <label class="text-sm text-gray-600">카테고리:</label>
             <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
+            ${selectedCategory1 ? `<span class="text-xs text-gray-500">&gt;</span><button data-breadcrumb="category1" data-category1="${selectedCategory1}" class="text-xs hover:text-blue-800 hover:underline">${selectedCategory1}</button>` : ""}
+            ${selectedCategory2 ? `<span class="text-xs text-gray-500">&gt;</span><span class="text-xs text-gray-600 cursor-default">${selectedCategory2}</span>` : ""}
           </div>
           <!-- 1depth 카테고리 -->
           <div class="flex flex-wrap gap-2">
-            <button data-category1="생활/건강" class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
-                   bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
-              생활/건강
-            </button>
-            <button data-category1="디지털/가전" class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
-                   bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
-              디지털/가전
-            </button>
+            ${
+              isLoading
+                ? `<div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>`
+                : `${
+                    !selectedCategory1
+                      ? `
+                <button data-category1="생활/건강" class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
+                       bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
+                  생활/건강
+                </button>
+                <button data-category1="디지털/가전" class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
+                       bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
+                  디지털/가전
+                </button>`
+                      : `<button data-category1="생활/건강" data-category2="생활용품" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors ${selectedCategory2 === "생활용품" ? "bg-blue-100 border-blue-300 text-blue-800" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
+                  생활용품
+                </button>
+                <button data-category1="생활/건강" data-category2="주방용품" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors ${selectedCategory2 === "주방용품" ? "bg-blue-100 border-blue-300 text-blue-800" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
+                  주방용품
+                </button>
+                <button data-category1="생활/건강" data-category2="문구/사무용품" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors ${selectedCategory2 === "문구/사무용품" ? "bg-blue-100 border-blue-300 text-blue-800" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
+                  문구/사무용품
+                </button>
+                <button data-category1="생활/건강" data-category2="자동차용품" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors ${selectedCategory2 === "자동차용품" ? "bg-blue-100 border-blue-300 text-blue-800" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
+                  자동차용품
+                </button>`
+                  }`
+            }
           </div>
         </div>
         

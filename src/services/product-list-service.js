@@ -88,8 +88,8 @@ export class ProductListService {
         this.products = [...this.products, ...response.products];
       }
 
-      this.totalCount = response.totalCount;
-      this.hasMore = response.hasMore;
+      this.totalCount = response.pagination.total;
+      this.hasMore = response.pagination.hasNext;
       this.isLoading = false;
 
       this.notifyListeners();
