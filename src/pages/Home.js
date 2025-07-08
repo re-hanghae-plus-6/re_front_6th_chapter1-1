@@ -1,59 +1,78 @@
-import SearchFilter from "../components/list/SearchFilter";
-const productsLoadingItem = () => {
-  return `<div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
-                <div class="aspect-square bg-gray-200"></div>
-                <div class="p-3">
-                  <div class="h-4 bg-gray-200 rounded mb-2"></div>
-                  <div class="h-3 bg-gray-200 rounded w-2/3 mb-2"></div>
-                  <div class="h-5 bg-gray-200 rounded w-1/2 mb-3"></div>
-                  <div class="h-8 bg-gray-200 rounded"></div>
-                </div>
-              </div>`;
-};
+import { getProducts } from "../api/productApi.js";
 
 const Home = {
-  render() {
-    return `
-    <div class="min-h-screen bg-gray-50">
-      <main class="max-w-md mx-auto px-4 py-4">
-        <!-- 검색 및 필터 -->
-        ${SearchFilter.render()}
-
-        <!-- 상품 목록 -->
-        <div class="mb-6">
-          <div>
-            <!-- 상품 그리드 -->
-            <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
-              <!-- 로딩 스켈레톤 -->
-            ${Array.from({ length: 8 })
-              .map(() => productsLoadingItem())
-              .join("")}
-            </div>
-            
-            <div class="text-center py-4">
-              <div class="inline-flex items-center">
-                <svg class="animate-spin h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" 
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span class="text-sm text-gray-600">상품을 불러오는 중...</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
-    `;
+  el: null, // 컴포넌트의 DOM 요소를 저장할 곳
+  state: {
+    products: [],
+    loading: true,
   },
 
-  afterRender() {
-    const btn = document.getElementById("goAbout");
-    if (btn) {
-      btn.addEventListener("click", () => {
-        location.hash = "#/about"; // 해시 라우팅
-      });
+  // 데이터를 불러오는 로직 (변경 없음)
+  async fetchProducts() {
+    this.setState({ loading: true });
+    try {
+      const data = await getProducts();
+      this.setState({ products: data.products, loading: false });
+    } catch (error) {
+      console.error("상품 목록 불러오기 실패:", error);
+      this.setState({ loading: false });
     }
+  },
+
+  // 상태를 변경하고, 변경될 때마다 화면을 다시 그리는 함수
+  setState(newState) {
+    this.state = { ...this.state, ...newState };
+
+    // el이 존재할 때만 다시 그립니다.
+    if (this.el) {
+      this.el.innerHTML = this.template();
+    }
+  },
+
+  // HTML 템플릿을 반환하는 함수 (변경 없음)
+  template() {
+    if (this.state.loading) {
+      return `<p>카테고리 로딩 중...</p>`;
+    }
+    if (!this.state.products || !this.state.products.length) {
+      return `<p>표시할 상품이 없습니다.</p>`;
+    }
+    return `
+  총 의 상품
+          <ul class="product-list grid grid-cols-2 gap-4">
+            ${this.state.products
+              .map(
+                (item) => `
+              <li class="product-item border rounded-lg overflow-hidden shadow-sm">
+                <img src="${item.image}" alt="${item.title}" class="w-full h-48 object-cover"
+ />
+                <div class="p-3">
+                  <h3 class="font-bold truncate">${item.title}</h3>
+                  <p>${parseInt(item.lprice).toLocaleString()}원</p>
+                </div>                       
+              </li>                          
+            `,
+              )
+              .join("")}                     
+          </ul>                              
+        `;
+  },
+
+  // ✅ 1. render: 컴포넌트의 뼈대를 생성하고 초기 HTML을 채워서 반환합니다.
+  render() {
+    const el = document.createElement("div");
+    el.className = "home-page";
+    el.innerHTML = this.template();
+
+    this.el = el; // 자신의 DOM 요소를 기억합니다.
+    return el;
+  },
+
+  // ✅ 2. afterRender: 컴포넌트가 화면에 추가된 '후에' 호출될 함수입니다.
+  addEvent() {},
+  init() {
+    // 여기서 데이터를 로드합니다.
+    this.fetchProducts();
   },
 };
 
