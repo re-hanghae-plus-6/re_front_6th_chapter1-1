@@ -1,6 +1,6 @@
 import { store } from "../store.js";
 import { actions } from "../actions.js";
-import { getProducts } from "../api/productApi.js";
+import { getProducts, getCategories } from "../api/productApi.js";
 
 export class ProductListController {
   constructor() {
@@ -9,6 +9,36 @@ export class ProductListController {
 
   get state() {
     return store.getState();
+  }
+
+  async initialize() {
+    await this.loadInitialData();
+  }
+
+  async loadInitialData() {
+    store.dispatch(actions.loadInitialData());
+
+    try {
+      const [categories, productsData] = await Promise.all([
+        getCategories(),
+        getProducts({
+          page: 1,
+          limit: 20,
+          sort: "price_asc",
+        }),
+      ]);
+
+      store.dispatch(
+        actions.initialDataLoaded({
+          categories,
+          products: productsData.products,
+          pagination: productsData.pagination,
+        }),
+      );
+    } catch (error) {
+      console.error("초기 데이터 로딩 실패:", error);
+      store.dispatch(actions.loadInitialDataError(error.message));
+    }
   }
 
   setupEventListeners() {
@@ -24,6 +54,18 @@ export class ProductListController {
     document.addEventListener("keypress", (event) => {
       if (event.target.id === "search-input" && event.key === "Enter") {
         this.handleSearchChange(event);
+      }
+    });
+
+    document.addEventListener("click", (event) => {
+      if (event.target.dataset.category1 && !event.target.dataset.category2) {
+        this.handleCategory1Change(event);
+      } else if (event.target.dataset.category1 && event.target.dataset.category2) {
+        this.handleCategory2Change(event);
+      } else if (event.target.dataset.breadcrumb === "reset") {
+        this.handleCategoryReset(event);
+      } else if (event.target.dataset.breadcrumb === "category1") {
+        this.handleCategory1Breadcrumb(event);
       }
     });
 
@@ -57,6 +99,45 @@ export class ProductListController {
     this.fetchProducts();
   }
 
+  handleCategory1Change(event) {
+    const category1 = event.target.dataset.category1;
+    store.dispatch(
+      actions.changeFilters({
+        category1,
+        category2: "", // 1depth 변경 시 2depth 클리어
+      }),
+    );
+    this.fetchProducts();
+  }
+
+  handleCategory2Change(event) {
+    const category1 = event.target.dataset.category1;
+    const category2 = event.target.dataset.category2;
+    store.dispatch(actions.changeFilters({ category1, category2 }));
+    this.fetchProducts();
+  }
+
+  handleCategoryReset(event) {
+    event.preventDefault();
+    store.dispatch(
+      actions.changeFilters({
+        category1: "",
+        category2: "",
+      }),
+    );
+    this.fetchProducts();
+  }
+
+  handleCategory1Breadcrumb(event) {
+    event.preventDefault();
+    store.dispatch(
+      actions.changeFilters({
+        category2: "", // 2depth만 클리어
+      }),
+    );
+    this.fetchProducts();
+  }
+
   async fetchProducts(page = 1) {
     store.dispatch(actions.loadProducts());
 
@@ -68,6 +149,8 @@ export class ProductListController {
         limit: pagination.limit,
         sort: filters?.sort,
         search: filters?.search,
+        category1: filters?.category1,
+        category2: filters?.category2,
       };
 
       const data = await getProducts(params);

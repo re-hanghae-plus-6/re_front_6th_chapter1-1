@@ -18,8 +18,7 @@ store.subscribe(render);
 
 async function main() {
   const controller = new ProductListController();
-
-  await controller.fetchProducts();
+  await controller.initialize();
 }
 
 // 애플리케이션 시작
