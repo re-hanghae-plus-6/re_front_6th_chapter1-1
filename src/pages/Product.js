@@ -5,10 +5,10 @@ import { Rating } from "../components/Rating/Rating";
 import { Header } from "../components/Layout/Header";
 import { Footer } from "../components/Layout/Footer";
 import { RelatedProductSection } from "../components/RelatedProductSection/RelatedProductSection";
+import { navigate } from "../utils/navigate";
 
 function renderProductPage(state) {
   const { isLoading, product, relatedProducts } = state;
-  console.log(state);
 
   render(/* HTML */ `
     <div class="min-h-screen bg-gray-50">
@@ -112,6 +112,8 @@ function renderProductPage(state) {
       ${Footer()}
     </div>
   `);
+
+  addEvents();
 }
 export async function Product(productId) {
   productDetailState.isLoading = true;
@@ -134,4 +136,30 @@ export async function Product(productId) {
   } catch (e) {
     console.error(e);
   }
+}
+
+function addEvents() {
+  document.querySelector(".go-to-product-list")?.addEventListener("click", () => {
+    navigate("/");
+  });
+
+  document.querySelectorAll(".breadcrumb-link").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const target = e.currentTarget;
+      const category1 = target.dataset.category1;
+      const category2 = target.dataset.category2;
+
+      if (category1) {
+        navigate(`/?category1=${encodeURIComponent(category1)}`);
+      } else if (category2) {
+        const currentBtn = target.closest(".text-sm");
+        const prevBtn = currentBtn.querySelector("[data-category1]");
+        const prevCategory1 = prevBtn?.dataset.category1;
+
+        if (prevCategory1) {
+          navigate(`/?category1=${encodeURIComponent(prevCategory1)}&category2=${encodeURIComponent(category2)}`);
+        }
+      }
+    });
+  });
 }

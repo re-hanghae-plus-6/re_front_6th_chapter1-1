@@ -1,3 +1,5 @@
+import { navigate } from "../../utils/navigate";
+
 export const RelatedProductItem = (product) => {
   return /* HTML */ `<div
     class="bg-gray-50 rounded-lg p-3 related-product-card cursor-pointer"
@@ -10,3 +12,11 @@ export const RelatedProductItem = (product) => {
     <p class="text-sm font-bold text-blue-600">${product.lprice}원</p>
   </div>`;
 };
+
+document.addEventListener("click", (e) => {
+  const card = e.target.closest(".related-product-card");
+  if (card) {
+    const productId = card.dataset.productId;
+    navigate(`/product/${productId}`);
+  }
+});
