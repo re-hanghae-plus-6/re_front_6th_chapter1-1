@@ -1,4 +1,5 @@
 import { LimitSelect } from "../components/LimitSelect.js";
+import { ProductItem } from "../components/ProductItem.js";
 
 const LoadingUI = `
   <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
@@ -14,39 +15,15 @@ const LoadingUI = `
 
 const LoadingUIList = LoadingUI.repeat(4);
 
-const ProductItem = (product) => {
-  return `
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
-         data-product-id="${product.productId}">
-      <!-- 상품 이미지 -->
-      <div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image">
-        <img src="${product.image}"
-             alt="${product.title}"
-             class="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
-             loading="lazy">
-      </div>
-      <!-- 상품 정보 -->
-      <div class="p-3">
-        <div class="cursor-pointer product-info mb-3">
-          <h3 class="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
-            ${product.title}
-          </h3>
-          <p class="text-xs text-gray-500 mb-2"></p>
-          <p class="text-lg font-bold text-gray-900">
-            ${product.lprice}원
-          </p>
-        </div>
-        <!-- 장바구니 버튼 -->
-        <button class="w-full bg-blue-600 text-white text-sm py-2 px-3 rounded-md
-               hover:bg-blue-700 transition-colors add-to-cart-btn" data-product-id="${product.productId}">
-          장바구니 담기
-        </button>
-      </div>
-    </div>
-  `;
-};
-
-export const MainPage = ({ products = [], total = 0, loading = false, categories = [], limit = 20 }) => {
+export const MainPage = ({
+  products = [],
+  total = 0,
+  loading = false,
+  categories = [],
+  limit = 20,
+  search = "",
+  sort = "price_asc",
+}) => {
   const categorylist = Object.entries(categories);
   return `
     <div class="min-h-screen bg-gray-50">
@@ -74,7 +51,7 @@ export const MainPage = ({ products = [], total = 0, loading = false, categories
           <!-- 검색창 -->
           <div class="mb-4">
             <div class="relative">
-              <input type="text" id="search-input" placeholder="상품명을 검색해보세요..." value="" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
+              <input type="text" id="search-input" placeholder="상품명을 검색해보세요..." value="${search}" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -125,10 +102,10 @@ export const MainPage = ({ products = [], total = 0, loading = false, categories
                 <label class="text-sm text-gray-600">정렬:</label>
                 <select id="sort-select" class="text-sm border border-gray-300 rounded px-2 py-1
                              focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-                  <option value="price_asc" selected="">가격 낮은순</option>
-                  <option value="price_desc">가격 높은순</option>
-                  <option value="name_asc">이름순</option>
-                  <option value="name_desc">이름 역순</option>
+                  <option value="price_asc" ${sort === "price_asc" ? "selected" : ""}>가격 낮은순</option>
+                  <option value="price_desc" ${sort === "price_desc" ? "selected" : ""}>가격 높은순</option>
+                  <option value="name_asc" ${sort === "name_asc" ? "selected" : ""}>이름순</option>
+                  <option value="name_desc" ${sort === "name_desc" ? "selected" : ""}>이름 역순</option>
                 </select>
               </div>
             </div>
@@ -152,6 +129,9 @@ export const MainPage = ({ products = [], total = 0, loading = false, categories
               <!-- 로딩 스켈레톤 -->
               ${loading ? LoadingUIList : products.map(ProductItem).join("")}
            </div>            
+            ${
+              loading
+                ? `
             <div class="text-center py-4">
               <div class="inline-flex items-center">
                 <svg class="animate-spin h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24">
@@ -162,6 +142,9 @@ export const MainPage = ({ products = [], total = 0, loading = false, categories
                 <span class="text-sm text-gray-600">상품을 불러오는 중...</span>
               </div>
             </div>
+            `
+                : ""
+            }
           </div>
         </div>
       </main>

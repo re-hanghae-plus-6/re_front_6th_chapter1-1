@@ -16,29 +16,74 @@ let state = {
   total: 0,
   categories: [],
   limit: 20,
+  sort: "price_asc",
+  search: "",
   loading: false,
+  page: 1,
+  hasMore: true,
   // ...필요한 상태 추가
 };
 
 // 2. 상태에 따라 UI를 그리는 함수
 function render() {
   document.getElementById("root").innerHTML = `
-    ${MainPage({ ...state, onLimitChange })}
+     ${MainPage({
+       products: state.products,
+       total: state.total,
+       loading: state.loading,
+       categories: state.categories,
+       limit: state.limit,
+       search: state.search,
+       sort: state.sort,
+     })}
     ${Footer()}
   `;
 
   // ✅ select DOM이 다시 생성되므로 여기서 이벤트 등록
-  const select = document.getElementById("limit-select");
-  if (select) {
-    select.addEventListener("change", (e) => {
+  const limitSelect = document.getElementById("limit-select");
+  if (limitSelect) {
+    limitSelect.addEventListener("change", (e) => {
       onLimitChange(Number(e.target.value));
     });
+  }
+
+  const sortSelect = document.getElementById("sort-select");
+  if (sortSelect) {
+    sortSelect.addEventListener("change", (e) => {
+      onSortChange(e.target.value);
+    });
+  }
+
+  const searchInput = document.getElementById("search-input");
+  if (searchInput) {
+    searchInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        onSearchChange(e.target.value);
+      }
+    });
+  }
+
+  // 무한 스크롤 이벤트 리스너 (한 번만 등록)
+  if (!window.scrollHandlerAdded) {
+    window.addEventListener("scroll", () => {
+      if (state.loading || !state.hasMore) return;
+
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+
+      if (scrollTop + windowHeight >= documentHeight - 100) {
+        loadMoreProducts();
+      }
+    });
+    window.scrollHandlerAdded = true;
   }
 }
 
 // 3. 데이터 fetch 및 상태 갱신 함수
 async function fetchAndRender() {
   state.loading = true;
+  state.page = state.page || 1;
   render();
   const [
     {
@@ -46,14 +91,49 @@ async function fetchAndRender() {
       pagination: { total },
     },
     categories,
-  ] = await Promise.all([getProducts({ limit: state.limit }), getCategories()]);
-
+  ] = await Promise.all([
+    getProducts({
+      page: state.page,
+      limit: state.limit,
+      sort: state.sort,
+      search: state.search,
+    }),
+    getCategories(),
+  ]);
   state = {
     ...state,
     products,
     total,
     categories,
     loading: false,
+    hasMore: products.length < total,
+  };
+  render();
+}
+
+// 무한 스크롤을 위한 추가 상품 로드 함수
+async function loadMoreProducts() {
+  if (state.loading || !state.hasMore) return;
+
+  state.loading = true;
+  state.page += 1;
+  render();
+
+  const {
+    products: newProducts,
+    pagination: { hasNext },
+  } = await getProducts({
+    page: state.page,
+    limit: state.limit,
+    sort: state.sort,
+    search: state.search,
+  });
+
+  state = {
+    ...state,
+    products: [...state.products, ...newProducts],
+    loading: false,
+    hasMore: hasNext,
   };
 
   render();
@@ -62,7 +142,17 @@ async function fetchAndRender() {
 // 4. 이벤트 핸들러는 상태를 바꾸고 fetchAndRender 호출
 function onLimitChange(newLimit) {
   state.limit = newLimit;
-  fetchAndRender();
+  return fetchAndRender();
+}
+
+function onSortChange(newSort) {
+  state.sort = newSort;
+  return fetchAndRender();
+}
+
+function onSearchChange(newSearch) {
+  state.search = newSearch;
+  return fetchAndRender();
 }
 
 // 5. 앱 시작
