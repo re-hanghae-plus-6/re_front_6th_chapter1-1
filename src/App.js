@@ -1,7 +1,6 @@
-import HomePage from "./pages/HomePage";
+import { Router } from "./lib/Router";
+import { routes } from "./routes";
 
 export default function App() {
-  const root = document.getElementById("root");
-
-  root.innerHTML = HomePage();
+  new Router(routes, document.getElementById("root"));
 }
