@@ -12,6 +12,8 @@ export const createStore = (initialState) => {
   };
 };
 
+export const DEFAULT_LIMIT = 20;
+
 export const productsStore = createStore({
   filters: {
     category1: "",
@@ -22,7 +24,7 @@ export const productsStore = createStore({
   pagination: {
     hasNext: false,
     hasPrev: false,
-    limit: 20,
+    limit: DEFAULT_LIMIT,
     page: 1,
     total: 0,
     totalPages: 0,

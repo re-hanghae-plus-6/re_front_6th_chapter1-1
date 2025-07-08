@@ -1,4 +1,9 @@
+import { productsStore } from "../../store";
+
 export const QuantitySelect = () => {
+  const { pagination } = productsStore.state;
+  console.log("pagination", pagination);
+
   return /* HTML */ `
     <div class="flex items-center gap-2">
       <label class="text-sm text-gray-600">개수:</label>

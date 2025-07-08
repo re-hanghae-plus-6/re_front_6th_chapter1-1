@@ -2,6 +2,7 @@ import { Router } from "./router/Router.js";
 import { categoriesStore, productsStore } from "./store.js";
 import { fetchProducts } from "./entities/products.js";
 import { fetchCategories } from "./entities/categories.js";
+import { bindAllEvents } from "./events/bindAllEvents.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -12,10 +13,15 @@ const enableMocking = () =>
 
 const renderHtml = async () => {
   document.body.querySelector("#root").innerHTML = await Router();
+  bindAllEvents();
 };
 
 async function main() {
-  fetchProducts();
+  const {
+    pagination: { limit },
+  } = productsStore.state;
+  console.log("Limit", limit);
+  fetchProducts({ limit });
   fetchCategories();
   // document.body.querySelector("#root").innerHTML = await Router();
   productsStore.subscribe(renderHtml);
