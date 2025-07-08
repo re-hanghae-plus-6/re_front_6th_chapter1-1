@@ -4,22 +4,12 @@
 export const createStore = (() => {
   let instance = null;
 
-  function Store() {
-    // 이미 인스턴스가 있으면 기존 인스턴스 반환
+  function Store(initialState = {}) {
     if (instance) {
       return instance;
     }
 
-    // 초기 상태
-    let state = {
-      user: null,
-      products: [],
-      cart: [],
-      loading: false,
-      error: null,
-    };
-
-    // 구독자들
+    let state = { ...initialState };
     const listeners = new Set();
 
     // 스토어 인스턴스 객체
