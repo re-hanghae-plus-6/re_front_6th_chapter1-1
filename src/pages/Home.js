@@ -8,7 +8,6 @@ import { getQueryState } from "../states/getQueryState";
 import { getProducts, getCategories } from "../api/productApi";
 import { isStateChanged } from "../states/isStateChanged";
 import { navigate } from "../utils/navigate";
-import { updateSelectionOnFocus } from "@testing-library/user-event/dist/cjs/event/selection/updateSelectionOnFocus.js";
 import { updateUrlState } from "../states/updateUrlState";
 
 const initialState = {
@@ -32,7 +31,7 @@ let prev = { ...initialState };
 function renderHomePage(state) {
   render(/* HTML */ `
     <div class="bg-gray-50">
-      ${Header({ type: "home" })}
+      ${Header({ type: "home", cartCount: 3 })}
       <main class="max-w-md mx-auto px-4 py-4">
         ${FilterSection({
           search: state.search,
