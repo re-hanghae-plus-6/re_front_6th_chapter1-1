@@ -1,4 +1,4 @@
-export default function Filter() {
+export default function Filter({ limit = 20 }) {
   return /* HTML */ `
     <!-- 검색 및 필터 -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
@@ -48,10 +48,10 @@ export default function Filter() {
               id="limit-select"
               class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="10">10개</option>
-              <option value="20" selected="">20개</option>
-              <option value="50">50개</option>
-              <option value="100">100개</option>
+              <option value="10" ${limit === 10 ? "selected" : ""}>10개</option>
+              <option value="20" ${limit === 20 ? "selected" : ""}>20개</option>
+              <option value="50" ${limit === 50 ? "selected" : ""}>50개</option>
+              <option value="100" ${limit === 100 ? "selected" : ""}>100개</option>
             </select>
           </div>
           <!-- 정렬 -->
@@ -72,4 +72,12 @@ export default function Filter() {
       </div>
     </div>
   `;
+}
+
+export function changeLimitEvent() {
+  const select = document.getElementById("limit-select");
+  select.addEventListener("change", (e) => {
+    const limit = e.target.value;
+    window.dispatchEvent(new CustomEvent("changeLimit", { detail: { limit } }));
+  });
 }
