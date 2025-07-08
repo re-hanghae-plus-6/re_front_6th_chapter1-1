@@ -10,7 +10,7 @@ export const ACTIONS = {
 
 export const actions = {
   loadProducts: () => ({ type: ACTIONS.LOAD_PRODUCTS }),
-  productsLoaded: (products) => ({ type: ACTIONS.PRODUCTS_LOADED, payload: products }),
+  productsLoaded: (data) => ({ type: ACTIONS.PRODUCTS_LOADED, payload: data }),
   loadError: (error) => ({ type: ACTIONS.LOAD_ERROR, payload: error }),
   changeFilters: (filters) => ({
     type: ACTIONS.CHANGE_FILTERS,

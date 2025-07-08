@@ -5,13 +5,16 @@ export function reducer(state, action) {
     case ACTIONS.LOAD_PRODUCTS:
       return { ...state, loading: true, error: null };
 
-    case ACTIONS.PRODUCTS_LOADED:
+    case ACTIONS.PRODUCTS_LOADED: {
+      const { products, pagination } = action.payload;
+
       return {
         ...state,
         loading: false,
-        products: action.payload.products,
-        pagination: action.payload.pagination,
+        products: pagination.page === 1 ? products : [...state.products, ...products],
+        pagination,
       };
+    }
 
     case ACTIONS.LOAD_ERROR:
       return { ...state, loading: false, error: action.payload };
