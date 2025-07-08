@@ -6,6 +6,7 @@ export const ACTIONS = {
   CHANGE_LIMIT: "CHANGE_LIMIT",
   SLICE_LIST: "SLICE_LIST",
   CHANGE_SORT: "CHANGE_SORT",
+  SEARCH_PRODUCTS: "SEARCH_PRODUCTS",
 };
 
 export const actions = {
@@ -19,4 +20,5 @@ export const actions = {
   changeLimit: (limit) => ({ type: ACTIONS.CHANGE_LIMIT, payload: limit }),
   sliceList: (limit) => ({ type: ACTIONS.SLICE_LIST, payload: limit }),
   changeSorts: (sort) => ({ type: ACTIONS.CHANGE_SORT, payload: sort }),
+  searchProducts: (searchTerm) => ({ type: ACTIONS.SEARCH_PRODUCTS, payload: searchTerm }),
 };

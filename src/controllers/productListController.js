@@ -21,6 +21,12 @@ export class ProductListController {
       }
     });
 
+    document.addEventListener("keypress", (event) => {
+      if (event.target.id === "search-input" && event.key === "Enter") {
+        this.handleSearchChange(event);
+      }
+    });
+
     window.addEventListener("scroll", () => {
       if (window.scrollY + window.innerHeight >= document.body.scrollHeight - 100) {
         this.loadNextPage();
@@ -45,6 +51,12 @@ export class ProductListController {
     this.fetchProducts();
   }
 
+  handleSearchChange(event) {
+    const searchValue = event.target.value.trim();
+    store.dispatch(actions.searchProducts(searchValue));
+    this.fetchProducts();
+  }
+
   async fetchProducts(page = 1) {
     store.dispatch(actions.loadProducts());
 
@@ -55,6 +67,7 @@ export class ProductListController {
         page,
         limit: pagination.limit,
         sort: filters?.sort,
+        search: filters?.search,
       };
 
       const data = await getProducts(params);

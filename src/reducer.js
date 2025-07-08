@@ -54,6 +54,16 @@ export function reducer(state, action) {
         filters: { ...state.filters, sort: action.payload },
       };
 
+    case ACTIONS.SEARCH_PRODUCTS:
+      return {
+        ...state,
+        filters: { ...state.filters, search: action.payload },
+        pagination: {
+          ...state.pagination,
+          page: 1,
+        },
+      };
+
     default:
       return state;
   }
