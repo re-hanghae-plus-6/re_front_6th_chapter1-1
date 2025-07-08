@@ -124,6 +124,7 @@ describe.sequential("2. 장바구니 수량 조절", () => {
 
     // 상품을 장바구니에 추가하고 수량을 2개로 증가
     await addProductToCart("pvc 투명 젤리 쇼핑백");
+    expect(document.querySelector(".quantity-input").value).toBe("1");
 
     const cartIcon = document.querySelector("#cart-icon-btn");
     await userEvent.click(cartIcon);
@@ -139,11 +140,12 @@ describe.sequential("2. 장바구니 수량 조절", () => {
     expect(decreaseButton).toBeInTheDocument();
 
     const quantityInput = document.querySelector(".quantity-input");
-    expect(quantityInput.value).toBe("2");
+    expect(quantityInput.value).toBe("3");
 
     await userEvent.click(decreaseButton);
 
     // 수량이 감소했는지 확인
+    expect(quantityInput.value).toBe("1");
     expect(quantityInput.value).toBe("1");
   });
 
