@@ -4,6 +4,7 @@ import { getProducts, getCategories } from "../api/productApi.js";
 
 export class ProductListController {
   constructor() {
+    this.eventListeners = [];
     this.setupEventListeners();
   }
 
@@ -42,22 +43,28 @@ export class ProductListController {
   }
 
   setupEventListeners() {
-    document.addEventListener("change", (event) => {
+    const changeHandler = (event) => {
       if (event.target.id === "limit-select") {
         this.handleLimitChange(event);
       }
       if (event.target.id === "sort-select") {
         this.handleSortChange(event);
       }
-    });
+    };
 
-    document.addEventListener("keypress", (event) => {
+    const keypressHandler = (event) => {
       if (event.target.id === "search-input" && event.key === "Enter") {
         this.handleSearchChange(event);
       }
-    });
+    };
 
-    document.addEventListener("click", (event) => {
+    const clickHandler = (event) => {
+      const productCard = event.target.closest(".product-card");
+      if (productCard && !event.target.closest(".add-to-cart-btn")) {
+        this.handleProductCardClick(productCard);
+        return;
+      }
+
       if (event.target.dataset.category1 && !event.target.dataset.category2) {
         this.handleCategory1Change(event);
       } else if (event.target.dataset.category1 && event.target.dataset.category2) {
@@ -67,13 +74,25 @@ export class ProductListController {
       } else if (event.target.dataset.breadcrumb === "category1") {
         this.handleCategory1Breadcrumb(event);
       }
-    });
+    };
 
-    window.addEventListener("scroll", () => {
+    const scrollHandler = () => {
       if (window.scrollY + window.innerHeight >= document.body.scrollHeight - 100) {
         this.loadNextPage();
       }
-    });
+    };
+
+    document.addEventListener("change", changeHandler);
+    document.addEventListener("keypress", keypressHandler);
+    document.addEventListener("click", clickHandler);
+    window.addEventListener("scroll", scrollHandler);
+
+    this.eventListeners.push(
+      { element: document, type: "change", handler: changeHandler },
+      { element: document, type: "keypress", handler: keypressHandler },
+      { element: document, type: "click", handler: clickHandler },
+      { element: window, type: "scroll", handler: scrollHandler },
+    );
   }
 
   handleLimitChange(event) {
@@ -176,5 +195,25 @@ export class ProductListController {
     }
 
     await this.fetchProducts(nextPage);
+  }
+
+  handleProductCardClick(productCard) {
+    const productId = productCard.dataset.productId;
+    if (!productId) return;
+
+    import("../router.js")
+      .then(({ router }) => {
+        router.navigate(`/product/${productId}`);
+      })
+      .catch((error) => {
+        console.error("라우터 로드 실패:", error);
+      });
+  }
+
+  cleanup() {
+    this.eventListeners.forEach(({ element, type, handler }) => {
+      element.removeEventListener(type, handler);
+    });
+    this.eventListeners = [];
   }
 }
