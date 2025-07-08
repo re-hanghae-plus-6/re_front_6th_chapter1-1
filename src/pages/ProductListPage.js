@@ -5,6 +5,7 @@ import { ProductCard } from "../components/productList/ProductCard";
 import { ProductSkeleton } from "../components/productList/ProductSkeleton";
 import { ScrollLoader } from "../components/productList/ScrollLoader";
 import { Component } from "../core/Component";
+import { InfiniteScroll } from "../core/InfiniteScroll";
 import { updateURLParams } from "../utils/url";
 
 export class ProductListPage extends Component {
@@ -22,8 +23,25 @@ export class ProductListPage extends Component {
       categories: {},
     };
 
+    const infinite = new InfiniteScroll({
+      threshold: 200,
+      onLoad: () => {
+        const currentPage = this.state.pagination.page;
+        const nextPage = currentPage + 1;
+        this.#loadMoreProducts({ page: nextPage });
+      },
+    });
+
     this.on(Component.EVENTS.MOUNT, () => {
+      infinite.init();
       this.#loadInitialData();
+    });
+
+    this.on(Component.EVENTS.UPDATE, () => {
+      // 더 이상 불러올 컨텐츠 없음, InfiniteScroll 인스턴스 정리
+      if (!this.state.pagination.hasNext) {
+        infinite.destroy();
+      }
     });
   }
 
@@ -54,6 +72,24 @@ export class ProductListPage extends Component {
           loading: false,
           categories: {},
         });
+      }
+    }
+  }
+
+  // 상품 추가 로드
+  async #loadMoreProducts(params) {
+    const { page } = params;
+
+    try {
+      const products = await getProducts({ page });
+      this.setState({
+        products: [...this.state.products, ...products.products],
+        pagination: { ...this.state.pagination, page },
+      });
+      updateURLParams({ current: page });
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("상품 추가로 더 불러오기 실패:", error.message);
       }
     }
   }
@@ -196,7 +232,7 @@ export class ProductListPage extends Component {
                   ? new Array(4).fill(0).map(ProductSkeleton).join("")
                   : this.state.products.map(ProductCard).join("")}
               </div>
-              ${ScrollLoader()}
+              ${this.state.pagination.hasNext ? ScrollLoader() : ""}
             </div>
           </div>
         </main>
