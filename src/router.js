@@ -3,7 +3,7 @@
 import { home } from "./pages/home.js";
 
 // 404 페이지 컴포넌트
-const NotFoundPage = (mainStatus) => {
+const NotFoundPage = () => {
   return /*html*/ `
     <main class="max-w-md mx-auto px-4 py-4">
       <div class="text-center my-4 py-20 shadow-md p-6 bg-white rounded-lg">
@@ -42,7 +42,7 @@ const NotFoundPage = (mainStatus) => {
 
 const routes = {
   "/": home,
-  // "/products/:id": productDetail, 
+  // "/products/:id": productDetail,
 };
 
 // 라우터 인스턴스 생성 및 관리 함수
@@ -61,7 +61,8 @@ export const createRouter = (initialmainStatus) => {
 
   // URL 변경을 트리거하고 렌더링을 재 수행 함수
   const navigate = (path) => {
-    if (window.location.pathname !== path) { // 현재 경로와 다를 때만 pushState
+    if (window.location.pathname !== path) {
+      // 현재 경로와 다를 때만 pushState
       window.history.pushState(null, "", path);
     }
     render(); // URL 변경 후 렌더링
