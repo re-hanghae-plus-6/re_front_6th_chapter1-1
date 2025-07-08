@@ -48,6 +48,26 @@ function ProductDetailContent({ product, loading = true }) {
     });
   });
 
+  queueMicrotask(() => {
+    const quantityIncreaseButton = document.getElementById("quantity-increase");
+
+    quantityIncreaseButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      const quantityInput = document.getElementById("quantity-input");
+      quantityInput.value = Number(quantityInput.value) + 1;
+    });
+  });
+
+  queueMicrotask(() => {
+    const quantityDecreaseButton = document.getElementById("quantity-decrease");
+
+    quantityDecreaseButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      const quantityInput = document.getElementById("quantity-input");
+      quantityInput.value = Math.max(Number(quantityInput.value) - 1, 1);
+    });
+  });
+
   const relatedProductListId = crypto.randomUUID();
 
   const updateRelatedProductsUI = async () => {
