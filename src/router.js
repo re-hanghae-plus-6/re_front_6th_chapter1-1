@@ -40,11 +40,9 @@ const NotFoundPage = (mainStatus) => {
   `;
 };
 
-// 라우트 정의: 경로와 해당 경로에 매핑될 컴포넌트 함수!!!!!!
 const routes = {
   "/": home,
-  // "/products/:id": productDetail, // 예시: 상품 상세 페이지 (나중에 추가)
-  // "/cart": cart, // 예시: 장바구니 페이지 (나중에 추가)
+  // "/products/:id": productDetail, 
 };
 
 // 라우터 인스턴스 생성 및 관리 함수
@@ -52,7 +50,7 @@ export const createRouter = (initialmainStatus) => {
   let currentmainStatus = initialmainStatus; // main.js에서 전달받은 mainStatus 객체
   const appRoot = document.querySelector("#root"); // 콘텐츠가 렌더링될 DOM 요소
 
-  // 현재 URL 경로에 따라 적절한 컴포넌트를 렌더링하는 함수
+  // 현재 URL 경로에 맵핑된 컴포넌트 렌더링 함수
   const render = () => {
     const path = window.location.pathname;
     let ComponentToRender = routes[path] || NotFoundPage; // 매칭되는 라우트가 없으면 404 페이지
@@ -61,7 +59,7 @@ export const createRouter = (initialmainStatus) => {
     appRoot.innerHTML = ComponentToRender(currentmainStatus);
   };
 
-  // URL 변경을 트리거하고 렌더링을 다시 수행하는 함수
+  // URL 변경을 트리거하고 렌더링을 재 수행 함수
   const navigate = (path) => {
     if (window.location.pathname !== path) { // 현재 경로와 다를 때만 pushState
       window.history.pushState(null, "", path);

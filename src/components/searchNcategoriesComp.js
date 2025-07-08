@@ -15,6 +15,12 @@ export const searchNcategoriesComp = (obj) => {
 
   // 개수 필터링 객체
   const countFilterObj = [{ count: 10 }, { count: 20, selected: true }, { count: 50 }, { count: 100 }];
+  countFilterObj.forEach((item) => {
+    if (item.selected) {
+      delete item.selected;
+    }
+  })
+  countFilterObj[obj.params.cntFilterIdx]["selected"] = true;
 
   return /*html*/ `
   <!-- 검색창 -->

@@ -18,6 +18,7 @@ const mainStatus = {
   loading: false,
   params: {
     limit: 20,
+    cntFilterIdx: 1,
   },
   categories: {},
 };
@@ -26,22 +27,13 @@ const mainStatus = {
 let appRouter;
 
 // 카테고리 객체
-async function initCategories() {
+async function getCategoryObjects() {
   mainStatus.categories = await getCategories();
 }
 async function initList() {
   let data = await getProducts({ limit: mainStatus.params.limit });
   mainStatus.products = data.products;
   mainStatus.total = data.pagination.total;
-}
-// 카테고리 렌더링
-function categoriesRender(mainStatus) {
-  const filterCompEl = document.body.querySelector("#filterComp");
-  console.log(filterCompEl);
-
-  if (filterCompEl) {
-    filterCompEl.innerHTML = searchNcategoriesComp(mainStatus);
-  }
 }
 // API 호출 및 렌더링을 담당하는 함수
 async function loadProductsAndUpdateUI() {
@@ -50,26 +42,25 @@ async function loadProductsAndUpdateUI() {
   appRouter.updateStateAndRender(mainStatus);
 
   // 카테고리 로드
-  await initCategories();
-  categoriesRender(mainStatus);
+  await getCategoryObjects();
   await initList();
   mainStatus.loading = false;
   // 라우터에게 최종 상태 업데이트 및 재렌더링 요청 (데이터 로딩 완료 반영)
   appRouter.updateStateAndRender(mainStatus);
-  categoriesRender(mainStatus);
 }
 // 이벤트 핸들러 설정 함수
 function setupEventListeners() {
-  const filterCompEl = document.body.querySelector("#filterComp");
-  if (filterCompEl) {
-    filterCompEl.addEventListener("change", (e) => {
-      if (e.target.id === "limit-select") {
-        const newLimit = parseInt(e.target.value, 10);
-        mainStatus.params.limit = newLimit;
-        loadProductsAndUpdateUI();
-      }
-    });
-  }
+  /** change */
+  document.body.addEventListener("change", (e) => {    
+    if (e.target.id === "limit-select") {
+      const newLimit = parseInt(e.target.value, 10);
+      mainStatus.params.limit = newLimit;
+      mainStatus.params.cntFilterIdx = Number(e.target.options[ e.target.selectedIndex].getAttribute('id'));
+      debugger
+      loadProductsAndUpdateUI();
+    }
+  });
+  
   // TODO: 그 외 다른 이벤트 설정.....
 }
 
