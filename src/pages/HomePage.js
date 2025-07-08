@@ -134,7 +134,13 @@ export const HomePage = ({
         <div class="space-y-2">
           <div class="flex items-center gap-2">
             <label class="text-sm text-gray-600">카테고리:</label>
-            <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">${selectedCategory1 ? selectedCategory1 : "전체"}</button>
+            <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
+             ${
+               selectedCategory1
+                 ? `<span class="text-gray-400">></span>
+               <span class="text-xs ">${selectedCategory1}</span>`
+                 : ""
+             }
           </div>
           <!-- 1depth 카테고리 -->
           ${
