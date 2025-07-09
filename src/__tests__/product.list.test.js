@@ -27,6 +27,8 @@ describe("1. 상품 목록 로딩", () => {
     expect(screen.getByText("카테고리 로딩 중...")).toBeInTheDocument();
     expect(screen.queryByText(/총 의 상품/i)).not.toBeInTheDocument();
 
+    // console.log(document.body.innerHTML);
+
     // 상품 모두 렌더링되었는지 확인
     expect(
       await screen.findByText(/pvc 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장/i),
