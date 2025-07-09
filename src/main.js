@@ -18,7 +18,10 @@ function render() {
     const state = store.getState();
     const rootElement = document.body.querySelector("#root");
     if (rootElement) {
-      rootElement.innerHTML = ProductListPage(state);
+      rootElement.innerHTML = ProductListPage({
+        ...state,
+        cartCount: store.computed.cart.totalCount,
+      });
     }
   }
 }
