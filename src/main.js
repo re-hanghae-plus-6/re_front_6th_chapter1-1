@@ -3,6 +3,7 @@ import { render } from "./render.js";
 import { addEvent } from "./utils/eventManager.js";
 import { ProductListPage } from "./pages/ProductListPage.js";
 import { ProductDetailPage } from "./pages/ProductDetailPage.js";
+import { initCartModal } from "./features/cart/components/CartModal.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -25,6 +26,8 @@ function main() {
   router.set(createRouter(routes));
 
   router.get().subscribe(render);
+
+  initCartModal();
 
   render();
 }

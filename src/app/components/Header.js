@@ -1,9 +1,36 @@
-import { getCartState } from "../../shared/store/cartStore.js";
+import { cartStore } from "../../features/cart/store/cartStore.js";
 import { addEvent } from "../../utils/eventManager.js";
-import { handleCartIconClick } from "../../utils/cartManager.js";
+import { openCartModal } from "../../features/cart/services/cartService.js";
+
+const updateCartIcon = () => {
+  const { totalCount } = cartStore.getState();
+  const cartIconBtn = document.querySelector("#cart-icon-btn");
+
+  if (cartIconBtn) {
+    const countSpan = cartIconBtn.querySelector("span");
+
+    if (totalCount > 0) {
+      if (!countSpan) {
+        const span = document.createElement("span");
+        span.className =
+          "absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center";
+        cartIconBtn.appendChild(span);
+      }
+      cartIconBtn.querySelector("span").textContent = totalCount;
+    } else {
+      if (countSpan) {
+        countSpan.remove();
+      }
+    }
+  }
+};
+
+const handleCartIconClick = () => {
+  openCartModal();
+};
 
 export const Header = ({ title = "쇼핑몰", showBackButton = false } = {}) => {
-  const { totalCount } = getCartState();
+  const { totalCount } = cartStore.getState();
 
   return `
   <header class="bg-white shadow-sm sticky top-0 z-40">
@@ -52,4 +79,6 @@ export const Header = ({ title = "쇼핑몰", showBackButton = false } = {}) => 
 
 Header.onMount = () => {
   addEvent("click", "#cart-icon-btn", handleCartIconClick);
+
+  cartStore.subscribe(updateCartIcon);
 };
