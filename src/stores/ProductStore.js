@@ -38,7 +38,7 @@ function createProductStore() {
         products: newProducts,
         pagination: { total: newTotal },
       } = await getProducts({
-        page,
+        current: page,
         limit,
         sort,
         search,
@@ -75,7 +75,7 @@ function createProductStore() {
         products: newProducts,
         pagination: { hasNext },
       } = await getProducts({
-        page,
+        current: page,
         limit,
         sort,
         search,
@@ -142,7 +142,7 @@ function createProductStore() {
     search = params.search || "";
     sort = params.sort || "price_asc";
     limit = params.limit || 20;
-    page = params.page || 1;
+    page = params.page || 1; // URLStore에서 current를 page로 변환해서 전달
     resetPagination();
     notify();
   }

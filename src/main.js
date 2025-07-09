@@ -76,6 +76,8 @@ function render() {
       storeManager.resetAll();
       // 새로 데이터 로드
       storeManager.initialize();
+      // 페이지 최상단으로 스크롤
+      window.scrollTo({ top: 0, behavior: "smooth" });
     });
   }
 

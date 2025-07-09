@@ -24,7 +24,7 @@ function createURLStore() {
       search: params.get("search") || "",
       sort: params.get("sort") || "price_asc",
       limit: parseInt(params.get("limit")) || 20,
-      page: parseInt(params.get("page")) || 1,
+      page: parseInt(params.get("current")) || 1,
     };
   }
 
@@ -38,7 +38,7 @@ function createURLStore() {
     url.searchParams.delete("search");
     url.searchParams.delete("sort");
     url.searchParams.delete("limit");
-    url.searchParams.delete("page");
+    url.searchParams.delete("current");
 
     // 새 파라미터 추가 (값이 있을 때만)
     if (newParams.category1) url.searchParams.set("category1", newParams.category1);
@@ -46,7 +46,7 @@ function createURLStore() {
     if (newParams.search) url.searchParams.set("search", newParams.search);
     if (newParams.sort && newParams.sort !== "price_asc") url.searchParams.set("sort", newParams.sort);
     if (newParams.limit && newParams.limit !== 20) url.searchParams.set("limit", newParams.limit.toString());
-    if (newParams.page && newParams.page !== 1) url.searchParams.set("page", newParams.page.toString());
+    if (newParams.page && newParams.page !== 1) url.searchParams.set("current", newParams.page.toString());
 
     window.history.pushState({}, "", url);
     notify();
@@ -54,7 +54,17 @@ function createURLStore() {
 
   // URL 초기화 (홈으로)
   function resetURL() {
-    window.history.pushState({}, "", "/");
+    const url = new URL(window.location);
+
+    // 모든 파라미터 제거
+    url.searchParams.delete("category1");
+    url.searchParams.delete("category2");
+    url.searchParams.delete("search");
+    url.searchParams.delete("sort");
+    url.searchParams.delete("limit");
+    url.searchParams.delete("current");
+
+    window.history.pushState({}, "", url.pathname);
     notify();
   }
 
