@@ -1,18 +1,76 @@
 import { Component } from "../../../core/Component";
 import { html } from "../../../utils/html";
+import { productsStore } from "../../store/products";
 
 export class Breadcrumb extends Component {
   renderContainer() {
+    const { categories, category1, category2 } = productsStore;
+
     return html`<div ${this.dataAttribute.attribute} class="space-y-2">
+      ${this.renderBreadcrumb({ category1, category2 })} ${this.renderCategories({ categories, category1, category2 })}
+    </div>`;
+  }
+
+  render() {
+    console.log(productsStore.categories);
+    this.$el.innerHTML = this.renderContainer();
+  }
+
+  setEvent() {
+    this.addEvent("click", ({ target: { dataset } }) => {
+      if ("breadcrumb" in dataset) {
+        productsStore.setCategory1("");
+        productsStore.setCategory2("");
+      } else if ("category1" in dataset) {
+        productsStore.setCategory1(dataset.category1);
+        productsStore.setCategory2("");
+      } else if ("category2" in dataset) {
+        productsStore.setCategory2(dataset.category2);
+      }
+    });
+  }
+
+  renderBreadcrumb({ category1, category2 }) {
+    return html`
       <div class="flex items-center gap-2">
         <label class="text-sm text-gray-600">카테고리:</label>
         <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
+        ${category1
+          ? html`<span class="text-xs text-gray-500">&gt;</span>
+              <button
+                data-breadcrumb="category1"
+                data-category1="${category1}"
+                class="text-xs hover:text-blue-800 hover:underline"
+              >
+                ${category1}
+              </button>`
+          : ""}
+        ${category2
+          ? html`<span class="text-xs text-gray-500">&gt;</span>
+              <span class="text-xs text-gray-600 cursor-default">${category2}</span>`
+          : ""}
       </div>
-      <!-- 1depth 카테고리 -->
+    `;
+  }
+
+  renderCategories({ categories, category1, category2 }) {
+    if (!categories) {
+      return html`<div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>`;
+    }
+    const keys = Object.keys(categories[category1] ?? categories);
+    const dataAttribute = category1 ? "data-category2" : "data-category1";
+
+    return html`<div class="space-y-2">
       <div class="flex flex-wrap gap-2">
-        <div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>
+        ${keys.map((key) => {
+          const style =
+            key === (category2 ?? category1)
+              ? "category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-blue-100 border-blue-300 text-blue-800"
+              : "category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50";
+
+          return html`<button ${dataAttribute}="${key}" class="${style}">${key}</button>`;
+        })}
       </div>
-      <!-- 2depth 카테고리 -->
     </div>`;
   }
 }

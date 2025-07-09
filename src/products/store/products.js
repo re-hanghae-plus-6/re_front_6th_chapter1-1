@@ -1,4 +1,4 @@
-import { getProducts } from "../../api/productApi";
+import { getCategories, getProducts } from "../../api/productApi";
 import { observable } from "../../core/observer";
 import { router } from "../../core/router";
 
@@ -18,6 +18,7 @@ export const productsStore = observable({
   isFetching: false,
   products: [],
   currentPageProducts: [],
+  categories: null,
   page: null,
   total: null,
   hasNext: null,
@@ -91,5 +92,8 @@ export const productsStore = observable({
     productsStore.isFetching = false;
 
     return data;
+  },
+  async loadCategories() {
+    productsStore.categories = await getCategories();
   },
 });

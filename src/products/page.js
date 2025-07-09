@@ -9,7 +9,9 @@ import { productsStore } from "./store/products";
 
 export function ProductsPage($root) {
   productsStore.initSearchParams();
-  productsStore.load();
+  productsStore.loadCategories().then(() => {
+    productsStore.load();
+  });
 
   const layout = new Layouy({
     header: new Header(),
