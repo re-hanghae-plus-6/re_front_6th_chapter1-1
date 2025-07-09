@@ -5,13 +5,18 @@ export const Home = () => {
       <main class="max-w-md mx-auto px-4 py-4">
         <!-- 검색 및 필터 -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
-        <!-- 검색 필터 컨테이너 -->
-        <div id="search-filter-container"></div>
-        <!-- 카테고리 필터 컨테이너 -->
-        <div id="category-filter-container"></div>
-              </div>
-      <!-- 상품 목록 컨테이너 -->
-      <div id="product-list-container"></div>
+          <!-- 상품명 검색 필터 컨테이너 -->
+          <div id="search-filter-container" class="mb-4"></div>
+          
+          <!-- 카테고리 필터 컨테이너 -->
+          <div id="category-filter-container" class="mb-4"></div>
+          
+          <!-- 정렬 및 개수 필터 컨테이너 -->
+          <div id="sort-filter-container"></div>
+        </div>
+        
+        <!-- 상품 목록 컨테이너 -->
+        <div id="product-list-container"></div>
       </main>
   `;
 
