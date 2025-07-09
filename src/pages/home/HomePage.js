@@ -3,6 +3,10 @@ import ProductContainer from './components/product/product-container/ProductCont
 import FilterContainer from './components/filter/filter-container/FilterContainer.js';
 import { getCategories, getProducts } from '../../api/productApi.js';
 
+const DEFAULT_PAGE = 1;
+const DEFAULT_LIMIT = 20;
+const DEFAULT_SORT = 'price_asc';
+
 class HomePage extends Component {
   constructor(element, props) {
     super(element, props);
@@ -10,16 +14,19 @@ class HomePage extends Component {
       loading: true,
       products: null,
       categories: null,
-      page: 1,
-      limit: 20,
+      query: {
+        page: DEFAULT_PAGE,
+        limit: DEFAULT_LIMIT,
+        sort: DEFAULT_SORT,
+      },
     };
   }
 
   async onMount() {
     const [products, categories] = await Promise.all([
       getProducts({
-        page: this.state.page,
-        limit: this.state.limit,
+        page: this.state.query.page,
+        limit: this.state.query.limit,
       }),
       getCategories(),
     ]);
@@ -31,24 +38,43 @@ class HomePage extends Component {
   }
 
   handleLimitChange = async (value) => {
+    const newLimitValue = Number(value);
     const products = await getProducts({
-      page: this.state.page,
-      limit: value,
+      page: this.state.query.page,
+      limit: newLimitValue,
     });
     this.setState({
       ...this.state,
       loading: false,
-      limit: value,
       products,
+      query: {
+        ...this.state.query,
+        limit: newLimitValue,
+      },
+    });
+  };
+
+  handleSortChange = async (value) => {
+    const newSortValue = value;
+    const products = await getProducts({
+      page: this.state.query.page,
+      sort: newSortValue,
+    });
+    this.setState({
+      ...this.state,
+      loading: false,
+      products,
+      query: {
+        ...this.state.query,
+        sort: newSortValue,
+      },
     });
   };
 
   render() {
     this.element.innerHTML = /* HTML */ `
       <main class="max-w-md mx-auto px-4 py-4">
-     
         <div id="filter-container"></div>
-      
         <!-- 상품 목록 -->
         <div class="mb-6">
           <div id="product-container"></div>
@@ -58,7 +84,7 @@ class HomePage extends Component {
     new FilterContainer(this.element.querySelector('#filter-container'), {
       loading: this.state.loading,
       categories: this.state.categories,
-      limit: this.state.limit,
+      query: this.state.query,
       onChangeLimit: this.handleLimitChange,
       onChangeSort: this.handleSortChange,
     }).mount();

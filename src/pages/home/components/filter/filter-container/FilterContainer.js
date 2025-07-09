@@ -10,6 +10,10 @@ class FilterContainer extends Component {
       if (event.target.id === 'limit-select') {
         this.props.onChangeLimit(event.target.value);
       }
+
+      if (event.target.id === 'sort-select') {
+        this.props.onChangeSort(event.target.value);
+      }
     });
   }
 
@@ -89,10 +93,12 @@ class FilterContainer extends Component {
                 id="limit-select"
                 class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="10" ${this.props.limit === 10 ? 'selected' : ''}>10개</option>
-                <option value="20" ${this.props.limit === 20 ? 'selected' : ''}>20개</option>
-                <option value="50" ${this.props.limit === 50 ? 'selected' : ''}>50개</option>
-                <option value="100" ${this.props.limit === 100 ? 'selected' : ''}>100개</option>
+                <option value="10" ${this.props.query.limit === 10 ? 'selected' : ''}>10개</option>
+                <option value="20" ${this.props.query.limit === 20 ? 'selected' : ''}>20개</option>
+                <option value="50" ${this.props.query.limit === 50 ? 'selected' : ''}>50개</option>
+                <option value="100" ${this.props.query.limit === 100 ? 'selected' : ''}>
+                  100개
+                </option>
               </select>
             </div>
             <!-- 정렬 -->
@@ -103,10 +109,27 @@ class FilterContainer extends Component {
                 class="text-sm border border-gray-300 rounded px-2 py-1
                              focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="price_asc" selected="">가격 낮은순</option>
-                <option value="price_desc">가격 높은순</option>
-                <option value="name_asc">이름순</option>
-                <option value="name_desc">이름 역순</option>
+                <option
+                  value="price_asc"
+                  ${this.props.query.sort === 'price_asc' ? 'selected' : ''}
+                >
+                  가격 낮은순
+                </option>
+                <option
+                  value="price_desc"
+                  ${this.props.query.sort === 'price_desc' ? 'selected' : ''}
+                >
+                  가격 높은순
+                </option>
+                <option value="name_asc" ${this.props.query.sort === 'name_asc' ? 'selected' : ''}>
+                  이름순
+                </option>
+                <option
+                  value="name_desc"
+                  ${this.props.query.sort === 'name_desc' ? 'selected' : ''}
+                >
+                  이름 역순
+                </option>
               </select>
             </div>
           </div>
