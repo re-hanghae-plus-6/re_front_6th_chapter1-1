@@ -34,16 +34,16 @@ export const productsStore = observable({
     };
   },
   initSearchParams() {
-    const searchParams = new URLSearchParams(window.location.search);
-    searchParams.set("page", LOAD_DEFAULT_PAGE);
-    for (const [key, value] of Object.entries(defaultParams)) {
-      productsStore[key] = searchParams.get(key) || value;
+    const params = router.getParams();
+    params.page = LOAD_DEFAULT_PAGE;
+    for (const [key, value] of Object.entries(params)) {
+      productsStore[key] = params[key] || value;
     }
   },
   updateParams(key, value) {
-    const searchParams = new URLSearchParams(window.location.search);
-    searchParams.set(key, value);
-    router.updateParams(Object.fromEntries(searchParams));
+    const params = router.getParams();
+    params[key] = value;
+    router.updateParams(params);
   },
   setLimit(limit) {
     productsStore.limit = limit;
