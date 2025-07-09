@@ -1,8 +1,16 @@
 export let productListState = {
-  isLoading: false,
   products: [],
-  total: 0,
   categories: {},
+  total: 0,
+  isLoading: false,
+  isCategoryLoading: false,
+  search: "",
+  category1: "",
+  category2: "",
+  limit: "20",
+  sort: "price_asc",
+  page: 1,
+  hasNext: true,
 };
 
 export let productDetailState = {

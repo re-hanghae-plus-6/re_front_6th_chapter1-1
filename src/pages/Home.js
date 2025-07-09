@@ -9,24 +9,10 @@ import { getProducts, getCategories } from "../api/productApi";
 import { isStateChanged } from "../states/isStateChanged";
 import { navigate } from "../utils/navigate";
 import { updateUrlState } from "../states/updateUrlState";
-
-const initialState = {
-  products: [],
-  categories: {},
-  total: 0,
-  isLoading: false,
-  isCategoryLoading: false,
-  search: "",
-  category1: "",
-  category2: "",
-  limit: "20",
-  sort: "price_asc",
-  page: 1,
-  hasNext: true,
-};
+import { productListState } from "../states/productState";
 
 let store = null;
-let prev = { ...initialState };
+let prev = { ...productListState };
 
 function renderHomePage(state) {
   render(/* HTML */ `
@@ -91,7 +77,7 @@ async function loadProducts({ isInit = false } = {}) {
 
 export function Home() {
   if (!store) {
-    store = createStore(initialState);
+    store = createStore(productListState);
 
     store.subscribe((state) => {
       if (window.location.pathname === "/") {
