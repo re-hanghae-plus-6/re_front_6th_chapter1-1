@@ -1,6 +1,7 @@
 import * as cartHandlers from "./cartHandlers.js";
 import * as productHandlers from "./productHandlers.js";
 import * as filterHandlers from "./filterHandlers.js";
+import * as productDetailHandlers from "./productDetailHandlers.js";
 
 export default function initializeHandlers(state, render) {
   // 장바구니 관련
@@ -22,6 +23,10 @@ export default function initializeHandlers(state, render) {
   filterHandlers.handleResetBreadcrumb(state, render);
   filterHandlers.limitHandler(state, render);
   filterHandlers.sortHandler(state, render);
+
+  // 상품 디테일
+  productDetailHandlers.setupBreadcrumbCategoryHandlers(state, render);
+  productDetailHandlers.setupRelatedProductCardHandler(state, render);
 
   // 검색 입력 엔터 핸들러
   const searchInput = document.getElementById("search-input");

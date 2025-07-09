@@ -1,5 +1,6 @@
 // productHandlers.js
 import { getProducts } from "../api/productApi.js";
+import { navigateTo } from "../router/router.js";
 
 /** 무한 스크롤 */
 export function setupScrollInfinityHandler(state, render) {
@@ -39,3 +40,13 @@ export function setupScrollInfinityHandler(state, render) {
     }
   });
 }
+/** 상품 디테일 페이지 이동 */
+document.addEventListener("click", (e) => {
+  const target = e.target.closest(".product-image, .product-info");
+  if (target) {
+    const productId = target.closest(".product-card")?.dataset.productId;
+    if (productId) {
+      navigateTo(`/product/${productId}`);
+    }
+  }
+});

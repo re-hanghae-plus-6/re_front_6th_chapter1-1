@@ -20,7 +20,7 @@
 //     page: state.page,
 //     limit: state.limit,
 //     search: state.search,
-//     category1: state.selected,
+//     category1: state.category1,
 //     category2: state.category2,
 //     sort: state.selectedSort,
 //     ...extraParams,
@@ -123,7 +123,7 @@
 //         limit: parseInt(state.selectedLimit, 10),
 //         search: state.search,
 //         sort: state.selectedSort,
-//         category1: new URL(window.location.href).searchParams.get("category1"),
+//         category1: state.category1,
 //         category2: "",
 //       });
 //     });
