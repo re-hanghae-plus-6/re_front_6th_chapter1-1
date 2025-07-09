@@ -2,6 +2,7 @@ import { Home } from "../pages/Home.js";
 import { ProductList } from "../components/product/ProductList.js";
 import { CategoryFilter } from "../components/filter/CategoryFilter.js";
 import { SearchFilter } from "../components/filter/SearchFilter.js";
+import { SortFilter } from "../components/filter/SortFilter.js";
 
 export class HomeController {
   constructor(container) {
@@ -9,6 +10,7 @@ export class HomeController {
     this.productList = null;
     this.categoryFilter = null;
     this.searchFilter = null;
+    this.sortFilter = null;
     this.isInitialized = false;
   }
 
@@ -26,10 +28,12 @@ export class HomeController {
       const productListContainer = this.container.querySelector("#product-list-container");
       const categoryFilterContainer = this.container.querySelector("#category-filter-container");
       const searchFilterContainer = this.container.querySelector("#search-filter-container");
+      const sortFilterContainer = this.container.querySelector("#sort-filter-container");
 
       this.productList = new ProductList(productListContainer);
       this.categoryFilter = new CategoryFilter(categoryFilterContainer);
       this.searchFilter = new SearchFilter(searchFilterContainer);
+      this.sortFilter = new SortFilter(sortFilterContainer);
 
       const handleFilterChange = (filterChanges) => {
         Object.entries(filterChanges).forEach(([key, value]) => {
@@ -40,8 +44,9 @@ export class HomeController {
       };
 
       await Promise.all([
-        this.searchFilter.init(search, limit, sort, handleFilterChange),
+        this.searchFilter.init(search, handleFilterChange),
         this.categoryFilter.init(category1, category2, handleFilterChange),
+        this.sortFilter.init(limit, sort, handleFilterChange),
         this.productList.init({
           limit,
           sort,
@@ -54,8 +59,9 @@ export class HomeController {
       this.isInitialized = true;
     } else {
       await Promise.all([
-        this.searchFilter.updateValues(search, limit, sort),
+        this.searchFilter.updateValues(search),
         this.categoryFilter.updateValues(category1, category2),
+        this.sortFilter.updateValues(limit, sort),
         this.productList.updateFilters({
           limit,
           sort,
@@ -79,6 +85,10 @@ export class HomeController {
     if (this.searchFilter) {
       this.searchFilter.destroy();
       this.searchFilter = null;
+    }
+    if (this.sortFilter) {
+      this.sortFilter.destroy();
+      this.sortFilter = null;
     }
     this.isInitialized = false;
   }
