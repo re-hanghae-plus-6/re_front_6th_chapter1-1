@@ -1,9 +1,3 @@
-/**
- * 장바구니 관련 로직을 관리하는 모듈
- *
- * core 폴더에 있는게 맞나 싶은데 나중에 service 폴더로 이동할 예정
- */
-
 import CartModal from "../components/cart/CartModal.js";
 import { getProduct } from "../api/productApi.js";
 
@@ -25,10 +19,12 @@ function initStorage() {
 initStorage();
 
 export function getCartItems() {
+  syncFromStorage();
   return cart;
 }
 
 export function getCartCount() {
+  syncFromStorage();
   return cart.reduce((sum, item) => sum + item.quantity, 0);
 }
 
@@ -45,6 +41,8 @@ function getSelectedPrice() {
 }
 
 export async function addToCartById(productId, quantity = 1) {
+  // Ensure latest state from storage (tests may clear localStorage between runs)
+  syncFromStorage();
   // 클릭 즉시 토스트 표시
   showToast("장바구니에 추가되었습니다");
 
@@ -69,6 +67,7 @@ export async function addToCartById(productId, quantity = 1) {
 }
 
 export function addToCart(product, quantity = 1) {
+  syncFromStorage();
   const existing = cart.find((item) => item.product.productId === product.productId);
   if (existing) {
     existing.quantity += quantity;
@@ -82,6 +81,7 @@ export function addToCart(product, quantity = 1) {
 }
 
 export function updateQuantity(productId, newQty) {
+  syncFromStorage();
   const item = cart.find((i) => i.product.productId === productId);
   if (!item) return;
   item.quantity = newQty < 1 ? 1 : newQty;
@@ -89,18 +89,21 @@ export function updateQuantity(productId, newQty) {
 }
 
 export function removeItem(productId) {
+  syncFromStorage();
   cart = cart.filter((i) => i.product.productId !== productId);
   persist();
   renderModalContent();
 }
 
 export function clearCart() {
+  syncFromStorage();
   cart = [];
   persist();
   renderModalContent();
 }
 
 export function toggleSelect(productId) {
+  syncFromStorage();
   const item = cart.find((i) => i.product.productId === productId);
   if (!item) return;
   item.selected = !item.selected;
@@ -109,11 +112,22 @@ export function toggleSelect(productId) {
 }
 
 export function selectAll(selected) {
+  syncFromStorage();
   cart.forEach((i) => {
     i.selected = selected;
   });
   persist();
   renderModalContent();
+}
+
+// Helper to keep in-memory cart in sync with localStorage (important for test isolation)
+function syncFromStorage() {
+  try {
+    const items = localStorage.getItem("cart");
+    cart = items ? JSON.parse(items) : [];
+  } catch {
+    cart = [];
+  }
 }
 
 // 토스트 헬퍼
@@ -154,9 +168,11 @@ export function updateCartBadge() {
 
 let cartContainer = null;
 
-// 간단하게 함수형으로 구현해보자
-const onKey = (key, action) => (e) => e.key === key && action();
-const handleEsc = onKey("Escape", closeCartModal);
+function handleEsc(e) {
+  if (e.key === "Escape") {
+    closeCartModal();
+  }
+}
 
 function handleModalClick(e) {
   // 닫기 버튼
@@ -240,6 +256,8 @@ function handleModalClick(e) {
 // 모달 컨텐츠를 이렇게 수동으로 렌더링하는 것 보다 isOpen 상태를 구독해서 외부에서 컨트롤 할 수 있게 개선해야함
 function renderModalContent() {
   if (!cartContainer) return;
+
+  // UI 렌더를 여기서 관리하는게 마음에 안듦.. 리팩토링 대상
   const html = CartModal({
     cartItems: cart,
     selectedItems: getSelectedIds(),
