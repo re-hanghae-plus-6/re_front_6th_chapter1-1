@@ -12,7 +12,8 @@ class Router {
   init({ _404 = null } = {}) {
     this._404 = _404;
     this.#setEvents();
-    this.#navigateTo();
+    const params = this.#getSearchParams();
+    this.#navigateTo({ pathname: window.location.pathname, params });
   }
 
   push({ pathname = location.pathname, params = {} } = {}) {
@@ -35,9 +36,13 @@ class Router {
 
   #setEvents() {
     window.addEventListener("popstate", () => {
-      const params = Object.fromEntries(new URLSearchParams(location.search));
+      const params = this.#getSearchParams();
       this.#navigateTo(location.pathname, params);
     });
+  }
+
+  #getSearchParams() {
+    return Object.fromEntries(new URLSearchParams(location.search));
   }
 
   #navigateTo({ pathname = location.pathname, params = {} } = {}) {
