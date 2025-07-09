@@ -13,12 +13,16 @@ import { ProductList } from './components/ProductList.js';
 import { NotFound } from './components/NotFound.js';
 import { ProductService } from './services/ProductService.js';
 import { CartModal } from './components/CartModal.js';
+import { ToastManager } from './components/Toast.js';
 
 // 라우터 인스턴스 생성
 const router = new Router();
 
 // 장바구니 모달 인스턴스 생성
 const cartModal = new CartModal(store);
+
+// 토스트 매니저 인스턴스 생성
+const toastManager = new ToastManager();
 
 // 라우트 등록
 router.addRoute('/', ProductList);
@@ -72,6 +76,7 @@ function updateURLParams(updates) {
 
 // Store에서 사용할 수 있도록 전역으로 노출
 window.updateURLParams = updateURLParams;
+window.toastManager = toastManager;
 
 // 장바구니 모달 렌더링 함수
 function renderCartModal() {

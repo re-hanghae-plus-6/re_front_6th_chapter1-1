@@ -41,6 +41,15 @@ export class ProductService {
       };
     } catch (error) {
       console.error('Failed to fetch products:', error);
+
+      // 토스트 메시지 표시
+      if (typeof window !== 'undefined' && window.toastManager) {
+        window.toastManager.show(
+          '상품을 불러오는 중 오류가 발생했습니다',
+          'error',
+        );
+      }
+
       throw error;
     }
   }
@@ -50,6 +59,15 @@ export class ProductService {
       return await getProduct(id);
     } catch (error) {
       console.error('Failed to fetch product:', error);
+
+      // 토스트 메시지 표시
+      if (typeof window !== 'undefined' && window.toastManager) {
+        window.toastManager.show(
+          '상품 정보를 불러오는 중 오류가 발생했습니다',
+          'error',
+        );
+      }
+
       throw error;
     }
   }
