@@ -1,5 +1,5 @@
 import { HomePage } from './pages/HomePage.js';
-import { getProducts } from './api/productApi.js';
+import { getProducts, getCategories } from './api/productApi.js';
 const enableMocking = () =>
   import('./mocks/browser.js').then(({ worker }) =>
     worker.start({
@@ -9,6 +9,7 @@ const enableMocking = () =>
 
 let state = {
   products: [],
+  categories: [],
   total: 0,
   loading: false,
   limit: 20,
@@ -16,6 +17,8 @@ let state = {
   page: 1,
   hasMore: true,
   search: '',
+  category1: '',
+  category2: '',
 };
 
 let isEventListenerSetUp = false;
@@ -36,6 +39,8 @@ async function loadMoreProducts() {
       limit: state.limit,
       sort: state.sort,
       search: state.search,
+      category1: state.category1,
+      category2: state.category2,
     });
 
     state.products = [...state.products, ...data.products];
@@ -74,6 +79,8 @@ function setUpEventListeners() {
           page: 1,
           limit: state.limit,
           sort: state.sort,
+          category1: state.category1,
+          category2: state.category2,
         });
         state.products = data.products;
         state.total = data.pagination.total;
@@ -82,6 +89,95 @@ function setUpEventListeners() {
         render();
       }
     });
+
+  document.body.querySelector('#root').addEventListener('click', async (e) => {
+    // 카테고리 1depth 선택
+    if (e.target.dataset.category1) {
+      const selectedCategory1 = e.target.dataset.category1;
+      state.category1 = selectedCategory1;
+      state.category2 = ''; // 2depth 초기화
+      state.page = 1;
+      state.loading = true;
+      render();
+
+      const data = await getProducts({
+        category1: selectedCategory1,
+        page: 1,
+        limit: state.limit,
+        sort: state.sort,
+        search: state.search,
+      });
+      state.products = data.products;
+      state.total = data.pagination.total;
+      state.hasMore = data.products.length === state.limit;
+      state.loading = false;
+      render();
+    }
+
+    // 카테고리 2depth 선택
+    if (e.target.dataset.category2) {
+      const selectedCategory2 = e.target.dataset.category2;
+      state.category2 = selectedCategory2;
+      state.page = 1;
+      state.loading = true;
+      render();
+
+      const data = await getProducts({
+        category1: state.category1,
+        category2: selectedCategory2,
+        page: 1,
+        limit: state.limit,
+        sort: state.sort,
+        search: state.search,
+      });
+      state.products = data.products;
+      state.total = data.pagination.total;
+      state.hasMore = data.products.length === state.limit;
+      state.loading = false;
+      render();
+    }
+
+    // 브레드크럼 클릭
+    if (e.target.dataset.breadcrumb === 'reset') {
+      state.category1 = '';
+      state.category2 = '';
+      state.page = 1;
+      state.loading = true;
+      render();
+
+      const data = await getProducts({
+        page: 1,
+        limit: state.limit,
+        sort: state.sort,
+        search: state.search,
+      });
+      state.products = data.products;
+      state.total = data.pagination.total;
+      state.hasMore = data.products.length === state.limit;
+      state.loading = false;
+      render();
+    }
+
+    if (e.target.dataset.breadcrumb === 'category1') {
+      state.category2 = ''; // 2depth만 초기화
+      state.page = 1;
+      state.loading = true;
+      render();
+
+      const data = await getProducts({
+        category1: state.category1,
+        page: 1,
+        limit: state.limit,
+        sort: state.sort,
+        search: state.search,
+      });
+      state.products = data.products;
+      state.total = data.pagination.total;
+      state.hasMore = data.products.length === state.limit;
+      state.loading = false;
+      render();
+    }
+  });
 
   document.body.querySelector('#root').addEventListener('change', async (e) => {
     if (e.target.id === 'limit-select') {
@@ -96,6 +192,8 @@ function setUpEventListeners() {
         page: 1,
         search: state.search,
         sort: state.sort,
+        category1: state.category1,
+        category2: state.category2,
       });
       state.products = data.products;
       state.total = data.pagination.total;
@@ -115,6 +213,8 @@ function setUpEventListeners() {
         page: 1,
         search: state.search,
         limit: state.limit,
+        category1: state.category1,
+        category2: state.category2,
       });
       state.products = data.products;
       state.total = data.pagination.total;
@@ -134,7 +234,10 @@ export async function main() {
   render();
   const data = await getProducts({ page: 1, limit: state.limit });
   console.log(data);
+  const categories = await getCategories();
+  console.log(categories);
   state.products = data.products;
+  state.categories = categories;
   state.total = data.pagination.total;
   state.page = 1;
   state.hasMore = data.products.length === state.limit;

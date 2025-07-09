@@ -44,14 +44,15 @@ const productItem = (product) => `
 
 export const HomePage = ({
   products = [],
+  categories = {},
   total = 0,
   loading = false,
   limit = 20,
   sort = 'price_asc',
   search = '',
+  category1 = '',
+  category2 = '',
 }) => {
-  const categorySet = new Set(products.map((product) => product.category1));
-
   return `
 <div class="min-h-screen bg-gray-50">
   <header class="bg-white shadow-sm sticky top-0 z-40">
@@ -95,16 +96,18 @@ export const HomePage = ({
           <div class="flex items-center gap-2">
             <label class="text-sm text-gray-600">카테고리:</label>
             <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
+            ${category1 ? `<span class="text-xs text-gray-500">></span><button data-breadcrumb="category1" class="text-xs hover:text-blue-800 hover:underline">${category1}</button>` : ''}
+            ${category2 ? `<span class="text-xs text-gray-500">></span><span class="text-xs text-gray-700">${category2}</span>` : ''}
           </div>
           <!-- 1depth 카테고리 -->
           <div class="flex flex-wrap gap-2">
             ${
-              categorySet.size > 0
-                ? Array.from(categorySet)
+              Object.keys(categories).length > 0 && !loading
+                ? Object.keys(categories)
                     .map(
-                      (category) => `
-                <button data-category1="${category}" class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
-                  ${category}
+                      (cat1) => `
+                <button data-category1="${cat1}" class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors ${category1 === cat1 ? 'bg-blue-600 text-white border-blue-600' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}">
+                  ${cat1}
                 </button>
               `,
                     )
@@ -113,6 +116,25 @@ export const HomePage = ({
             }
           </div>
           <!-- 2depth 카테고리 -->
+          ${
+            category1 &&
+            categories[category1] &&
+            Object.keys(categories[category1]).length > 0
+              ? `
+            <div class="flex flex-wrap gap-2">
+              ${Object.keys(categories[category1])
+                .map(
+                  (cat2) => `
+                <button data-category2="${cat2}" class="category2-filter-btn text-left px-2 py-1 text-xs rounded border transition-colors ${category2 === cat2 ? 'bg-blue-500 text-white border-blue-500' : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'}">
+                  ${cat2}
+                </button>
+              `,
+                )
+                .join('')}
+            </div>
+          `
+              : ''
+          }
         </div>
         <!-- 기존 필터들 -->
         <div class="flex gap-2 items-center justify-between">
