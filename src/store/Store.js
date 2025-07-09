@@ -2,7 +2,9 @@ export class Store {
   constructor() {
     this.state = {
       products: [],
+      allProducts: [], // 무한 스크롤을 위한 누적 상품 목록
       cart: [],
+      pagination: null, // 페이지네이션 정보
       filters: {
         search: '',
         category1: '',
@@ -14,6 +16,7 @@ export class Store {
       loading: {
         products: false,
         productDetail: false,
+        loadingMore: false, // 추가 로딩 상태
       },
       ui: {
         showCart: false,
@@ -50,6 +53,8 @@ export class Store {
   updateFilters(newFilters) {
     this.setState({
       filters: { ...this.state.filters, ...newFilters, page: 1 },
+      allProducts: [], // 필터 변경 시 누적 상품 초기화
+      pagination: null,
     });
   }
 
