@@ -1,14 +1,17 @@
-import { cartStore } from "../store/store";
+import { cartStore } from "../store/store.js";
 
-const Header = {
-  el: null,
+class Header {
+  constructor() {
+    this.el = null;
+    this.state = {
+      cartCount: 0, // 초기값. 스토어 구독 후 업데이트됨
+    };
+  }
 
-  state: {
-    cartCount: 0,
-  },
-
-  // 👉 템플릿 생성
   template() {
+    // cartCount가 0일 때는 뱃지를 숨김
+    const badgeHiddenClass = this.state.cartCount === 0 ? "hidden" : "";
+
     return `
       <header class="bg-white shadow-sm sticky top-0 z-40">
         <div class="max-w-md mx-auto px-4 py-4">
@@ -24,7 +27,7 @@ const Header = {
                   </path>
                 </svg>
                 <span id="cart-count-badge"
-                  class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center ${badgeHiddenClass}">
                   ${this.state.cartCount}
                 </span>
               </button>
@@ -33,53 +36,48 @@ const Header = {
         </div>
       </header>
     `;
-  },
+  }
 
-  // 👉 DOM 렌더
+  setState(nextState) {
+    this.state = { ...this.state, ...nextState };
+    this.update(); // 상태 변경 시 전체 렌더링 대신 업데이트만 수행
+  }
+
+  update() {
+    if (!this.el) return;
+
+    // 뱃지 부분만 찾아서 업데이트
+    const cartCountBadge = this.el.querySelector("#cart-count-badge");
+    if (cartCountBadge) {
+      cartCountBadge.textContent = this.state.cartCount;
+      if (this.state.cartCount === 0) {
+        cartCountBadge.classList.add("hidden");
+      } else {
+        cartCountBadge.classList.remove("hidden");
+      }
+    }
+  }
+
   render() {
     const template = document.createElement("template");
     template.innerHTML = this.template().trim();
-    const newEl = template.content.firstElementChild;
+    this.el = template.content.firstElementChild;
 
-    if (!newEl) {
-      console.error("Header: 렌더링 실패 - 유효한 DOM이 없음");
-      return document.createTextNode(""); // fallback
-    }
+    const btn = this.el.querySelector("#cart-icon-btn");
+    btn.addEventListener("click", () => {
+      cartStore.setState({ isOpen: true });
+    });
 
-    if (!this.el) {
-      this.el = newEl;
-      return this.el;
-    }
+    // cartStore를 구독하여 cartCount 상태를 동기화
+    // 참고: store에 items가 추가되어야 완벽하게 동작합니다.
+    cartStore.subscribe((storeState) => {
+      // store에 items가 있다는 가정 하에 cartCount 업데이트
+      const newCount = storeState.items ? storeState.items.length : 0;
+      this.setState({ cartCount: newCount });
+    });
 
-    // 기존 요소가 있다면 교체 후 이벤트 재등록
-    this.el.replaceWith(newEl);
-    this.el = newEl;
-    this.addEvent();
     return this.el;
-  },
-
-  // 👉 이벤트 바인딩
-  addEvent() {
-    const btn = this.el?.querySelector("#cart-icon-btn");
-    if (btn) {
-      btn.addEventListener("click", () => {
-        cartStore.setState({ isOpen: true });
-      });
-    }
-  },
-
-  // 👉 상태 변경 및 자동 렌더
-  setState(nextState) {
-    this.state = { ...this.state, ...nextState };
-    this.render();
-  },
-
-  // 👉 초기화
-  init() {
-    const el = this.render();
-    this.addEvent();
-    return el;
-  },
-};
+  }
+}
 
 export default Header;

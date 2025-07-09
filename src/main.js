@@ -16,9 +16,9 @@ function renderLayout() {
   root.className = "min-h-screen bg-gray-50";
 
   // 공통 요소 렌더링
-  const header = Header.init(); // 객체형 컴포넌트
-  const cart = Cart.init(); // 모달형 컴포넌트
-  const footer = Footer.init(); // 고정 하단 푸터
+  const header = new Header().render();
+  const cart = new Cart().render();
+  const footer = new Footer().render();
 
   // 라우팅 대상 영역 생성
   const app = document.createElement("div");
@@ -31,9 +31,14 @@ function renderLayout() {
   root.appendChild(footer);
 }
 
-function main() {
+export const app = () => {
   renderLayout();
   router();
+};
+
+function main() {
+  app(); // 초기 실행
+  window.addEventListener("popstate", app);
 }
 
 // 애플리케이션 시작
