@@ -32,7 +32,7 @@ afterEach(async () => {
   cartStore.setState({
     items: [],
     selectedItems: [],
-    totalCount: 0,
+    itemCount: 0,
     isModalOpen: false,
   });
 });

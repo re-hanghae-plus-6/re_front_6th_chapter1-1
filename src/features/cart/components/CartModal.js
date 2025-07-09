@@ -307,7 +307,7 @@ const syncToLocalStorage = (state) => {
   const stateToSave = {
     items: state.items,
     selectedItems: state.selectedItems,
-    totalCount: state.totalCount,
+    itemCount: state.itemCount,
   };
   saveToStorage(CART_STORAGE_KEY, stateToSave);
 };

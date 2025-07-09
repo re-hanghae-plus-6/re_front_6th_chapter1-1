@@ -3,20 +3,20 @@ import { addEvent } from "../../utils/eventManager.js";
 import { openCartModal } from "../../features/cart/services/cartService.js";
 
 const updateCartIcon = () => {
-  const { totalCount } = cartStore.getState();
+  const { itemCount } = cartStore.getState();
   const cartIconBtn = document.querySelector("#cart-icon-btn");
 
   if (cartIconBtn) {
     const countSpan = cartIconBtn.querySelector("span");
 
-    if (totalCount > 0) {
+    if (itemCount > 0) {
       if (!countSpan) {
         const span = document.createElement("span");
         span.className =
           "absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center";
         cartIconBtn.appendChild(span);
       }
-      cartIconBtn.querySelector("span").textContent = totalCount;
+      cartIconBtn.querySelector("span").textContent = itemCount;
     } else {
       if (countSpan) {
         countSpan.remove();
@@ -30,7 +30,7 @@ const handleCartIconClick = () => {
 };
 
 export const Header = ({ title = "쇼핑몰", showBackButton = false } = {}) => {
-  const { totalCount } = cartStore.getState();
+  const { itemCount } = cartStore.getState();
 
   return `
   <header class="bg-white shadow-sm sticky top-0 z-40">
@@ -61,10 +61,10 @@ export const Header = ({ title = "쇼핑몰", showBackButton = false } = {}) => 
                     d="M3 3h2l.4 2M7 13h10l4-8H5.4m2.6 8L6 2H3m4 11v6a1 1 0 001 1h1a1 1 0 001-1v-6M13 13v6a1 1 0 001 1h1a1 1 0 001-1v-6"></path>
             </svg>
             ${
-              totalCount > 0
+              itemCount > 0
                 ? `
               <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                ${totalCount}
+                ${itemCount}
               </span>
             `
                 : ""

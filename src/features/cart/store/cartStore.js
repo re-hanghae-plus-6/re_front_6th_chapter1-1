@@ -6,7 +6,7 @@ export const CART_STORAGE_KEY = "shopping_cart";
 const initialCartState = loadFromStorage(CART_STORAGE_KEY, {
   items: [],
   selectedItems: [],
-  totalCount: 0,
+  itemCount: 0,
   isModalOpen: false,
 });
 

@@ -19,12 +19,12 @@ export const addToCart = (product, quantity = 1) => {
     newItems = [...items, newItem];
   }
 
-  const totalCount = newItems.reduce((sum, item) => sum + item.quantity, 0);
+  const itemCount = newItems.length;
 
   cartStore.setState({
     ...cartStore.getState(),
     items: newItems,
-    totalCount: totalCount,
+    itemCount: itemCount,
   });
 };
 
@@ -32,13 +32,13 @@ export const removeFromCart = (productId) => {
   const { items, selectedItems } = cartStore.getState();
   const newItems = items.filter((item) => item.id !== productId);
   const newSelectedItems = selectedItems.filter((item) => item.id !== productId);
-  const totalCount = newItems.reduce((sum, item) => sum + item.quantity, 0);
+  const itemCount = newItems.length;
 
   cartStore.setState({
     ...cartStore.getState(),
     items: newItems,
     selectedItems: newSelectedItems,
-    totalCount: totalCount,
+    itemCount: itemCount,
   });
 };
 
@@ -51,13 +51,13 @@ export const updateItemQuantity = (productId, quantity) => {
     item.id === productId ? { ...item, quantity: newQuantity } : item,
   );
 
-  const totalCount = newItems.reduce((sum, item) => sum + item.quantity, 0);
+  const itemCount = newItems.length;
 
   cartStore.setState({
     ...cartStore.getState(),
     items: newItems,
     selectedItems: newSelectedItems,
-    totalCount: totalCount,
+    itemCount: itemCount,
   });
 };
 
@@ -93,13 +93,13 @@ export const removeSelectedItems = () => {
   const { items, selectedItems } = cartStore.getState();
   const selectedIds = selectedItems.map((item) => item.id);
   const newItems = items.filter((item) => !selectedIds.includes(item.id));
-  const totalCount = newItems.reduce((sum, item) => sum + item.quantity, 0);
+  const itemCount = newItems.length;
 
   cartStore.setState({
     ...cartStore.getState(),
     items: newItems,
     selectedItems: [],
-    totalCount: totalCount,
+    itemCount: itemCount,
   });
 };
 
@@ -108,7 +108,7 @@ export const clearCart = () => {
     ...cartStore.getState(),
     items: [],
     selectedItems: [],
-    totalCount: 0,
+    itemCount: 0,
   });
 };
 
