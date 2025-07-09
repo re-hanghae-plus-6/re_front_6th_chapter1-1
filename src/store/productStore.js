@@ -7,6 +7,8 @@ export const createProductStore = (initialState = {}) => {
     limit: 20,
     sort: "price_asc",
     search: "",
+    page: 1,
+    hasMore: true,
     ...initialState,
   };
 
@@ -20,6 +22,10 @@ export const createProductStore = (initialState = {}) => {
     };
   };
 
+  const notify = () => {
+    subscribers.forEach((cb) => cb(getState()));
+  };
+
   const getState = () => ({ ...state });
 
   const setState = (newState) => {
@@ -27,13 +33,41 @@ export const createProductStore = (initialState = {}) => {
     subscribers.forEach((cb) => cb(getState()));
   };
 
-  const setProducts = (products) => setState({ products });
+  const setProducts = (newProducts, append = false) => {
+    const currentProducts = getState().products;
+    state.products = append ? [...currentProducts, ...newProducts] : newProducts;
+    notify();
+  };
+  const setPage = (newPage) => {
+    state.page = newPage;
+    notify();
+  };
+  const setHasMore = (hasMore) => {
+    state.hasMore = hasMore;
+    notify();
+  };
+
   const setLoading = (loading) => setState({ loading });
   const setError = (error) => setState({ error });
   const setTotalCount = (totalCount) => setState({ totalCount });
   const setLimit = (limit) => setState({ limit });
   const setSort = (sort) => setState({ sort });
   const setSearch = (search) => setState({ search });
+
+  const resetState = () => {
+    state = {
+      products: [],
+      loading: false,
+      error: null,
+      totalCount: 0,
+      limit: 20,
+      sort: "price_asc",
+      search: "",
+      page: 1,
+      hasMore: true,
+    };
+    notify();
+  };
 
   return {
     getState,
@@ -46,6 +80,9 @@ export const createProductStore = (initialState = {}) => {
     setLimit,
     setSort,
     setSearch,
+    setPage,
+    setHasMore,
+    resetState,
   };
 };
 

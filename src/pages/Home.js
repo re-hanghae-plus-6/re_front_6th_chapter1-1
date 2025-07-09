@@ -1,5 +1,5 @@
 import ProductCard from "../components/product/ProductCard";
-import ProductSkeleton from "../components/product/ProductSkeleton";
+import ProductSkeleton, { ProductLoadingIndicator } from "../components/product/ProductSkeleton";
 import Header from "../components/common/Header";
 import Footer from "../components/common/Footer";
 import { getProducts } from "../api/productApi.js";
@@ -14,8 +14,8 @@ function renderProducts() {
 
   if (!productsGrid) return;
 
-  if (state.loading) {
-    productsGrid.innerHTML = Array(6).fill().map(ProductSkeleton).join("");
+  if (state.loading && state.hasMore) {
+    productsGrid.innerHTML = `${Array(6).fill().map(ProductSkeleton).join("")}${ProductLoadingIndicator()}`;
     if (totalCountContainer) {
       totalCountContainer.style.display = "none";
       totalCountContainer.textContent = "";
@@ -30,7 +30,7 @@ function renderProducts() {
   }
 }
 
-async function loadProducts() {
+async function loadProducts({ append = false }) {
   productStore.setLoading(true);
   productStore.setError(null);
   try {
@@ -39,10 +39,24 @@ async function loadProducts() {
       limit: state.limit,
       sort: state.sort,
       search: state.search,
+      page: state.page,
     });
+
     if (response.products) {
-      productStore.setProducts(response.products);
+      productStore.setProducts(response.products, append);
       productStore.setTotalCount(response.pagination?.total ?? response.products.length);
+
+      // 무한스크롤
+      const total = response.pagination?.total ?? 0;
+      const currentProductsLength = append
+        ? state.products.length + response.products.length
+        : response.products.length;
+      const hasMore = currentProductsLength < total;
+      productStore.setHasMore(hasMore);
+
+      if (hasMore) {
+        productStore.setPage(state.page + 1);
+      }
     } else {
       productStore.setError("상품 목록을 불러오는데 실패했습니다.");
     }
@@ -60,7 +74,7 @@ export default function Home() {
   const template = `
     ${Header()}
     <main class="max-w-md mx-auto px-4 py-4">
-     ${ProductFilter({ state })}
+      ${ProductFilter({ state })}
       <!-- 상품 목록 -->
       <div class="mb-6">
         <div>
@@ -70,6 +84,10 @@ export default function Home() {
           </div>
           <!-- 상품 그리드 -->
           <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid"></div>
+          
+          <!-- 무한 스크롤 타겟 -->
+          <div id="observer-target"></div>
+
           <div class="text-center py-4 text-sm text-gray-500">
             모든 상품을 확인했습니다
           </div>
@@ -81,14 +99,23 @@ export default function Home() {
 
   function mount() {
     renderProducts();
-    loadProducts();
+    loadProducts({ append: false });
+
+    function filterReset({ search, limit, sort }) {
+      if (search !== undefined) productStore.setSearch(search);
+      if (limit !== undefined) productStore.setLimit(limit);
+      if (sort !== undefined) productStore.setSort(sort);
+
+      productStore.setPage(1);
+      productStore.setHasMore(true);
+      loadProducts({ append: false });
+    }
 
     const limitSelect = document.getElementById("limit-select");
     if (limitSelect) {
       limitSelect.addEventListener("change", (e) => {
         const newLimit = parseInt(e.target.value);
-        productStore.setLimit(newLimit);
-        loadProducts();
+        filterReset({ limit: newLimit });
       });
     }
 
@@ -96,8 +123,7 @@ export default function Home() {
     if (sortSelect) {
       sortSelect.addEventListener("change", (e) => {
         const newSort = e.target.value;
-        productStore.setSort(newSort);
-        loadProducts();
+        filterReset({ sort: newSort });
       });
     }
 
@@ -106,14 +132,37 @@ export default function Home() {
       searchInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
           const searchTerm = e.target.value.trim();
-          productStore.setSearch(searchTerm);
-          loadProducts();
+          filterReset({ search: searchTerm });
         }
       });
     }
 
+    const observerTarget = document.getElementById("observer-target");
+
+    const observer = new IntersectionObserver(
+      async (entries) => {
+        const entry = entries[0];
+        const state = productStore.getState();
+
+        if (entry.isIntersecting && !state.loading && state.hasMore) {
+          await loadProducts({ append: true });
+        }
+      },
+      {
+        rootMargin: "100px",
+        threshold: 0.1,
+      },
+    );
+
+    if (observerTarget) {
+      observer.observe(observerTarget);
+    }
+
     const unsubscribe = productStore.subscribe(renderProducts);
-    return () => unsubscribe();
+    return () => {
+      observer.disconnect();
+      unsubscribe();
+    };
   }
 
   return { template, mount };
