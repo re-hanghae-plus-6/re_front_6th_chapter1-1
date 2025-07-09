@@ -1,6 +1,13 @@
 // 상품 목록 조회
 export async function getProducts(params = {}) {
-  const { page = 1, limit = 20, search = "", category1 = "", category2 = "", sort = "price_asc" } = params;
+  const {
+    page = 1,
+    limit = 20,
+    search = '',
+    category1 = '',
+    category2 = '',
+    sort = 'price_asc',
+  } = params;
 
   const searchParams = new URLSearchParams({
     page: page.toString(),
@@ -24,6 +31,6 @@ export async function getProduct(productId) {
 
 // 카테고리 목록 조회
 export async function getCategories() {
-  const response = await fetch("/api/categories");
+  const response = await fetch('/api/categories');
   return await response.json();
 }
