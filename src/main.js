@@ -10,6 +10,7 @@ const enableMocking = () =>
 
 let currentLimit = 20;
 let currentSort = "price_asc";
+let currentSearch = "";
 
 let state = {
   categories: {},
@@ -27,6 +28,7 @@ const fetchAndRenderHomepage = async () => {
       getProducts({
         limit: currentLimit,
         sort: currentSort,
+        search: currentSearch,
       }),
       getCategories(),
     ]);
@@ -61,6 +63,19 @@ const attachEventListeners = () => {
       fetchAndRenderHomepage();
     };
   }
+
+  const searchInput = document.getElementById("search-input");
+  if (searchInput) {
+    searchInput.value = currentSearch;
+    searchInput.oninput = (event) => {
+      currentSearch = event.target.value;
+    };
+  }
+  searchInput.onkeydown = (event) => {
+    if (event.key === "Enter") {
+      fetchAndRenderHomepage();
+    }
+  };
 };
 
 const render = () => {
