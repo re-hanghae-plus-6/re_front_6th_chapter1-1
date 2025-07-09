@@ -23,10 +23,18 @@ beforeAll(async () => {
 
 beforeEach(() => goTo("/"));
 
-afterEach(() => {
+afterEach(async () => {
   // 각 테스트 후 상태 초기화
   document.getElementById("root").innerHTML = "";
   localStorage.clear();
+
+  const { cartStore } = await import("../features/cart/store/cartStore.js");
+  cartStore.setState({
+    items: [],
+    selectedItems: [],
+    totalCount: 0,
+    isModalOpen: false,
+  });
 });
 
 describe("1. 장바구니 모달", () => {
@@ -145,7 +153,7 @@ describe.sequential("2. 장바구니 수량 조절", () => {
     await userEvent.click(decreaseButton);
 
     // 수량이 감소했는지 확인
-    expect(quantityInput.value).toBe("1");
+    expect(document.querySelector(".quantity-input").value).toBe("1");
   });
 
   test("수량 변경 시 총 금액이 실시간으로 업데이트된다", async () => {
