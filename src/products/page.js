@@ -23,6 +23,8 @@ export function productsPage($root) {
 
 class Main extends Component {
   renderContainer() {
-    return html`<main class="max-w-md mx-auto px-4 py-4">${this.props.filters} ${this.props.products}</main>`;
+    return html`<main ${this.dataAttribute.attribute} class="max-w-md mx-auto px-4 py-4">
+      ${this.props.filters} ${this.props.products}
+    </main>`;
   }
 }

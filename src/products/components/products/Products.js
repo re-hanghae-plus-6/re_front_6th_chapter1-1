@@ -5,11 +5,7 @@ import { ProductsLoading } from "./ProductsLoading";
 export class Products extends Component {
   #productsLoading = new ProductsLoading();
 
-  setup() {
-    super.setup();
-  }
-
   renderContainer() {
-    return html`${this.#productsLoading}`;
+    return html`<div ${this.dataAttribute.attribute}>${this.#productsLoading}</div>`;
   }
 }

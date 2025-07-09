@@ -3,7 +3,7 @@ import { html } from "../../../utils/html";
 
 export class Breadcrumb extends Component {
   renderContainer() {
-    return html`<div class="space-y-2">
+    return html`<div ${this.dataAttribute.attribute} class="space-y-2">
       <div class="flex items-center gap-2">
         <label class="text-sm text-gray-600">카테고리:</label>
         <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>

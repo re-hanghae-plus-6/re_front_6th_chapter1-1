@@ -12,7 +12,10 @@ export class Filters extends Component {
   sortSelect = new SortSelect();
 
   renderContainer() {
-    return html` <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
+    return html` <div
+      ${this.dataAttribute.attribute}
+      class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4"
+    >
       <!-- 검색창 -->
       ${this.search}
       <!-- 필터 옵션 -->

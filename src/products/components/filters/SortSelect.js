@@ -3,7 +3,7 @@ import { html } from "../../../utils/html";
 
 export class SortSelect extends Component {
   renderContainer() {
-    return html`<div class="flex items-center gap-2">
+    return html`<div ${this.dataAttribute.attribute} class="flex items-center gap-2">
       <label class="text-sm text-gray-600">개수:</label>
       <select
         id="limit-select"

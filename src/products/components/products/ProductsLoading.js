@@ -3,7 +3,7 @@ import { html } from "../../../utils/html";
 
 export class ProductsLoading extends Component {
   renderContainer() {
-    return html`<div class="mb-6">
+    return html`<div ${this.dataAttribute.attribute} class="mb-6">
       <div>
         <!-- 상품 그리드 -->
         <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
