@@ -41,6 +41,9 @@ export class CategoryFilter {
           ${this.selectedCategory2 ? `<span class="text-xs text-gray-500">&gt;</span><span class="text-xs text-gray-600 cursor-default">${this.selectedCategory2}</span>` : ""}
         </div>
         
+        ${
+          !this.selectedCategory1
+            ? `
         <!-- 1depth 카테고리 -->
         <div class="flex flex-wrap gap-2">
           ${
@@ -50,8 +53,7 @@ export class CategoryFilter {
                 ? categories
                     .map(
                       (cat) => `
-                    <button data-category1="${cat.name}" class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
-                       ${this.selectedCategory1 === cat.name ? "bg-blue-100 border-blue-300 text-blue-800" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
+                    <button data-category1="${cat.name}" class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
                       ${cat.name}
                     </button>
                   `,
@@ -60,6 +62,9 @@ export class CategoryFilter {
                 : `<div class="text-sm text-gray-500 italic">카테고리를 불러올 수 없습니다</div>`
           }
         </div>
+        `
+            : ""
+        }
         
         <!-- 2depth 카테고리 -->
         ${
