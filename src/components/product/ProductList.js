@@ -5,13 +5,41 @@ import ProductItem from "./ProductItem";
 
 export default class ProductList extends Component {
   setup() {
+    this.prevFilterState = null;
+
     this.unsubscribe = homeStore.subscribe(() => {
+      const currentState = homeStore.getState();
+      const currentParams = {
+        page: currentState.products.pagination.page,
+        limit: currentState.filter.limit,
+        search: currentState.filter.search,
+        category1: currentState.filter.category1,
+        category2: currentState.filter.category2,
+        sort: currentState.filter.sort,
+      };
+
+      console.log(this.shouldFetchProducts(currentParams));
+      if (this.shouldFetchProducts(currentParams)) {
+        this.fetchProducts();
+      }
+
       this.render();
       this.setEvent();
       this.mounted();
-    });
 
-    this.fetchProducts();
+      this.prevFilterState = currentParams;
+    });
+  }
+
+  shouldFetchProducts(currentParams) {
+    // 첫 번째 로드인 경우
+    if (!this.prevFilterState) {
+      return true;
+    }
+
+    // 필터 조건이 변경된 경우
+    const paramKeys = ["page", "search", "category1", "category2", "sort", "limit"];
+    return paramKeys.some((key) => this.prevFilterState[key] !== currentParams[key]);
   }
 
   async fetchProducts() {
@@ -35,7 +63,7 @@ export default class ProductList extends Component {
       category2: homeState.filter.category2,
       sort: homeState.filter.sort,
     };
-
+    console.log("params: ", params);
     const { products, pagination } = await getProducts(params);
 
     homeStore.setState({

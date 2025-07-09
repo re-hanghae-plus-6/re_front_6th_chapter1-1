@@ -2,7 +2,7 @@ import Component from "../../lib/Component";
 import CategoryItem from "./CategoryItem";
 import Breadcrumb from "./Breadcrumb";
 import { homeStore } from "../../store/homeStore";
-import { DEFAULT_LIMIT } from "../../constants";
+import { DEFAULT_LIMIT, DEFAULT_PAGE } from "../../constants";
 
 export default class Filter extends Component {
   setup() {
@@ -29,17 +29,54 @@ export default class Filter extends Component {
     });
 
     const limitSelect = document.getElementById("limit-select");
+
     limitSelect.addEventListener("change", (e) => {
+      const limit = parseInt(e.target.value);
+
+      this.resetPage();
       homeStore.setState({
         filter: {
-          limit: e.target.value,
+          limit,
         },
       });
-      console.log(e.target.value);
     });
   }
 
-  selectSort() {}
+  selectSort() {
+    const homeState = homeStore.getState();
+    const currentSort = homeState.filter.sort;
+
+    const sortOptions = document.querySelectorAll("#sort-select option");
+    sortOptions.forEach((option) => {
+      if (option.value === currentSort) {
+        option.selected = true;
+      }
+    });
+
+    const sortSelect = document.getElementById("sort-select");
+    if (!sortSelect) return;
+
+    sortSelect.addEventListener("change", (e) => {
+      const sort = e.target.value;
+
+      this.resetPage();
+      homeStore.setState({
+        filter: {
+          sort,
+        },
+      });
+    });
+  }
+
+  resetPage() {
+    homeStore.setState({
+      products: {
+        pagination: {
+          page: DEFAULT_PAGE,
+        },
+      },
+    });
+  }
 
   setEvent() {
     this.selectLimit();
@@ -49,6 +86,7 @@ export default class Filter extends Component {
   template() {
     const {
       categories: { categoryList, isCategoryLoading },
+      filter: { limit, sort },
     } = homeStore.getState();
 
     return /* HTML */ ` <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
@@ -109,10 +147,10 @@ export default class Filter extends Component {
               id="limit-select"
               class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="10">10개</option>
-              <option value="20" selected="">20개</option>
-              <option value="50">50개</option>
-              <option value="100">100개</option>
+              <option value="10" ${limit == 10 ? "selected" : ""}>10개</option>
+              <option value="20" ${limit == 20 ? "selected" : ""}>20개</option>
+              <option value="50" ${limit == 50 ? "selected" : ""}>50개</option>
+              <option value="100" ${limit == 100 ? "selected" : ""}>100개</option>
             </select>
           </div>
           <!-- 정렬 -->
@@ -123,10 +161,14 @@ export default class Filter extends Component {
               class="text-sm border border-gray-300 rounded px-2 py-1
                              focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="price_asc" selected="">가격 낮은순</option>
-              <option value="price_desc">가격 높은순</option>
-              <option value="name_asc">이름순</option>
-              <option value="name_desc">이름 역순</option>
+              <option value="price_asc" ${sort === "price_asc" ? "selected" : ""}>
+                가격 낮은순
+              </option>
+              <option value="price_desc" ${sort === "price_desc" ? "selected" : ""}>
+                가격 높은순
+              </option>
+              <option value="name_asc" ${sort === "name_asc" ? "selected" : ""}>이름순</option>
+              <option value="name_desc" ${sort === "name_desc" ? "selected" : ""}>이름 역순</option>
             </select>
           </div>
         </div>

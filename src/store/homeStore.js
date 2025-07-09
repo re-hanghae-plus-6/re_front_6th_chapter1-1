@@ -9,7 +9,6 @@ const homeState = {
     isProductsLoading: false,
     pagination: {
       page: DEFAULT_PAGE,
-      limit: DEFAULT_LIMIT,
       totalPages: 0,
       hasNext: false,
       hasPrev: false,

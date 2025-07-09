@@ -27,7 +27,7 @@ export function useParam(key) {
     return undefined;
   }
 
-  return router.getParam(key);
+  return router.getParams(key);
 }
 
 /**
@@ -57,7 +57,7 @@ export function useSearchParam(key) {
     return undefined;
   }
 
-  return router.getQueryParam(key);
+  return router.getQueryParams(key);
 }
 
 /**

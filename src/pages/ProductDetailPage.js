@@ -1,4 +1,3 @@
-import { useParam } from "../api/hook/useRouter";
 import Breadcrumb from "../components/common/Breadcrumb";
 import Footer from "../components/common/Footer";
 import Header from "../components/common/Header";
@@ -19,8 +18,6 @@ export default function ProductDetailPage() {
 
   const relatedProducts = [];
 
-  const param = useParam();
-  console.log("param: ", param);
   const renderStars = () => {
     // TODO : 별점 계산 로직 추가
 
