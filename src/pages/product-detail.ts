@@ -104,9 +104,10 @@ export const detailPage: PageModule = {
       const handleAddToCart = () => {
         if (!inputEl || !state.product) return;
         const qty = Math.max(1, parseInt(inputEl.value || "1", 10));
-        addToCart(state.product.productId, qty);
+        const unitPrice = Number(state.product.lprice ?? 0);
+        addToCart(state.product.productId, qty, unitPrice);
         토스트("장바구니에 추가되었습니다", "success");
-        setTimeout(() => rerender(), 2000);
+        rerender();
       };
 
       const handleRelatedClick = (e: Event) => {

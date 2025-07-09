@@ -15,13 +15,13 @@ export async function 장바구니() {
       const cartItems: CartItem[] = stored.map((s) => ({
         id: s.id,
         title: "…",
-        price: 0,
+        price: s.price ?? 0,
         quantity: s.qty,
         imageUrl: "https://placehold.co/64",
       }));
 
       const itemsCount = cartItems.reduce((acc, c) => acc + c.quantity, 0);
-      const totalPrice = 0;
+      const totalPrice = cartItems.reduce((sum, c) => sum + c.price * c.quantity, 0);
 
       const contentsHtml = itemsCount === 0 ? 장바구니_빈컨텐츠 : 장바구니_아이템리스트(cartItems);
 
@@ -32,7 +32,7 @@ export async function 장바구니() {
         <div class="sticky bottom-0 bg-white border-t border-gray-200 p-4">
           <div class="flex justify-between items-center mb-4">
             <span class="text-lg font-bold text-gray-900">총 금액</span>
-            <span class="text-xl font-bold text-blue-600">${totalPrice}원</span>
+            <span class="text-xl font-bold text-blue-600">${totalPrice.toLocaleString()}원</span>
           </div>
           <div class="space-y-2">
             <div class="flex gap-2">
@@ -104,7 +104,7 @@ export async function 장바구니() {
       const qty = Number(input?.value ?? 1);
       qtySum += qty;
       priceSum += qty * unitPrice;
-      stored.push({ id, qty });
+      stored.push({ id, qty, price: unitPrice });
 
       // 소계 갱신
       const subtotal = el.querySelector<HTMLParagraphElement>(".text-right p");

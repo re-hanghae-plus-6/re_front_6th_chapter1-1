@@ -27,7 +27,7 @@ export const 장바구니_아이템리스트 = (cartItems: CartItem[]): string =
   return cartItems
     .map(
       ({ id, title, price, quantity, imageUrl }) => `
-      <div class="flex items-center py-3 border-b border-gray-100 cart-item px-4" data-product-id="${id}">
+      <div class="flex items-center py-3 border-b border-gray-100 cart-item px-4" data-product-id="${id}" data-unit-price="${price ?? 0}">
         <label class="flex items-center mr-3">
           <input type="checkbox" class="cart-item-checkbox w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" data-product-id="${id}">
         </label>
