@@ -118,11 +118,17 @@ const Category1Button = (category1) => {
 };
 
 const Category2Button = (category1, category2) => {
+  const productParams = getProductParams();
+  const isSelected = productParams?.category2 === category2;
+
+  const defaultColor = `bg-white border-gray-300 text-gray-700 hover:bg-gray-50`;
+  const selectedColor = `bg-blue-100 border-blue-300 text-blue-800`;
+
   return `
     <button
       data-category1=${category1}
       data-category2=${category2}
-      class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+      class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors ${isSelected ? selectedColor : defaultColor}"
     >
       ${category2}
     </button>
