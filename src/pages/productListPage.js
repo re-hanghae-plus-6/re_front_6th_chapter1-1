@@ -27,6 +27,7 @@ export const ProductListPage = () => {
   const { productCountLimit, pagination } = state;
   const limit = Number(new URL(window.location.href).searchParams.get("limit") || productCountLimit);
   const sort = new URL(window.location.href).searchParams.get("sort") || "price_asc";
+  const search = new URL(window.location.href).searchParams.get("search") || "";
   const page = pagination.page;
   const [mounted, setMounted] = store.useState("mounted");
 
@@ -35,7 +36,7 @@ export const ProductListPage = () => {
     state.categoryLoading = true;
 
     Promise.all([
-      getProducts({ limit, sort, page }).then((data) => {
+      getProducts({ limit, sort, page, search }).then((data) => {
         state.productLoading = false;
         state.products = data.products;
         state.pagination = data.pagination;
@@ -99,6 +100,7 @@ ProductListPage.state = state;
 ProductListPage.registerEvent = () => {
   const limitSelect = document.getElementById("limit-select");
   const sortSelect = document.getElementById("sort-select");
+  const searchInput = document.getElementById("search-input");
 
   limitSelect.addEventListener("change", (event) => {
     const url = new URL(window.location.href);
@@ -120,6 +122,18 @@ ProductListPage.registerEvent = () => {
     router.push(`${url.pathname}?${queryString}`);
   });
 
+  searchInput.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter") return;
+
+    const url = new URL(window.location.href);
+    const queryString = objectToQueryString({
+      ...queryStringToObject(url.search),
+      search: event.target.value,
+    });
+
+    router.push(`${url.pathname}?${queryString}`);
+  });
+
   const productListEndIndicator = document.getElementById("product-list-end-indicator");
   let moreLoading = false;
   const io = new IntersectionObserver(
@@ -134,8 +148,9 @@ ProductListPage.registerEvent = () => {
           const limit = state.pagination.limit;
           const sort = state.filters.sort;
           const page = state.pagination.page;
+          const search = state.filters.search;
 
-          getProducts({ limit, sort, page })
+          getProducts({ limit, sort, page, search })
             .then((data) => {
               state.productLoading = false;
               state.products = [...state.products, ...data.products];
