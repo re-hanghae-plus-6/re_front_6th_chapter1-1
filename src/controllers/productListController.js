@@ -59,6 +59,15 @@ export class ProductListController {
       }
     };
 
+    const keydownHandler = (event) => {
+      if (event.key === "Escape") {
+        const isModalOpen = this.state.cart.isModalOpen;
+        if (isModalOpen) {
+          this.#handleCloseCartModal();
+        }
+      }
+    };
+
     const clickHandler = (event) => {
       if (event.target.closest(".add-to-cart-btn")) {
         event.stopPropagation();
@@ -70,6 +79,20 @@ export class ProductListController {
       const productCard = event.target.closest(".product-card");
       if (productCard) {
         this.#handleProductCardClick(productCard);
+        return;
+      }
+
+      if (event.target.closest("#cart-icon-btn")) {
+        this.#handleOpenCartModal();
+        return;
+      }
+
+      if (
+        event.target.id === "cart-modal-close-btn" ||
+        event.target.closest("#cart-modal-close-btn") ||
+        event.target.classList.contains("cart-modal-overlay")
+      ) {
+        this.#handleCloseCartModal();
         return;
       }
 
@@ -92,12 +115,14 @@ export class ProductListController {
 
     document.addEventListener("change", changeHandler);
     document.addEventListener("keypress", keypressHandler);
+    document.addEventListener("keydown", keydownHandler);
     document.addEventListener("click", clickHandler);
     window.addEventListener("scroll", scrollHandler);
 
     this.#eventListeners.push(
       { element: document, type: "change", handler: changeHandler },
       { element: document, type: "keypress", handler: keypressHandler },
+      { element: document, type: "keydown", handler: keydownHandler },
       { element: document, type: "click", handler: clickHandler },
       { element: window, type: "scroll", handler: scrollHandler },
     );
@@ -224,8 +249,12 @@ export class ProductListController {
     store.dispatch(actions.addToCart(productId, 1));
   }
 
-  handleOpenCartModal() {
-    store.dispatch(actions.toggleCartModal);
+  #handleOpenCartModal() {
+    store.dispatch(actions.showCartModal());
+  }
+
+  #handleCloseCartModal() {
+    store.dispatch(actions.hideCartModal());
   }
 
   cleanup() {

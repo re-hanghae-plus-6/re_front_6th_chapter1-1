@@ -1,4 +1,5 @@
 import { ProductCard } from "../components/ProductCard.js";
+import { cartModal } from "../components/cartModal.js";
 
 const LIMIT_OPTIONS = [
   { value: 10, label: "10개" },
@@ -218,5 +219,6 @@ export const ProductListPage = ({
         </div>
     </footer>
     </div>
-    `;
+    ${cartModal()}
+  `;
 };
