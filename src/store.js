@@ -1,10 +1,14 @@
 import { initialState } from "./state.js";
-import { reducer } from "./reducer.js";
+import { reducer } from "./reducers/index.js";
+import { CartComputed } from "./computed/cartComputed.js";
 
 class Store {
   constructor() {
     this.state = initialState;
     this.listeners = [];
+    this.computed = {
+      cart: new CartComputed(this),
+    };
   }
 
   getState() {
@@ -14,6 +18,7 @@ class Store {
   dispatch(action) {
     const oldState = this.state;
     this.state = reducer(oldState, action);
+    this.computed.cart.clearCache();
     this.listeners.forEach((listener) => listener(this.state));
   }
 
@@ -27,6 +32,7 @@ class Store {
 
   reset() {
     this.state = JSON.parse(JSON.stringify(initialState));
+    this.computed.cart.clearCache();
     this.listeners.forEach((listener) => listener(this.state));
   }
 }
