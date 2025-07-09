@@ -1,4 +1,4 @@
-export default function Filter({ limit = 20 }) {
+export default function Filter({ limit = 20, sort = "price_asc" }) {
   return /* HTML */ `
     <!-- 검색 및 필터 -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
@@ -62,10 +62,10 @@ export default function Filter({ limit = 20 }) {
               class="text-sm border border-gray-300 rounded px-2 py-1
                          focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="price_asc" selected="">가격 낮은순</option>
-              <option value="price_desc">가격 높은순</option>
-              <option value="name_asc">이름순</option>
-              <option value="name_desc">이름 역순</option>
+              <option value="price_asc" ${sort === "price_asc" ? "selected" : ""}>가격 낮은순</option>
+              <option value="price_desc" ${sort === "price_desc" ? "selected" : ""}>가격 높은순</option>
+              <option value="name_asc" ${sort === "name_asc" ? "selected" : ""}>이름순</option>
+              <option value="name_desc" ${sort === "name_desc" ? "selected" : ""}>이름 역순</option>
             </select>
           </div>
         </div>
@@ -79,5 +79,25 @@ export function changeLimitEvent() {
   select.addEventListener("change", (e) => {
     const limit = e.target.value;
     window.dispatchEvent(new CustomEvent("changeLimit", { detail: { limit } }));
+    setLimitValue(limit); // 추가: select.value만 바꿔줌
   });
+}
+
+export function changeSortEvent() {
+  const select = document.getElementById("sort-select");
+  select.addEventListener("change", (e) => {
+    const sort = e.target.value;
+    window.dispatchEvent(new CustomEvent("changeSort", { detail: { sort } }));
+    setSortValue(sort);
+  });
+}
+
+export function setLimitValue(limit) {
+  const select = document.getElementById("limit-select");
+  if (select) select.value = limit;
+}
+
+export function setSortValue(sort) {
+  const select = document.getElementById("sort-select");
+  if (select) select.value = sort;
 }
