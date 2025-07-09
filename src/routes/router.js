@@ -12,7 +12,7 @@ const ROUTES = {
 const URL_MAP = {
   [ROUTES.MAIN]: productPage,
   [ROUTES.PRODUCT]: productPage,
-  [ROUTES.PRODUCT_DETAIL()]: productDetailPage,
+  [ROUTES.PRODUCT_DETAIL]: productDetailPage,
   [ROUTES.CART]: cartPage,
   [ROUTES.ERROR]: notFoundPage,
 };
@@ -24,7 +24,12 @@ export function navigate(pathname, replace = false) {
 
 export function render() {
   const root = document.querySelector("#root");
+  console.log(root);
   let { pathname } = location;
+  if ((pathname === ROUTES.MAIN || pathname === ROUTES.PRODUCT) && pathname !== ROUTES.PRODUCT) {
+    return navigate(ROUTES.PRODUCT, true); // replace = true
+  }
+
   const page = URL_MAP[pathname] || notFoundPage;
   root.innerHTML = page();
 }

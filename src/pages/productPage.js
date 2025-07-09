@@ -1,8 +1,66 @@
-export function productPage(isLoading, searchParams) {
-  return isLoading ? loadingContent() : productContent(searchParams);
+import { render } from "../routes/router";
+
+let pageState = {
+  hasNext: false,
+  hasPrev: false,
+  limit: 20,
+  page: 1,
+  total: 0,
+  totalPages: 0,
+};
+
+let filterState = {
+  category1: "",
+  category2: "",
+  search: "",
+  sort: "price_asc",
+};
+
+let state = {
+  isLoading: false,
+  isFetching: false,
+  error: null,
+  products: [],
+};
+
+async function getProducts() {
+  const { limit, page } = pageState;
+  const { search, sort, category1, category2 } = filterState;
+  const searchParams = { limit, page, search, sort, category1, category2 };
+  state.isLoading = true;
+  // render();
+  const params = new URLSearchParams(
+    Object.entries(searchParams).filter(([k, v]) => v !== undefined && v !== null && k),
+  );
+  try {
+    const response = await fetch(`/api/products?${params.toString()}`);
+    if (!response.ok) throw new Error("네트워크 오류");
+    const data = await response.json();
+    const { products, pagination, filters } = data;
+    console.log(data);
+
+    state.products = [...state.products, ...products];
+    pageState = { ...pageState, ...pagination };
+    filterState = { ...filterState, ...filters };
+    // console.log("data:", data);
+    state.error = null;
+  } catch (error) {
+    state.error = error.message;
+  } finally {
+    state.isLoading = false;
+    state.isFetching = false;
+    render();
+  }
 }
-export function productItem(products) {
-  return /* HTML */ products
+
+export function productPage() {
+  if (!state.isLoading && state.products.length === 0) {
+    getProducts(); // 최초 호출 시 데이터 요청
+  }
+  return state.isLoading ? loadingContent() : productContent();
+}
+export function productItem() {
+  return /* HTML */ state.products
     .map(
       (product) => `<div
     class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
@@ -37,7 +95,7 @@ export function productItem(products) {
     )
     .join("");
 }
-function productContent(searchParams) {
+function productContent() {
   return /* HTML */ `
     <div class="bg-gray-50">
       <header class="bg-white shadow-sm sticky top-0 z-40">
@@ -76,7 +134,7 @@ function productContent(searchParams) {
                 type="text"
                 id="search-input"
                 placeholder="상품명을 검색해보세요..."
-                value="${searchParams.search}"
+                value="${filterState.search}"
                 class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
@@ -128,10 +186,10 @@ function productContent(searchParams) {
                   id="limit-select"
                   class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="10" ${searchParams.limit == 10 ? "selected" : ""}>10개</option>
-                  <option value="20" ${searchParams.limit == 20 ? "selected" : ""}>20개</option>
-                  <option value="50" ${searchParams.limit == 50 ? "selected" : ""}>50개</option>
-                  <option value="100" ${searchParams.limit == 100 ? "selected" : ""}>100개</option>
+                  <option value="10" ${pageState.limit == 10 ? "selected" : ""}>10개</option>
+                  <option value="20" ${pageState.limit == 20 ? "selected" : ""}>20개</option>
+                  <option value="50" ${pageState.limit == 50 ? "selected" : ""}>50개</option>
+                  <option value="100" ${pageState.limit == 100 ? "selected" : ""}>100개</option>
                 </select>
               </div>
               <!-- 정렬 -->
@@ -142,10 +200,10 @@ function productContent(searchParams) {
                   class="text-sm border border-gray-300 rounded px-2 py-1
                              focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="price_asc" ${searchParams.sort == "price_asc" ? "selected" : ""}>가격 낮은순</option>
-                  <option value="price_desc" ${searchParams.sort == "price_desc" ? "selected" : ""}>가격 높은순</option>
-                  <option value="name_asc" ${searchParams.sort == "name_asc" ? "selected" : ""}>이름순</option>
-                  <option value="name_desc" ${searchParams.sort == "name_desc" ? "selected" : ""}>이름 역순</option>
+                  <option value="price_asc" ${filterState.sort == "price_asc" ? "selected" : ""}>가격 낮은순</option>
+                  <option value="price_desc" ${filterState.sort == "price_desc" ? "selected" : ""}>가격 높은순</option>
+                  <option value="name_asc" ${filterState.sort == "name_asc" ? "selected" : ""}>이름순</option>
+                  <option value="name_desc" ${filterState.sort == "name_desc" ? "selected" : ""}>이름 역순</option>
                 </select>
               </div>
             </div>
@@ -156,10 +214,10 @@ function productContent(searchParams) {
           <div>
             <!-- 상품 개수 정보 -->
             <div class="mb-4 text-sm text-gray-600">
-              총 <span class="font-medium text-gray-900">${searchParams.total || 0}개</span>의 상품
+              총 <span class="font-medium text-gray-900">${pageState.total || 0}개</span>의 상품
             </div>
             <!-- 상품 그리드 -->
-            <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid"></div>
+            <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">${productItem()}</div>
             <div class="text-center py-4 text-sm text-gray-500">모든 상품을 확인했습니다</div>
           </div>
         </div>
