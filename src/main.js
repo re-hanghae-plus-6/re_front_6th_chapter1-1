@@ -8,6 +8,7 @@ const enableMocking = () =>
     }),
   );
 
+let currentPage = 1;
 let currentLimit = 20;
 let currentSort = "price_asc";
 let currentSearch = "";
@@ -17,10 +18,26 @@ let state = {
   products: [],
   total: 0,
   loading: false,
+  isFetchingMore: false,
+  hasMore: true,
 };
 
-const fetchAndRenderHomepage = async () => {
-  state.loading = true;
+let isThrottled = false;
+
+const fetchAndRenderHomepage = async (isInfiniteScroll = false) => {
+  if (isInfiniteScroll) {
+    if (!state.hasMore || state.isFetchingMore) {
+      return;
+    }
+    state.isFetchingMore = true;
+    currentPage++;
+  } else {
+    state.loading = true;
+    currentPage = 1;
+    state.products = [];
+    state.hasMore = true;
+  }
+
   render();
 
   try {
@@ -29,18 +46,50 @@ const fetchAndRenderHomepage = async () => {
         limit: currentLimit,
         sort: currentSort,
         search: currentSearch,
+        page: currentPage,
       }),
+      // 카테고리 한 번만 불러오거나, 변경될 때만 불러오도록 최적화 하기
       getCategories(),
     ]);
+
     state.categories = categories;
-    state.products = products;
+
+    if (isInfiniteScroll) {
+      state.products = [...state.products, ...products];
+    } else {
+      state.products = products;
+    }
+
     state.total = pagination.total;
+    state.hasMore = state.products.length < state.total;
   } catch (error) {
     console.error(error);
+  } finally {
+    state.loading = false;
+    state.isFetchingMore = false;
+    render();
   }
+};
 
-  state.loading = false;
-  render();
+const handleScroll = () => {
+  if (isThrottled) return;
+
+  // 스크롤 위치 계산
+  const scrollHeight = document.documentElement.scrollHeight;
+  const scrollTop = window.scrollY;
+  const clientHeight = window.innerHeight;
+
+  // 사용자가 페이지 하단 100px에 도달했는지 확인
+  const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
+
+  if (isNearBottom && !state.isFetchingMore && state.hasMore && !state.loading) {
+    fetchAndRenderHomepage(true);
+
+    isThrottled = true;
+    setTimeout(() => {
+      isThrottled = false;
+    }, 500);
+  }
 };
 
 const attachEventListeners = () => {
@@ -76,6 +125,9 @@ const attachEventListeners = () => {
       fetchAndRenderHomepage();
     }
   };
+
+  window.removeEventListener("scroll", handleScroll);
+  window.addEventListener("scroll", handleScroll);
 };
 
 const render = () => {
