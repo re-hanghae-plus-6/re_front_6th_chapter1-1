@@ -51,16 +51,25 @@ export class Store {
   }
 
   updateFilters(newFilters) {
+    const updatedFilters = { ...this.state.filters, ...newFilters, page: 1 };
+
     this.setState({
-      filters: { ...this.state.filters, ...newFilters, page: 1 },
+      filters: updatedFilters,
       allProducts: [], // 필터 변경 시 누적 상품 초기화
       pagination: null,
     });
 
-    // 필터 변경 시 URL 파라미터 초기화
-    const url = new URL(window.location);
-    url.searchParams.delete('current');
-    window.history.replaceState(null, '', url.toString());
+    // 필터 변경 시 URL 파라미터 업데이트 (current는 초기화)
+    if (typeof window !== 'undefined' && window.updateURLParams) {
+      window.updateURLParams({
+        current: 0, // 첫 페이지로 리셋
+        category1: updatedFilters.category1,
+        category2: updatedFilters.category2,
+        search: updatedFilters.search,
+        sort: updatedFilters.sort,
+        limit: updatedFilters.limit,
+      });
+    }
   }
 
   addToCart(product, quantity = 1) {
