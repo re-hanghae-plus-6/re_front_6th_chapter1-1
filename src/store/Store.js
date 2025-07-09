@@ -165,6 +165,12 @@ export class Store {
   }
 
   getCartCount() {
+    // 서로 다른 상품의 종류 개수만 반환 (수량과 관계없이)
+    return this.state.cart.length;
+  }
+
+  getCartTotalQuantity() {
+    // 모든 상품의 총 수량 (기존 getCartCount 기능)
     return this.state.cart.reduce((total, item) => total + item.quantity, 0);
   }
 
