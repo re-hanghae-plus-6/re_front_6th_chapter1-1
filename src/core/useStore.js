@@ -20,6 +20,19 @@ const useStore = (() => {
 
   const listener = [];
 
+  // set으로 중첩 객체에 접근하기 위함 (gpt)
+  const setNestedValue = (obj, path, value) => {
+    const keys = path.split(".");
+    let current = obj;
+
+    keys.slice(0, -1).forEach((key) => {
+      if (!current[key]) current[key] = {};
+      current = current[key];
+    });
+
+    current[keys[keys.length - 1]] = value;
+  };
+
   // 전역 상태를 가져오는 함수
   const get = (key) => {
     if (!key) {
@@ -31,11 +44,16 @@ const useStore = (() => {
 
   // 전역 상태를 만드는 함수
   const set = (key, value) => {
-    globalState[key] = value;
+    setNestedValue(globalState, key, value);
 
     listener.forEach(({ callback, targetKey }) => {
       if (!targetKey || targetKey === key) {
-        callback(globalState[key], globalState);
+        const keys = key.split(".");
+        let updated = globalState;
+        keys.forEach((k) => {
+          if (updated) updated = updated[k];
+        });
+        callback(updated, globalState);
       }
     });
   };
