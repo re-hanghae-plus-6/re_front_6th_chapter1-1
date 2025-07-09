@@ -3,6 +3,7 @@ import { productListLoaded } from "../components/productListLoaded";
 import { productListLoading } from "../components/productListLoading";
 import { setupSearchEventListeners } from "../utils/searchHandler";
 import { setupCartEventListeners, updateCartCount, resetCartEventListeners } from "../utils/cartHandler.js";
+import { navigateToProduct } from "../utils/router.js";
 
 const root = document.getElementById("root");
 
@@ -42,6 +43,7 @@ const renderContent = () => {
 
   setupCartEventListeners();
   updateCartCount();
+  setupProductCardEventListeners();
 };
 
 // 테스트 환경에서 state 초기화 함수
@@ -263,6 +265,33 @@ const setupInfiniteScroll = () => {
       }
     });
   }
+};
+
+// 상품 카드 클릭 이벤트 설정
+const setupProductCardEventListeners = () => {
+  // 상품 이미지 클릭 이벤트
+  const productImages = document.querySelectorAll(".product-image");
+  productImages.forEach((image) => {
+    image.addEventListener("click", (e) => {
+      e.preventDefault();
+      const productId = image.getAttribute("data-product-id");
+      if (productId) {
+        navigateToProduct(productId);
+      }
+    });
+  });
+
+  // 상품 정보 클릭 이벤트
+  const productInfos = document.querySelectorAll(".product-info");
+  productInfos.forEach((info) => {
+    info.addEventListener("click", (e) => {
+      e.preventDefault();
+      const productId = info.getAttribute("data-product-id");
+      if (productId) {
+        navigateToProduct(productId);
+      }
+    });
+  });
 };
 
 export const productListPage = async () => {
