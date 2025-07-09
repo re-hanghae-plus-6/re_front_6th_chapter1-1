@@ -1,5 +1,3 @@
-import { store } from "../store.js";
-
 const renderCartItem = (item) => {
   if (!item.product) {
     return "";
@@ -57,7 +55,7 @@ const renderCartItem = (item) => {
   `;
 };
 
-const getEmptyCartTemplate = () => {
+const getEmptyCart = () => {
   return `
     <div class="relative bg-white rounded-t-lg sm:rounded-lg shadow-xl w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-hidden">
       <!-- 헤더 -->
@@ -95,10 +93,7 @@ const getEmptyCartTemplate = () => {
   `;
 };
 
-const getUnselectedCartTemplate = () => {
-  const computed = store.computed.cart;
-  const cartItems = store.getState().cart.items;
-
+const getUnselectedCart = (cartItems, computed) => {
   return `
     <div class="relative bg-white rounded-t-lg sm:rounded-lg shadow-xl w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-hidden">
       <!-- 헤더 -->
@@ -157,10 +152,7 @@ const getUnselectedCartTemplate = () => {
   `;
 };
 
-const getSelectedCartTemplate = () => {
-  const computed = store.computed.cart;
-  const cartItems = store.getState().cart.items;
-
+const getSelectedCart = (cartItems, computed) => {
   return `
     <div class="relative bg-white rounded-t-lg sm:rounded-lg shadow-xl w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-hidden">
       <!-- 헤더 -->
@@ -228,21 +220,28 @@ const getSelectedCartTemplate = () => {
   `;
 };
 
-const getCartTemplate = () => {
-  const computed = store.computed.cart;
-
+const getCart = (cartItems, computed) => {
   if (!computed.hasItems) {
-    return getEmptyCartTemplate();
+    return getEmptyCart();
   } else if (computed.hasSelectedItems) {
-    return getSelectedCartTemplate();
+    return getSelectedCart(cartItems, computed);
   } else {
-    return getUnselectedCartTemplate();
+    return getUnselectedCart(cartItems, computed);
   }
 };
 
-export const cartModal = () => {
-  const isModalOpen = store.getState().cart.isModalOpen;
-
+export const cartModal = ({
+  isModalOpen = false,
+  cartItems = [],
+  computed = {
+    totalCount: 0,
+    totalPrice: 0,
+    selectedItems: [],
+    selectedPrice: 0,
+    hasItems: false,
+    hasSelectedItems: false,
+  },
+}) => {
   if (!isModalOpen) return "";
 
   return `
@@ -251,7 +250,7 @@ export const cartModal = () => {
       <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity cart-modal-overlay"></div>
       <!-- 모달 컨테이너 -->
       <div class="flex min-h-full items-end justify-center p-0 sm:items-center sm:p-4">
-        ${getCartTemplate()}
+        ${getCart(cartItems, computed)}
       </div>
     </div>
   `;

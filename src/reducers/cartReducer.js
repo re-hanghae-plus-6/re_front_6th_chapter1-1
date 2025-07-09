@@ -31,7 +31,7 @@ export function cartReducer(state, action) {
         const newItem = {
           productId,
           quantity,
-          selected: true,
+          selected: false,
           product,
         };
         return {
@@ -58,7 +58,6 @@ export function cartReducer(state, action) {
     case CART_ACTIONS.UPDATE_CART_QUANTITY: {
       const { productId, quantity } = action.payload;
       if (quantity <= 0) {
-        // 수량이 0 이하면 아이템 제거
         return {
           ...state,
           cart: {

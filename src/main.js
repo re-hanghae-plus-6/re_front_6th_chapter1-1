@@ -20,7 +20,7 @@ function render() {
     if (rootElement) {
       rootElement.innerHTML = ProductListPage({
         ...state,
-        cartCount: store.computed.cart.totalCount,
+        cartComputed: store.computed.cart,
       });
     }
   }
