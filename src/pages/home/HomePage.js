@@ -6,6 +6,7 @@ import { getCategories, getProducts } from '../../api/productApi.js';
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
 const DEFAULT_SORT = 'price_asc';
+const DEFAULT_SEARCH = '';
 
 class HomePage extends Component {
   constructor(element, props) {
@@ -18,6 +19,7 @@ class HomePage extends Component {
         page: DEFAULT_PAGE,
         limit: DEFAULT_LIMIT,
         sort: DEFAULT_SORT,
+        search: DEFAULT_SEARCH,
       },
     };
   }
@@ -37,11 +39,12 @@ class HomePage extends Component {
     });
   }
 
-  fetchProducts({ page, limit, sort }) {
+  fetchProducts({ page, limit, sort, search }) {
     return getProducts({
       page,
       limit,
       sort,
+      search,
     });
   }
 
@@ -54,7 +57,7 @@ class HomePage extends Component {
     this.setState({
       ...this.state,
       loading: false,
-      newProducts,
+      products: newProducts,
       query: {
         ...this.state.query,
         limit: newLimitValue,
@@ -71,7 +74,7 @@ class HomePage extends Component {
     this.setState({
       ...this.state,
       loading: false,
-      newProducts,
+      products: newProducts,
       query: {
         ...this.state.query,
         page: DEFAULT_PAGE,
@@ -80,10 +83,29 @@ class HomePage extends Component {
     });
   };
 
+  handleSearchChange = async (value) => {
+    const newSearchValue = value;
+    const newProducts = await this.fetchProducts({
+      page: DEFAULT_PAGE,
+      search: newSearchValue,
+    });
+    this.setState({
+      ...this.state,
+      loading: false,
+      products: newProducts,
+      query: {
+        ...this.state.query,
+        page: DEFAULT_PAGE,
+        search: newSearchValue,
+      },
+    });
+  };
+
   fetchNextPageProducts = async () => {
-    if (this.state.loading) {
+    if (this.state.loading || !this.state.products.pagination.hasNext) {
       return;
     }
+
     const nextPage = this.state.query.page + 1;
     const newProducts = await this.fetchProducts({
       page: nextPage,
@@ -121,6 +143,7 @@ class HomePage extends Component {
       query: this.state.query,
       onChangeLimit: this.handleLimitChange,
       onChangeSort: this.handleSortChange,
+      onChangeSearch: this.handleSearchChange,
       onFetchNextPageProducts: this.fetchNextPageProducts,
     }).mount();
 
