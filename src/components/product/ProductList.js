@@ -23,6 +23,7 @@ export class ProductList {
     });
 
     this.setupScrollListener();
+    this.setupEventListeners();
 
     this.productsModel.state.filters = { ...this.productsModel.state.filters, ...filters };
     await this.productsModel.initialize();
@@ -44,6 +45,19 @@ export class ProductList {
     this.removeScrollListener = () => {
       window.removeEventListener("scroll", handleScroll);
     };
+  }
+
+  setupEventListeners() {
+    this.container.addEventListener("click", (e) => {
+      if (e.target.closest(".product-image")) {
+        const productCard = e.target.closest(".product-card");
+        const productId = productCard.dataset.productId;
+
+        if (productId && window.router) {
+          window.router.navigate(`/product/${productId}`);
+        }
+      }
+    });
   }
 
   async loadMore() {
