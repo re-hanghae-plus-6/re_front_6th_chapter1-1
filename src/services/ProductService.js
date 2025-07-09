@@ -37,6 +37,7 @@ export class ProductService {
         ...response,
         products: normalizedProducts,
         data: normalizedProducts, // 일관성을 위해 data 필드도 추가
+        pagination: response.pagination || null, // 페이지네이션 정보 명시적 전달
       };
     } catch (error) {
       console.error('Failed to fetch products:', error);
