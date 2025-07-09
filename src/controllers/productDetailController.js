@@ -3,10 +3,12 @@ import { actions } from "../actions/index.js";
 import { getProduct, getProducts } from "../api/productApi.js";
 
 export class ProductDetailController {
+  #productId;
+  #eventListeners = [];
+
   constructor(productId) {
-    this.productId = productId;
-    this.eventListeners = [];
-    this.setupEventListeners();
+    this.#productId = productId;
+    this.#setupEventListeners();
   }
 
   get state() {
@@ -21,17 +23,17 @@ export class ProductDetailController {
     store.dispatch(actions.loadProductDetail());
 
     try {
-      const product = await getProduct(this.productId);
+      const product = await getProduct(this.#productId);
       store.dispatch(actions.productDetailLoaded(product));
 
-      await this.loadRelatedProducts(product);
+      await this.#loadRelatedProducts(product);
     } catch (error) {
       console.error("상품 상세 정보 로딩 실패:", error);
       store.dispatch(actions.loadProductDetailError(error.message));
     }
   }
 
-  async loadRelatedProducts(product) {
+  async #loadRelatedProducts(product) {
     if (!product || !product.category1) return;
 
     store.dispatch(actions.loadRelatedProducts());
@@ -43,7 +45,7 @@ export class ProductDetailController {
       });
 
       const relatedProducts = relatedData.products.filter(
-        (product) => product.productId !== this.productId && product.productId !== this.productId,
+        (product) => product.productId !== this.#productId && product.productId !== this.#productId,
       );
 
       store.dispatch(actions.relatedProductsLoaded(relatedProducts));
@@ -52,50 +54,50 @@ export class ProductDetailController {
     }
   }
 
-  setupEventListeners() {
+  #setupEventListeners() {
     const clickHandler = (event) => {
       if (event.target.id === "quantity-decrease") {
-        this.handleQuantityDecrease();
+        this.#handleQuantityDecrease();
       }
 
       if (event.target.id === "quantity-increase") {
-        this.handleQuantityIncrease();
+        this.#handleQuantityIncrease();
       }
 
       if (event.target.id === "add-to-cart-btn") {
-        this.handleAddToCart();
+        this.#handleAddToCart();
       }
 
       if (event.target.classList.contains("breadcrumb-link")) {
-        this.handleBreadcrumbClick(event);
+        this.#handleBreadcrumbClick(event);
       }
 
       if (event.target.classList.contains("go-to-product-list")) {
-        this.handleGoToProductList();
+        this.#handleGoToProductList();
       }
 
       const relatedProductCard = event.target.closest(".related-product-card");
       if (relatedProductCard) {
-        this.handleRelatedProductClick(relatedProductCard);
+        this.#handleRelatedProductClick(relatedProductCard);
       }
     };
 
     const changeHandler = (event) => {
       if (event.target.id === "quantity-input") {
-        this.handleQuantityInput(event);
+        this.#handleQuantityInput(event);
       }
     };
 
     document.addEventListener("click", clickHandler);
     document.addEventListener("change", changeHandler);
 
-    this.eventListeners.push(
+    this.#eventListeners.push(
       { element: document, type: "click", handler: clickHandler },
       { element: document, type: "change", handler: changeHandler },
     );
   }
 
-  handleQuantityDecrease() {
+  #handleQuantityDecrease() {
     const { productDetail } = this.state;
     const newQuantity = Math.max(1, productDetail.quantity - 1);
     store.dispatch(actions.updateQuantity(newQuantity));
@@ -106,7 +108,7 @@ export class ProductDetailController {
     }
   }
 
-  handleQuantityIncrease() {
+  #handleQuantityIncrease() {
     const { productDetail } = this.state;
     const product = productDetail.product;
     const maxStock = product?.stock;
@@ -119,7 +121,7 @@ export class ProductDetailController {
     }
   }
 
-  handleQuantityInput(event) {
+  #handleQuantityInput(event) {
     const { productDetail } = this.state;
     const product = productDetail.product;
     const maxStock = product?.stock || 107;
@@ -129,7 +131,7 @@ export class ProductDetailController {
     event.target.value = newQuantity;
   }
 
-  handleAddToCart() {
+  #handleAddToCart() {
     const { productDetail } = this.state;
     const { product, quantity } = productDetail;
 
@@ -138,7 +140,7 @@ export class ProductDetailController {
     store.dispatch(actions.addToCart(product.id, quantity));
   }
 
-  handleBreadcrumbClick(event) {
+  #handleBreadcrumbClick(event) {
     event.preventDefault();
     const category1 = event.target.dataset.category1;
     const category2 = event.target.dataset.category2;
@@ -152,12 +154,12 @@ export class ProductDetailController {
     window.dispatchEvent(new PopStateEvent("popstate"));
   }
 
-  handleGoToProductList() {
+  #handleGoToProductList() {
     window.history.pushState(null, "", "/");
     window.dispatchEvent(new PopStateEvent("popstate"));
   }
 
-  handleRelatedProductClick(card) {
+  #handleRelatedProductClick(card) {
     const productId = card.dataset.productId;
     if (productId) {
       window.history.pushState(null, "", `/product/${productId}`);
@@ -166,9 +168,9 @@ export class ProductDetailController {
   }
 
   cleanup() {
-    this.eventListeners.forEach(({ element, type, handler }) => {
+    this.#eventListeners.forEach(({ element, type, handler }) => {
       element.removeEventListener(type, handler);
     });
-    this.eventListeners = [];
+    this.#eventListeners = [];
   }
 }

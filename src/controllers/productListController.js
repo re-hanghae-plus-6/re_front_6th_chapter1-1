@@ -3,9 +3,10 @@ import { actions } from "../actions/index.js";
 import { getProducts, getCategories } from "../api/productApi.js";
 
 export class ProductListController {
+  #eventListeners = [];
+
   constructor() {
-    this.eventListeners = [];
-    this.setupEventListeners();
+    this.#setupEventListeners();
   }
 
   get state() {
@@ -42,19 +43,19 @@ export class ProductListController {
     }
   }
 
-  setupEventListeners() {
+  #setupEventListeners() {
     const changeHandler = (event) => {
       if (event.target.id === "limit-select") {
-        this.handleLimitChange(event);
+        this.#handleLimitChange(event);
       }
       if (event.target.id === "sort-select") {
-        this.handleSortChange(event);
+        this.#handleSortChange(event);
       }
     };
 
     const keypressHandler = (event) => {
       if (event.target.id === "search-input" && event.key === "Enter") {
-        this.handleSearchChange(event);
+        this.#handleSearchChange(event);
       }
     };
 
@@ -62,30 +63,30 @@ export class ProductListController {
       if (event.target.closest(".add-to-cart-btn")) {
         event.stopPropagation();
         const productCard = event.target.closest(".product-card");
-        this.handleAddToCart(productCard);
+        this.#handleAddToCart(productCard);
         return;
       }
 
       const productCard = event.target.closest(".product-card");
       if (productCard) {
-        this.handleProductCardClick(productCard);
+        this.#handleProductCardClick(productCard);
         return;
       }
 
       if (event.target.dataset.category1 && !event.target.dataset.category2) {
-        this.handleCategory1Change(event);
+        this.#handleCategory1Change(event);
       } else if (event.target.dataset.category1 && event.target.dataset.category2) {
-        this.handleCategory2Change(event);
+        this.#handleCategory2Change(event);
       } else if (event.target.dataset.breadcrumb === "reset") {
-        this.handleCategoryReset(event);
+        this.#handleCategoryReset(event);
       } else if (event.target.dataset.breadcrumb === "category1") {
-        this.handleCategory1Breadcrumb(event);
+        this.#handleCategory1Breadcrumb(event);
       }
     };
 
     const scrollHandler = () => {
       if (window.scrollY + window.innerHeight >= document.body.scrollHeight - 100) {
-        this.loadNextPage();
+        this.#loadNextPage();
       }
     };
 
@@ -94,7 +95,7 @@ export class ProductListController {
     document.addEventListener("click", clickHandler);
     window.addEventListener("scroll", scrollHandler);
 
-    this.eventListeners.push(
+    this.#eventListeners.push(
       { element: document, type: "change", handler: changeHandler },
       { element: document, type: "keypress", handler: keypressHandler },
       { element: document, type: "click", handler: clickHandler },
@@ -102,7 +103,7 @@ export class ProductListController {
     );
   }
 
-  handleLimitChange(event) {
+  #handleLimitChange(event) {
     const newSelectLimit = parseInt(event.target.value);
 
     if (this.state.products.length >= newSelectLimit) {
@@ -113,19 +114,19 @@ export class ProductListController {
     this.fetchProducts();
   }
 
-  handleSortChange(event) {
+  #handleSortChange(event) {
     const newSelectSort = event.target.value;
     store.dispatch(actions.changeSorts(newSelectSort));
     this.fetchProducts();
   }
 
-  handleSearchChange(event) {
+  #handleSearchChange(event) {
     const searchValue = event.target.value.trim();
     store.dispatch(actions.searchProducts(searchValue));
     this.fetchProducts();
   }
 
-  handleCategory1Change(event) {
+  #handleCategory1Change(event) {
     const category1 = event.target.dataset.category1;
     store.dispatch(
       actions.changeFilters({
@@ -136,14 +137,14 @@ export class ProductListController {
     this.fetchProducts();
   }
 
-  handleCategory2Change(event) {
+  #handleCategory2Change(event) {
     const category1 = event.target.dataset.category1;
     const category2 = event.target.dataset.category2;
     store.dispatch(actions.changeFilters({ category1, category2 }));
     this.fetchProducts();
   }
 
-  handleCategoryReset(event) {
+  #handleCategoryReset(event) {
     event.preventDefault();
     store.dispatch(
       actions.changeFilters({
@@ -154,11 +155,11 @@ export class ProductListController {
     this.fetchProducts();
   }
 
-  handleCategory1Breadcrumb(event) {
+  #handleCategory1Breadcrumb(event) {
     event.preventDefault();
     store.dispatch(
       actions.changeFilters({
-        category2: "", // 2depth만 클리어
+        category2: "",
       }),
     );
     this.fetchProducts();
@@ -193,7 +194,7 @@ export class ProductListController {
     }
   }
 
-  async loadNextPage() {
+  async #loadNextPage() {
     const { pagination } = this.state;
     const nextPage = pagination.page + 1;
 
@@ -204,7 +205,7 @@ export class ProductListController {
     await this.fetchProducts(nextPage);
   }
 
-  handleProductCardClick(productCard) {
+  #handleProductCardClick(productCard) {
     const productId = productCard.dataset.productId;
     if (!productId) return;
 
@@ -217,16 +218,20 @@ export class ProductListController {
       });
   }
 
-  handleAddToCart(productCard) {
+  #handleAddToCart(productCard) {
     const productId = productCard.dataset.productId;
     if (!productId) return;
     store.dispatch(actions.addToCart(productId, 1));
   }
 
+  handleOpenCartModal() {
+    store.dispatch(actions.toggleCartModal);
+  }
+
   cleanup() {
-    this.eventListeners.forEach(({ element, type, handler }) => {
+    this.#eventListeners.forEach(({ element, type, handler }) => {
       element.removeEventListener(type, handler);
     });
-    this.eventListeners = [];
+    this.#eventListeners = [];
   }
 }

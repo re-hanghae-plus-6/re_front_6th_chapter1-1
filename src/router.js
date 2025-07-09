@@ -1,49 +1,53 @@
 class Router {
-  constructor() {
-    this.routes = new Map();
-    this.currentRoute = null;
-    this.notFoundHandler = null;
+  #routes = new Map();
+  #currentRoute = null;
+  #notFoundHandler = null;
 
-    window.addEventListener("popstate", () => this.handleRouteChange());
+  constructor() {
+    window.addEventListener("popstate", () => this.#handleRouteChange());
   }
 
   addRoute(path, handler) {
-    this.routes.set(path, handler);
+    this.#routes.set(path, handler);
   }
 
   setNotFoundHandler(handler) {
-    this.notFoundHandler = handler;
+    this.#notFoundHandler = handler;
   }
 
   getCurrentPath() {
     return window.location.pathname;
   }
 
-  async handleRouteChange() {
+  get currentRoute() {
+    return this.#currentRoute;
+  }
+
+  async #handleRouteChange() {
     const currentPath = this.getCurrentPath();
 
-    if (this.routes.has(currentPath)) {
-      const handler = this.routes.get(currentPath);
-      this.currentRoute = currentPath;
+    if (this.#routes.has(currentPath)) {
+      const handler = this.#routes.get(currentPath);
+      this.#currentRoute = currentPath;
       await handler();
       return;
     }
 
-    for (const [routePath, handler] of this.routes.entries()) {
-      const params = this.matchRoute(routePath, currentPath);
+    for (const [routePath, handler] of this.#routes.entries()) {
+      const params = this.#matchRoute(routePath, currentPath);
       if (params) {
-        this.currentRoute = routePath;
+        this.#currentRoute = routePath;
         await handler(params);
         return;
       }
     }
 
-    if (this.notFoundHandler) {
-      await this.notFoundHandler();
+    if (this.#notFoundHandler) {
+      await this.#notFoundHandler();
     }
   }
 
-  matchRoute(routePath, currentPath) {
+  #matchRoute(routePath, currentPath) {
     const routeParts = routePath.split("/");
     const currentParts = currentPath.split("/");
 
@@ -70,11 +74,11 @@ class Router {
 
   navigate(path) {
     window.history.pushState({}, "", path);
-    this.handleRouteChange();
+    this.#handleRouteChange();
   }
 
   start() {
-    this.handleRouteChange();
+    this.#handleRouteChange();
   }
 }
 
