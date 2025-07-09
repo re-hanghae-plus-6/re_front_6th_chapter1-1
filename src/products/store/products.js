@@ -34,10 +34,10 @@ export const productsStore = observable({
     };
   },
   initSearchParams() {
-    const params = router.getParams();
+    const params = { ...defaultParams, ...router.getParams() };
     params.page = LOAD_DEFAULT_PAGE;
     for (const [key, value] of Object.entries(params)) {
-      productsStore[key] = params[key] || value;
+      productsStore[key] = value;
     }
   },
   updateParams(key, value) {
