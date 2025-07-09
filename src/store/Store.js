@@ -110,9 +110,14 @@ export class Store {
     this.showToast('상품이 장바구니에 추가되었습니다!');
   }
 
-  removeFromCart(productId) {
+  removeFromCart(productId, showToast = true) {
+    const removedItem = this.state.cart.find((item) => item.id === productId);
     const newCart = this.state.cart.filter((item) => item.id !== productId);
     this.setState({ cart: newCart });
+
+    if (removedItem && showToast) {
+      this.showToast('상품이 장바구니에서 삭제되었습니다', 'info');
+    }
   }
 
   updateCartQuantity(productId, quantity) {
@@ -131,16 +136,33 @@ export class Store {
     this.setState({ cart: [] });
   }
 
-  showToast(message) {
+  showToast(message, type = 'success') {
+    // 토스트 UI 상태 업데이트 (호환성을 위해 유지)
     this.setState({
-      ui: { ...this.state.ui, showToast: true, toastMessage: message },
+      ui: {
+        ...this.state.ui,
+        showToast: true,
+        toastMessage: message,
+        toastType: type,
+      },
     });
 
+    // ToastManager를 통해 실제 토스트 표시 (main.js에서 처리)
+    if (typeof window !== 'undefined' && window.toastManager) {
+      window.toastManager.show(message, type);
+    }
+
+    // 상태 초기화 (UI 상태 동기화)
     setTimeout(() => {
       this.setState({
-        ui: { ...this.state.ui, showToast: false, toastMessage: '' },
+        ui: {
+          ...this.state.ui,
+          showToast: false,
+          toastMessage: '',
+          toastType: '',
+        },
       });
-    }, 3000);
+    }, 2000);
   }
 
   toggleCart() {

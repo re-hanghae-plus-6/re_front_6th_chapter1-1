@@ -346,10 +346,15 @@ export class CartModal {
     );
     if (removeSelectedBtn) {
       removeSelectedBtn.addEventListener('click', () => {
+        const selectedCount = this.selectedItems.size;
         this.selectedItems.forEach((productId) => {
-          this.store.removeFromCart(productId);
+          this.store.removeFromCart(productId, false); // 토스트 표시하지 않음
         });
         this.selectedItems.clear();
+
+        if (selectedCount > 0) {
+          this.store.showToast('선택된 상품들이 삭제되었습니다', 'info');
+        }
       });
     }
 
@@ -357,8 +362,13 @@ export class CartModal {
     const clearCartBtn = container.querySelector('#cart-modal-clear-cart-btn');
     if (clearCartBtn) {
       clearCartBtn.addEventListener('click', () => {
+        const cartCount = this.store.state.cart.length;
         this.store.clearCart();
         this.selectedItems.clear();
+
+        if (cartCount > 0) {
+          this.store.showToast('장바구니가 비워졌습니다', 'info');
+        }
       });
     }
 
