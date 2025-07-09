@@ -96,7 +96,7 @@ export const 상품상세_본문 = ({ product, relatedProducts, qty }: BodyProps
           </div>
         </div>
         <!-- 액션 버튼 -->
-        <button id="add-to-cart-btn" data-product-id="${product.productId}" data-product-price="${product.lprice}" class="w-full bg-blue-600 text-white py-3 px-4 rounded-md">장바구니 담기</button>
+        <button id="add-to-cart-btn" data-product-id="${product.productId}" data-product-price="${product.lprice}" data-product-title="${product.title}" class="w-full bg-blue-600 text-white py-3 px-4 rounded-md">장바구니 담기</button>
       </div>
     </div>
 

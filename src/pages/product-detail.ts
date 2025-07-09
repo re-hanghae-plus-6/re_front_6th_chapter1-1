@@ -105,7 +105,7 @@ export const detailPage: PageModule = {
         if (!inputEl || !state.product) return;
         const qty = Math.max(1, parseInt(inputEl.value || "1", 10));
         const unitPrice = Number(state.product.lprice ?? 0);
-        addToCart(state.product.productId, qty, unitPrice);
+        addToCart(state.product.productId, qty, unitPrice, state.product.title);
         토스트("장바구니에 추가되었습니다", "success");
         rerender();
       };

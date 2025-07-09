@@ -13,7 +13,8 @@ const addProductToCart = async (productName) => {
   const cartButton = productElement.closest(".product-card").querySelector(".add-to-cart-btn");
   await userEvent.click(cartButton);
 
-  // expect(screen.getByText("장바구니에 추가되었습니다")).toBeInTheDocument();
+  // 테스트 수정 - product.detail과 동일한 조건으로 toast ui의 노출을 위해 통일
+  await screen.findByText("장바구니에 추가되었습니다");
 };
 
 beforeAll(async () => {
@@ -198,6 +199,7 @@ describe.sequential("3. 장바구니 삭제", () => {
     const cartIcon = document.querySelector("#cart-icon-btn");
     await userEvent.click(cartIcon);
 
+    console.log(document.querySelector(".cart-modal"));
     // 상품이 장바구니에 있는지 확인
     expect(getByText(document.querySelector(".cart-modal"), /pvc 투명 젤리 쇼핑백/i)).toBeInTheDocument();
 

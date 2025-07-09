@@ -17,8 +17,10 @@ export function 토스트(message: string, variant: ToastVariant = "success", du
     container.id = "toast-container";
     container.className =
       "fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 items-center justify-center mx-auto";
-    const rootEl = document.getElementById("root") ?? document.body;
-    rootEl.appendChild(container);
+    // Always attach the toast container to `document.body` so that it remains
+    // independent from the application root. This ensures toasts persist even
+    // if the root element is re-rendered or replaced.
+    document.body.appendChild(container);
   }
 
   const wrapper = document.createElement("div");

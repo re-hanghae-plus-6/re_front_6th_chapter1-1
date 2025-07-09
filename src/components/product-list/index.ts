@@ -72,7 +72,7 @@ export const 상품목록_레이아웃 = ({
               <p class="text-lg font-bold text-gray-900">${price.toLocaleString()}원</p>
             </div>
             <!-- 장바구니 버튼 -->
-            <button class="w-full bg-blue-600 text-white text-sm py-2 px-3 rounded-md hover:bg-blue-700 transition-colors add-to-cart-btn" data-product-id="${id}" data-product-price="${price}">
+            <button class="w-full bg-blue-600 text-white text-sm py-2 px-3 rounded-md hover:bg-blue-700 transition-colors add-to-cart-btn" data-product-id="${id}" data-product-price="${price}" data-product-title="${title}">
               장바구니 담기
             </button>
           </div>

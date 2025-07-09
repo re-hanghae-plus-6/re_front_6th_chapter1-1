@@ -1,10 +1,4 @@
-export interface CartItem {
-  id: string;
-  title: string;
-  price: number; // 단가
-  quantity: number;
-  imageUrl: string;
-}
+import type { CartItem } from "../../types/cart.ts";
 
 /* -------------------- 빈 컨텐츠 템플릿 -------------------- */
 export const 장바구니_빈컨텐츠 = `
@@ -26,7 +20,7 @@ export const 장바구니_빈컨텐츠 = `
 export const 장바구니_아이템리스트 = (cartItems: CartItem[]): string => {
   return cartItems
     .map(
-      ({ id, title, price, quantity, imageUrl }) => `
+      ({ id, title, price, qty, imageUrl }) => `
       <div class="flex items-center py-3 border-b border-gray-100 cart-item px-4" data-product-id="${id}" data-unit-price="${price ?? 0}">
         <label class="flex items-center mr-3">
           <input type="checkbox" class="cart-item-checkbox w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" data-product-id="${id}">
@@ -36,14 +30,14 @@ export const 장바구니_아이템리스트 = (cartItems: CartItem[]): string =
         </div>
         <div class="flex-1 min-w-0">
           <h4 class="text-sm font-medium text-gray-900 truncate cursor-pointer cart-item-title" data-product-id="${id}">${title}</h4>
-          <p class="text-sm text-gray-600 mt-1">${price.toLocaleString()}원</p>
+          <p class="text-sm text-gray-600 mt-1">${(price ?? 0).toLocaleString()}원</p>
           <div class="flex items-center mt-2">
             <button class="quantity-decrease-btn w-7 h-7 flex items-center justify-center border border-gray-300 rounded-l-md bg-gray-50 hover:bg-gray-100" data-product-id="${id}">
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
               </svg>
             </button>
-            <input type="number" value="${quantity}" min="1" class="quantity-input w-12 h-7 text-center text-sm border-t border-b border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500" disabled data-product-id="${id}">
+            <input type="number" value="${qty}" min="1" class="quantity-input w-12 h-7 text-center text-sm border-t border-b border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500" disabled data-product-id="${id}">
             <button class="quantity-increase-btn w-7 h-7 flex items-center justify-center border border-gray-300 rounded-r-md bg-gray-50 hover:bg-gray-100" data-product-id="${id}">
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -52,7 +46,7 @@ export const 장바구니_아이템리스트 = (cartItems: CartItem[]): string =
           </div>
         </div>
         <div class="text-right ml-3">
-          <p class="text-sm font-medium text-gray-900">${(price * quantity).toLocaleString()}원</p>
+          <p class="text-sm font-medium text-gray-900">${((price ?? 0) * qty).toLocaleString()}원</p>
           <button class="cart-item-remove-btn mt-1 text-xs text-red-600 hover:text-red-800" data-product-id="${id}">삭제</button>
         </div>
       </div>`,

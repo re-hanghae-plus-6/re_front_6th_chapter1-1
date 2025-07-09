@@ -1,7 +1,7 @@
-import { getCartItems as _getStoredItems, setCartItems, type CartItem as StoredCartItem } from "../../utils/cart.ts";
+import { getCartItems as _getStoredItems, setCartItems } from "../../utils/cart.ts";
+import type { CartItem } from "../../types/cart.ts";
 import { getProduct } from "../../api/productApi.js";
 import { 장바구니_빈컨텐츠, 장바구니_아이템리스트 } from "./cart-body.ts";
-import type { CartItem } from "./cart-body.ts";
 
 export async function 장바구니() {
   if (document.querySelector(".cart-modal-overlay")) return;
@@ -10,18 +10,18 @@ export async function 장바구니() {
   overlay.className = "cart-modal-overlay fixed inset-0 bg-black/50 flex items-center justify-center z-50";
   const createLayout = async () => {
     try {
-      const stored: StoredCartItem[] = _getStoredItems();
+      const stored: CartItem[] = _getStoredItems();
       // placeholder 아이템: 가격/제목은 추후 보강
       const cartItems: CartItem[] = stored.map((s) => ({
         id: s.id,
-        title: "…",
+        title: s.title ?? "상품명",
         price: s.price ?? 0,
-        quantity: s.qty,
+        qty: s.qty,
         imageUrl: "https://placehold.co/64",
       }));
 
-      const itemsCount = cartItems.reduce((acc, c) => acc + c.quantity, 0);
-      const totalPrice = cartItems.reduce((sum, c) => sum + c.price * c.quantity, 0);
+      const itemsCount = cartItems.reduce((acc, c) => acc + c.qty, 0);
+      const totalPrice = cartItems.reduce((sum, c) => sum + (c.price ?? 0) * c.qty, 0);
 
       const contentsHtml = itemsCount === 0 ? 장바구니_빈컨텐츠 : 장바구니_아이템리스트(cartItems);
 
@@ -46,7 +46,7 @@ export async function 장바구니() {
 
       return `
     <div class="flex min-h-full w-full px-4 items-end justify-center p-0 sm:items-center sm:p-4">
-      <div class="relative bg-white rounded-t-lg sm:rounded-lg shadow-xl w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-hidden">
+      <div class="relative bg-white rounded-t-lg sm:rounded-lg shadow-xl w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-hidden cart-modal">
         <div class="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
           <h2 class="text-lg font-bold text-gray-900 flex items-center">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -60,6 +60,19 @@ export async function 장바구니() {
             </svg>
           </button>
         </div>
+        <!-- 전체 선택 & 선택 삭제 -->
+        ${
+          itemsCount === 0
+            ? ""
+            : `
+        <div id="cart-modal-select-section" class="p-4 border-b border-gray-200 bg-gray-50 flex items-center gap-3">
+          <label class="flex items-center text-sm text-gray-700 flex-1">
+            <input type="checkbox" id="cart-modal-select-all-checkbox" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-2" />
+            <span id="cart-modal-select-all-label">전체선택 (${itemsCount}개)</span>
+          </label>
+          <button id="cart-modal-remove-selected-btn" class="text-xs text-red-600 hover:text-red-800">선택 삭제</button>
+        </div>`
+        }
         <div class="flex-1 overflow-y-auto">${contentsHtml}</div>
         ${footerHtml}
       </div>
@@ -95,7 +108,7 @@ export async function 장바구니() {
     const cartItemEls = overlay.querySelectorAll<HTMLElement>(".cart-item");
     let qtySum = 0;
     let priceSum = 0;
-    const stored: StoredCartItem[] = [];
+    const stored: CartItem[] = [];
 
     cartItemEls.forEach((el) => {
       const id = el.dataset.productId ?? "";
@@ -104,7 +117,8 @@ export async function 장바구니() {
       const qty = Number(input?.value ?? 1);
       qtySum += qty;
       priceSum += qty * unitPrice;
-      stored.push({ id, qty, price: unitPrice });
+      const titleText = el.querySelector<HTMLElement>(".cart-item-title")?.textContent ?? "";
+      stored.push({ id, qty, price: unitPrice, title: titleText });
 
       // 소계 갱신
       const subtotal = el.querySelector<HTMLParagraphElement>(".text-right p");
@@ -121,12 +135,22 @@ export async function 장바구니() {
     // 총액 및 footer 표시
     const totalEl = overlay.querySelector<HTMLSpanElement>(".text-xl.font-bold.text-blue-600");
     const footerEl = overlay.querySelector<HTMLElement>(".sticky.bottom-0");
+
     if (qtySum === 0) {
       if (footerEl) footerEl.style.display = "none";
     } else {
       if (totalEl) totalEl.textContent = `${priceSum.toLocaleString()}원`;
       if (footerEl) footerEl.style.display = "block";
     }
+
+    const globalBadge = document.querySelector<HTMLSpanElement>("#cart-icon-btn span");
+    if (qtySum === 0) {
+      globalBadge?.remove();
+    } else {
+      if (globalBadge) globalBadge.textContent = String(qtySum);
+    }
+
+    updateSelectionUI();
   };
 
   const handleQtyChange = (btn: HTMLElement, delta: number) => {
@@ -149,8 +173,70 @@ export async function 장바구니() {
     const decBtn = (e.target as HTMLElement).closest(".quantity-decrease-btn");
     if (decBtn) {
       handleQtyChange(decBtn as HTMLElement, -1);
+      return;
+    }
+
+    // ----- 단일 항목 삭제 -----
+    const removeBtn = (e.target as HTMLElement).closest(".cart-item-remove-btn");
+    if (removeBtn) {
+      const itemEl = removeBtn.closest<HTMLElement>(".cart-item");
+      if (itemEl) itemEl.remove();
+      recalc();
+
+      // 모든 아이템 삭제된 경우 빈 컨텐츠 표시
+      if (!overlay.querySelector(".cart-item")) {
+        const listContainer = overlay.querySelector(".flex-1");
+        if (listContainer) listContainer.innerHTML = 장바구니_빈컨텐츠;
+      }
+      return;
+    }
+
+    // 선택 삭제 버튼
+    const selDelBtn = (e.target as HTMLElement).closest("#cart-modal-remove-selected-btn");
+    if (selDelBtn) {
+      const checkedItems = overlay.querySelectorAll<HTMLInputElement>(".cart-item-checkbox:checked");
+      checkedItems.forEach((cb) => cb.closest<HTMLElement>(".cart-item")?.remove());
+      recalc();
+      updateSelectionUI();
+      if (!overlay.querySelector(".cart-item")) {
+        const listContainer = overlay.querySelector(".flex-1");
+        if (listContainer) listContainer.innerHTML = 장바구니_빈컨텐츠;
+      }
+      return;
     }
   });
+
+  // change 이벤트 처리(체크박스)
+  overlay.addEventListener("change", (e) => {
+    const target = e.target as HTMLElement;
+    if (target.id === "cart-modal-select-all-checkbox") {
+      const checked = (target as HTMLInputElement).checked;
+      overlay.querySelectorAll<HTMLInputElement>(".cart-item-checkbox").forEach((cb) => (cb.checked = checked));
+    }
+    if (target.classList.contains("cart-item-checkbox")) {
+      const all = overlay.querySelectorAll<HTMLInputElement>(".cart-item-checkbox").length;
+      const checkedCnt = overlay.querySelectorAll<HTMLInputElement>(".cart-item-checkbox:checked").length;
+      const master = overlay.querySelector<HTMLInputElement>("#cart-modal-select-all-checkbox");
+      if (master) master.checked = all === checkedCnt;
+    }
+    updateSelectionUI();
+  });
+
+  const updateSelectionUI = () => {
+    const label = overlay.querySelector<HTMLSpanElement>("#cart-modal-select-all-label");
+    const itemsCnt = overlay.querySelectorAll<HTMLInputElement>(".cart-item-checkbox").length;
+
+    if (label) label.textContent = `전체선택 (${itemsCnt}개)`;
+
+    const section = overlay.querySelector<HTMLElement>("#cart-modal-select-section");
+    if (section) {
+      if (itemsCnt === 0) {
+        section.style.display = "none";
+      } else {
+        section.style.display = "flex";
+      }
+    }
+  };
 
   // 상세 정보 보강: 가격/제목 업데이트 후 recalc 호출
   const enrichDetails = async () => {

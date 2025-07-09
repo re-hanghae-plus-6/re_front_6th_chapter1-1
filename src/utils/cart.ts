@@ -1,11 +1,6 @@
 export const CART_KEY = "cart_items";
 
-export interface CartItem {
-  id: string;
-  qty: number;
-  /** 단가(원). 테스트에서 총액 계산을 위해 저장 */
-  price?: number;
-}
+import type { CartItem } from "../types/cart.ts";
 
 export function getCartItems(): CartItem[] {
   try {
@@ -19,16 +14,17 @@ export function setCartItems(items: CartItem[]) {
   localStorage.setItem(CART_KEY, JSON.stringify(items));
 }
 
-export function addToCart(productId: string, qty: number = 1, price?: number) {
+export function addToCart(productId: string, qty: number = 1, price?: number, title?: string) {
   const items = getCartItems();
   const idx = items.findIndex((it) => it.id === productId);
   if (idx > -1) {
     items[idx].qty += qty;
-    // 가격이 새로 전달되면 업데이트 (undefined 체크)
     if (price !== undefined) items[idx].price = price;
+    if (title !== undefined) items[idx].title = title;
   } else {
     const newItem: CartItem = { id: productId, qty };
     if (price !== undefined) newItem.price = price;
+    if (title !== undefined) newItem.title = title;
     items.push(newItem);
   }
   setCartItems(items);

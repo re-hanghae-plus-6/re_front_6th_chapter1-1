@@ -126,7 +126,8 @@ export const homePage: PageModule = {
         const quantityInput = productCard?.querySelector(".quantity-input") as HTMLInputElement;
         const quantity = Math.max(1, parseInt(quantityInput?.value || "1", 10));
         const unitPrice = Number(btn.dataset.productPrice ?? "0");
-        addToCart(productId, quantity, unitPrice);
+        const title = btn.dataset.productTitle ?? "";
+        addToCart(productId, quantity, unitPrice, title);
         토스트("장바구니에 추가되었습니다", "success");
         // 이벤트 발생 시 즉시 리렌더될 경우 테스트코드가 html을 초기화하여 토스트를 찾지 못하는 이슈
         // 테스트코드를 수정대신 딜레이 후 리렌더 실행
