@@ -42,17 +42,16 @@ export const removeFromCart = (productId) => {
   return updatedCart;
 };
 
-// 장바구니 개수 업데이트
 export const updateCartCount = () => {
   const cartItems = getCartItems();
-  const totalQuantity = cartItems.reduce((total, item) => total + item.quantity, 0);
+  const itemCount = cartItems.length;
 
   const cartCountElement = document.querySelector("#cart-icon-btn span");
   if (cartCountElement) {
-    cartCountElement.textContent = totalQuantity;
+    cartCountElement.textContent = itemCount;
 
     // 개수가 0이면 배지 숨기기
-    if (totalQuantity === 0) {
+    if (itemCount === 0) {
       cartCountElement.style.display = "none";
     } else {
       cartCountElement.style.display = "flex";
@@ -63,7 +62,6 @@ export const updateCartCount = () => {
 // 장바구니 모달 생성
 export const createCartModal = () => {
   const cartItems = getCartItems();
-  const totalQuantity = cartItems.reduce((total, item) => total + item.quantity, 0);
   const totalPrice = cartItems.reduce((total, item) => total + parseInt(item.lprice) * item.quantity, 0);
 
   // 모달이 이미 존재하면 제거
@@ -88,7 +86,7 @@ export const createCartModal = () => {
                       d="M3 3h2l.4 2M7 13h10l4-8H5.4m2.6 8L6 2H3m4 11v6a1 1 0 001 1h1a1 1 0 001-1v-6M13 13v6a1 1 0 001 1h1a1 1 0 001-1v-6"></path>
               </svg>
               장바구니
-              ${totalQuantity > 0 ? `<span class="text-sm font-normal text-gray-600 ml-1">(${totalQuantity})</span>` : ""}
+              ${cartItems.length > 0 ? `<span class="text-sm font-normal text-gray-600 ml-1">(${cartItems.length})</span>` : ""}
             </h2>
             <button id="cart-modal-close-btn" class="text-gray-400 hover:text-gray-600 p-1">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -120,7 +118,7 @@ export const createCartModal = () => {
               <div class="p-4 border-b border-gray-200 bg-gray-50">
                 <label class="flex items-center text-sm text-gray-700">
                   <input type="checkbox" id="cart-modal-select-all-checkbox" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-2">
-                  전체선택 (${totalQuantity}개)
+                  전체선택 (${cartItems.length}개)
                 </label>
               </div>
               <!-- 아이템 목록 -->
