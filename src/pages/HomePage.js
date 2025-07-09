@@ -33,7 +33,7 @@ export const HomePage = ({
         ${CategoryFilter({ categoryList, selectedCategory1, loading })}
         <!-- 기존 필터들 -->
         <div class="flex gap-2 items-center justify-between">
-            ${ProductCountPerPage({ productCount })}
+          ${ProductCountPerPage({ productCount })}
           ${ProductArrange({ sort })}
         </div>
       </div>
