@@ -209,11 +209,14 @@ export const getQueryParams = () => {
 };
 
 export const updateQueryParams = (params, { replace = false } = {}) => {
-  const current = new URLSearchParams(window.location.search);
+  const current = new URLSearchParams();
+
   Object.entries(params).forEach(([key, v]) => {
-    if (v === "" || v === null || v === undefined) current.delete(key);
-    else current.set(key, encodeURIComponent(v));
+    if (v !== "" && v !== null && v !== undefined) {
+      current.set(key, v);
+    }
   });
+
   const newUrl = `${window.location.pathname}${current.toString() ? `?${current.toString()}` : ""}`;
   if (replace) window.history.replaceState({}, "", newUrl);
   else window.history.pushState({}, "", newUrl);
