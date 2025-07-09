@@ -12,9 +12,13 @@ import { store } from './store/index.js';
 import { ProductList } from './components/ProductList.js';
 import { NotFound } from './components/NotFound.js';
 import { ProductService } from './services/ProductService.js';
+import { CartModal } from './components/CartModal.js';
 
 // 라우터 인스턴스 생성
 const router = new Router();
+
+// 장바구니 모달 인스턴스 생성
+const cartModal = new CartModal(store);
 
 // 라우트 등록
 router.addRoute('/', ProductList);
@@ -69,12 +73,43 @@ function updateURLParams(updates) {
 // Store에서 사용할 수 있도록 전역으로 노출
 window.updateURLParams = updateURLParams;
 
+// 장바구니 모달 렌더링 함수
+function renderCartModal() {
+  const { ui } = store.state;
+
+  // 모달 컨테이너가 없으면 생성
+  let modalContainer = document.getElementById('cart-modal-container');
+  if (!modalContainer) {
+    modalContainer = document.createElement('div');
+    modalContainer.id = 'cart-modal-container';
+    modalContainer.className = 'fixed inset-0 z-50';
+    document.body.appendChild(modalContainer);
+  }
+
+  if (ui.showCart) {
+    // 모달 표시 - CartModal이 모든 것을 직접 관리
+    modalContainer.style.display = 'block';
+    cartModal.renderWithBackdrop(modalContainer);
+
+    // 바디 스크롤 방지
+    document.body.style.overflow = 'hidden';
+  } else {
+    // 모달 숨김
+    modalContainer.style.display = 'none';
+    modalContainer.innerHTML = '';
+
+    // 바디 스크롤 복원
+    document.body.style.overflow = 'auto';
+  }
+}
+
 // 이벤트 핸들러 설정
 function setupEventHandlers() {
   // 전역 이벤트 위임
   document.addEventListener('click', handleGlobalClick);
   document.addEventListener('change', handleGlobalChange);
   document.addEventListener('keypress', handleGlobalKeypress);
+  document.addEventListener('keydown', handleGlobalKeydown);
   document.addEventListener('scroll', handleScroll);
 
   // 브라우저 뒤로가기/앞으로가기 지원
@@ -101,6 +136,7 @@ function setupEventHandlers() {
       // requestAnimationFrame으로 렌더링 디바운싱
       requestAnimationFrame(() => {
         router.render();
+        renderCartModal();
       });
     }
   });
@@ -189,6 +225,15 @@ function handleGlobalKeypress(e) {
   if (e.target.matches('#search-input') && e.key === 'Enter') {
     const searchValue = e.target.value.trim();
     store.updateFilters({ search: searchValue });
+    return;
+  }
+}
+
+// 전역 키다운 이벤트 핸들러
+function handleGlobalKeydown(e) {
+  // ESC 키로 모달 닫기
+  if (e.key === 'Escape' && store.state.ui.showCart) {
+    store.toggleCart();
     return;
   }
 }
