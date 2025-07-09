@@ -61,7 +61,6 @@ class Router {
     }
 
     const pathnameSegments = pathname.split("/");
-
     for (const [pagePathnameSegments, page] of this.#pagesMap.entries()) {
       const pagePathnameParts = pagePathnameSegments.split("/");
       if (pagePathnameParts.length !== pathnameSegments.length) {
@@ -71,7 +70,8 @@ class Router {
       let match = true;
 
       for (let i = 0; i < pagePathnameParts.length; i++) {
-        if (pathnameSegments[i].startsWith(":")) {
+        if (pagePathnameParts[i].startsWith(":")) {
+          this.#currentParams = { ...this.#currentParams, [pagePathnameParts[i].slice(1)]: pathnameSegments[i] };
           continue;
         }
 
@@ -82,7 +82,7 @@ class Router {
       }
 
       if (match) {
-        this.#currentParams = params;
+        this.#currentParams = { ...this.#currentParams, ...params };
         return page;
       }
     }
