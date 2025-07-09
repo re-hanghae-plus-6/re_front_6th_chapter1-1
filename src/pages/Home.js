@@ -40,11 +40,9 @@ Home.mount = async () => {
     });
     navigate.push({}, url.toString());
 
-    const { products } = await fetchProducts(newValue);
-    console.log(products, "prod");
-    // 화면을 다시 그리기 위해서 아래 함수를 실행시키면 딱 한 번만 검색이 되고, 두 번째부터는 먹히지 않음
-    // TODO :: 상품 검색 수정
-    // render.draw("main", Home({ products, pagination, categories }));
+    const { products, pagination, categories } = await fetchProducts(newValue);
+    render.draw("main", Home({ products, pagination, isLoading: state.isLoading, categories }));
+    Search.mount();
   }, "params");
 };
 
