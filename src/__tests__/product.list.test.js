@@ -29,7 +29,9 @@ describe("1. 상품 목록 로딩", () => {
 
     // 상품 모두 렌더링되었는지 확인
     expect(
-      await screen.findByText(/pvc 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장/i),
+      await screen.findByText(
+        /pvc 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장/i,
+      ),
     ).toBeInTheDocument();
     expect(
       screen.getByText(/고양이 난간 안전망 복층 베란다 방묘창 방묘문 방충망 캣도어 일반형검정/i),
@@ -111,7 +113,12 @@ describe("3. 페이지당 상품 수 선택", () => {
       ).not.toBeInTheDocument(),
     );
 
-    expect(document.querySelectorAll(".product-card").length).toBe(10);
+    // expect(document.querySelectorAll(".product-card").length).toBe(10);
+
+    await waitFor(() => {
+      const productCards = document.querySelectorAll(".product-card");
+      expect(productCards).toHaveLength(10);
+    });
   });
 });
 
@@ -128,7 +135,9 @@ describe("4. 상품 정렬 기능", () => {
     const optionTexts = options.map((opt) => opt.textContent);
 
     expect(optionTexts.some((text) => text.includes("가격"))).toBe(true);
-    expect(optionTexts.some((text) => text.includes("낮은순") || text.includes("높은순"))).toBe(true);
+    expect(optionTexts.some((text) => text.includes("낮은순") || text.includes("높은순"))).toBe(
+      true,
+    );
   });
 
   test("정렬 변경 시 목록에 반영된다", async () => {
@@ -156,7 +165,10 @@ describe("4. 상품 정렬 기능", () => {
 
     await userEvent.selectOptions(document.querySelector("#sort-select"), "price_asc");
     await waitFor(() => {
-      expectProduct("샷시 풍지판 창문 바람막이 베란다 문 틈막이 창틀 벌레 차단 샤시 방충망 틈새막이", 1);
+      expectProduct(
+        "샷시 풍지판 창문 바람막이 베란다 문 틈막이 창틀 벌레 차단 샤시 방충망 틈새막이",
+        1,
+      );
     });
   });
 });
@@ -174,7 +186,9 @@ describe("5. 무한 스크롤 페이지네이션", () => {
 
     expect(await screen.findByText("상품을 불러오는 중...")).toBeInTheDocument();
     expect(
-      await screen.findByText("고양이 난간 안전망 복층 베란다 방묘창 방묘문 방충망 캣도어 일반형검정1mx1m"),
+      await screen.findByText(
+        "고양이 난간 안전망 복층 베란다 방묘창 방묘문 방충망 캣도어 일반형검정1mx1m",
+      ),
     ).toBeInTheDocument();
   });
 });
