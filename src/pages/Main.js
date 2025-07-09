@@ -55,6 +55,16 @@ const MainPage = () => {
 
       fetch();
     });
+
+    document.querySelector("#search-input").addEventListener("change", (e) => {
+      const value = e.target.value;
+
+      const url = new URL(window.location.href);
+      url.searchParams.set("search", value);
+      history.pushState(null, "", url.toString());
+
+      fetch();
+    });
   };
 
   const fetch = async () => {
