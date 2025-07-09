@@ -135,7 +135,19 @@ export const MainPage = ({
             <!-- 상품 그리드 -->
             <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
               <!-- 로딩 스켈레톤 -->
-              ${loading ? LoadingUIList : products.map(ProductItem).join("")}
+              ${
+                loading
+                  ? LoadingUIList
+                  : products
+                      .map(
+                        (product) => `
+                <a href="/product/${product.productId}" data-link style="display:block;text-decoration:none;color:inherit;">
+                  ${ProductItem(product)}
+                </a>
+              `,
+                      )
+                      .join("")
+              }
            </div>            
             ${
               loading

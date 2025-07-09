@@ -1,15 +1,43 @@
-import { MainPage } from "./pages/MainPage.js";
-import { Footer } from "./pages/Footer.js";
 import { getProducts } from "./api/productApi.js";
 import { getCategories } from "./api/productApi.js";
 import { showToast } from "./components/Toast.js";
+import { router } from "./router/index.js";
+import { MainPage } from "./pages/MainPage.js";
+import { Footer } from "./pages/Footer.js";
 
-const enableMocking = () =>
-  import("./mocks/browser.js").then(({ worker }) =>
-    worker.start({
+// MSW 초기화 상태 관리
+let mswReady = false;
+const mswReadyPromise = new Promise((resolve) => {
+  window.mswResolve = resolve;
+});
+
+const enableMocking = async () => {
+  try {
+    const { worker } = await import("./mocks/browser.js");
+    await worker.start({
       onUnhandledRequest: "bypass",
-    }),
-  );
+    });
+    mswReady = true;
+    window.mswResolve && window.mswResolve();
+    return true;
+  } catch (error) {
+    console.error("MSW 초기화 실패:", error);
+    return false;
+  }
+};
+
+// MSW 준비 상태 확인 함수
+export function isMSWReady() {
+  return mswReady;
+}
+
+// MSW 준비까지 기다리는 함수
+export function waitForMSW() {
+  if (mswReady) {
+    return Promise.resolve();
+  }
+  return mswReadyPromise;
+}
 
 // 1. 상태를 한 곳에서 관리
 let state = {
@@ -28,19 +56,29 @@ let state = {
 
 // 2. 상태에 따라 UI를 그리는 함수
 function render() {
-  document.getElementById("root").innerHTML = `
-     ${MainPage({
-       products: state.products,
-       total: state.total,
-       loading: state.loading,
-       isFirstLoad: state.isFirstLoad, // 전달
-       categories: state.categories,
-       limit: state.limit,
-       search: state.search,
-       sort: state.sort,
-     })}
-    ${Footer()}
-  `;
+  const path = window.location.pathname;
+  const root = document.getElementById("root");
+
+  // 메인 페이지는 상태와 함께 렌더링
+  if (path === "/") {
+    root.innerHTML = `
+      ${MainPage(state)}
+      ${Footer()}
+    `;
+  } else {
+    // 다른 경로는 router로 처리
+    router();
+  }
+
+  // SPA 내비게이션 처리
+  document.querySelectorAll("a[data-link]").forEach((a) => {
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      const href = a.getAttribute("href");
+      window.history.pushState({}, "", href);
+      render();
+    });
+  });
 
   // 장바구니 개수 뱃지 업데이트
   updateCartCountBadge();
@@ -88,10 +126,12 @@ function render() {
     });
   });
 
-  // 무한 스크롤 이벤트 리스너 (한 번만 등록)
+  // 무한 스크롤 이벤트 리스너 (메인 페이지에서만, 한 번만 등록)
   if (!window.scrollHandlerAdded) {
     window.addEventListener("scroll", () => {
-      if (state.loading || !state.hasMore) return;
+      // 메인 페이지가 아니면 무한 스크롤 비활성화
+      const path = window.location.pathname;
+      if (path !== "/" || state.loading || !state.hasMore) return;
 
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
       const windowHeight = window.innerHeight;
@@ -197,14 +237,19 @@ function updateCartCountBadge() {
 }
 
 // 5. 앱 시작
-function startApp() {
+async function startApp() {
+  // MSW 초기화 (테스트 환경이 아닌 경우)
+  if (import.meta.env.MODE !== "test") {
+    await enableMocking();
+  } else {
+    // 테스트 환경에서는 MSW 준비 상태로 설정
+    mswReady = true;
+    window.mswResolve && window.mswResolve();
+  }
+
   state.isFirstLoad = true;
   render();
-  if (import.meta.env.MODE !== "test") {
-    enableMocking().then(fetchAndRender);
-  } else {
-    fetchAndRender();
-  }
+  fetchAndRender();
 
   // popstate 이벤트 리스너 추가 (브라우저 뒤로가기/앞으로가기 및 테스트에서 사용)
   window.addEventListener("popstate", () => {
