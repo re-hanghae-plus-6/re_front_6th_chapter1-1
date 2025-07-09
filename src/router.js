@@ -1,6 +1,7 @@
 // 페이지 컴포넌트 임포트
 // 컴포넌트 추가 부분
 import { home } from "./pages/home.js";
+import { ProductDetail } from "./pages/ProductDetail.js";
 
 // 404 페이지 컴포넌트
 const NotFoundPage = () => {
@@ -42,7 +43,7 @@ const NotFoundPage = () => {
 
 const routes = {
   "/": home,
-  // "/products/:id": productDetail,
+  "/product/:id": ProductDetail,
 };
 
 // 라우터 인스턴스 생성 및 관리 함수
