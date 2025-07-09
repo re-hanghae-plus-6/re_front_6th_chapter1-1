@@ -2,7 +2,7 @@ import { getProducts, getCategories } from "../api/productApi";
 import { productListLoaded } from "../components/productListLoaded";
 import { productListLoading } from "../components/productListLoading";
 import { setupSearchEventListeners } from "../utils/searchHandler";
-import { setupCartEventListeners, updateCartCount } from "../utils/cartHandler.js";
+import { setupCartEventListeners, updateCartCount, resetCartEventListeners } from "../utils/cartHandler.js";
 
 const root = document.getElementById("root");
 
@@ -40,7 +40,6 @@ const renderContent = () => {
   setupSearchEventListeners(state, renderContent);
   setupInfiniteScroll();
 
-  // 장바구니 이벤트 리스너 설정 및 개수 업데이트
   setupCartEventListeners();
   updateCartCount();
 };
@@ -62,6 +61,8 @@ const resetState = () => {
       selectedCategories: {},
       totalProducts: 0,
     };
+    // 테스트 환경에서 장바구니 이벤트 리스너도 초기화
+    resetCartEventListeners();
   }
 };
 
@@ -267,5 +268,6 @@ const setupInfiniteScroll = () => {
 export const productListPage = async () => {
   // 테스트 환경에서 state 초기화
   resetState();
+
   await renderInitialContent();
 };
