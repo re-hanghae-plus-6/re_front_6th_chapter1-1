@@ -25,21 +25,49 @@ function getURLParams() {
   const params = new URLSearchParams(window.location.search);
   return {
     current: parseInt(params.get('current')) || 0,
+    category1: params.get('category1') || '',
+    category2: params.get('category2') || '',
+    limit: parseInt(params.get('limit')) || 20,
+    sort: params.get('sort') || 'price_asc',
+    search: params.get('search') || '',
   };
 }
 
-function updateURLParams(params) {
+function updateURLParams(updates) {
   const url = new URL(window.location);
 
-  if (params.current && params.current > 0) {
-    url.searchParams.set('current', params.current.toString());
-  } else {
-    url.searchParams.delete('current');
+  // current 파라미터 처리
+  if (updates.current !== undefined) {
+    if (updates.current && updates.current > 0) {
+      url.searchParams.set('current', updates.current.toString());
+    } else {
+      url.searchParams.delete('current');
+    }
   }
+
+  // 필터 파라미터들 처리
+  const filterParams = ['category1', 'category2', 'search', 'sort', 'limit'];
+  filterParams.forEach((param) => {
+    if (updates[param] !== undefined) {
+      if (
+        updates[param] &&
+        ((param === 'limit' && updates[param] !== 20) ||
+          (param === 'sort' && updates[param] !== 'price_asc') ||
+          (param !== 'limit' && param !== 'sort' && updates[param] !== ''))
+      ) {
+        url.searchParams.set(param, updates[param].toString());
+      } else {
+        url.searchParams.delete(param);
+      }
+    }
+  });
 
   // 현재 페이지 상태를 히스토리에 저장 (뒤로가기 지원)
   window.history.replaceState(null, '', url.toString());
 }
+
+// Store에서 사용할 수 있도록 전역으로 노출
+window.updateURLParams = updateURLParams;
 
 // 이벤트 핸들러 설정
 function setupEventHandlers() {
@@ -185,7 +213,7 @@ function handlePopState() {
   loadProducts();
 }
 
-// 상품 데이터 로딩 (URL current 파라미터 기반)
+// 상품 데이터 로딩 (URL 파라미터 기반)
 async function loadProducts() {
   try {
     // 로딩 상태만 먼저 업데이트
@@ -195,7 +223,18 @@ async function loadProducts() {
       pagination: null,
     });
 
-    const { current: targetPageIndex } = getURLParams();
+    const urlParams = getURLParams();
+    const { current: targetPageIndex, ...urlFilters } = urlParams;
+
+    // URL에서 읽은 필터 정보를 Store에 반영
+    store.setState({
+      filters: {
+        ...store.state.filters,
+        ...urlFilters,
+        page: 1, // 페이지는 항상 1부터 시작
+      },
+    });
+
     const filters = store.state.filters;
 
     // URL에서 지정한 페이지까지 순차적으로 로드 (0부터 시작)
@@ -300,16 +339,42 @@ function observeFilters() {
       JSON.stringify(previousFilters) !== JSON.stringify(currentFilters);
 
     if (filtersChanged && !state.loading.products) {
-      // 이전 타이머 취소
-      if (loadingTimeout) {
-        clearTimeout(loadingTimeout);
-      }
+      // URL 업데이트로 인한 필터 변경인지 확인
+      const urlParams = getURLParams();
+      const urlFilters = {
+        search: urlParams.search,
+        category1: urlParams.category1,
+        category2: urlParams.category2,
+        sort: urlParams.sort,
+        limit: urlParams.limit,
+      };
 
-      // 디바운싱 적용 (100ms 지연)
-      loadingTimeout = setTimeout(() => {
-        loadProducts();
+      const isFromURL =
+        JSON.stringify(urlFilters) ===
+        JSON.stringify({
+          search: currentFilters.search,
+          category1: currentFilters.category1,
+          category2: currentFilters.category2,
+          sort: currentFilters.sort,
+          limit: currentFilters.limit,
+        });
+
+      if (!isFromURL) {
+        // 사용자가 직접 필터를 변경한 경우에만 로드
+        // 이전 타이머 취소
+        if (loadingTimeout) {
+          clearTimeout(loadingTimeout);
+        }
+
+        // 디바운싱 적용 (100ms 지연)
+        loadingTimeout = setTimeout(() => {
+          loadProducts();
+          previousFilters = { ...currentFilters };
+        }, 100);
+      } else {
+        // URL에서 온 변경사항이면 단순히 이전 필터 업데이트
         previousFilters = { ...currentFilters };
-      }, 100);
+      }
     }
   });
 }
