@@ -1,9 +1,5 @@
 import { getProduct, getProducts } from "../api/productApi";
-
-const state = {
-  product: null,
-  relatedProducts: [],
-};
+import { state } from "../@store/store";
 
 export function ProductDetail(productId) {
   async function init() {

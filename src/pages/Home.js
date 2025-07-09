@@ -3,30 +3,12 @@ import { Filter } from "../components/filter/Filter.js";
 import { Layout } from "../components/layout/Layout.js";
 import { ProductList } from "../components/product/ProductList.js";
 import initializeHandlers from "../handlers/index.js";
-
-let state = {
-  page: 1,
-  products: [],
-  categories: [],
-  total: 0,
-  isLoading: true,
-  selectedLimit: "20",
-  allLoaded: false,
-  cart: [],
-  search: "",
-  selectedCategory1: "",
-  selectedCategory2: "",
-  selectedSort: "price_asc",
-  cartCount: 0,
-
-  selectProduct: null,
-};
+import { state } from "../@store/store.js";
 
 export const Home = () => {
   async function init() {
     document.body.querySelector("#root").innerHTML = render();
     initializeHandlers(state, render);
-
     const [categoryData, productData] = await Promise.all([
       getCategories(),
       getProducts({
