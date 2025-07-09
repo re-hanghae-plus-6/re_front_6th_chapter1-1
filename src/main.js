@@ -1,5 +1,6 @@
 import { getProducts, getCategories } from "./api/productApi.js";
 import { createRouter } from "./router.js"; // 라우터 임포트
+import { throttle } from "./utils/throttle.js"; // throttle 함수 임포트
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -29,6 +30,40 @@ const mainStatus = {
 // 라우터 인스턴스를 전역적으로 접근 가능하도록 선언
 let appRouter;
 let isInit = true;
+
+// 무한 스크롤 함수
+async function loadMoreProducts() {
+  if (mainStatus.loading || mainStatus.products.length >= mainStatus.total) {
+    return;
+  }
+  mainStatus.loading = true;
+  mainStatus.params.page += 1; // 페이지 번호 증가
+  appRouter.updateStateAndRender(mainStatus); // 로딩 스피너 표시
+
+  try {
+    const productsData = await getProducts(mainStatus.params);
+    // 기존 상품 목록에 새로운 상품 추가
+    mainStatus.products.push(...productsData.products);
+    mainStatus.total = productsData.pagination.total;
+  } catch (error) {
+    console.error("loadMoreProducts", "추가 상품 로딩 중 오류:", error);
+  } finally {
+    mainStatus.loading = false;
+    appRouter.updateStateAndRender(mainStatus); // 최종 상태 반영
+  }
+}
+// 스크롤 이벤트 핸들러
+const handleScroll = () => {
+  // window.innerHeight: 브라우저 창의 높이
+  // window.scrollY: 스크롤된 거리
+  // document.body.offsetHeight: 전체 문서의 높이
+  // 맨 아래에서 300px 위 지점에 도달했을 때 로드하도록 버퍼를 줍니다.
+  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 300) {
+    loadMoreProducts();
+  }
+};
+const throttledScrollHandler = throttle(handleScroll, 200); // 200ms 간격으로 호출 제한
+
 // API 호출 및 렌더링을 담당하는 함수
 async function loadProductsAndUpdateUI() {
   isInit && (mainStatus.loading = true);
@@ -84,6 +119,9 @@ function setupEventListeners() {
       loadProductsAndUpdateUI();
     }
   });
+
+  // 스크롤 이벤트 리스너 등록
+  window.addEventListener("scroll", throttledScrollHandler);
   // TODO: 그 외 다른 이벤트 설정.....
 }
 
