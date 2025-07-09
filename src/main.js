@@ -19,6 +19,12 @@ function main() {
 
   // Layout 컴포넌트 마운트
   Layout.mount?.();
+
+  window.addEventListener("urlChange", (event) => {
+    if (event.detail.isUrlChange) {
+      render.view();
+    }
+  });
 }
 
 // 애플리케이션 시작

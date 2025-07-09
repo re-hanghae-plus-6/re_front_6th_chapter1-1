@@ -1,15 +1,18 @@
 const useNavigate = () => {
   // 전 URL과 현재 URL을 비교하여 커스텀 이벤트 생성
   let prevUrl = location.pathname;
+  let prevSearchParams = location.search;
 
   const emitUrlChangeEvent = () => {
     const currentUrl = location.pathname;
-    if (prevUrl !== currentUrl) {
+    const currentSearchParams = location.search;
+    if (prevUrl !== currentUrl || prevSearchParams !== currentSearchParams) {
       const event = new CustomEvent("urlChange", {
         detail: {
           prevUrl,
           currentUrl,
           isUrlChange: prevUrl !== currentUrl,
+          isSearchChange: prevSearchParams !== currentSearchParams,
         },
       });
 
