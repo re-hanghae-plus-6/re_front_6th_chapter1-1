@@ -10,6 +10,11 @@ import { productsStore } from "../store.js";
 let isScrollEventBound = false;
 
 function handleScroll() {
+  const { pagination } = productsStore.state;
+  if (!pagination.hasNext) {
+    return;
+  }
+
   const scrollHeight = document.documentElement.scrollHeight;
   const scrollTop = window.scrollY;
   const clientHeight = window.innerHeight;
@@ -17,8 +22,8 @@ function handleScroll() {
   if (scrollTop + clientHeight >= scrollHeight - 100) {
     if (productsStore.state.isLoading) return;
     fetchProducts({
-      ...productsStore.state.pagination,
-      page: productsStore.state.pagination.page + 1,
+      ...pagination,
+      page: pagination.page + 1,
     });
   }
   console.log("전체", productsStore.state.products);
