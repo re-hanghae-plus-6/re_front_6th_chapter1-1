@@ -3,9 +3,9 @@ import { CategoryItem } from "./CategoryItem";
 
 export const CategoryFilter = () => {
   const { categories, isLoading } = categoriesStore.state;
-  console.log("categories", categories);
+
   const category1 = Object.keys(categories) ?? [];
-  console.log("category1", category1);
+
   return /* HTML */ `
     <div class="space-y-2">
       <div class="flex items-center gap-2">

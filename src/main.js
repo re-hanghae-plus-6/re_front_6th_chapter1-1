@@ -20,7 +20,7 @@ async function main() {
   const {
     pagination: { limit },
   } = productsStore.state;
-  console.log("Limit", limit);
+
   fetchProducts({ limit });
   fetchCategories();
   // document.body.querySelector("#root").innerHTML = await Router();

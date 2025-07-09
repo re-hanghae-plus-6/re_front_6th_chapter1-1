@@ -115,6 +115,7 @@ describe("3. 페이지당 상품 수 선택", () => {
   // });
   /* 상품이 0개인 구간이 있어서 즉시 목록에 반영은 삭제! */
   test("선택 변경 시 목록에 반영된다", async () => {
+    await screen.findByText(/총 의 상품/i);
     const limitSelect = document.querySelector("#limit-select");
     await userEvent.selectOptions(limitSelect, "10");
     await waitFor(() => {

@@ -5,7 +5,7 @@ import { ProductLoading } from "./ProductLoading";
 
 export const ProductList = () => {
   const { products, isLoading, pagination } = productsStore.state;
-  console.log("products", products);
+
   return /* HTML */ `
     <div class="mb-6">
       <div>
