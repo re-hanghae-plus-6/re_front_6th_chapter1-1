@@ -2,8 +2,9 @@ import { getProductParams } from "../pages/Main";
 
 const Filter = ({ isLoading, categoriesData }) => {
   const oneDepth = categoriesData ? Object.keys(categoriesData) : [];
-  const { limit } = getProductParams();
+  const { limit, sort } = getProductParams();
   const selectedLimit = limit ?? "20";
+  const selectedSort = sort ?? "price_asc";
 
   return `
     <!-- 검색 및 필터 -->
@@ -69,12 +70,10 @@ const Filter = ({ isLoading, categoriesData }) => {
               class="text-sm border border-gray-300 rounded px-2 py-1
                              focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="price_asc" selected="">
-                가격 낮은순
-              </option>
-              <option value="price_desc">가격 높은순</option>
-              <option value="name_asc">이름순</option>
-              <option value="name_desc">이름 역순</option>
+              <option value="price_asc" ${selectedSort === "price_asc" ? "selected" : ""}>가격 낮은순</option>
+              <option value="price_desc" ${selectedSort === "price_desc" ? "selected" : ""}>가격 높은순</option>
+              <option value="name_asc" ${selectedSort === "name_asc" ? "selected" : ""}>이름순</option>
+              <option value="name_desc" ${selectedSort === "name_desc" ? "selected" : ""}>이름 역순</option>
             </select>
           </div>
         </div>

@@ -45,6 +45,16 @@ const MainPage = () => {
 
       fetch();
     });
+
+    document.querySelector("#sort-select").addEventListener("change", (e) => {
+      const value = e.target.value;
+
+      const url = new URL(window.location.href);
+      url.searchParams.set("sort", value);
+      history.pushState(null, "", url.toString());
+
+      fetch();
+    });
   };
 
   const fetch = async () => {
