@@ -1,22 +1,22 @@
 import { createDataAttribute } from "../utils/data-attributes.js";
-import { html } from "../utils/html.js";
 import { observable, observe } from "./observer.js";
 
 export class Component {
   state;
   props;
   $el;
+  #disposeObserve;
 
   constructor(props) {
     this.props = props;
-    this.name = `${this.constructor.name}-component-${window.crypto.randomUUID()}`;
-    this.dataAttribute = createDataAttribute(this.name);
+    this.id = `${this.constructor.name}-component-${window.crypto.randomUUID()}`;
+    this.dataAttribute = createDataAttribute(this.id);
     this.abortController = null;
   }
 
   setup() {
     this.state = observable(this.initState());
-    observe(() => {
+    this.#disposeObserve = observe(this.id, () => {
       this.mounted();
       this.setEvent();
       this.render();
@@ -27,10 +27,9 @@ export class Component {
   initState() {
     return {};
   }
-  template() {}
-  renderContainer() {
-    return html`<div ${this.dataAttribute.attribute}></div>`;
-  }
+  /** html 템플릿 리터럴로 초기 렌더링용 */
+  renderContainer() {}
+  /** 상태변화시 렌더링용 */
   render() {}
   setEvent() {
     if (this.abortController) {
@@ -43,10 +42,19 @@ export class Component {
   }
   mounted() {
     this.$el = document.querySelector(this.dataAttribute.selector);
+    if (!this.$el) {
+      throw new Error(`${this.dataAttribute.selector} not found`);
+    }
   }
   #getComponentInstance() {
     const properties = Object.values(this).filter((v) => v instanceof Component);
     const props = Object.values(this.props ?? {}).filter((v) => v instanceof Object);
     return [...properties, ...props];
+  }
+  dispose() {
+    if (this.#disposeObserve) {
+      this.#disposeObserve();
+    }
+    this.#getComponentInstance().forEach((v) => v.dispose());
   }
 }

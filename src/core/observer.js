@@ -13,8 +13,8 @@ const debounceFrame = (callback) => {
   return debounced;
 };
 
-export const observe = (fn) => {
-  currentObserver = debounceFrame(fn);
+export const observe = (componentId, fn) => {
+  currentObserver = { componentId, fn: debounceFrame(fn) };
   try {
     fn();
   } finally {
@@ -23,23 +23,23 @@ export const observe = (fn) => {
   }
 
   return () => {
-    const records = observerToObservableMap.get(currentObserver);
-
+    const records = observerToObservableMap.get(componentId);
     if (records) {
-      // currentObserver가 관찰하는 모든 observable 인스턴스에서 해당 옵저버를 제거
+      // 컴포넌트 아이디별 스토어, 사용중인 값 제거
       for (const [observable, name] of records) {
         if (observable?._observerMaps?.[name]) {
-          observable._observerMaps[name].delete(currentObserver);
-          if (observable._observerMaps[name].size === 0) {
-            delete observable._observerMaps[name];
-          }
+          const nameObservers = observable._observerMaps[name];
+          nameObservers.forEach((item) => {
+            if (item.componentId === componentId) {
+              nameObservers.delete(item);
+            }
+          });
         }
       }
-
-      observerToObservableMap.delete(currentObserver);
+      observerToObservableMap.delete(componentId);
     }
 
-    currentObserver.cancel();
+    currentObserver?.fn?.cancel();
   };
 };
 
@@ -51,21 +51,22 @@ export const observable = (obj) => {
 
   const proxy = new Proxy(obj, {
     get(target, name) {
-      observerMap[name] = observerMap[name] || new Set();
+      observerMap[name] ??= new Set();
 
       if (currentObserver) {
         // 키에 해당하는 값 변경시 호출할 함수 저장
-        observerMap[name].add(currentObserver);
+        const { componentId, fn } = currentObserver;
+        observerMap[name].add({ componentId, fn });
 
-        // 메모리 최적화를 위해 currentObserver 인스턴스에 역참조 정보 저장
-        let records = observerToObservableMap.get(currentObserver);
+        // 컴포넌트 아이디별 스토어, 사용중인 값 저장
+        let records = observerToObservableMap.get(componentId);
         if (!records) {
           records = new Set();
-          observerToObservableMap.set(currentObserver, records);
+          observerToObservableMap.set(componentId, records);
         }
-        // [observable 인스턴스, 속성 이름] 저장
         records.add([proxy, name]);
       }
+
       return target[name];
     },
     set(target, name, value) {
@@ -79,10 +80,7 @@ export const observable = (obj) => {
       target[name] = value;
 
       // 변경된 값을 관찰하는 함수 호출
-      observerMap[name]?.forEach((fn) => {
-        console.log(fn);
-        fn();
-      });
+      observerMap[name]?.forEach(({ fn }) => fn());
       return true;
     },
   });
