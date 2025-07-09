@@ -14,6 +14,7 @@ export class Component {
     this.abortController = null;
   }
 
+  /** 오버라이드 super 필수 */
   setup() {
     this.state = observable(this.initState());
     this.#disposeObserve = observe(this.id, () => {
@@ -27,34 +28,44 @@ export class Component {
   initState() {
     return {};
   }
+
   /** html 템플릿 리터럴로 초기 렌더링용 */
   renderContainer() {}
+
   /** 상태변화시 렌더링용 */
   render() {}
+
+  /** 오버라이드 super 필수 */
   setEvent() {
     if (this.abortController) {
       this.abortController.abort();
     }
     this.abortController = new AbortController();
   }
+
   addEvent(eventType, callback) {
     this.$el.addEventListener(eventType, callback, this.abortController);
   }
+
+  /** 오버라이드 super 필수 */
   mounted() {
     this.$el = document.querySelector(this.dataAttribute.selector);
     if (!this.$el) {
       throw new Error(`${this.dataAttribute.selector} not found`);
     }
   }
-  #getComponentInstance() {
-    const properties = Object.values(this).filter((v) => v instanceof Component);
-    const props = Object.values(this.props ?? {}).filter((v) => v instanceof Object);
-    return [...properties, ...props];
-  }
+
+  /** 오버라이드 super 필수 */
   dispose() {
     if (this.#disposeObserve) {
       this.#disposeObserve();
     }
     this.#getComponentInstance().forEach((v) => v.dispose());
+  }
+
+  #getComponentInstance() {
+    const properties = Object.values(this).filter((v) => v instanceof Component);
+    const props = Object.values(this.props ?? {}).filter((v) => v instanceof Object);
+    return [...properties, ...props];
   }
 }
