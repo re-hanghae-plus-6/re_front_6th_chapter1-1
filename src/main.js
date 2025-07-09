@@ -8,16 +8,7 @@ const enableMocking = () =>
     }),
   );
 
-async function main() {
-  state.loading = true;
-  render();
-  const [{ products, pagination }, categories] = await Promise.all([getProducts({}), getCategories()]);
-  state.categories = categories;
-  state.products = products;
-  state.total = pagination.total;
-  state.loading = false;
-  render();
-}
+let currentLimit = 20;
 
 let state = {
   categories: {},
@@ -26,10 +17,52 @@ let state = {
   loading: false,
 };
 
+const fetchAndRenderHomepage = async () => {
+  state.loading = true;
+  render();
+
+  try {
+    const [{ products, pagination }, categories] = await Promise.all([
+      getProducts({ limit: currentLimit }),
+      getCategories(),
+    ]);
+    state.categories = categories;
+    state.products = products;
+    state.total = pagination.total;
+  } catch (error) {
+    console.error(error);
+  }
+
+  state.loading = false;
+  render();
+};
+
+const attachEventListeners = () => {
+  const limitSelect = document.getElementById("limit-select");
+
+  if (limitSelect) {
+    limitSelect.value = currentLimit.toString();
+
+    limitSelect.onchange = (event) => {
+      currentLimit = parseInt(event.target.value);
+      fetchAndRenderHomepage();
+    };
+  }
+};
+
 const render = () => {
   const root = document.body.querySelector("#root");
-  root.innerHTML = HomePage(state);
+
+  if (root) {
+    root.innerHTML = HomePage(state);
+
+    attachEventListeners();
+  }
 };
+
+function main() {
+  fetchAndRenderHomepage();
+}
 
 // 애플리케이션 시작
 if (import.meta.env.MODE !== "test") {
