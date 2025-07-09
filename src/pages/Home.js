@@ -5,6 +5,7 @@ import Footer from "../components/common/Footer";
 import { getProducts } from "../api/productApi.js";
 import { productStore } from "../store/productStore.js";
 import ProductFilter from "../components/product/ProductFilter.js";
+import { getQueryParams, updateQueryParams } from "../utils/urlParam.js";
 
 function renderProducts() {
   const productsGrid = document.getElementById("products-grid");
@@ -69,6 +70,10 @@ async function loadProducts({ append = false }) {
 }
 
 export default function Home() {
+  const initialParams = getQueryParams();
+  productStore.setSearch(initialParams.search);
+  productStore.setLimit(initialParams.limit);
+  productStore.setSort(initialParams.sort);
   const state = productStore.getState();
 
   const template = `
@@ -102,14 +107,37 @@ export default function Home() {
     loadProducts({ append: false });
 
     function filterReset({ search, limit, sort }) {
-      if (search !== undefined) productStore.setSearch(search);
-      if (limit !== undefined) productStore.setLimit(limit);
-      if (sort !== undefined) productStore.setSort(sort);
+      const newParams = {};
+      if (search !== undefined) {
+        productStore.setSearch(search);
+        newParams.search = search;
+      }
+      if (limit !== undefined) {
+        productStore.setLimit(limit);
+        newParams.limit = limit;
+      }
+      if (sort !== undefined) {
+        productStore.setSort(sort);
+        newParams.sort = sort;
+      }
+
+      updateQueryParams(newParams);
 
       productStore.setPage(1);
       productStore.setHasMore(true);
       loadProducts({ append: false });
     }
+
+    // 뒤로가기/앞으로가기 처리
+    window.addEventListener("popstate", () => {
+      const params = getQueryParams();
+      productStore.setSearch(params.search);
+      productStore.setLimit(params.limit);
+      productStore.setSort(params.sort);
+      productStore.setPage(1);
+      productStore.setHasMore(true);
+      loadProducts({ append: false });
+    });
 
     const limitSelect = document.getElementById("limit-select");
     if (limitSelect) {
