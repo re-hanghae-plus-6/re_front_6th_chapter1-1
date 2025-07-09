@@ -65,7 +65,7 @@ export class Component {
 
   #getComponentInstance() {
     const properties = Object.values(this).filter((v) => v instanceof Component);
-    const props = Object.values(this.props ?? {}).filter((v) => v instanceof Object);
+    const props = Object.values(this.props ?? {}).filter((v) => v instanceof Component);
     return [...properties, ...props];
   }
 }
