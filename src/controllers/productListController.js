@@ -250,6 +250,7 @@ export class ProductListController {
     const productId = productCard.dataset.productId;
     if (!productId) return;
     store.dispatch(actions.addToCart(productId, 1));
+    store.dispatch(actions.showToast("장바구니에 추가되었습니다"));
   }
 
   #handleOpenCartModal() {

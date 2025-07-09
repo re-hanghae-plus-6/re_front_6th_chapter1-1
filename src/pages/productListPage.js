@@ -1,5 +1,6 @@
-import { ProductCard } from "../components/ProductCard.js";
+import { ProductCard } from "../components/productCard.js";
 import { cartModal } from "../components/cartModal.js";
+import { Toast } from "../components/toast.js";
 
 const LIMIT_OPTIONS = [
   { value: 10, label: "10개" },
@@ -26,6 +27,7 @@ export const ProductListPage = ({
   categoriesError = null,
   cart = { items: [], isModalOpen: false },
   cartComputed = { totalCount: 0 },
+  toast = { isVisible: false, message: "" },
 }) => {
   const renderProductCards = () => {
     if (error) {
@@ -238,5 +240,6 @@ export const ProductListPage = ({
     </footer>
     </div>
     ${cartModal({ isModalOpen: cart.isModalOpen, cartItems: cart.items, computed: cartComputed })}
+    ${toast.isVisible ? Toast({ message: toast.message, type: toast.type }) : ""}
   `;
 };

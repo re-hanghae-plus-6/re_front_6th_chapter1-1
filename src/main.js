@@ -3,6 +3,7 @@ import { store } from "./store.js";
 import { ProductListController } from "./controllers/productListController.js";
 import { ProductDetailController } from "./controllers/productDetailController.js";
 import { router } from "./router.js";
+import { actions } from "./actions/index.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -22,6 +23,12 @@ function render() {
         ...state,
         cartComputed: store.computed.cart,
       });
+    }
+
+    if (state.toast.isVisible) {
+      setTimeout(() => {
+        store.dispatch(actions.hideToast());
+      }, 3000);
     }
   }
 }

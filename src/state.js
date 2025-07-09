@@ -36,5 +36,11 @@ export const initialState = {
     quantity: 1,
   },
 
+  toast: {
+    isVisible: false,
+    message: "",
+    type: "success",
+  },
+
   currentPage: "list",
 };
