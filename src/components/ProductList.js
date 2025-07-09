@@ -4,7 +4,6 @@ import { ProductCard } from "./ProductCard.js";
 import { ProductLoadingSkeleton } from "./productLoadingSkeleton.js";
 
 export const ProductList = ({ products, total, loading, limit }) => {
-  debugger;
   // 초기 로딩 판단
   const isInitialLoading = loading && products.length === 0;
 

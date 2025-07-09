@@ -1,7 +1,6 @@
 import { getProducts, getCategories } from "./api/productApi.js";
 import { createRouter } from "./router.js"; // 라우터 임포트
 import { throttle } from "./utils/throttle.js"; // throttle 함수 임포트
-
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
     worker.start({
@@ -25,6 +24,7 @@ const mainStatus = {
     sort: "price_asc",
   },
   categories: {},
+  url: "/",
 };
 
 // 라우터 인스턴스를 전역적으로 접근 가능하도록 선언
@@ -120,9 +120,24 @@ function setupEventListeners() {
       loadProductsAndUpdateUI();
     }
   });
-
   // 스크롤 이벤트 리스너 등록
   window.addEventListener("scroll", throttledScrollHandler);
+  // 상품 카드 클릭 이벤트 (이벤트 위임)
+  document.body.addEventListener("click", (e) => {
+    const productCard = e.target.closest(".product-card"); // 클릭된 요소의 가장 가까운
+
+    const addToCartBtn = e.target.closest(".add-to-cart-btn"); // 클릭된 요소가 장바구니 버튼인지
+
+    // 상품 카드가 클릭되었고, 장바구니 버튼이 아닌 경우에만 상세 페이지로 이동
+    if (productCard && !addToCartBtn) {
+      const productId = productCard.dataset.productId; // data-product-id 속성에서 productId를
+
+      if (productId) {
+        appRouter.navigate(`/product/${productId}`); // 라우터로 페이지 이동
+      }
+    }
+  });
+
   // TODO: 그 외 다른 이벤트 설정.....
 }
 
