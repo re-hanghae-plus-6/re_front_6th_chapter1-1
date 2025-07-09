@@ -5,8 +5,12 @@ import { Layouy } from "../layout/Layout";
 import { html } from "../utils/html";
 import { Filters } from "./components/filters/Filters";
 import { Products } from "./components/products/Products";
+import { productsStore } from "./store/products";
 
-export function productsPage($root) {
+export function ProductsPage($root) {
+  productsStore.initSearchParams();
+  productsStore.load();
+
   const layout = new Layouy({
     header: new Header(),
     main: new Main({
@@ -18,7 +22,9 @@ export function productsPage($root) {
   document.querySelector($root).innerHTML = html`${layout}`;
   layout.setup();
 
-  return layout;
+  return () => {
+    layout.dispose();
+  };
 }
 
 class Main extends Component {
