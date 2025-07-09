@@ -3,13 +3,10 @@ import HomePage from "./page/HomePage";
 import ProductDetailPage from "./page/ProductDetailPage";
 import NotFoundPage from "./page/NotFoundPage";
 import { getProduct } from "./api/productApi";
+import { openCartModal, addToCartById, addToCart, updateCartBadge } from "./core/cart";
 
 function createRouteRenderer() {
   let componentCleanup = null;
-
-  function attachComponentEventListeners() {
-    // 내부 처리 필요 시 확장
-  }
 
   async function render(routeData) {
     if (!routeData || !routeData.route || !routeData.route.component) return;
@@ -17,36 +14,17 @@ function createRouteRenderer() {
 
     try {
       cleanup();
-
       const component = route.component({ ...params, ...data });
       const $root = document.getElementById("root");
       if (!$root) return;
+
       if (component && typeof component === "object" && component.html) {
         $root.innerHTML = component.html;
-        // 지금 생성된 새로운 컴포넌트가 아닌 이전 컴포넌트의 cleanup 함수를 사용
+        // 이전 컴포넌트를 클린업 하기 위해 이전 컴포넌트의 cleanup 함수를 저장
         componentCleanup = component.cleanup;
-        attachComponentEventListeners();
       }
     } catch (err) {
       console.error("Component render error:", err);
-      renderError(err);
-    }
-  }
-
-  function renderError(error) {
-    const $root = document.getElementById("root");
-    if ($root) {
-      $root.innerHTML = `
-        <div class="flex items-center justify-center min-h-screen bg-gray-100">
-          <div class="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
-            <div class="text-center">
-              <h1 class="text-2xl font-bold text-red-600 mb-4">오류가 발생했습니다</h1>
-              <p class="text-gray-600 mb-6">${error.message}</p>
-              <button onclick="window.location.reload()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">페이지 새로고침</button>
-            </div>
-          </div>
-        </div>
-      `;
     }
   }
 
@@ -68,8 +46,9 @@ function createApplication() {
   let router = null;
   let renderer = null;
   let routerUnsubscribe = null;
-  let rootObserver = null; // MutationObserver to auto re-render when #root is cleared
+  let rootObserver = null;
 
+  // 테스트 코드를 위한 옵저버 함수여서 추후 삭제 필요할듯..
   function observeRootContainer() {
     const targetNode = document.getElementById("root");
     if (!targetNode || rootObserver) return;
@@ -96,33 +75,83 @@ function createApplication() {
     const cartBtn = e.target.closest("#cart-icon-btn");
     if (cartBtn) {
       e.preventDefault();
-      // 구현 필요
+      openCartModal();
       return;
     }
+
+    // 이벤트 객체에서 add-to-cart 버튼과 productId 추출
+    const getAddBtnAndPid = (e) => {
+      const addBtn = e.target.closest(".add-to-cart-btn");
+      const pid = addBtn ? addBtn.getAttribute("data-product-id") : null;
+      return { addBtn, pid };
+    };
+
+    // productCard에서 productData 생성
+    const getProductData = (productCard) => {
+      if (!productCard) return null;
+      const title = productCard.querySelector("h3")?.textContent.trim() || "";
+      const priceText = productCard.querySelector("p.text-lg")?.textContent.trim() || "0";
+      const lprice = priceText.replace(/[^0-9]/g, "");
+      const image = productCard.querySelector("img")?.getAttribute("src") || "";
+      return {
+        productId: productCard.querySelector(".add-to-cart-btn")?.getAttribute("data-product-id") || "",
+        title,
+        lprice,
+        image,
+        mallName: "",
+        brand: "",
+      };
+    };
+
+    // 메인 핸들러 함수
+    const handleAddToCart = (e) => {
+      e.preventDefault();
+      const { addBtn, pid } = getAddBtnAndPid(e);
+      if (!addBtn || !pid) return;
+
+      const productCard = addBtn.closest(".product-card");
+      const productData = getProductData(productCard);
+
+      productCard ? addToCart(productData, 1) : addToCartById(pid, 1);
+      updateCartBadge();
+    };
 
     // 상품 목록의 장바구니 담기 버튼
     const addBtn = e.target.closest(".add-to-cart-btn");
     if (addBtn) {
-      e.preventDefault();
-      const pid = addBtn.getAttribute("data-product-id");
-      if (pid) {
-        // 구현 필요
-      }
+      handleAddToCart(e);
       return;
     }
+
+    // 이벤트에서 상세 장바구니 버튼과 productId 추출
+    const getDetailBtnAndPid = (e) => {
+      const detailBtn = e.target.closest("#add-to-cart-btn");
+      const pid = detailBtn ? detailBtn.getAttribute("data-product-id") : null;
+      return { detailBtn, pid };
+    };
+
+    // 수량 추출 함수
+    const getQuantity = () => {
+      const qtyInput = document.querySelector("#quantity-input");
+      return qtyInput ? parseInt(qtyInput.value, 10) || 1 : 1;
+    };
+
+    const handleDetailAddToCart = (e) => {
+      const { detailBtn, pid } = getDetailBtnAndPid(e);
+      if (!detailBtn) return;
+
+      e.preventDefault();
+      if (!pid) return;
+
+      const qty = getQuantity();
+      addToCartById(pid, qty);
+      updateCartBadge();
+    };
 
     // 상세 페이지 장바구니 담기 버튼
     const detailBtn = e.target.closest("#add-to-cart-btn");
     if (detailBtn) {
-      e.preventDefault();
-      const pid = detailBtn.getAttribute("data-product-id");
-      let qty = 1;
-      const qtyInput = document.querySelector("#quantity-input");
-      if (qtyInput) qty = parseInt(qtyInput.value) || 1;
-      if (pid) {
-        console.log("qty", qty);
-        // 구현 필요
-      }
+      handleDetailAddToCart(e);
       return;
     }
 
@@ -174,7 +203,9 @@ function createApplication() {
       setupGlobalEventListeners();
       configureRouter();
       await router.init();
+
       // 테스트 환경 등 외부에서 #root가 강제로 비워지는 상황을 대비하여 감시 설정
+      // 테스트 코드를 위한 코드 인것 같아서 나중에 수정. afterEach 에서 초기화를 해줬는데도 테스트코드가 안돌아가는 상황..
       observeRootContainer();
       console.log("App initialized successfully");
     } catch (err) {
