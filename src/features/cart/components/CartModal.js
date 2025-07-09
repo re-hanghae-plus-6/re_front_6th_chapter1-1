@@ -127,30 +127,34 @@ const renderActionButtons = (selectedCount = 0, totalPrice = 0, selectedTotal = 
   `;
 };
 
-const renderEmptyCart = () => `
+const renderModalWrapper = (content) => `
   <div class="flex min-h-full items-end justify-center p-0 sm:items-center sm:p-4">
-    <div id="cart-modal-content" class="relative bg-white rounded-t-lg sm:rounded-lg shadow-xl w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-hidden">
-      ${renderHeader()}
-      <!-- 컨텐츠 -->
-      <div class="flex flex-col max-h-[calc(90vh-120px)]">
-        <!-- 빈 장바구니 -->
-        <div class="flex-1 flex items-center justify-center p-8">
-          <div class="text-center">
-            <div class="text-gray-400 mb-4">
-              <svg class="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m2.6 8L6 2H3m4 11v6a1 1 0 001 1h1a1 1 0 001-1v-6M13 13v6a1 1 0 001 1h1a1 1 0 001-1v-6"></path>
-              </svg>
-            </div>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">장바구니가 비어있습니다</h3>
-            <p class="text-gray-600">원하는 상품을 담아보세요!</p>
-          </div>
+    <div id="cart-modal-content" class="cart-modal relative bg-white rounded-t-lg sm:rounded-lg shadow-xl w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-hidden">
+      ${content}
+    </div>
+  </div>
+`;
+
+const renderEmptyCartContent = () => `
+  ${renderHeader()}
+  <!-- 컨텐츠 -->
+  <div class="flex flex-col max-h-[calc(90vh-120px)]">
+    <!-- 빈 장바구니 -->
+    <div class="flex-1 flex items-center justify-center p-8">
+      <div class="text-center">
+        <div class="text-gray-400 mb-4">
+          <svg class="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m2.6 8L6 2H3m4 11v6a1 1 0 001 1h1a1 1 0 001-1v-6M13 13v6a1 1 0 001 1h1a1 1 0 001-1v-6"></path>
+          </svg>
         </div>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">장바구니가 비어있습니다</h3>
+        <p class="text-gray-600">원하는 상품을 담아보세요!</p>
       </div>
     </div>
   </div>
 `;
 
-const renderCartWithItems = (items, selectedItems) => {
+const renderCartWithItemsContent = (items, selectedItems) => {
   const totalItems = items.length;
   const totalPrice = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const selectedCount = selectedItems.length;
@@ -158,33 +162,29 @@ const renderCartWithItems = (items, selectedItems) => {
   const isAllSelected = totalItems > 0 && selectedCount === totalItems;
 
   return `
-    <div class="flex min-h-full items-end justify-center p-0 sm:items-center sm:p-4">
-      <div id="cart-modal-content" class="relative bg-white rounded-t-lg sm:rounded-lg shadow-xl w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-hidden">
-        ${renderHeader(totalItems)}
-        <!-- 컨텐츠 -->
-        <div class="flex flex-col max-h-[calc(90vh-120px)]">
-          <!-- 전체 선택 섹션 -->
-          <div class="p-4 border-b border-gray-200 bg-gray-50">
-            <label class="flex items-center text-sm text-gray-700">
-              <input type="checkbox" id="cart-modal-select-all-checkbox" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-2" ${isAllSelected ? "checked" : ""}>
-              전체선택 (${totalItems}개)
-            </label>
-          </div>
-          <!-- 아이템 목록 -->
-          <div class="flex-1 overflow-y-auto">
-            <div class="p-4 space-y-4">
-              ${items
-                .map((item) => {
-                  const isSelected = selectedItems.some((selected) => selected.id === item.id);
-                  return renderCartItem(item, isSelected);
-                })
-                .join("")}
-            </div>
-          </div>
+    ${renderHeader(totalItems)}
+    <!-- 컨텐츠 -->
+    <div class="flex flex-col max-h-[calc(90vh-120px)]">
+      <!-- 전체 선택 섹션 -->
+      <div class="p-4 border-b border-gray-200 bg-gray-50">
+        <label class="flex items-center text-sm text-gray-700">
+          <input type="checkbox" id="cart-modal-select-all-checkbox" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-2" ${isAllSelected ? "checked" : ""}>
+          전체선택 (${totalItems}개)
+        </label>
+      </div>
+      <!-- 아이템 목록 -->
+      <div class="flex-1 overflow-y-auto">
+        <div class="p-4 space-y-4">
+          ${items
+            .map((item) => {
+              const isSelected = selectedItems.some((selected) => selected.id === item.id);
+              return renderCartItem(item, isSelected);
+            })
+            .join("")}
         </div>
-        ${renderActionButtons(selectedCount, totalPrice, selectedTotal)}
       </div>
     </div>
+    ${renderActionButtons(selectedCount, totalPrice, selectedTotal)}
   `;
 };
 
@@ -192,10 +192,10 @@ export const CartModal = ({ items = [], selectedItems = [] } = {}) => {
   const totalItems = items.length;
 
   if (totalItems === 0) {
-    return renderEmptyCart();
+    return renderModalWrapper(renderEmptyCartContent());
   }
 
-  return renderCartWithItems(items, selectedItems);
+  return renderModalWrapper(renderCartWithItemsContent(items, selectedItems));
 };
 
 CartModal.onMount = () => {
