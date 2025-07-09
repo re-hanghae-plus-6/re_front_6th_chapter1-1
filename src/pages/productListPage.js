@@ -2,6 +2,7 @@ import { getProducts, getCategories } from "../api/productApi";
 import { productListLoaded } from "../components/productListLoaded";
 import { productListLoading } from "../components/productListLoading";
 import { setupSearchEventListeners } from "../utils/searchHandler";
+import { setupCartEventListeners, updateCartCount } from "../utils/cartHandler.js";
 
 const root = document.getElementById("root");
 
@@ -38,6 +39,10 @@ const renderContent = () => {
   setupCategoryEventListeners();
   setupSearchEventListeners(state, renderContent);
   setupInfiniteScroll();
+
+  // 장바구니 이벤트 리스너 설정 및 개수 업데이트
+  setupCartEventListeners();
+  updateCartCount();
 };
 
 // 테스트 환경에서 state 초기화 함수
