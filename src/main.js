@@ -21,6 +21,7 @@ let state = {
   cart: [],
   search: "",
   selectedCategory1: null,
+  selectedCategory2: null,
 };
 
 function render() {
@@ -54,6 +55,7 @@ async function main() {
   state.cart = [];
   state.search = "";
   state.selectedCategory1 = null;
+  state.selectedCategory2 = null;
 
   // 값 가져왔으니 로딩 상태 해제
   state.loading = false;
@@ -82,6 +84,11 @@ function setupEventListeners() {
       const category1 = event.target.dataset.category1;
       handleCategory1Filter(category1);
     }
+
+    if (event.target.matches(".category2-filter-btn")) {
+      const category2 = event.target.dataset.category2;
+      handleCategory2Filter(category2);
+    }
   });
 
   document.addEventListener("keydown", (event) => {
@@ -95,7 +102,27 @@ function setupEventListeners() {
 async function handleCategory1Filter(category1) {
   state.selectedCategory1 = category1;
   const categoryDetail = state.categories[category1];
+
   state.categories = categoryDetail;
+  render();
+}
+
+async function handleCategory2Filter(category2) {
+  state.selectedCategory2 = category2;
+
+  const {
+    products,
+    pagination: { total },
+  } = await getProducts({
+    limit: state.productCount,
+    sort: state.sort,
+    category1: state.selectedCategory1,
+    category2: category2,
+  });
+
+  state.products = products;
+  state.total = total;
+
   render();
 }
 

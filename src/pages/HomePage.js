@@ -14,6 +14,7 @@ export const HomePage = ({
   sort = "price_asc",
   cart = [],
   selectedCategory1 = null,
+  selectedCategory2 = null,
 }) => {
   const categoryList = Object.keys(categories);
 
@@ -30,7 +31,7 @@ export const HomePage = ({
       <!-- 필터 옵션 -->
       <div class="space-y-3">
         <!-- 카테고리 필터 -->
-        ${CategoryFilter({ categoryList, selectedCategory1, loading })}
+        ${CategoryFilter({ categoryList, selectedCategory1, selectedCategory2, loading })}
         <!-- 기존 필터들 -->
         <div class="flex gap-2 items-center justify-between">
           ${ProductCountPerPage({ productCount })}
