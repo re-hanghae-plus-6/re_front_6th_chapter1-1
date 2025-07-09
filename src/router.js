@@ -1,34 +1,37 @@
 import Home from "./pages/Home.js";
+import Detail from "./pages/Detail.js";
 import NotFound from "./pages/NotFound.js";
 
 const routes = {
   "/": Home,
+  "/product/:productId": Detail,
   "*": NotFound,
 };
 
-const componentInstances = {};
-
 export function router() {
   const path = window.location.pathname;
-  const route = routes[path] || routes["*"];
 
-  if (componentInstances.current && componentInstances.current.cleanup) {
-    componentInstances.current.cleanup();
+  let route = routes[path];
+  let params = {};
+
+  if (!route) {
+    const productMatch = path.match(/^\/product\/(.+)$/);
+    if (productMatch) {
+      route = routes["/product/:productId"];
+      params = { productId: productMatch[1] };
+    } else {
+      route = routes["*"];
+    }
   }
 
-  const component = route();
-
+  const component = route(params);
   const root = document.getElementById("root");
-  if (!root) {
-    return;
-  }
+
+  if (!root) return;
 
   if (component && component.template && component.mount) {
     root.innerHTML = component.template;
-
-    const cleanup = component.mount();
-
-    componentInstances.current = { cleanup };
+    component.mount();
   } else {
     root.innerHTML = component;
   }

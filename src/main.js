@@ -10,10 +10,9 @@ const enableMocking = () =>
 async function main() {
   window.addEventListener("popstate", router);
 
+  // 초기 라우팅
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => {
-      router();
-    });
+    document.addEventListener("DOMContentLoaded", router);
   } else {
     router();
   }

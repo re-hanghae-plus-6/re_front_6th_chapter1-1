@@ -6,6 +6,7 @@ import { getProducts, getCategories } from "../api/productApi.js";
 import { productStore } from "../store/productStore.js";
 import ProductFilter from "../components/product/ProductFilter.js";
 import { getQueryParams, updateQueryParams } from "../utils/urlParam.js";
+import { router } from "../router.js";
 
 function renderProducts() {
   const productsGrid = document.getElementById("products-grid");
@@ -209,6 +210,15 @@ export default function Home() {
         const category2 = e.target.dataset.category2;
         const state = productStore.getState();
         filterReset({ category1: state.category1, category2 });
+      }
+
+      // 상품 클릭 이벤트
+      if (e.target.closest(".product-image") || e.target.closest(".product-info")) {
+        const productId = e.target.closest("[data-product-id]")?.dataset.productId;
+        if (productId) {
+          window.history.pushState({}, "", `/product/${productId}`);
+          router();
+        }
       }
     });
 
