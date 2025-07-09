@@ -22,13 +22,45 @@ export class CategoriesModel {
     this.subscribers.forEach((callback) => callback({ ...this.state }));
   }
 
+  transformCategoryData(rawCategories) {
+    const categories = [];
+
+    Object.keys(rawCategories).forEach((categoryName) => {
+      const subcategories = rawCategories[categoryName];
+
+      const isSubcategory = Object.keys(rawCategories).some(
+        (parentName) =>
+          parentName !== categoryName &&
+          rawCategories[parentName] &&
+          typeof rawCategories[parentName] === "object" &&
+          Object.prototype.hasOwnProperty.call(rawCategories[parentName], categoryName),
+      );
+
+      if (!isSubcategory) {
+        const category = {
+          name: categoryName,
+          subcategories: [],
+        };
+
+        if (subcategories && typeof subcategories === "object") {
+          category.subcategories = Object.keys(subcategories);
+        }
+
+        categories.push(category);
+      }
+    });
+
+    return categories;
+  }
+
   async fetchCategories() {
     this.state.loading = true;
     this.notify();
 
-    const categories = await getCategories();
+    const rawCategories = await getCategories();
+    const transformedCategories = this.transformCategoryData(rawCategories);
 
-    this.state.categories = categories || [];
+    this.state.categories = transformedCategories;
     this.state.loading = false;
     this.notify();
   }
