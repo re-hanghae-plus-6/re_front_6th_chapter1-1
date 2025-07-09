@@ -1,7 +1,5 @@
-const DetailPage = `
-    <div>
-        <h1>DetailPage</h1>
-    </div>
-`;
+import DetailLayout from "../layouts/DetailLayout";
+
+const DetailPage = `${DetailLayout}`;
 
 export default DetailPage;

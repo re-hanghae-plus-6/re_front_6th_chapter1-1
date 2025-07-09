@@ -1,7 +1,5 @@
-const CartPage = `
-    <div>
-        <h1>CartPage</h1>
-    </div>
-`;
+import CartLayout from "../layouts/CartLayout";
+
+const CartPage = `${CartLayout}`;
 
 export default CartPage;
