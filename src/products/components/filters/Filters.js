@@ -1,9 +1,8 @@
 import { Component } from "../../../core/Component";
 import { html } from "../../../utils/html";
 import { Breadcrumb } from "./Breadcrumb";
-import { LimitSelect } from "./LimitSelect";
 import { Search } from "./Search";
-import { SortSelect } from "./SortSelect";
+import { LimitSelect, SortSelect } from "./Select";
 
 export class Filters extends Component {
   search = new Search();
