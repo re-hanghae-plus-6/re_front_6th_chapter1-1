@@ -2,6 +2,7 @@ import { Home } from "./pages/Home.js";
 import { Product } from "./pages/Product.js";
 import { NotFound } from "./pages/NotFound.js";
 import { addHeaderEvents } from "./components/Modal/CartModal.js";
+import { getCartCount } from "./states/cart/cartStore.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -12,9 +13,10 @@ const enableMocking = () =>
 
 async function main() {
   const path = location.pathname;
+  const cartCount = getCartCount();
 
   if (path === "/") {
-    Home();
+    Home({ cartCount: cartCount });
   } else if (path.startsWith("/product/")) {
     const productId = path.split("/product/")[1];
     await Product(productId);

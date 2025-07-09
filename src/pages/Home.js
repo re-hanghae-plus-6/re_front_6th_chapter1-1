@@ -14,10 +14,10 @@ import { productListState } from "../states/product/productState";
 let store = null;
 let prev = { ...productListState };
 
-function renderHomePage(state) {
+function renderHomePage(state, cartCount) {
   render(/* HTML */ `
     <div class="bg-gray-50">
-      ${Header({ type: "home", cartCount: 3 })}
+      ${Header({ type: "home", cartCount: cartCount })}
       <main class="max-w-md mx-auto px-4 py-4">
         ${FilterSection({
           search: state.search,
@@ -75,13 +75,13 @@ async function loadProducts({ isInit = false } = {}) {
   }
 }
 
-export function Home() {
+export function Home(cartCount = cartCount) {
   if (!store) {
     store = createStore(productListState);
 
     store.subscribe((state) => {
       if (window.location.pathname === "/") {
-        renderHomePage(state);
+        renderHomePage(state, cartCount);
       }
     });
 

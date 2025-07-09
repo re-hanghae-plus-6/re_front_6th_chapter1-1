@@ -1,7 +1,7 @@
 import { navigate } from "../../utils/navigate";
 
 export const ProductItem = (product) => {
-  return /* HTML */ ` <div
+  return /* HTML */ `<div
     class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
     data-product-id="${product.productId}"
   >

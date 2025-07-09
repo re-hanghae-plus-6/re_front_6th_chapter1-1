@@ -45,3 +45,8 @@ export const cartStore = {
   subscribe: (callback) => cartState.subscribe(callback),
   getState: () => cartState.getState(),
 };
+
+export function getCartCount() {
+  const items = cartStore.getState();
+  return items.length;
+}
