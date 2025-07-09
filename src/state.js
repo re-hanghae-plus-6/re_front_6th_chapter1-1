@@ -23,6 +23,11 @@ export const initialState = {
     sort: "price_asc",
   },
 
+  cart: {
+    items: [],
+    isModalOpen: false,
+  },
+
   productDetail: {
     product: null,
     loading: false,
