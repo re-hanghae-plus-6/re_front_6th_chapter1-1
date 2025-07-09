@@ -20,16 +20,25 @@ export class Products extends Component {
   }
 
   render() {
-    const { page, total, currentPageProducts, isLoading, hasNext, isFetching } = productsStore;
-
+    const { limit, page, total, products, currentPageProducts, isLoading, hasNext, isFetching } = productsStore;
     if (page === 1) {
-      this.#renderFirstPage({ total, currentPageProducts, isLoading, hasNext });
+      const filledProducts = this.#ensureProductsCount({ limit, page, products });
+      this.#renderFirstPage({ total, currentPageProducts: filledProducts, isLoading, hasNext });
     } else {
       this.#appendProducts({ currentPageProducts });
       this.#updateHasMoreStatus({ hasNext });
     }
 
     this.#setIntersectionObserver({ isLoading, hasNext, isFetching });
+  }
+
+  #ensureProductsCount({ limit, page, products }) {
+    const currentTotal = +limit * +page;
+    if (products.length > currentTotal) {
+      return products.slice(0, currentTotal);
+    }
+    const emptyArr = Array.from({ length: currentTotal - products.length }, () => null);
+    return [...products, ...emptyArr];
   }
 
   #total({ total }) {
@@ -48,7 +57,9 @@ export class Products extends Component {
         ${this.#total({ total })}
         <!-- 상품 그리드 -->
         <div class="grid grid-cols-2 gap-4 mb-6" id="${this.#productsGridId}">
-          ${currentPageProducts.map((product) => this.#productCard(product)).join("")}
+          ${currentPageProducts
+            .map((product) => (product ? this.#productCard(product) : this.#producrCardSkeleton()))
+            .join("")}
         </div>
         ${this.#moreStatus({ isLoading, hasNext })}
       </div>
