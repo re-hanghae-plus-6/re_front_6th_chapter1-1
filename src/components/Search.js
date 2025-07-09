@@ -57,7 +57,6 @@ Search.mount = () => {
 };
 
 export default function Search(categories = {}, isLoading = true) {
-  console.log(categories, "isLoading");
   return /* html */ `
     <!-- 검색 및 필터 -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">

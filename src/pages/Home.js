@@ -10,6 +10,8 @@ const store = useStore();
 const navigate = useNavigate();
 const state = {
   isLoading: true,
+  products: [],
+  pagination: {},
 };
 
 const fetchProducts = async (params = {}) => {
@@ -17,21 +19,87 @@ const fetchProducts = async (params = {}) => {
   const productData = await getProducts(params);
   const categoriesData = await getCategories();
   state.isLoading = false;
+
+  // 무한 스크롤 방식 구현으로 누적된 product 값
+  if (params.page && params.page > 1) {
+    state.products = [...state.products, ...productData.products];
+  } else {
+    state.products = productData.products;
+  }
+
+  state.pagination = productData.pagination;
+
   return {
-    products: productData.products,
-    pagination: productData.pagination,
     categories: categoriesData,
   };
 };
 
+const loadMoreProducts = (trigger, callback) => {
+  const io = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          callback();
+        }
+      });
+    },
+    {
+      root: null,
+      rootMargin: "0px",
+      threshold: 1.0,
+    },
+  );
+
+  io.observe(trigger);
+};
+
+const loadMoreProductsCallback = () => {
+  const currentPage = store.get("params")["page"];
+  const hasNextPage = state.pagination.hasNext;
+  if (!hasNextPage) return;
+  const render = useRender();
+  const nextPage = currentPage + 1;
+
+  fetchProducts({ ...store.get("params"), page: nextPage }).then(({ categories }) => {
+    render.draw(
+      "main",
+      Home({
+        products: state.products,
+        pagination: state.pagination,
+        isLoading: state.isLoading,
+        categories,
+      }),
+    );
+
+    Search.mount();
+
+    setTimeout(() => {
+      const trigger = document.getElementById("scroll-trigger");
+      if (trigger) {
+        loadMoreProducts(trigger, loadMoreProductsCallback);
+      }
+    }, 200);
+  });
+};
+
 Home.mount = async () => {
   const render = useRender();
-  const { products, pagination, categories } = await fetchProducts();
+  const { categories } = await fetchProducts();
 
-  render.draw("main", Home({ products, pagination, isLoading: state.isLoading, categories }));
+  render.draw(
+    "main",
+    Home({
+      products: state.products,
+      pagination: state.pagination,
+      isLoading: state.isLoading,
+      categories,
+    }),
+  );
+
   Search.mount();
 
   store.watch(async (newValue) => {
+    console.log("watch");
     const url = new URL(window.location);
     Object.entries(newValue).forEach(([key, value]) => {
       if (value !== "" && value) {
@@ -40,14 +108,19 @@ Home.mount = async () => {
     });
     navigate.push({}, url.toString());
 
-    const { products, pagination, categories } = await fetchProducts(newValue);
-    render.draw("main", Home({ products, pagination, isLoading: state.isLoading, categories }));
+    const { categories } = await fetchProducts(newValue);
+    render.draw(
+      "main",
+      Home({ products: state.products, pagination: state.pagination, isLoading: state.isLoading, categories }),
+    );
     Search.mount();
   }, "params");
+
+  const scrollTrigger = document.getElementById("scroll-trigger");
+  loadMoreProducts(scrollTrigger, loadMoreProductsCallback);
 };
 
 export default function Home({ products, pagination, isLoading, categories }) {
-  console.log(products);
   return /* html */ `
     ${Search(categories, isLoading)}
     <!-- 상품 목록 -->
@@ -55,7 +128,8 @@ export default function Home({ products, pagination, isLoading, categories }) {
       <div>
         <!-- 상품 그리드 -->
         ${state.isLoading ? Loading({ type: "products" }) : ProductList(products, pagination)}
-      </div>
-    </div>
-  `;
+        </div>
+        <div id="scroll-trigger"  class="h-4"></div>
+        </div>
+        `;
 }
