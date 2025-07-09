@@ -21,7 +21,8 @@ export const ProductItem = (product) => `
         </div>
         <!-- 장바구니 버튼 -->
         <button class="w-full bg-blue-600 text-white text-sm py-2 px-3 rounded-md
-               hover:bg-blue-700 transition-colors add-to-cart-btn" data-product-id="${product.productId}">
+               hover:bg-blue-700 transition-colors add-to-cart-btn" data-product-id="${product.productId}"
+               onclick="event.preventDefault(); event.stopPropagation();">
           장바구니 담기
         </button>
       </div>
