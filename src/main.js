@@ -98,6 +98,7 @@ function setupEventListeners() {
       shouldUpdate = true;
     } else if (target.id === "sort-select") {
       mainStatus.params.sort = target.value;
+      mainStatus.params.limit = 20;
       shouldUpdate = true;
     }
 
