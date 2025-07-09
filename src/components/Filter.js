@@ -107,11 +107,11 @@ const CategoryButtons = (isLoading, data) => {
   }
 
   return twoDepth.length === 0
-    ? oneDepth?.map((category1) => CategoryButton(category1)).join("\n")
+    ? oneDepth?.map((category1) => Category1Button(category1)).join("\n")
     : twoDepth?.map((category2) => Category2Button(selectedCategory1, category2)).join("\n");
 };
 
-const CategoryButton = (category1) => {
+const Category1Button = (category1) => {
   return `
     <button
       data-category1=${category1}
