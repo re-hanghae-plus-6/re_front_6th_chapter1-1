@@ -48,29 +48,29 @@ export const productsStore = observable({
   setLimit(limit) {
     productsStore.limit = limit;
     productsStore.updateParams("limit", limit);
-    productsStore.load();
+    productsStore.loadProducts();
   },
   setSearch(search) {
     productsStore.search = search;
     productsStore.updateParams("search", search);
-    productsStore.load();
+    productsStore.loadProducts();
   },
   setCategory1(category1) {
     productsStore.category1 = category1;
     productsStore.updateParams("category1", category1);
-    productsStore.load();
+    productsStore.loadProducts();
   },
   setCategory2(category2) {
     productsStore.category2 = category2;
     productsStore.updateParams("category2", category2);
-    productsStore.load();
+    productsStore.loadProducts();
   },
   setSort(sort) {
     productsStore.sort = sort;
     productsStore.updateParams("sort", sort);
-    productsStore.load();
+    productsStore.loadProducts();
   },
-  async load() {
+  async loadProducts() {
     productsStore.page = LOAD_DEFAULT_PAGE;
     const data = await productsStore.fetchProducts(productsStore.params);
     productsStore.products = data.products;

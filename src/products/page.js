@@ -10,7 +10,7 @@ import { productsStore } from "./store/products";
 export function ProductsPage($root) {
   productsStore.initSearchParams();
   productsStore.loadCategories().then(() => {
-    productsStore.load();
+    productsStore.loadProducts();
   });
 
   const layout = new Layouy({
