@@ -1,6 +1,22 @@
 const useStore = (() => {
   // 장바구니, params 등 전역적으로 쓰일 상태들
-  const globalState = {};
+  const globalState = {
+    filters: {
+      category1: "",
+      category2: "",
+      search: "",
+      sort: "price_asc",
+    },
+
+    pagination: {
+      hasNext: false,
+      hasPrev: false,
+      limit: 20,
+      page: 1,
+      total: 0,
+      totalPages: 0,
+    },
+  };
 
   const listener = [];
 
