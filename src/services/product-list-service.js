@@ -1,5 +1,5 @@
 import { getProducts } from "../api/index.js";
-import { urlManager } from "../utils/index.js";
+import { searchParams } from "../routes/index.js";
 
 /**
  * 상품 목록 서비스
@@ -38,11 +38,11 @@ export class ProductListService {
       isLoading: this.isLoading,
       currentPage: this.currentPage,
       hasMore: this.hasMore,
-      searchValue: urlManager.getParam("search", ""),
-      selectedLimit: urlManager.getParam("limit", "20"),
-      selectedSort: urlManager.getParam("sort", "price_asc"),
-      selectedCategory1: urlManager.getParam("category1", ""),
-      selectedCategory2: urlManager.getParam("category2", ""),
+      searchValue: searchParams.get("search", ""),
+      selectedLimit: searchParams.get("limit", "20"),
+      selectedSort: searchParams.get("sort", "price_asc"),
+      selectedCategory1: searchParams.get("category1", ""),
+      selectedCategory2: searchParams.get("category2", ""),
     };
   }
 
@@ -51,12 +51,12 @@ export class ProductListService {
    */
   getFiltersFromURL() {
     return {
-      search: urlManager.getParam("search", ""),
-      limit: parseInt(urlManager.getParam("limit", "20")),
-      sort: urlManager.getParam("sort", "price_asc"),
-      category1: urlManager.getParam("category1", ""),
-      category2: urlManager.getParam("category2", ""),
-      page: parseInt(urlManager.getParam("page", "1")),
+      search: searchParams.get("search", ""),
+      limit: parseInt(searchParams.get("limit", "20")),
+      sort: searchParams.get("sort", "price_asc"),
+      category1: searchParams.get("category1", ""),
+      category2: searchParams.get("category2", ""),
+      page: parseInt(searchParams.get("page", "1")),
     };
   }
 
@@ -73,8 +73,10 @@ export class ProductListService {
       if (resetPage) {
         this.currentPage = 1;
         this.products = [];
-        urlManager.setParam("page", "1");
-        urlManager.updateURL();
+        // 리스너 트리거 방지를 위해 직접 URL 업데이트
+        const url = new URL(window.location);
+        url.searchParams.set("page", "1");
+        window.history.replaceState(null, "", url.toString());
       }
 
       const response = await getProducts({
@@ -107,8 +109,10 @@ export class ProductListService {
     if (this.isLoading || !this.hasMore) return;
 
     this.currentPage++;
-    urlManager.setParam("page", this.currentPage.toString());
-    urlManager.replaceURL();
+    // 리스너 트리거 방지를 위해 직접 URL 업데이트
+    const url = new URL(window.location);
+    url.searchParams.set("page", this.currentPage.toString());
+    window.history.replaceState(null, "", url.toString());
 
     await this.loadProducts(false);
   }
@@ -117,9 +121,10 @@ export class ProductListService {
    * 검색
    */
   async search(searchValue) {
-    urlManager.setParam("search", searchValue);
-    urlManager.setParam("page", "1");
-    urlManager.updateURL();
+    searchParams.setAll({
+      search: searchValue,
+      page: "1",
+    });
 
     await this.loadProducts(true);
   }
@@ -128,9 +133,10 @@ export class ProductListService {
    * 정렬 변경
    */
   async changeSort(sortValue) {
-    urlManager.setParam("sort", sortValue);
-    urlManager.setParam("page", "1");
-    urlManager.updateURL();
+    searchParams.setAll({
+      sort: sortValue,
+      page: "1",
+    });
 
     await this.loadProducts(true);
   }
@@ -139,9 +145,10 @@ export class ProductListService {
    * 페이지당 상품 수 변경
    */
   async changeLimit(limitValue) {
-    urlManager.setParam("limit", limitValue);
-    urlManager.setParam("page", "1");
-    urlManager.updateURL();
+    searchParams.setAll({
+      limit: limitValue,
+      page: "1",
+    });
 
     await this.loadProducts(true);
   }
@@ -150,10 +157,11 @@ export class ProductListService {
    * 카테고리 필터 변경
    */
   async changeCategory(category1, category2 = "") {
-    urlManager.setParam("category1", category1);
-    urlManager.setParam("category2", category2);
-    urlManager.setParam("page", "1");
-    urlManager.updateURL();
+    searchParams.setAll({
+      category1: category1,
+      category2: category2,
+      page: "1",
+    });
 
     await this.loadProducts(true);
   }
@@ -162,9 +170,7 @@ export class ProductListService {
    * 필터 초기화
    */
   async resetFilters() {
-    urlManager.clearParams();
-    urlManager.updateURL();
-
+    searchParams.clear();
     await this.loadProducts(true);
   }
 }
