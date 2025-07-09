@@ -1,19 +1,6 @@
 import { LimitSelect } from "../components/LimitSelect.js";
 import { ProductItem } from "../components/ProductItem.js";
-
-const LoadingUI = `
-  <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
-    <div class="aspect-square bg-gray-200"></div>
-    <div class="p-3">
-      <div class="h-4 bg-gray-200 rounded mb-2"></div>
-      <div class="h-3 bg-gray-200 rounded w-2/3 mb-2"></div>
-      <div class="h-5 bg-gray-200 rounded w-1/2 mb-3"></div>
-      <div class="h-8 bg-gray-200 rounded"></div>
-    </div>
-  </div>
-`;
-
-const LoadingUIList = LoadingUI.repeat(4);
+import { LoadingList } from "../components/Loading.js";
 
 export const MainPage = ({
   products = [],
@@ -137,7 +124,7 @@ export const MainPage = ({
               <!-- 로딩 스켈레톤 -->
               ${
                 loading
-                  ? LoadingUIList
+                  ? LoadingList()
                   : products
                       .map(
                         (product) => `
