@@ -51,6 +51,8 @@ let state = {
   page: 1,
   hasMore: true,
   isFirstLoad: true, // 최초 진입 여부
+  selectedCategory1: "", // 선택된 1depth 카테고리
+  selectedCategory2: "", // 선택된 2depth 카테고리
   // ...필요한 상태 추가
 };
 
@@ -126,6 +128,34 @@ function render() {
     });
   });
 
+  // 카테고리 버튼 이벤트 등록
+  document.querySelectorAll(".category1-filter-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const category1 = btn.getAttribute("data-category1");
+      onCategory1Change(category1);
+    });
+  });
+
+  document.querySelectorAll(".category2-filter-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const category1 = btn.getAttribute("data-category1");
+      const category2 = btn.getAttribute("data-category2");
+      onCategory2Change(category1, category2);
+    });
+  });
+
+  document.querySelectorAll("[data-breadcrumb]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const action = btn.getAttribute("data-breadcrumb");
+      if (action === "reset") {
+        onCategoryReset();
+      } else if (action === "category1") {
+        const category1 = btn.getAttribute("data-category1");
+        onCategory1Change(category1);
+      }
+    });
+  });
+
   // 무한 스크롤 이벤트 리스너 (메인 페이지에서만, 한 번만 등록)
   if (!window.scrollHandlerAdded) {
     window.addEventListener("scroll", () => {
@@ -163,6 +193,8 @@ async function fetchAndRender() {
       limit: state.limit,
       sort: state.sort,
       search: state.search,
+      category1: state.selectedCategory1,
+      category2: state.selectedCategory2,
     }),
     getCategories(),
   ]);
@@ -194,6 +226,8 @@ async function loadMoreProducts() {
     limit: state.limit,
     sort: state.sort,
     search: state.search,
+    category1: state.selectedCategory1,
+    category2: state.selectedCategory2,
   });
 
   state = {
@@ -220,6 +254,43 @@ function onSortChange(newSort) {
 function onSearchChange(newSearch) {
   state.search = newSearch;
   return fetchAndRender();
+}
+
+// 카테고리 선택 함수들
+function onCategory1Change(category1) {
+  state = {
+    ...state,
+    selectedCategory1: category1,
+    selectedCategory2: "", // 1depth 변경 시 2depth 초기화
+    page: 1,
+    products: [],
+    hasMore: true,
+  };
+  fetchAndRender();
+}
+
+function onCategory2Change(category1, category2) {
+  state = {
+    ...state,
+    selectedCategory1: category1,
+    selectedCategory2: category2,
+    page: 1,
+    products: [],
+    hasMore: true,
+  };
+  fetchAndRender();
+}
+
+function onCategoryReset() {
+  state = {
+    ...state,
+    selectedCategory1: "",
+    selectedCategory2: "",
+    page: 1,
+    products: [],
+    hasMore: true,
+  };
+  fetchAndRender();
 }
 
 // 장바구니 개수 뱃지 표시 함수
@@ -265,6 +336,8 @@ async function startApp() {
       page: 1,
       hasMore: true,
       isFirstLoad: true,
+      selectedCategory1: "",
+      selectedCategory2: "",
     };
 
     // 스크롤 이벤트 리스너 초기화

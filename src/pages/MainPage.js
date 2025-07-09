@@ -11,6 +11,8 @@ export const MainPage = ({
   search = "",
   sort = "price_asc",
   isFirstLoad = true,
+  selectedCategory1 = "",
+  selectedCategory2 = "",
 }) => {
   const categorylist = Object.entries(categories);
   return `
@@ -58,8 +60,13 @@ export const MainPage = ({
               <div class="flex items-center gap-2">
                 <label class="text-sm text-gray-600">카테고리:</label>
                 <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
+                ${selectedCategory1 ? `<span class="text-xs text-gray-500">&gt;</span><button data-breadcrumb="category1" data-category1="${selectedCategory1}" class="text-xs hover:text-blue-800 hover:underline">${selectedCategory1}</button>` : ""}
+                ${selectedCategory2 ? `<span class="text-xs text-gray-500">&gt;</span><span class="text-xs text-gray-600 cursor-default">${selectedCategory2}</span>` : ""}
               </div>
               <!-- 1depth 카테고리 -->
+              ${
+                !selectedCategory1
+                  ? `
               <div class="flex flex-wrap gap-2">
               ${
                 loading
@@ -70,7 +77,8 @@ export const MainPage = ({
                           <button 
                             data-category1="${category1}" 
                             data-category2='${JSON.stringify(category2)}'
-                            class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
+                            class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
+                            ${selectedCategory1 === category1 ? "bg-blue-100 border-blue-300 text-blue-700" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
                             ${category1}
                           </button>
                         `,
@@ -78,7 +86,37 @@ export const MainPage = ({
                       .join("")
               }
               </div>
+              `
+                  : ""
+              }
               <!-- 2depth 카테고리 -->
+              ${
+                selectedCategory1
+                  ? `
+                <div class="space-y-2">
+                  <div class="flex flex-wrap gap-2">
+                    ${
+                      categories[selectedCategory1]
+                        ? Object.keys(categories[selectedCategory1])
+                            .map(
+                              (category2) => `
+                          <button 
+                            data-category1="${selectedCategory1}"
+                            data-category2="${category2}"
+                            class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
+                            ${selectedCategory2 === category2 ? "bg-blue-100 border-blue-300 text-blue-700" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
+                            ${category2}
+                          </button>
+                        `,
+                            )
+                            .join("")
+                        : ""
+                    }
+                  </div>
+                </div>
+              `
+                  : ""
+              }
             </div>
             <!-- 기존 필터들 -->
             <div class="flex gap-2 items-center justify-between">
