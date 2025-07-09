@@ -1,7 +1,7 @@
 // 상품 목록 조회
 export async function getProducts(params = {}) {
   const { page = 1, limit = 20, search = "", category1 = "", category2 = "", sort = "price_asc" } = params;
-  console.log(params);
+
   const searchParams = new URLSearchParams({
     page: page.toString(),
     limit: limit.toString(),

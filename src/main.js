@@ -1,4 +1,4 @@
-import Router from "./utils/router.js";
+import Router from "./router/router.js";
 import routes from "./routes.js";
 
 const enableMocking = () =>
@@ -10,6 +10,7 @@ const enableMocking = () =>
 
 function main() {
   const router = Router();
+  // 장바구니 모달 추가
 
   // 라우트 등록
 

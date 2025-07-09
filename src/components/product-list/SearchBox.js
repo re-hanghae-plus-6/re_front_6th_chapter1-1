@@ -1,15 +1,16 @@
+import CategoryFilter, { cleanupCategoryFilter, setupCategoryFilter } from "./CategoryFilter.js";
+
 let searchBoxUnsubscribe = null;
 
 function SearchBox(store) {
-  const { state } = store;
-
-  const initHTML = renderUI(state);
-  searchBoxUnsubscribe = store.subscribe(updateSearchBoxCategoryUI);
+  const initHTML = renderUI(store);
+  searchBoxUnsubscribe = store.subscribe(updateSearchBoxUI);
 
   return initHTML;
 }
+
 // 초기 렌더링
-function renderUI(state) {
+function renderUI(store) {
   return /* HTML */ `
     <div id="filter-container" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
       <!-- 검색창 -->
@@ -38,15 +39,7 @@ function renderUI(state) {
       <!-- 필터 옵션 -->
       <div class="space-y-3">
         <!-- 카테고리 필터 -->
-        <div class="space-y-2">
-          <div class="flex items-center gap-2">
-            <label class="text-sm text-gray-600">카테고리:</label>
-            <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
-          </div>
-          <!-- 1depth 카테고리 -->
-          <div class="flex flex-wrap gap-2" id="category-container">${renderCategory(state)}</div>
-          <!-- 2depth 카테고리 -->
-        </div>
+        ${CategoryFilter(store)}
         <!-- 기존 필터들 -->
         <div class="flex gap-2 items-center justify-between">
           <!-- 페이지당 상품 수 -->
@@ -81,48 +74,27 @@ function renderUI(state) {
     </div>
   `;
 }
-// 카테고리 렌더링
-function renderCategory(state) {
-  if (state.loading) {
-    return /*HTML*/ `
-                  <div class="flex flex-wrap gap-2">
-                    <div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>
-                  </div>`;
-  } else {
-    return /*HTML*/ `<button
-                      data-category1="생활/건강"
-                      class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
-                         bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-                    >
-                      생활/건강
-                    </button>
-                    <button
-                      data-category1="디지털/가전"
-                      class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
-                         bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-                    >
-                      디지털/가전
-                    </button>
-            `;
-  }
+
+// SearchBox UI 업데이트
+function updateSearchBoxUI(state) {
+  // 검색창 관련 UI 업데이트가 필요한 경우 여기에 추가
+  console.log("SearchBox UI 업데이트:", state);
 }
-// 카테고리 업데이트
-function updateSearchBoxCategoryUI(state) {
-  const categoryContainer = document.getElementById("category-container");
-  if (categoryContainer) {
-    categoryContainer.innerHTML = renderCategory(state);
-  }
-}
+
 // 구독 해제
 export function cleanupSearchBox() {
   if (searchBoxUnsubscribe) {
     searchBoxUnsubscribe();
     searchBoxUnsubscribe = null;
   }
+  cleanupCategoryFilter();
 }
 
 // SearchBox 컴포넌트의 이벤트 리스너를 등록하는 함수
 export function setupSearchBox() {
+  // CategoryFilter 이벤트 리스너 설정
+  setupCategoryFilter();
+
   // URL 파라미터에서 초기값 설정
   const url = new URL(window.location.href);
   const params = new URLSearchParams(url.search);

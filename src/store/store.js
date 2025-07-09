@@ -7,6 +7,7 @@ class Store {
   constructor() {
     this.state = {
       products: [],
+      categories: {},
       loading: false,
       error: null,
     };
@@ -40,6 +41,10 @@ class Store {
   // 상품 설정
   setProducts(products) {
     this.setState({ products, loading: false, error: null });
+  }
+
+  setCategories(categories) {
+    this.setState({ categories, loading: false, error: null });
   }
 
   // 에러 설정

@@ -201,7 +201,7 @@ describe("6. 상품 검색", () => {
 
     await userEvent.type(searchInput, "젤리");
     await userEvent.keyboard("{Enter}");
-
+    screen.debug();
     await screen.findByText("3개");
 
     const productCards = [...document.querySelectorAll(".product-card")];
