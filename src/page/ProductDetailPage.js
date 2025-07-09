@@ -16,36 +16,22 @@ const initialState = {
 let store = null;
 
 export default function ProductDetailPage({ product, cartCount = 0 }) {
-  console.log(
-    "[ProductDetailPage] invoked, initialState.relatedProducts length:",
-    initialState.relatedProducts.length,
-    "existing store:",
-    !!store,
-  );
+  const mount = () => {
+    if (store) cleanup();
 
-  // 기존 스토어가 있으면 정리 (항상 새 인스턴스 생성)
-  if (store) {
-    cleanup();
-  }
+    store = createStore(initialState);
 
-  // 새로운 스토어 생성 – 전역이지만 페이지별 one-off로 재사용하지 않음
-  store = createStore(initialState);
+    store.subscribe(() => {
+      const state = store.getState();
+      if (window.location.pathname.startsWith("/product/")) {
+        render(state, cartCount);
+      }
+    });
 
-  // 상태 변경 시 자동 렌더링
-  store.subscribe(() => {
-    const state = store.getState();
-    // 상품 상세 페이지에서만 렌더링 (라우터에서 직접 호출 시 중복 렌더 방지)
-    if (window.location.pathname.startsWith("/product/")) {
-      render(state, cartCount);
-    }
-  });
+    if (product) initialize(product);
+  };
 
-  // 초기 데이터 설정
-  if (product) {
-    initialize(product);
-  }
-
-  // HTML과 cleanup 함수를 함께 반환
+  mount();
   return {
     html: render(store.getState(), cartCount),
     cleanup: () => {
@@ -56,9 +42,7 @@ export default function ProductDetailPage({ product, cartCount = 0 }) {
 
 // 스토어 정리 함수
 function cleanup() {
-  console.log("[ProductDetailPage] cleanupStore executed, store exist:", !!store);
   if (store) {
-    // 모든 리스너 정리는 스토어 내부에서 처리되므로 변수만 초기화
     store = null;
   }
 }
@@ -118,7 +102,7 @@ async function fetchRelatedProducts(product) {
 }
 
 // 렌더링 함수
-function render(state, cartCount, onNavigate) {
+function render(state, cartCount) {
   const $root = document.getElementById("root");
   let html = "";
 
@@ -151,9 +135,9 @@ function render(state, cartCount, onNavigate) {
     $root.innerHTML = html;
   }
 
-  // 이벤트 리스너 부착 (HTML이 실제로 있을 때만)
+  // 이벤트 리스너 부착 DOM이 그려지고 난 뒤
   if (state.product) {
-    attachEventListeners(onNavigate);
+    attachEventListeners();
   }
 
   return html;
@@ -284,7 +268,7 @@ function createProductDetailPageHTML({ product, relatedProducts = [], quantity =
 }
 
 // 이벤트 리스너 등록 함수
-function attachEventListeners(onNavigate) {
+function attachEventListeners() {
   if (!document._delegatedProductDetail) {
     document._delegatedProductDetail = true;
 
@@ -341,29 +325,13 @@ function attachEventListeners(onNavigate) {
     });
   }
 
-  // 뒤로 가기 버튼
-  const backButton = document.querySelector("[data-back-button]");
-  if (backButton) {
-    backButton.addEventListener("click", () => {
-      window.history.back();
-    });
-  }
-
   // 관련 상품 클릭 이벤트
   const relatedProductCards = document.querySelectorAll(".related-product-card");
   relatedProductCards.forEach((card) => {
     card.addEventListener("click", (e) => {
       const productId = e.currentTarget.getAttribute("data-product-id");
       if (!productId) return;
-
-      if (onNavigate) {
-        onNavigate(`/product/${productId}`);
-      } else if (window.navigateTo) {
-        window.navigateTo(`/product/${productId}`);
-      } else {
-        // Fallback – 브라우저 네비게이션
-        window.location.assign(`/product/${productId}`);
-      }
+      window.navigateTo(`/product/${productId}`);
     });
   });
 }
