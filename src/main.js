@@ -146,6 +146,25 @@ function setupEventHandlers() {
 function handleGlobalClick(e) {
   const target = e.target;
 
+  // 홈 링크 클릭 (초기 상태로 리셋)
+  if (target.matches('#home-link')) {
+    e.preventDefault();
+    // 모든 필터와 검색 상태를 초기화
+    store.resetToInitialState();
+    // URL도 초기화
+    updateURLParams({
+      current: 0,
+      category1: '',
+      category2: '',
+      search: '',
+      sort: 'price_asc',
+      limit: 20,
+    });
+    // 홈으로 이동
+    router.navigate('/');
+    return;
+  }
+
   // 장바구니 아이콘 클릭
   if (target.matches('#cart-icon-btn') || target.closest('#cart-icon-btn')) {
     store.toggleCart();

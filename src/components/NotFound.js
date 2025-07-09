@@ -1,7 +1,6 @@
 export function NotFound() {
   return `
-    <main class="max-w-md mx-auto px-4 py-4">
-      <div class="text-center my-4 py-20 shadow-md p-6 bg-white rounded-lg">
+    <div class="text-center my-4 py-20 shadow-md p-6 bg-white rounded-lg">
       <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -31,6 +30,5 @@ export function NotFound() {
       
       <a href="/" data-link class="inline-block px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">홈으로</a>
     </div>
-    </main>
   `;
 }

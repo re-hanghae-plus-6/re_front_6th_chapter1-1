@@ -72,6 +72,26 @@ export class Store {
     }
   }
 
+  resetToInitialState() {
+    // 필터를 초기 상태로 리셋 (장바구니는 유지)
+    this.setState({
+      filters: {
+        search: '',
+        category1: '',
+        category2: '',
+        sort: 'price_asc',
+        limit: 20,
+        page: 1,
+      },
+      allProducts: [],
+      pagination: null,
+      ui: {
+        ...this.state.ui,
+        showCart: false, // 장바구니 모달도 닫기
+      },
+    });
+  }
+
   addToCart(product, quantity = 1) {
     const existingItem = this.state.cart.find((item) => item.id === product.id);
 

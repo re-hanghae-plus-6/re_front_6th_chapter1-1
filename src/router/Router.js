@@ -1,3 +1,5 @@
+import { Layout } from '../components/Layout.js';
+
 export class Router {
   constructor() {
     this.routes = {};
@@ -81,7 +83,8 @@ export class Router {
     // 루트 요소에 렌더링
     const root = document.getElementById('root');
     if (root) {
-      root.innerHTML = component(params);
+      const content = component(params);
+      root.innerHTML = Layout(content);
     }
 
     this.currentPath = currentPath;
