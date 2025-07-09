@@ -12,7 +12,6 @@ export class Breadcrumb extends Component {
   }
 
   render() {
-    console.log(productsStore.categories);
     this.$el.innerHTML = this.renderContainer();
   }
 
