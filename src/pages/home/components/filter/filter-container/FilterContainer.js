@@ -3,6 +3,9 @@ import Component from '../../../../../core/Component.js';
 class FilterContainer extends Component {
   constructor(element, props) {
     super(element, props);
+    this.state = {
+      search: this.props.query.search,
+    };
   }
 
   onMount() {
@@ -22,12 +25,29 @@ class FilterContainer extends Component {
 
   attachEventListeners() {
     this.addEventListener(this.element, 'change', (event) => {
+      const value = event.target.value;
       if (event.target.id === 'limit-select') {
-        this.props.onChangeLimit(event.target.value);
+        this.props.onChangeLimit(value);
       }
 
       if (event.target.id === 'sort-select') {
-        this.props.onChangeSort(event.target.value);
+        this.props.onChangeSort(value);
+      }
+    });
+
+    this.addEventListener(this.element, 'input', (event) => {
+      const value = event.target.value;
+      if (event.target.id === 'search-input') {
+        this.state = {
+          ...this.state,
+          search: value,
+        };
+      }
+    });
+
+    this.addEventListener(this.element, 'keydown', (event) => {
+      if (event.target.id === 'search-input' && event.key === 'Enter') {
+        this.props.onChangeSearch(this.state.search);
       }
     });
   }
@@ -64,7 +84,7 @@ class FilterContainer extends Component {
               type="text"
               id="search-input"
               placeholder="상품명을 검색해보세요..."
-              value=""
+              value="${this.state.search}"
               class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
