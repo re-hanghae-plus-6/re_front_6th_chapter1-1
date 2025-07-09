@@ -1,3 +1,5 @@
+import { productsPage } from "./products/page.js";
+
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
     worker.start({
@@ -6,6 +8,11 @@ const enableMocking = () =>
   );
 
 function main() {
+  productsPage("#root");
+}
+
+main2();
+function main2() {
   const 상품목록_레이아웃_로딩 = `
     <div class="min-h-screen bg-gray-50">
       <header class="bg-white shadow-sm sticky top-0 z-40">
@@ -1119,7 +1126,8 @@ function main() {
     </main>
   `;
 
-  document.body.innerHTML = `
+  // document.body.innerHTML =
+  `
     ${상품목록_레이아웃_로딩}
     <br />
     ${상품목록_레이아웃_로딩완료}
