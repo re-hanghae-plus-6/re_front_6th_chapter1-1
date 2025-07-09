@@ -18,7 +18,7 @@
  * }
  */
 
-export default function ProductItem({ product }) {
+export default function ProductItem(product) {
   const { productId, image, title, lprice } = product;
 
   return /* HTML */ `<div

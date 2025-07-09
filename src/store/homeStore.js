@@ -6,7 +6,7 @@ const homeState = {
   products: {
     list: [],
     total: 0,
-    isLoading: false,
+    isProductsLoading: false,
     pagination: {
       page: DEFAULT_PAGE,
       limit: DEFAULT_LIMIT,

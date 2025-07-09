@@ -20,7 +20,7 @@ export default class Filter extends Component {
     const {
       categories: { categoryList, isCategoryLoading },
     } = homeStore.getState();
-
+    console.log("isCategoryLoading: ", isCategoryLoading);
     return /* HTML */ ` <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
       <!-- 검색창 -->
       <div class="mb-4">

@@ -2,6 +2,7 @@ import { getCategories, getProducts } from "../api/productApi";
 import Footer from "../components/common/Footer";
 import Header from "../components/common/Header";
 import Filter from "../components/filter/filter";
+import ProductList from "../components/product/ProductList";
 import Component from "../lib/Component";
 
 import { homeStore } from "../store/homeStore";
@@ -38,12 +39,11 @@ export default class HomePage extends Component {
         isCategoryLoading: true,
       },
     });
-
+    console.log("????");
     const categories = await getCategories();
 
     homeStore.setState({
       categories: {
-        ...homeState.categories,
         categoryList: categories,
         isCategoryLoading: false,
       },
@@ -52,24 +52,26 @@ export default class HomePage extends Component {
 
   async fetchProducts() {
     const homeState = homeStore.getState();
-    const { isProductLoading } = homeState.products;
+    const { isProductsLoading } = homeState.products;
 
-    if (isProductLoading) return;
+    if (isProductsLoading) return;
 
     homeStore.setState({
       products: {
         ...homeState.products,
-        isProductLoading: true,
+        isProductsLoading: true,
       },
     });
 
-    const products = await getProducts();
+    const { products, pagination } = await getProducts();
 
     homeStore.setState({
       products: {
         ...homeState.products,
-        isProductLoading: false,
+        isProductsLoading: false,
         list: products,
+        total: pagination.total,
+        pagination,
       },
     });
   }
@@ -84,6 +86,7 @@ export default class HomePage extends Component {
 
   mounted() {
     const filterContainer = document.querySelector("#filter-container");
+    const productListContainer = document.querySelector("#product-list-container");
 
     if (!this.child.get("filter")) {
       const filterInstance = new Filter(filterContainer);
@@ -94,8 +97,14 @@ export default class HomePage extends Component {
       filterInstance.render();
     }
 
-    // const productListContainer = document.querySelector("#product-list-container");
-    // new ProductList(productListContainer);
+    if (!this.child.get("productList")) {
+      const productListInstance = new ProductList(productListContainer);
+      this.addChild(productListInstance, "productList");
+    } else {
+      const productListInstance = this.child.get("productList");
+      productListInstance.$target = productListContainer;
+      productListInstance.render();
+    }
   }
 
   template() {
@@ -104,10 +113,10 @@ export default class HomePage extends Component {
         ${Header()}
         <main class="maxProductList-w-md mx-auto px-4 py-4">
           <!-- 검색 및 필터 -->
-          <div id="filter-container" />
+          <div id="filter-container"></div>
 
           <!-- 상품 목록 -->
-          <div id="product-list-container" />
+          <div class="mb-6" id="product-list-container"></div>
         </main>
         ${Footer()}
       </div>
