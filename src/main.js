@@ -20,6 +20,27 @@ const router = new Router();
 router.addRoute('/', ProductList);
 router.addRoute('404', NotFound);
 
+// URL 파라미터 관리 유틸리티
+function getURLParams() {
+  const params = new URLSearchParams(window.location.search);
+  return {
+    current: parseInt(params.get('current')) || 0,
+  };
+}
+
+function updateURLParams(params) {
+  const url = new URL(window.location);
+
+  if (params.current && params.current > 0) {
+    url.searchParams.set('current', params.current.toString());
+  } else {
+    url.searchParams.delete('current');
+  }
+
+  // 현재 페이지 상태를 히스토리에 저장 (뒤로가기 지원)
+  window.history.replaceState(null, '', url.toString());
+}
+
 // 이벤트 핸들러 설정
 function setupEventHandlers() {
   // 전역 이벤트 위임
@@ -27,6 +48,9 @@ function setupEventHandlers() {
   document.addEventListener('change', handleGlobalChange);
   document.addEventListener('keypress', handleGlobalKeypress);
   document.addEventListener('scroll', handleScroll);
+
+  // 브라우저 뒤로가기/앞으로가기 지원
+  window.addEventListener('popstate', handlePopState);
 
   // 상태 변경 구독 (렌더링이 필요한 변경만 감지)
   let lastRenderState = null;
@@ -155,7 +179,13 @@ function handleScroll() {
   }
 }
 
-// 상품 데이터 로딩 (첫 페이지)
+// 브라우저 뒤로가기/앞으로가기 이벤트 핸들러
+function handlePopState() {
+  // URL이 변경되었을 때 해당 페이지까지 다시 로드
+  loadProducts();
+}
+
+// 상품 데이터 로딩 (URL current 파라미터 기반)
 async function loadProducts() {
   try {
     // 로딩 상태만 먼저 업데이트
@@ -165,23 +195,37 @@ async function loadProducts() {
       pagination: null,
     });
 
+    const { current: targetPageIndex } = getURLParams();
     const filters = store.state.filters;
-    const response = await ProductService.fetchProducts(filters);
 
-    let products =
-      response.products || response.data || response.results || response;
-    if (!Array.isArray(products)) {
-      products = [];
+    // URL에서 지정한 페이지까지 순차적으로 로드 (0부터 시작)
+    let allLoadedProducts = [];
+    let finalPagination = null;
+
+    for (let pageIndex = 0; pageIndex <= targetPageIndex; pageIndex++) {
+      const pageFilters = { ...filters, page: pageIndex + 1 }; // API는 1부터 시작
+      const response = await ProductService.fetchProducts(pageFilters);
+
+      let pageProducts =
+        response.products || response.data || response.results || response;
+      if (!Array.isArray(pageProducts)) {
+        pageProducts = [];
+      }
+
+      allLoadedProducts = [...allLoadedProducts, ...pageProducts];
+      finalPagination = response.pagination || null;
+
+      // 더 이상 로드할 페이지가 없으면 중단
+      if (!finalPagination || !finalPagination.hasNext) {
+        break;
+      }
     }
-
-    // 페이지네이션 정보 추출
-    const pagination = response.pagination || null;
 
     // 상품 데이터와 로딩 상태를 한 번에 업데이트 (무한루프 방지)
     store.setState({
-      products: products,
-      allProducts: products, // 첫 페이지는 allProducts에도 설정
-      pagination: pagination,
+      products: allLoadedProducts,
+      allProducts: allLoadedProducts,
+      pagination: finalPagination,
       loading: { ...store.state.loading, products: false },
     });
   } catch (error) {
@@ -232,6 +276,9 @@ async function loadMoreProducts() {
       pagination: newPagination,
       loading: { ...store.state.loading, loadingMore: false },
     });
+
+    // URL 파라미터 업데이트 (페이지 번호를 0 기반 인덱스로 변환)
+    updateURLParams({ current: newPagination.page - 1 });
   } catch (error) {
     console.error('Failed to load more products:', error);
     store.setState({

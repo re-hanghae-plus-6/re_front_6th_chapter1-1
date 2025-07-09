@@ -56,6 +56,11 @@ export class Store {
       allProducts: [], // 필터 변경 시 누적 상품 초기화
       pagination: null,
     });
+
+    // 필터 변경 시 URL 파라미터 초기화
+    const url = new URL(window.location);
+    url.searchParams.delete('current');
+    window.history.replaceState(null, '', url.toString());
   }
 
   addToCart(product, quantity = 1) {
