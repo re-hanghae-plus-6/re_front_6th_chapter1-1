@@ -1,4 +1,5 @@
 import { HomePage } from "./pages/Homepage.js";
+import { ProductPage } from "./pages/ProductPage.js";
 import { getProducts, getCategories } from "./api/productApi.js";
 
 const enableMocking = () =>
@@ -72,6 +73,8 @@ const fetchAndRenderHomepage = async (isInfiniteScroll = false) => {
 };
 
 const handleScroll = () => {
+  if (window.location.pathname !== "/") return;
+
   if (isThrottled) return;
 
   // 스크롤 위치 계산
@@ -130,6 +133,43 @@ const attachEventListeners = () => {
   window.addEventListener("scroll", handleScroll);
 };
 
+const routes = [
+  { path: /^\/$/, view: () => HomePage(state) },
+  { path: /^\/product\/(\w+)$/, view: (productId) => ProductPage(productId) },
+];
+
+const router = async () => {
+  const currentPath = window.location.pathname;
+  const root = document.body.querySelector("#root");
+
+  const match = routes
+    .map((route) => {
+      const match = currentPath.match(route.path);
+      if (match) {
+        return {
+          route,
+          result: match,
+        };
+      }
+      return null;
+    })
+    .find((match) => match !== null);
+
+  if (!match) {
+    root.innerHTML = `404`;
+    return;
+  }
+
+  const params = match.result.slice(1);
+  const pageContent = await match.route.view(...params);
+
+  if (root) {
+    root.innerHTML = pageContent;
+  }
+
+  attachEventListeners();
+};
+
 const render = () => {
   const root = document.body.querySelector("#root");
 
@@ -141,7 +181,12 @@ const render = () => {
 };
 
 function main() {
-  fetchAndRenderHomepage();
+  window.addEventListener("popstate", router);
+  router();
+
+  if (window.location.pathname === "/") {
+    fetchAndRenderHomepage();
+  }
 }
 
 // 애플리케이션 시작
