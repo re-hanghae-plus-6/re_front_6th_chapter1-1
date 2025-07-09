@@ -115,6 +115,7 @@ const ProductItem = (product) => {
       class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
       data-product-id="${product.productId}"
     >
+      <a href="/product/${product.productId}" data-link class="block">
       <!-- 상품 이미지 -->
       <div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image">
         <img
@@ -131,6 +132,7 @@ const ProductItem = (product) => {
           <p class="text-xs text-gray-500 mb-2"></p>
           <p class="text-lg font-bold text-gray-900">${product.lprice}원</p>
         </div>
+      </a>
         <!-- 장바구니 버튼 -->
         <button
           class="w-full bg-blue-600 text-white text-sm py-2 px-3 rounded-md

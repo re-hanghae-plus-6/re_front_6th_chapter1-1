@@ -72,6 +72,20 @@ const fetchAndRenderHomepage = async (isInfiniteScroll = false) => {
   }
 };
 
+const navigateTo = (url) => {
+  window.history.pushState(null, null, url);
+  router();
+};
+
+const handleLinkClick = (event) => {
+  const target = event.target.closest("a");
+
+  if (target && target.matches("[data-link]") && target.hostname === window.location.hostname) {
+    event.preventDefault();
+    navigateTo(target.href);
+  }
+};
+
 const handleScroll = () => {
   if (window.location.pathname !== "/") return;
 
@@ -131,6 +145,9 @@ const attachEventListeners = () => {
 
   window.removeEventListener("scroll", handleScroll);
   window.addEventListener("scroll", handleScroll);
+
+  document.body.removeEventListener("click", handleLinkClick);
+  document.body.addEventListener("click", handleLinkClick);
 };
 
 const routes = [
