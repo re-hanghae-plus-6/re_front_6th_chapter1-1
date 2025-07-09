@@ -26,6 +26,7 @@ function setupEventHandlers() {
   document.addEventListener('click', handleGlobalClick);
   document.addEventListener('change', handleGlobalChange);
   document.addEventListener('keypress', handleGlobalKeypress);
+  document.addEventListener('scroll', handleScroll);
 
   // 상태 변경 구독 (렌더링이 필요한 변경만 감지)
   let lastRenderState = null;
@@ -140,11 +141,29 @@ function handleGlobalKeypress(e) {
   }
 }
 
-// 상품 데이터 로딩
+// 스크롤 이벤트 핸들러 (무한 스크롤)
+function handleScroll() {
+  const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+  const { pagination, loading } = store.state;
+
+  // 페이지 하단에 가까워졌는지 확인 (100px 여유분)
+  if (scrollTop + clientHeight >= scrollHeight - 100) {
+    // 로딩 중이 아니고 다음 페이지가 있는 경우에만 로드
+    if (!loading.products && pagination && pagination.hasNext) {
+      loadMoreProducts();
+    }
+  }
+}
+
+// 상품 데이터 로딩 (첫 페이지)
 async function loadProducts() {
   try {
     // 로딩 상태만 먼저 업데이트
-    store.setState({ loading: { ...store.state.loading, products: true } });
+    store.setState({
+      loading: { ...store.state.loading, products: true },
+      allProducts: [],
+      pagination: null,
+    });
 
     const filters = store.state.filters;
     const response = await ProductService.fetchProducts(filters);
@@ -155,19 +174,68 @@ async function loadProducts() {
       products = [];
     }
 
-    // MSW에서 이미 필터링과 정렬, 페이지네이션이 처리되어 오므로
-    // 추가 처리 없이 바로 사용
+    // 페이지네이션 정보 추출
+    const pagination = response.pagination || null;
 
     // 상품 데이터와 로딩 상태를 한 번에 업데이트 (무한루프 방지)
     store.setState({
       products: products,
+      allProducts: products, // 첫 페이지는 allProducts에도 설정
+      pagination: pagination,
       loading: { ...store.state.loading, products: false },
     });
   } catch (error) {
     console.error('Failed to load products:', error);
     store.setState({
       products: [],
+      allProducts: [],
+      pagination: null,
       loading: { ...store.state.loading, products: false },
+    });
+  }
+}
+
+// 추가 상품 로딩 (무한 스크롤용)
+async function loadMoreProducts() {
+  try {
+    const { pagination, loading } = store.state;
+
+    if (!pagination || !pagination.hasNext || loading.loadingMore) {
+      return;
+    }
+
+    // 추가 로딩 상태 설정
+    store.setState({
+      loading: { ...store.state.loading, loadingMore: true },
+    });
+
+    const filters = {
+      ...store.state.filters,
+      page: pagination.page + 1,
+    };
+
+    const response = await ProductService.fetchProducts(filters);
+
+    let newProducts =
+      response.products || response.data || response.results || response;
+    if (!Array.isArray(newProducts)) {
+      newProducts = [];
+    }
+
+    // 기존 상품에 새 상품 추가
+    const updatedAllProducts = [...store.state.allProducts, ...newProducts];
+    const newPagination = response.pagination || null;
+
+    store.setState({
+      products: updatedAllProducts, // products는 화면에 표시되는 전체 상품
+      allProducts: updatedAllProducts,
+      pagination: newPagination,
+      loading: { ...store.state.loading, loadingMore: false },
+    });
+  } catch (error) {
+    console.error('Failed to load more products:', error);
+    store.setState({
+      loading: { ...store.state.loading, loadingMore: false },
     });
   }
 }
