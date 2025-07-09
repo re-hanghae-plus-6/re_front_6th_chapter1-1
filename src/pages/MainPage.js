@@ -25,13 +25,10 @@ function handleScroll() {
 }
 
 export const MainPage = async () => {
-<<<<<<< HEAD
   if (!isScrollEventBound) {
     window.addEventListener("scroll", handleScroll);
     isScrollEventBound = true;
   }
 
-=======
->>>>>>> 91f244e (feat : product store구현 완료)
   return Layout(Header() + Body(SearchFilter(), ProductList()) + Footer());
 };
