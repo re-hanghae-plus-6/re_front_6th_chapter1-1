@@ -65,6 +65,22 @@ const MainPage = () => {
 
       fetch();
     });
+
+    document.querySelector("#category-select")?.addEventListener("click", (e) => {
+      const target = e.target;
+
+      if (!target.classList.contains("category1-filter-btn")) {
+        return;
+      }
+
+      const category1 = target.dataset.category1;
+
+      const url = new URL(window.location.href);
+      url.searchParams.set("category1", category1);
+      history.pushState(null, "", url.toString());
+
+      mainStore.setState();
+    });
   };
 
   const fetch = async () => {
