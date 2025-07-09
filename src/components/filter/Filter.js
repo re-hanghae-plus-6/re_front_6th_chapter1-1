@@ -2,6 +2,7 @@ import Component from "../../lib/Component";
 import CategoryItem from "./CategoryItem";
 import Breadcrumb from "./Breadcrumb";
 import { homeStore } from "../../store/homeStore";
+import { DEFAULT_LIMIT } from "../../constants";
 
 export default class Filter extends Component {
   setup() {
@@ -16,11 +17,40 @@ export default class Filter extends Component {
     return `<div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>`;
   }
 
+  selectLimit() {
+    const homeState = homeStore.getState();
+    const currentLimit = homeState.filter.limit || DEFAULT_LIMIT;
+
+    const limitOptions = document.querySelectorAll("#limit-select option");
+    limitOptions.forEach((option) => {
+      if (option.value === currentLimit) {
+        option.selected = true;
+      }
+    });
+
+    const limitSelect = document.getElementById("limit-select");
+    limitSelect.addEventListener("change", (e) => {
+      homeStore.setState({
+        filter: {
+          limit: e.target.value,
+        },
+      });
+      console.log(e.target.value);
+    });
+  }
+
+  selectSort() {}
+
+  setEvent() {
+    this.selectLimit();
+    this.selectSort();
+  }
+
   template() {
     const {
       categories: { categoryList, isCategoryLoading },
     } = homeStore.getState();
-    console.log("isCategoryLoading: ", isCategoryLoading);
+
     return /* HTML */ ` <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
       <!-- 검색창 -->
       <div class="mb-4">
