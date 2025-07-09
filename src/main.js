@@ -1,5 +1,6 @@
 import { getCategories, getProducts } from "./api/productApi.js";
 import { HomePage } from "./pages/HomePage.js";
+import { CartModal } from "./components/CartModal.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -172,41 +173,14 @@ function showCartModal() {
     return;
   }
 
-  // 모달 HTML 생성
-  const modalHTML = `
-    <div class="cart-modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4 max-h-96 overflow-y-auto">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-lg font-bold">장바구니</h2>
-          <button class="modal-close-btn text-gray-500 hover:text-gray-700">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-          </button>
-        </div>
-        
-        <!-- 장바구니 내용 -->
-        <div class="cart-items">
-          <p class="text-gray-500 text-center py-8">장바구니가 비어있습니다.</p>
-        </div>
-        
-        <!-- 버튼들 -->
-        <div class="flex gap-2 mt-4">
-          <button class="modal-close-btn flex-1 px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50">
-            닫기
-          </button>
-          <button class="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-            주문하기
-          </button>
-        </div>
-      </div>
-    </div>
-  `;
+  // 컴포넌트를 사용해서 모달 HTML 생성
+  const modalHTML = CartModal({
+    cart: state.cart,
+    products: state.products,
+  });
 
   // DOM에 추가
-  document.body.insertAdjacentHTML("beforeend", modalHTML);
-
-  // 닫기 이벤트 등록
+  document.querySelector("#modal-root").insertAdjacentHTML("beforeend", modalHTML);
   setupModalEvents();
 }
 
@@ -235,6 +209,7 @@ function setupModalEvents() {
         return;
       }
     }
+
     // 배경 클릭으로 닫기
     if (event.target.matches(".cart-modal")) {
       closeCartModal();
