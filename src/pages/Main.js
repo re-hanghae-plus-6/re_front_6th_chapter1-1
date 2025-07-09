@@ -93,6 +93,31 @@ const MainPage = () => {
         return;
       }
     });
+
+    document.querySelector(".breadcrumb-container").addEventListener("click", (e) => {
+      const target = e.target?.dataset?.breadcrumb;
+
+      if (target === "reset") {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("category1");
+        url.searchParams.delete("category2");
+        history.pushState(null, "", url.toString());
+
+        fetch();
+
+        return;
+      }
+
+      if (target === "category1") {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("category2");
+        history.pushState(null, "", url.toString());
+
+        fetch();
+
+        return;
+      }
+    });
   };
 
   const fetch = async () => {
