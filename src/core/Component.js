@@ -23,6 +23,7 @@ class Component {
     this.mounted = true;
     this.onMount();
     this.render();
+    this.attachEventListeners();
   }
 
   unmount() {
@@ -38,6 +39,7 @@ class Component {
   onMount() {}
   onUnmount() {}
   render() {}
+  attachEventListeners() {}
 }
 
 export default Component;

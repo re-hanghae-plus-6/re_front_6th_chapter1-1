@@ -5,6 +5,14 @@ class FilterContainer extends Component {
     super(element, props);
   }
 
+  attachEventListeners() {
+    this.addEventListener(this.element, 'change', (event) => {
+      if (event.target.id === 'limit-select') {
+        this.props.onChangeLimit(event.target.value);
+      }
+    });
+  }
+
   renderCategories() {
     if (this.props.loading) {
       return '<div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>';
@@ -105,9 +113,6 @@ class FilterContainer extends Component {
         </div>
       </div>
     `;
-
-    const select = this.element.querySelector('#limit-select');
-    select.addEventListener('change', this.props.onChangeLimit);
   }
 }
 

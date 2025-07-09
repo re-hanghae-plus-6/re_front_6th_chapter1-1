@@ -30,17 +30,16 @@ class HomePage extends Component {
     });
   }
 
-  handleLimitChange = async (event) => {
-    const newLimit = Number(event.target.value);
+  handleLimitChange = async (value) => {
     const products = await getProducts({
       page: this.state.page,
-      limit: newLimit,
+      limit: value,
     });
     this.setState({
       ...this.state,
       loading: false,
+      limit: value,
       products,
-      limit: newLimit,
     });
   };
 
@@ -61,6 +60,7 @@ class HomePage extends Component {
       categories: this.state.categories,
       limit: this.state.limit,
       onChangeLimit: this.handleLimitChange,
+      onChangeSort: this.handleSortChange,
     }).mount();
 
     new ProductContainer(this.element.querySelector('#product-container'), {
