@@ -1,3 +1,21 @@
+import useNavigate from "../core/useNavigate";
+
+const navigate = useNavigate();
+
+ProductCard.mount = () => {
+  const items = document.querySelectorAll(".product-card");
+  items.forEach((item) => {
+    const productId = item.getAttribute("data-product-id");
+    item.querySelector("img").addEventListener("click", () => {
+      navigate.push({}, `/product/${productId}`);
+    });
+
+    item.querySelector(".add-to-cart-btn").addEventListener("click", () => {
+      console.log("장바구니 추가");
+    });
+  });
+};
+
 export default function ProductCard(product) {
   return /* html */ `
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
@@ -5,7 +23,7 @@ export default function ProductCard(product) {
       <!-- 상품 이미지 -->
       <div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image">
         <img src="${product.image}"
-            alt="PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장"
+            alt="${product.title}"
             class="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
             loading="lazy">
       </div>

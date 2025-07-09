@@ -1,5 +1,6 @@
 import { getCategories, getProducts } from "../api/productApi";
 import Loading from "../components/Loading";
+import ProductCard from "../components/ProductCard";
 import ProductList from "../components/ProductList";
 import Search from "../components/Search";
 import useNavigate from "../core/useNavigate";
@@ -72,6 +73,7 @@ const loadMoreProductsCallback = () => {
     );
 
     Search.mount();
+    ProductCard.mount();
 
     setTimeout(() => {
       const trigger = document.getElementById("scroll-trigger");
@@ -97,6 +99,7 @@ Home.mount = async () => {
   );
 
   Search.mount();
+  ProductCard.mount();
 
   store.watch(async (newValue) => {
     console.log("watch");
@@ -114,6 +117,7 @@ Home.mount = async () => {
       Home({ products: state.products, pagination: state.pagination, isLoading: state.isLoading, categories }),
     );
     Search.mount();
+    ProductCard.mount();
   }, "params");
 
   const scrollTrigger = document.getElementById("scroll-trigger");
