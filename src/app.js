@@ -159,6 +159,8 @@ function createApplication() {
   let routerUnsubscribe = null;
   let rootObserver = null;
 
+  // 테스트코드를 위한 옵저버 함수인데 필요성이 없음..
+  // 아직까지 afterEach 테스트코드에서 popstate 이벤트가 발생하면 왜 화면이 렌더링 안되는지 모르겠음..
   function observeRootContainer() {
     const targetNode = document.getElementById("root");
     if (!targetNode || rootObserver) return;
