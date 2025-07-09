@@ -15,7 +15,7 @@ export const ProjectDetailPage = async () => {
   if (!id) {
     return _404_();
   } else {
-    fetchProjectDetailData(id);
+    await fetchProjectDetailData(id);
   }
 };
 
@@ -40,7 +40,7 @@ const handleClick = (e) => {
   const projectId = e.dataset.productId;
 
   history.pushState(null, "", `/product/${projectId}`);
-  fetchProjectDetailData(projectId);
+  window.dispatchEvent(new Event("popstate"));
 };
 
 document.addEventListener("click", (e) => {

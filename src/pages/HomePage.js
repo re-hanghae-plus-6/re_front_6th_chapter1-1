@@ -1,6 +1,5 @@
 import { getProducts, getCategories } from "../api/productApi";
 import { Main } from "./Main";
-import { router } from "../main";
 
 let state = {
   products: [],
@@ -112,18 +111,16 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-const handleClick = async (e) => {
+window.handleClick = async (e) => {
   const projectId = e.dataset.productId;
 
   history.pushState(null, "", `/product/${projectId}`);
   window.dispatchEvent(new Event("popstate"));
-  await router();
 };
 
 document.addEventListener("click", (e) => {
   if (e.target.closest(".product-card")) {
-    e.preventDefault();
-    handleClick(e.target.closest(".product-card"));
+    window.handleClick(e.target.closest(".product-card"));
   }
 });
 
