@@ -1,5 +1,5 @@
 import { render } from "../utils/render";
-import { productDetailState } from "../states/productState";
+import { productDetailState } from "../states/product/productState";
 import { getProduct, getProducts } from "../api/productApi";
 import { Rating } from "../components/Rating/Rating";
 import { Header } from "../components/Layout/Header";
@@ -115,6 +115,7 @@ function renderProductPage(state) {
 
   addEvents();
 }
+
 export async function Product(productId) {
   productDetailState.isLoading = true;
   renderProductPage(productDetailState);

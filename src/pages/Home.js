@@ -3,13 +3,13 @@ import { FilterSection } from "../components/FilterSection/FilterSection";
 import { ProductSection } from "../components/ProductSection/ProductSection";
 import { Footer } from "../components/Layout/Footer";
 import { render } from "../utils/render";
-import { createStore } from "../states/store";
+import { createStore } from "../states/product/productStore";
 import { getQueryState } from "../states/getQueryState";
 import { getProducts, getCategories } from "../api/productApi";
 import { isStateChanged } from "../states/isStateChanged";
 import { navigate } from "../utils/navigate";
 import { updateUrlState } from "../states/updateUrlState";
-import { productListState } from "../states/productState";
+import { productListState } from "../states/product/productState";
 
 let store = null;
 let prev = { ...productListState };

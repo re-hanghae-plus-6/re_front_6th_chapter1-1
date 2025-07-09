@@ -55,5 +55,8 @@ export const ToastModal = ({ type = "" }) => {
       </button>
     </div>`;
   }
-  return toastModal;
+
+  return /* HTML */ ` <div class="flex flex-col gap-2 items-center justify-center mx-auto" style="width: fit-content;">
+    ${toastModal}
+  </div>`;
 };
