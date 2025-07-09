@@ -246,8 +246,12 @@ function attachEventListeners() {
   const searchInput = document.querySelector("#search-input");
   if (searchInput) {
     searchInput.value = store.getState().searchValue;
-    searchInput.onkeypress = (e) => {
+
+    // onKeydown 이벤트로 검색 입력 처리
+    searchInput.onkeydown = (e) => {
       if (e.key === "Enter") {
+        // 기본 제출 동작 방지
+        e.preventDefault();
         store.setState({ searchValue: e.target.value, currentPage: 1 });
       }
     };
