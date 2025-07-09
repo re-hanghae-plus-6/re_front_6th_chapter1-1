@@ -5,11 +5,13 @@ export class Router {
     this.queryParams = {};
     this.params = {};
 
+    this.currentInstance = null; // 현재 컴포넌트 인스턴스
+
     this.init();
   }
 
   init() {
-    // * popstate 이벤트 감지 (뒤로가기/앞으로가기)
+    // popstate 이벤트 (뒤로/앞으로)
     window.addEventListener("popstate", () => {
       this.handleRouteChange();
     });
@@ -24,7 +26,23 @@ export class Router {
   render() {
     const route = this.getCurrentRoute();
 
-    this.rootElement.innerHTML = route.component();
+    if (!route) {
+      this.rootElement.innerHTML = `<h1>404 Not Found</h1>`;
+      return;
+    }
+
+    // 기존 인스턴스가 있으면 unmount
+    if (this.currentInstance?.unmount) {
+      this.currentInstance.unmount();
+    }
+
+    // 새 컴포넌트 인스턴스 생성
+    const ComponentClass = route.component;
+
+    this.currentInstance = new ComponentClass(this.rootElement, {
+      params: this.params,
+      query: this.queryParams,
+    });
   }
 
   navigate(to, replace = false) {
@@ -50,7 +68,7 @@ export class Router {
       return exactRoute;
     }
 
-    // 동적 라우트 매칭 (예: /product/:id)
+    // 동적 라우트 (예: /product/:id)
     const dynamicRoute = this.routes.find((route) => {
       if (route.path.includes(":")) {
         const routeSegments = route.path.split("/");
@@ -60,11 +78,8 @@ export class Router {
           return false;
         }
 
-        // 모든 세그먼트가 매칭되는지 확인
         const isMatch = routeSegments.every((segment, index) => {
-          if (segment.startsWith(":")) {
-            return true; // 동적 파라미터는 어떤 값이든 매칭
-          }
+          if (segment.startsWith(":")) return true;
           return segment === pathSegments[index];
         });
 
@@ -87,18 +102,8 @@ export class Router {
       return dynamicRoute;
     }
 
-    // 와일드카드 라우트 (*) 찾기
+    // 와일드카드 (*)
     const wildcardRoute = this.routes.find((route) => route.path === "*");
     return wildcardRoute || null;
-  }
-
-  getCurrentComponent() {
-    const route = this.getCurrentRoute();
-
-    if (!route) {
-      return this.get404Page();
-    }
-
-    return route.component;
   }
 }
