@@ -33,6 +33,10 @@ const useStore = (() => {
     current[keys[keys.length - 1]] = value;
   };
 
+  const getNestedValue = (obj, path) => {
+    return path.split(".").reduce((acc, key) => acc?.[key], obj);
+  };
+
   // 전역 상태를 가져오는 함수
   const get = (key) => {
     if (!key) {
@@ -47,13 +51,9 @@ const useStore = (() => {
     setNestedValue(globalState, key, value);
 
     listener.forEach(({ callback, targetKey }) => {
-      if (!targetKey || targetKey === key) {
-        const keys = key.split(".");
-        let updated = globalState;
-        keys.forEach((k) => {
-          if (updated) updated = updated[k];
-        });
-        callback(updated, globalState);
+      if (!targetKey || key === targetKey || key.startsWith(`${targetKey}.`)) {
+        const valueToReturn = getNestedValue(globalState, targetKey);
+        callback(valueToReturn, globalState);
       }
     });
   };
