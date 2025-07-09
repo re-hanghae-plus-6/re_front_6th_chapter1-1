@@ -37,29 +37,34 @@ export const productsStore = observable({
       productsStore[key] = searchParams.get(key) || value;
     }
   },
+  updateParams(key, value) {
+    const searchParams = new URLSearchParams(window.location.search);
+    searchParams.set(key, value);
+    router.updateParams(Object.fromEntries(searchParams));
+  },
   setLimit(limit) {
     productsStore.limit = limit;
-    router.updateParams({ limit });
+    productsStore.updateParams("limit", limit);
     productsStore.load();
   },
   setSearch(search) {
     productsStore.search = search;
-    router.updateParams({ search });
+    productsStore.updateParams("search", search);
     productsStore.load();
   },
   setCategory1(category1) {
     productsStore.category1 = category1;
-    router.updateParams({ category1 });
+    productsStore.updateParams("category1", category1);
     productsStore.load();
   },
   setCategory2(category2) {
     productsStore.category2 = category2;
-    router.updateParams({ category2 });
+    productsStore.updateParams("category2", category2);
     productsStore.load();
   },
   setSort(sort) {
     productsStore.sort = sort;
-    router.updateParams({ sort });
+    productsStore.updateParams("sort", sort);
     productsStore.load();
   },
   async load() {
