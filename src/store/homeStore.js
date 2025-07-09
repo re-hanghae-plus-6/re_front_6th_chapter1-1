@@ -40,10 +40,5 @@ const initialState = {
   },
 };
 
+// 스토어 인스턴스 생성
 export const homeStore = createStore(initialState);
-
-const useHomeStore = () => {
-  return homeStore.getState();
-};
-
-export default useHomeStore;

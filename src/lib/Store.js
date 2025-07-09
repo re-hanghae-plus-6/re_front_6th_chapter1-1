@@ -22,9 +22,7 @@ export const createStore = (() => {
       // 상태 설정하기
       setState(partial) {
         state = { ...state, ...partial };
-
-        // 모든 구독자에게 알림
-        listeners.forEach((listener) => listener());
+        instance.notify();
       },
 
       // 구독하기
@@ -33,6 +31,11 @@ export const createStore = (() => {
 
         // 구독 해제 함수 반환
         return () => listeners.delete(listener);
+      },
+
+      notify() {
+        // 모든 구독자에게 알림
+        listeners.forEach((listener) => listener());
       },
     };
 
