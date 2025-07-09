@@ -42,5 +42,3 @@ class Store {
 }
 
 export const store = new Store();
-
-window.Storage = store;
