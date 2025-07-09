@@ -57,7 +57,7 @@ if (import.meta.env.MODE === "test") {
             store.reset();
 
             if (router) {
-              router.handleRouteChange();
+              router.start();
             } else {
               currentController = new ProductListController();
               await currentController.initialize();

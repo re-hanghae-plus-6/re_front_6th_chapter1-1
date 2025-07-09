@@ -1,11 +1,14 @@
 import { store } from "../store.js";
 import { actions } from "../actions/index.js";
 import { getProducts, getCategories } from "../api/productApi.js";
+import { CartController } from "./cartController.js";
 
 export class ProductListController {
   #eventListeners = [];
+  #cartController = null;
 
   constructor() {
+    this.#cartController = new CartController();
     this.#setupEventListeners();
   }
 
@@ -262,5 +265,10 @@ export class ProductListController {
       element.removeEventListener(type, handler);
     });
     this.#eventListeners = [];
+
+    if (this.#cartController) {
+      this.#cartController.cleanup();
+      this.#cartController = null;
+    }
   }
 }
