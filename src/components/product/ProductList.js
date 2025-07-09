@@ -1,3 +1,4 @@
+import { getProducts } from "../../api/productApi";
 import Component from "../../lib/Component";
 import { homeStore } from "../../store/homeStore";
 import ProductItem from "./ProductItem";
@@ -9,20 +10,47 @@ export default class ProductList extends Component {
       this.setEvent();
       this.mounted();
     });
+
+    this.fetchProducts();
+  }
+
+  async fetchProducts() {
+    const homeState = homeStore.getState();
+    const { isProductsLoading } = homeState.products;
+
+    if (isProductsLoading) return;
+
+    homeStore.setState({
+      products: {
+        ...homeState.products,
+        isProductsLoading: true,
+      },
+    });
+
+    const params = {
+      page: homeState.products.pagination.page,
+      limit: homeState.filter.limit,
+      search: homeState.filter.search,
+      category1: homeState.filter.category1,
+      category2: homeState.filter.category2,
+      sort: homeState.filter.sort,
+    };
+
+    const { products, pagination } = await getProducts(params);
+
+    homeStore.setState({
+      products: {
+        ...homeState.products,
+        isProductsLoading: false,
+        list: products,
+        total: pagination.total,
+        pagination,
+      },
+    });
   }
 
   loadingTemplate() {
-    return /* HTML */ `<div
-        class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse"
-      >
-        <div class="aspect-square bg-gray-200"></div>
-        <div class="p-3">
-          <div class="h-4 bg-gray-200 rounded mb-2"></div>
-          <div class="h-3 bg-gray-200 rounded w-2/3 mb-2"></div>
-          <div class="h-5 bg-gray-200 rounded w-1/2 mb-3"></div>
-          <div class="h-8 bg-gray-200 rounded"></div>
-        </div>
-      </div>
+    return /* HTML */ ` <div class="grid grid-cols-2 gap-4">
       <div
         class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse"
       >
@@ -31,7 +59,7 @@ export default class ProductList extends Component {
           <div class="h-4 bg-gray-200 rounded mb-2"></div>
           <div class="h-3 bg-gray-200 rounded w-2/3 mb-2"></div>
           <div class="h-5 bg-gray-200 rounded w-1/2 mb-3"></div>
-          <div classG="h-8 bg-gray-200 rounded"></div>
+          <div class="h-8 bg-gray-200 rounded"></div>
         </div>
       </div>
       <div
@@ -55,7 +83,19 @@ export default class ProductList extends Component {
           <div class="h-5 bg-gray-200 rounded w-1/2 mb-3"></div>
           <div class="h-8 bg-gray-200 rounded"></div>
         </div>
-      </div>`;
+      </div>
+      <div
+        class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse"
+      >
+        <div class="aspect-square bg-gray-200"></div>
+        <div class="p-3">
+          <div class="h-4 bg-gray-200 rounded mb-2"></div>
+          <div class="h-3 bg-gray-200 rounded w-2/3 mb-2"></div>
+          <div class="h-5 bg-gray-200 rounded w-1/2 mb-3"></div>
+          <div class="h-8 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    </div>`;
   }
 
   template() {

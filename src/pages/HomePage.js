@@ -18,7 +18,7 @@ export default class HomePage extends Component {
     });
 
     this.fetchCategories();
-    this.fetchProducts();
+    // this.fetchProducts();
   }
 
   async fetchCategories() {
@@ -39,7 +39,7 @@ export default class HomePage extends Component {
         isCategoryLoading: true,
       },
     });
-    console.log("????");
+
     const categories = await getCategories();
 
     homeStore.setState({
@@ -63,7 +63,16 @@ export default class HomePage extends Component {
       },
     });
 
-    const { products, pagination } = await getProducts();
+    const params = {
+      page: homeState.products.pagination.page,
+      limit: homeState.filter.limit,
+      search: homeState.filter.search,
+      category1: homeState.filter.category1,
+      category2: homeState.filter.category2,
+      sort: homeState.filter.sort,
+    };
+
+    const { products, pagination } = await getProducts(params);
 
     homeStore.setState({
       products: {
