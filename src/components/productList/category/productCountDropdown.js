@@ -1,4 +1,8 @@
-export const ProductCountDropdown = ({ limit = 20 }) => `
+export const ProductCountDropdown = () => {
+  const url = new URL(window.location.href);
+  const limit = parseInt(url.searchParams.get("limit")) || 20;
+
+  return `
 <div class="flex items-center gap-2">
             <label class="text-sm text-gray-600">개수:</label>
             <select id="limit-select"
@@ -18,3 +22,4 @@ export const ProductCountDropdown = ({ limit = 20 }) => `
             </select>
           </div>   
 `;
+};
