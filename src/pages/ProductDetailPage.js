@@ -1,3 +1,4 @@
+import { useParam } from "../api/hook/useRouter";
 import Breadcrumb from "../components/common/Breadcrumb";
 import Footer from "../components/common/Footer";
 import Header from "../components/common/Header";
@@ -5,11 +6,21 @@ import MinusIcon from "../components/icon/MinusIcon";
 import PlusIcon from "../components/icon/PlusIcon";
 import RelatedProductItem from "../components/product/RelatedProductItem";
 
-export default function ProductDetailPage({ product }) {
-  const { productId, image, title, lprice, stock, description, rating, reviewCount } = product;
+export default function ProductDetailPage() {
+  // const { productId, image, title, lprice, stock, description, rating, reviewCount } = product;
+  const productId = 0;
+  const image = "";
+  const title = "";
+  const lprice = 0;
+  const stock = 0;
+  const description = "";
+  const rating = 0;
+  const reviewCount = 0;
 
   const relatedProducts = [];
 
+  const param = useParam();
+  console.log("param: ", param);
   const renderStars = () => {
     // TODO : 별점 계산 로직 추가
 

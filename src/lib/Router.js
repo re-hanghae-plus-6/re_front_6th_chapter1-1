@@ -5,7 +5,8 @@ export class Router {
     this.queryParams = {};
     this.params = {};
 
-    this.currentInstance = null; // 현재 컴포넌트 인스턴스
+    // 전역 라우터 인스턴스로 설정
+    Router.instance = this;
 
     this.init();
   }
@@ -20,6 +21,8 @@ export class Router {
   }
 
   handleRouteChange() {
+    // URL이 변경될 때마다 쿼리 파라미터와 경로 파라미터 파싱
+    this.parseQueryParams();
     this.render();
   }
 
@@ -59,12 +62,25 @@ export class Router {
     return window.location.pathname;
   }
 
+  /**
+   * URL 쿼리 파라미터 파싱
+   */
+  parseQueryParams() {
+    this.queryParams = {};
+    const urlParams = new URLSearchParams(window.location.search);
+    for (const [key, value] of urlParams) {
+      this.queryParams[key] = value;
+    }
+  }
+
   getCurrentRoute() {
     const path = this.getCurrentPath();
 
+    // 정확한 경로 매칭 먼저 시도
     const exactRoute = this.routes.find((route) => route.path === path);
 
     if (exactRoute) {
+      this.params = {}; // 정적 라우트는 params 없음
       return exactRoute;
     }
 
@@ -105,5 +121,28 @@ export class Router {
     // 와일드카드 (*)
     const wildcardRoute = this.routes.find((route) => route.path === "*");
     return wildcardRoute || null;
+  }
+
+  getCurrentComponent() {
+    const route = this.getCurrentRoute();
+    return route.component;
+  }
+
+  getParams(key) {
+    if (key) {
+      return this.params[key];
+    }
+    return { ...this.params };
+  }
+
+  getQueryParams(key) {
+    if (key) {
+      return this.queryParams[key];
+    }
+    return { ...this.queryParams };
+  }
+
+  static getInstance() {
+    return Router.instance || null;
   }
 }

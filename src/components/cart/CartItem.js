@@ -1,5 +1,10 @@
 export default function CartItem({ product, quantity = 1, isSelected = false }) {
-  const { productId, image, title, lprice } = product;
+  // const { productId = 0, image, title, lprice } = product;
+  console.log(product);
+  const productId = 0;
+  const image = "";
+  const title = "";
+  const lprice = 0;
 
   const totalPrice = parseInt(lprice) * quantity;
 
