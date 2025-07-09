@@ -119,7 +119,8 @@ export const CartModal = ({ count = 0 }) => {
 
 function showCartModal() {
   const header = document.querySelector("header");
-  if (header) {
+  const cartModal = document.querySelector(".cart-modal");
+  if (header && !cartModal) {
     header.insertAdjacentHTML("afterend", CartModal({ count: 0 }));
   }
 
