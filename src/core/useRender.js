@@ -16,6 +16,7 @@ const useRender = () => {
       Page.init?.(match?.[1]);
       draw("main", Page({}));
       await Page.mount?.();
+      return; // 매치된 첫 번째 라우트만 실행하고 멈추게
     }
   };
 
