@@ -6,6 +6,7 @@ export const createProductStore = (initialState = {}) => {
     totalCount: 0,
     limit: 20,
     sort: "price_asc",
+    search: "",
     ...initialState,
   };
 
@@ -32,6 +33,7 @@ export const createProductStore = (initialState = {}) => {
   const setTotalCount = (totalCount) => setState({ totalCount });
   const setLimit = (limit) => setState({ limit });
   const setSort = (sort) => setState({ sort });
+  const setSearch = (search) => setState({ search });
 
   return {
     getState,
@@ -43,6 +45,7 @@ export const createProductStore = (initialState = {}) => {
     setTotalCount,
     setLimit,
     setSort,
+    setSearch,
   };
 };
 
