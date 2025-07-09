@@ -1,7 +1,7 @@
 import { DEFAULT_LIMIT, DEFAULT_PAGE, DEFAULT_SORT } from "../constants";
-import { createStore } from "../lib/Store";
+import Store from "../lib/Store";
 
-const initialState = {
+const homeState = {
   // 상품 관련 상태
   products: {
     list: [],
@@ -40,5 +40,5 @@ const initialState = {
   },
 };
 
-// 스토어 인스턴스 생성
-export const homeStore = createStore(initialState);
+// 싱글톤 인스턴스를 생성해서 export
+export const homeStore = new Store(homeState);
