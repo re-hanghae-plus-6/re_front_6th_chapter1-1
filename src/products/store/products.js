@@ -72,7 +72,7 @@ export const productsStore = observable({
   },
   async loadProducts() {
     productsStore.page = LOAD_DEFAULT_PAGE;
-    const data = await productsStore.fetchProducts(productsStore.params);
+    const data = await productsStore.fetchProducts();
     productsStore.products = data.products;
     productsStore.isLoading = false;
   },
