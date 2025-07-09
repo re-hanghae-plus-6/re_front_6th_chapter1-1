@@ -157,6 +157,7 @@ describe("5. 무한 스크롤 페이지네이션", () => {
   test("페이지 하단 스크롤 시 추가 상품이 로드된다", async () => {
     await screen.findByText(/총 의 상품/i);
 
+    // TODO: 라우터로 초기화하는 부분 / 쿼리파타미터 초기화 확인
     // 초기 상품 카드 수 확인
     const initialCards = document.querySelectorAll(".product-card").length;
     expect(initialCards).toBe(20);
