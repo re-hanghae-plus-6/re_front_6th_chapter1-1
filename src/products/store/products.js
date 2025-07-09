@@ -22,16 +22,14 @@ export const productsStore = observable({
   total: null,
   hasNext: null,
 
-  getParams: () => {
-    return {
-      limit: productsStore.limit,
-      search: productsStore.search,
-      category1: productsStore.category1,
-      category2: productsStore.category2,
-      sort: productsStore.sort,
-      page: productsStore.page,
-    };
-  },
+  getParams: () => ({
+    limit: productsStore.limit,
+    search: productsStore.search,
+    category1: productsStore.category1,
+    category2: productsStore.category2,
+    sort: productsStore.sort,
+    page: productsStore.page,
+  }),
   initSearchParams: () => {
     const searchParams = new URLSearchParams(window.location.search);
     searchParams.set("page", LOAD_DEFAULT_PAGE);
