@@ -20,6 +20,13 @@ afterEach(() => {
   document.getElementById("root").innerHTML = "";
   localStorage.clear();
   server.resetHandlers();
+  // productsStore.setState({
+  //   products: [],
+  //   pagination: { page: 1, limit: 20, total: 0, totalPages: 0, hasNext: false, hasPrev: false },
+  //   filters: { category1: "", category2: "", search: "", sort: "price_asc" },
+  //   isLoading: false,
+  //   error: null,
+  // });
 });
 
 describe("1. 상품 목록 로딩", () => {
@@ -89,30 +96,6 @@ describe("3. 페이지당 상품 수 선택", () => {
     expect(options).toContain("100");
   });
 
-  // test("선택 변경 시 즉시 목록에 반영된다", async () => {
-  //   await screen.findByText(/총 의 상품/i);
-
-  //   expect(
-  //     await screen.findByRole("heading", {
-  //       level: 3,
-  //       name: "창틀벌레 모풍지판 창문 벌레 차단 틈새 창문틈 막이 방충망",
-  //     }),
-  //   ).toBeInTheDocument();
-
-  //   const limitSelect = document.querySelector("#limit-select");
-  //   await userEvent.selectOptions(limitSelect, "10");
-
-  //   await waitFor(() =>
-  //     expect(
-  //       screen.queryByRole("heading", {
-  //         level: 3,
-  //         name: "창틀벌레 모풍지판 창문 벌레 차단 틈새 창문틈 막이 방충망",
-  //       }),
-  //     ).not.toBeInTheDocument(),
-  //   );
-
-  //   expect(document.querySelectorAll(".product-card").length).toBe(10);
-  // });
   /* 상품이 0개인 구간이 있어서 즉시 목록에 반영은 삭제! */
   test("선택 변경 시 목록에 반영된다", async () => {
     await screen.findByText(/총 의 상품/i);

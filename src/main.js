@@ -15,7 +15,7 @@ const renderHtml = async () => {
   document.body.querySelector("#root").innerHTML = await Router();
   bindAllEvents();
 };
-
+window.addEventListener("popstate", renderHtml);
 async function main() {
   const {
     pagination: { limit },

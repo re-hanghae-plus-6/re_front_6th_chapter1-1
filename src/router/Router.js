@@ -6,5 +6,6 @@ export async function Router() {
   //     return ProductDetailPage(productId);
   //   }
   // 기본: 메인 페이지
+
   return await MainPage();
 }
