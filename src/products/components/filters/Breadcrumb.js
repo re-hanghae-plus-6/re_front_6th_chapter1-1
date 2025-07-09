@@ -16,6 +16,7 @@ export class Breadcrumb extends Component {
   }
 
   setEvent() {
+    super.setEvent();
     this.addEvent("click", ({ target: { dataset } }) => {
       if ("breadcrumb" in dataset) {
         productsStore.setCategory1("");
@@ -61,14 +62,16 @@ export class Breadcrumb extends Component {
 
     return html`<div class="space-y-2">
       <div class="flex flex-wrap gap-2">
-        ${keys.map((key) => {
-          const style =
-            key === (category2 ?? category1)
-              ? "category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-blue-100 border-blue-300 text-blue-800"
-              : "category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50";
+        ${keys
+          .map((key) => {
+            const style =
+              key === (category2 ?? category1)
+                ? "category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-blue-100 border-blue-300 text-blue-800"
+                : "category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50";
 
-          return html`<button ${dataAttribute}="${key}" class="${style}">${key}</button>`;
-        })}
+            return html`<button ${dataAttribute}="${key}" class="${style}">${key}</button>`;
+          })
+          .join("")}
       </div>
     </div>`;
   }
