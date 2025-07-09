@@ -63,11 +63,11 @@ if (import.meta.env.MODE === "test") {
             currentController = null;
             store.reset();
 
+            currentController = new ProductListController();
+            await currentController.initialize();
+
             if (router) {
               router.start();
-            } else {
-              currentController = new ProductListController();
-              await currentController.initialize();
             }
           }
         }

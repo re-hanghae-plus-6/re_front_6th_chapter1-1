@@ -38,21 +38,98 @@ export class CartController {
 
     const cartItem = this.state.cart.items.find((item) => item.productId === productId);
     const currentQuantity = cartItem ? cartItem.quantity : 0;
+    const newQuantity = currentQuantity + 1;
 
-    store.dispatch(actions.updateCartQuantity(productId, currentQuantity + 1));
+    const previousValues = {
+      quantity: currentQuantity,
+      price: cartItem && cartItem.product ? cartItem.product.lprice * currentQuantity : 0,
+    };
+
+    const quantityInput = document.querySelector(`.quantity-input[data-product-id="${productId}"]`);
+    const priceElement = document.querySelector(
+      `.cart-item[data-product-id="${productId}"] .text-right p.text-sm.font-medium`,
+    );
+
+    if (quantityInput) {
+      quantityInput.value = newQuantity;
+    }
+
+    if (priceElement && cartItem && cartItem.product) {
+      priceElement.textContent = `${(cartItem.product.lprice * newQuantity).toLocaleString()}원`;
+    }
+
+    try {
+      store.dispatch(actions.updateCartQuantity(productId, newQuantity));
+    } catch (error) {
+      console.error("수량 업데이트 실패:", error);
+
+      if (quantityInput) {
+        quantityInput.value = previousValues.quantity;
+      }
+
+      if (priceElement) {
+        priceElement.textContent = `${previousValues.price.toLocaleString()}원`;
+      }
+
+      store.dispatch(actions.showToast("수량 업데이트에 실패했습니다.", "error"));
+    }
   }
 
   #handleDecreaseQuantity(event) {
     const decreaseButton = event.target.closest(".quantity-decrease-btn");
     if (!decreaseButton) return;
 
-    const productId = decreaseButton.dataset.productId;
+    const productId = decreaseButton.getAttribute("data-product-id");
     if (!productId) return;
 
     const cartItem = this.state.cart.items.find((item) => item.productId === productId);
     if (!cartItem) return;
 
-    store.dispatch(actions.updateCartQuantity(productId, cartItem.quantity - 1));
+    const currentQuantity = cartItem.quantity;
+    const newQuantity = currentQuantity - 1;
+
+    const previousValues = {
+      quantity: currentQuantity,
+      price: cartItem && cartItem.product ? cartItem.product.lprice * currentQuantity : 0,
+    };
+
+    if (newQuantity > 0) {
+      const quantityInput = document.querySelector(`.quantity-input[data-product-id="${productId}"]`);
+      const priceElement = document.querySelector(
+        `.cart-item[data-product-id="${productId}"] .text-right p.text-sm.font-medium`,
+      );
+
+      if (quantityInput) {
+        quantityInput.value = newQuantity;
+      }
+
+      if (priceElement && cartItem.product) {
+        priceElement.textContent = `${(cartItem.product.lprice * newQuantity).toLocaleString()}원`;
+      }
+
+      try {
+        store.dispatch(actions.updateCartQuantity(productId, newQuantity));
+      } catch (error) {
+        console.error("수량 업데이트 실패:", error);
+
+        if (quantityInput) {
+          quantityInput.value = previousValues.quantity;
+        }
+
+        if (priceElement) {
+          priceElement.textContent = `${previousValues.price.toLocaleString()}원`;
+        }
+
+        store.dispatch(actions.showToast("수량 업데이트에 실패했습니다.", "error"));
+      }
+    } else {
+      try {
+        store.dispatch(actions.updateCartQuantity(productId, newQuantity));
+      } catch (error) {
+        console.error("아이템 제거 실패:", error);
+        store.dispatch(actions.showToast("아이템 제거에 실패했습니다.", "error"));
+      }
+    }
   }
 
   cleanup() {
