@@ -3,8 +3,15 @@ import { CART_ACTIONS } from "../actions/cartActions.js";
 export function cartReducer(state, action) {
   switch (action.type) {
     case CART_ACTIONS.ADD_TO_CART: {
-      const { product, quantity } = action.payload;
-      const existingItemIndex = state.cart.items.findIndex((item) => item.productId === product.id);
+      const { productId, quantity } = action.payload;
+
+      const product = state.products.find((product) => product.productId === productId);
+      if (!product) {
+        console.warn(`productId가 products에 없습니다.`);
+        return state;
+      }
+
+      const existingItemIndex = state.cart.items.findIndex((item) => item.productId === productId);
 
       if (existingItemIndex >= 0) {
         const newItems = [...state.cart.items];
@@ -27,7 +34,7 @@ export function cartReducer(state, action) {
             items: [
               ...state.cart.items,
               {
-                productId: product.id,
+                productId,
                 quantity,
                 selected: true,
                 product,

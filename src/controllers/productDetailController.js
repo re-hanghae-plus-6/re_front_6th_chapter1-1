@@ -135,7 +135,7 @@ export class ProductDetailController {
 
     if (!product) return;
 
-    store.dispatch(actions.addToCart(product, quantity));
+    store.dispatch(actions.addToCart(product.id, quantity));
   }
 
   handleBreadcrumbClick(event) {

@@ -10,9 +10,9 @@ export const CART_ACTIONS = {
 };
 
 export const cartActions = {
-  addToCart: (product, quantity = 1) => ({
+  addToCart: (productId, quantity = 1) => ({
     type: CART_ACTIONS.ADD_TO_CART,
-    payload: { product, quantity },
+    payload: { productId, quantity },
   }),
   removeFromCart: (productId) => ({
     type: CART_ACTIONS.REMOVE_FROM_CART,

@@ -59,8 +59,15 @@ export class ProductListController {
     };
 
     const clickHandler = (event) => {
+      if (event.target.closest(".add-to-cart-btn")) {
+        event.stopPropagation();
+        const productCard = event.target.closest(".product-card");
+        this.handleAddToCart(productCard);
+        return;
+      }
+
       const productCard = event.target.closest(".product-card");
-      if (productCard && !event.target.closest(".add-to-cart-btn")) {
+      if (productCard) {
         this.handleProductCardClick(productCard);
         return;
       }
@@ -123,7 +130,7 @@ export class ProductListController {
     store.dispatch(
       actions.changeFilters({
         category1,
-        category2: "", // 1depth 변경 시 2depth 클리어
+        category2: "",
       }),
     );
     this.fetchProducts();
@@ -208,6 +215,12 @@ export class ProductListController {
       .catch((error) => {
         console.error("라우터 로드 실패:", error);
       });
+  }
+
+  handleAddToCart(productCard) {
+    const productId = productCard.dataset.productId;
+    if (!productId) return;
+    store.dispatch(actions.addToCart(productId, 1));
   }
 
   cleanup() {
