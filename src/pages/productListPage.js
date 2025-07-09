@@ -20,12 +20,14 @@ const state = {
   productLoading: false,
   categories: {},
   productCountLimit: 20,
+  isEnd: false,
 };
 
 export const ProductListPage = () => {
-  const { productCountLimit } = state;
+  const { productCountLimit, pagination } = state;
   const limit = Number(new URL(window.location.href).searchParams.get("limit") || productCountLimit);
   const sort = new URL(window.location.href).searchParams.get("sort") || "price_asc";
+  const page = pagination.page;
   const [mounted, setMounted] = store.useState("mounted");
 
   if (mounted === false) {
@@ -33,11 +35,12 @@ export const ProductListPage = () => {
     state.categoryLoading = true;
 
     Promise.all([
-      getProducts({ limit, sort }).then((data) => {
+      getProducts({ limit, sort, page }).then((data) => {
         state.productLoading = false;
         state.products = data.products;
         state.pagination = data.pagination;
         state.filters = data.filters;
+        state.isEnd = data.pagination.total <= state.products.length;
       }),
       getCategories().then((data) => {
         state.categoryLoading = false;
@@ -80,8 +83,10 @@ export const ProductListPage = () => {
               }
               `,
             })}
+            <div id="product-list-end-indicator" style="height: 100px;">
+              ${state.isEnd ? ListEndIndicator : ListLoadingIndicator}
+            </div>
           </div>
-          ${state.productLoading ? ListLoadingIndicator : ListEndIndicator}
         </div>
       </main>
       ${Footer}
@@ -114,4 +119,39 @@ ProductListPage.registerEvent = () => {
 
     router.push(`${url.pathname}?${queryString}`);
   });
+
+  const productListEndIndicator = document.getElementById("product-list-end-indicator");
+  let moreLoading = false;
+  const io = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && !moreLoading) {
+          moreLoading = true;
+          console.log("end");
+          state.pagination.page++;
+          io.unobserve(productListEndIndicator);
+
+          const limit = state.pagination.limit;
+          const sort = state.filters.sort;
+          const page = state.pagination.page;
+
+          getProducts({ limit, sort, page })
+            .then((data) => {
+              state.productLoading = false;
+              state.products = [...state.products, ...data.products];
+              state.pagination = data.pagination;
+              state.filters = data.filters;
+              state.isEnd = data.pagination.total <= state.products.length;
+            })
+            .then(() => {
+              moreLoading = false;
+              render();
+            });
+        }
+      });
+    },
+    { threshold: 0.7 },
+  );
+
+  io.observe(productListEndIndicator);
 };
