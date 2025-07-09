@@ -17,7 +17,8 @@ export function 토스트(message: string, variant: ToastVariant = "success", du
     container.id = "toast-container";
     container.className =
       "fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 items-center justify-center mx-auto";
-    document.body.appendChild(container);
+    const rootEl = document.getElementById("root") ?? document.body;
+    rootEl.appendChild(container);
   }
 
   const wrapper = document.createElement("div");

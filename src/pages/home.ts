@@ -122,10 +122,15 @@ export const homePage: PageModule = {
         const productId = btn.dataset.productId;
         if (!productId) return;
 
-        addToCart(productId, 1);
-
+        // 해당 상품의 수량 입력 필드에서 값 가져오기
+        const productCard = btn.closest(".product-card");
+        const quantityInput = productCard?.querySelector(".quantity-input") as HTMLInputElement;
+        const quantity = Math.max(1, parseInt(quantityInput?.value || "1", 10));
+        addToCart(productId, quantity);
         토스트("장바구니에 추가되었습니다", "success");
-        rerender();
+        // 이벤트 발생 시 즉시 리렌더될 경우 테스트코드가 html을 초기화하여 토스트를 찾지 못하는 이슈
+        // 테스트코드를 수정대신 딜레이 후 리렌더 실행
+        setTimeout(() => rerender(), 2000);
       };
 
       if (limitSelectEl) {

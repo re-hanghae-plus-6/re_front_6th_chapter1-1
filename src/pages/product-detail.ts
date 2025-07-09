@@ -106,7 +106,7 @@ export const detailPage: PageModule = {
         const qty = Math.max(1, parseInt(inputEl.value || "1", 10));
         addToCart(state.product.productId, qty);
         토스트("장바구니에 추가되었습니다", "success");
-        rerender();
+        setTimeout(() => rerender(), 2000);
       };
 
       const handleRelatedClick = (e: Event) => {
