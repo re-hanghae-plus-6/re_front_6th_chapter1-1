@@ -1,4 +1,5 @@
-import { Home } from "./pages/HomePage.js";
+import { HomePage } from "./pages/HomePage.js";
+import { ProjectDetailPage } from "./pages/ProjectDetailPage.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -7,15 +8,26 @@ const enableMocking = () =>
     }),
   );
 
-async function main() {
-  return await Home();
-}
+window.addEventListener("popstate", router);
+window.addEventListener("hashchange", router);
 
-window.addEventListener("popstate", main);
+window.addEventListener("load", () => {
+  router();
+});
+
+export async function router() {
+  const [, route] = location.pathname.split("/");
+
+  if (route === "product") {
+    return await ProjectDetailPage();
+  } else {
+    return await HomePage();
+  }
+}
 
 // 애플리케이션 시작
 if (import.meta.env.MODE !== "test") {
-  enableMocking().then(main);
+  enableMocking().then(router);
 } else {
-  main();
+  router();
 }

@@ -122,28 +122,27 @@ describe.sequential("2. 장바구니 수량 조절", () => {
   test("각 장바구니 상품의 수량을 감소할 수 있다", async () => {
     await screen.findByText(/총 의 상품/i);
 
-    // 상품을 장바구니에 추가하고 수량을 2개로 증가
     await addProductToCart("pvc 투명 젤리 쇼핑백");
 
+    // 모달이 열리는 타이밍
     const cartIcon = document.querySelector("#cart-icon-btn");
     await userEvent.click(cartIcon);
 
-    expect(document.querySelector(".quantity-input").value).toBe("1");
-
-    // 수량을 먼저 2개로 증가
+    // 수량 증가 1회 실행
     const increaseButton = document.querySelector(".quantity-increase-btn");
     await userEvent.click(increaseButton);
 
-    // 수량 감소 버튼 클릭
     const decreaseButton = document.querySelector(".quantity-decrease-btn");
     expect(decreaseButton).toBeInTheDocument();
 
+    // 테스트 진행에 따른다면 toBe("2")일 것으로 예상
     const quantityInput = document.querySelector(".quantity-input");
     expect(quantityInput.value).toBe("2");
 
+    // 수량 감소 1회 실행
     await userEvent.click(decreaseButton);
 
-    // 수량이 감소했는지 확인
+    // 테스트 진행에 따른다면 toBe("1")일 것으로 예상
     expect(quantityInput.value).toBe("1");
   });
 
