@@ -57,7 +57,8 @@ export function createSearchFilter(options = {}) {
                        bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
                   디지털/가전
                 </button>`
-                      : `<button data-category1="생활/건강" data-category2="생활용품" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors ${selectedCategory2 === "생활용품" ? "bg-blue-100 border-blue-300 text-blue-800" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
+                      : selectedCategory1 === "생활/건강"
+                        ? `<button data-category1="생활/건강" data-category2="생활용품" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors ${selectedCategory2 === "생활용품" ? "bg-blue-100 border-blue-300 text-blue-800" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
                   생활용품
                 </button>
                 <button data-category1="생활/건강" data-category2="주방용품" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors ${selectedCategory2 === "주방용품" ? "bg-blue-100 border-blue-300 text-blue-800" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
@@ -68,7 +69,45 @@ export function createSearchFilter(options = {}) {
                 </button>
                 <button data-category1="생활/건강" data-category2="자동차용품" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors ${selectedCategory2 === "자동차용품" ? "bg-blue-100 border-blue-300 text-blue-800" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
                   자동차용품
+                </button>
+                <button data-category1="생활/건강" data-category2="구강위생용품" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors ${selectedCategory2 === "구강위생용품" ? "bg-blue-100 border-blue-300 text-blue-800" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
+                  구강위생용품
+                </button>
+                <button data-category1="생활/건강" data-category2="수납/정리용품" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors ${selectedCategory2 === "수납/정리용품" ? "bg-blue-100 border-blue-300 text-blue-800" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
+                  수납/정리용품
+                </button>
+                <button data-category1="생활/건강" data-category2="욕실용품" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors ${selectedCategory2 === "욕실용품" ? "bg-blue-100 border-blue-300 text-blue-800" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
+                  욕실용품
+                </button>
+                <button data-category1="생활/건강" data-category2="세탁용품" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors ${selectedCategory2 === "세탁용품" ? "bg-blue-100 border-blue-300 text-blue-800" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
+                  세탁용품
+                </button>
+                <button data-category1="생활/건강" data-category2="공구" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors ${selectedCategory2 === "공구" ? "bg-blue-100 border-blue-300 text-blue-800" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
+                  공구
+                </button>
+                <button data-category1="생활/건강" data-category2="청소용품" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors ${selectedCategory2 === "청소용품" ? "bg-blue-100 border-blue-300 text-blue-800" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
+                  청소용품
+                </button>
+                <button data-category1="생활/건강" data-category2="정원/원예용품" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors ${selectedCategory2 === "정원/원예용품" ? "bg-blue-100 border-blue-300 text-blue-800" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
+                  정원/원예용품
+                </button>
+                <button data-category1="생활/건강" data-category2="수집품" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors ${selectedCategory2 === "수집품" ? "bg-blue-100 border-blue-300 text-blue-800" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
+                  수집품
+                </button>
+                <button data-category1="생활/건강" data-category2="관상어용품" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors ${selectedCategory2 === "관상어용품" ? "bg-blue-100 border-blue-300 text-blue-800" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
+                  관상어용품
+                </button>
+                <button data-category1="생활/건강" data-category2="반려동물" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors ${selectedCategory2 === "반려동물" ? "bg-blue-100 border-blue-300 text-blue-800" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
+                  반려동물
                 </button>`
+                        : selectedCategory1 === "디지털/가전"
+                          ? `<button data-category1="디지털/가전" data-category2="컴퓨터/노트북" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors ${selectedCategory2 === "컴퓨터/노트북" ? "bg-blue-100 border-blue-300 text-blue-800" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
+                  컴퓨터/노트북
+                </button>
+                <button data-category1="디지털/가전" data-category2="휴대폰" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors ${selectedCategory2 === "휴대폰" ? "bg-blue-100 border-blue-300 text-blue-800" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
+                  휴대폰
+                </button>`
+                          : ""
                   }`
             }
           </div>

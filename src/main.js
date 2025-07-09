@@ -47,6 +47,10 @@ function setupEventListeners() {
     if (e.target.dataset.breadcrumb === "reset") {
       await productListService.resetFilters();
     }
+    if (e.target.dataset.breadcrumb === "category1") {
+      const category1 = e.target.dataset.category1;
+      await productListService.changeCategory(category1);
+    }
   });
 
   // 무한 스크롤 이벤트
