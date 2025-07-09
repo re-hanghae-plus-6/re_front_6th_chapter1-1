@@ -227,10 +227,13 @@ function setupModalEvents() {
 
   // 새로운 이벤트 리스너 생성
   modalClickHandler = (event) => {
-    // 닫기 버튼 클릭
-    const modalCloseBtn = document.querySelector(".modal-close-btn");
-    if (modalCloseBtn && (event.target === modalCloseBtn || modalCloseBtn.contains(event.target))) {
-      closeCartModal();
+    // 닫기 버튼 클릭 (모든 닫기 버튼 확인)
+    const closeButtons = document.querySelectorAll(".modal-close-btn");
+    for (const closeBtn of closeButtons) {
+      if (event.target === closeBtn || closeBtn.contains(event.target)) {
+        closeCartModal();
+        return;
+      }
     }
     // 배경 클릭으로 닫기
     if (event.target.matches(".cart-modal")) {
