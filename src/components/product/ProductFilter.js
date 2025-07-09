@@ -7,9 +7,13 @@ const sortOptions = [
 ];
 
 export default function ProductFilter({ state }) {
+  const categories = state.categories;
+  const category1List = categories ? Object.keys(categories) : [];
+  const category2List = categories?.[state.category1] ? Object.keys(categories[state.category1]) : [];
+
   return /*html*/ `
  <!-- 검색 및 필터 -->
- <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
+ <div id="product-filter" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
  <!-- 검색창 -->
  <div class="mb-4">
    <div class="relative">
@@ -29,13 +33,47 @@ export default function ProductFilter({ state }) {
    <div class="space-y-2">
      <div class="flex items-center gap-2">
        <label class="text-sm text-gray-600">카테고리:</label>
-       <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
+       <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline ${!state.category1 && !state.category2 ? "text-blue-600 font-medium" : ""}">전체</button>
+       ${state.category1 ? `<span class="text-xs text-gray-500">&gt;</span><button data-breadcrumb="category1" data-category1="${state.category1}" class="text-xs hover:text-blue-800 hover:underline">${state.category1}</button>` : ""}
+       ${state.category2 ? `<span class="text-xs text-gray-500">&gt;</span><button data-breadcrumb="category2" data-category2="${state.category2}" class="text-xs hover:text-blue-800 hover:underline">${state.category2}</button>` : ""}
      </div>
      <!-- 1depth 카테고리 -->
+     ${
+       !categories
+         ? `
+      <div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>
+    `
+         : !state.category1
+           ? `
      <div class="flex flex-wrap gap-2">
-       <div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>
-     </div>
-     <!-- 2depth 카테고리 -->
+     ${category1List
+       .map(
+         (category1) => `
+      <button data-category1="${category1}" class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
+        bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
+        ${category1}
+     </button>
+     `,
+       )
+       .join("")}
+       </div>
+       `
+           : `
+       <!-- 2depth 카테고리 -->
+       <div class="flex flex-wrap gap-2">
+        ${category2List
+          .map(
+            (category2) => `
+          <button data-category2="${category2}" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
+            ${state.category2 === category2 ? "bg-blue-100 border-blue-300 text-blue-700" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
+            ${category2}
+          </button>
+          `,
+          )
+          .join("")}
+          </div>
+      `
+     }
    </div>
    <!-- 기존 필터들 -->
    <div class="flex gap-2 items-center justify-between">

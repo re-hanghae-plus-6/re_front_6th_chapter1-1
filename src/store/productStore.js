@@ -9,6 +9,9 @@ export const createProductStore = (initialState = {}) => {
     search: "",
     page: 1,
     hasMore: true,
+    category1: "",
+    category2: "",
+    categories: [],
     ...initialState,
   };
 
@@ -53,6 +56,9 @@ export const createProductStore = (initialState = {}) => {
   const setLimit = (limit) => setState({ limit });
   const setSort = (sort) => setState({ sort });
   const setSearch = (search) => setState({ search });
+  const setCategory1 = (category1) => setState({ category1 });
+  const setCategory2 = (category2) => setState({ category2 });
+  const setCategories = (categories) => setState({ categories });
 
   const resetState = () => {
     state = {
@@ -65,6 +71,9 @@ export const createProductStore = (initialState = {}) => {
       search: "",
       page: 1,
       hasMore: true,
+      category1: "",
+      category2: "",
+      categories: [],
     };
     notify();
   };
@@ -82,6 +91,9 @@ export const createProductStore = (initialState = {}) => {
     setSearch,
     setPage,
     setHasMore,
+    setCategory1,
+    setCategory2,
+    setCategories,
     resetState,
   };
 };

@@ -4,6 +4,8 @@ export const getQueryParams = () => {
     search: params.get("search") || "",
     limit: parseInt(params.get("limit")) || 20,
     sort: params.get("sort") || "price_asc",
+    category1: params.get("category1") || "",
+    category2: params.get("category2") || "",
   };
 };
 

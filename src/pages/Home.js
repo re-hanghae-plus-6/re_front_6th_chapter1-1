@@ -2,7 +2,7 @@ import ProductCard from "../components/product/ProductCard";
 import ProductSkeleton, { ProductLoadingIndicator } from "../components/product/ProductSkeleton";
 import Header from "../components/common/Header";
 import Footer from "../components/common/Footer";
-import { getProducts } from "../api/productApi.js";
+import { getProducts, getCategories } from "../api/productApi.js";
 import { productStore } from "../store/productStore.js";
 import ProductFilter from "../components/product/ProductFilter.js";
 import { getQueryParams, updateQueryParams } from "../utils/urlParam.js";
@@ -41,6 +41,8 @@ async function loadProducts({ append = false }) {
       sort: state.sort,
       search: state.search,
       page: state.page,
+      category1: state.category1,
+      category2: state.category2,
     });
 
     if (response.products) {
@@ -74,12 +76,12 @@ export default function Home() {
   productStore.setSearch(initialParams.search);
   productStore.setLimit(initialParams.limit);
   productStore.setSort(initialParams.sort);
-  const state = productStore.getState();
+  productStore.setCategory1(initialParams.category1);
+  productStore.setCategory2(initialParams.category2);
 
   const template = `
     ${Header()}
     <main class="max-w-md mx-auto px-4 py-4">
-      ${ProductFilter({ state })}
       <!-- 상품 목록 -->
       <div class="mb-6">
         <div>
@@ -102,11 +104,27 @@ export default function Home() {
     ${Footer()}
   `;
 
-  function mount() {
+  async function mount() {
+    const categories = await getCategories();
+    productStore.setCategories(categories);
+
+    renderFilter();
     renderProducts();
     loadProducts({ append: false });
 
-    function filterReset({ search, limit, sort }) {
+    function renderFilter() {
+      const filterContainer = document.querySelector("main");
+      if (!filterContainer) return;
+
+      const oldFilter = filterContainer.querySelector("#product-filter");
+      if (oldFilter) oldFilter.remove();
+
+      const filterHTML = ProductFilter({ state: productStore.getState() });
+
+      filterContainer.insertAdjacentHTML("afterbegin", filterHTML);
+    }
+
+    function filterReset({ search, limit, sort, category1, category2 }) {
       const newParams = {};
       if (search !== undefined) {
         productStore.setSearch(search);
@@ -120,12 +138,21 @@ export default function Home() {
         productStore.setSort(sort);
         newParams.sort = sort;
       }
+      if (category1 !== undefined) {
+        productStore.setCategory1(category1);
+        newParams.category1 = category1;
+      }
+      if (category2 !== undefined) {
+        productStore.setCategory2(category2);
+        newParams.category2 = category2;
+      }
 
       updateQueryParams(newParams);
 
       productStore.setPage(1);
       productStore.setHasMore(true);
       loadProducts({ append: false });
+      renderFilter();
     }
 
     // 뒤로가기/앞으로가기 처리
@@ -134,36 +161,56 @@ export default function Home() {
       productStore.setSearch(params.search);
       productStore.setLimit(params.limit);
       productStore.setSort(params.sort);
+      productStore.setCategory1(params.category1);
+      productStore.setCategory2(params.category2);
       productStore.setPage(1);
       productStore.setHasMore(true);
       loadProducts({ append: false });
+      renderFilter();
     });
 
-    const limitSelect = document.getElementById("limit-select");
-    if (limitSelect) {
-      limitSelect.addEventListener("change", (e) => {
+    // 이벤트 위임 필터 이벤트 처리
+    document.addEventListener("change", (e) => {
+      if (e.target.id === "limit-select") {
         const newLimit = parseInt(e.target.value);
         filterReset({ limit: newLimit });
-      });
-    }
-
-    const sortSelect = document.getElementById("sort-select");
-    if (sortSelect) {
-      sortSelect.addEventListener("change", (e) => {
+      }
+      if (e.target.id === "sort-select") {
         const newSort = e.target.value;
         filterReset({ sort: newSort });
-      });
-    }
+      }
+    });
 
-    const searchInput = document.getElementById("search-input");
-    if (searchInput) {
-      searchInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-          const searchTerm = e.target.value.trim();
-          filterReset({ search: searchTerm });
-        }
-      });
-    }
+    document.addEventListener("keydown", (e) => {
+      if (e.target.id === "search-input" && e.key === "Enter") {
+        const searchTerm = e.target.value.trim();
+        filterReset({ search: searchTerm });
+      }
+    });
+
+    document.addEventListener("click", (e) => {
+      if (e.target.classList.contains("category1-filter-btn")) {
+        const category1 = e.target.dataset.category1;
+        filterReset({ category1, category2: "" });
+      }
+      if (e.target.classList.contains("category2-filter-btn")) {
+        const category2 = e.target.dataset.category2;
+        const state = productStore.getState();
+        filterReset({ category1: state.category1, category2 });
+      }
+      if (e.target.dataset.breadcrumb === "reset") {
+        filterReset({ category1: "", category2: "" });
+      }
+      if (e.target.dataset.breadcrumb === "category1") {
+        const category1 = e.target.dataset.category1;
+        filterReset({ category1, category2: "" });
+      }
+      if (e.target.dataset.breadcrumb === "category2") {
+        const category2 = e.target.dataset.category2;
+        const state = productStore.getState();
+        filterReset({ category1: state.category1, category2 });
+      }
+    });
 
     const observerTarget = document.getElementById("observer-target");
 
@@ -186,7 +233,10 @@ export default function Home() {
       observer.observe(observerTarget);
     }
 
-    const unsubscribe = productStore.subscribe(renderProducts);
+    const unsubscribe = productStore.subscribe(() => {
+      renderProducts();
+      renderFilter();
+    });
     return () => {
       observer.disconnect();
       unsubscribe();
