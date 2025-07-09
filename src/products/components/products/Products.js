@@ -22,7 +22,7 @@ export class Products extends Component {
   render() {
     const { limit, page, total, products, currentPageProducts, isLoading, hasNext, isFetching } = productsStore;
     if (page === 1) {
-      const filledProducts = this.#ensureProductsCount({ limit, page, products });
+      const filledProducts = this.#ensureProductsCount({ total, limit, page, products });
       this.#renderFirstPage({ total, currentPageProducts: filledProducts, isLoading, hasNext });
     } else {
       this.#appendProducts({ currentPageProducts });
@@ -32,8 +32,9 @@ export class Products extends Component {
     this.#setIntersectionObserver({ isLoading, hasNext, isFetching });
   }
 
-  #ensureProductsCount({ limit, page, products }) {
-    const currentTotal = +limit * +page;
+  #ensureProductsCount({ total, limit, page, products }) {
+    const currentTotal = Math.min(+limit * +page, total);
+
     if (products.length > currentTotal) {
       return products.slice(0, currentTotal);
     }
