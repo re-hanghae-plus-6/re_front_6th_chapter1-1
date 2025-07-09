@@ -18,7 +18,6 @@ export default class ProductList extends Component {
         sort: currentState.filter.sort,
       };
 
-      console.log(this.shouldFetchProducts(currentParams));
       if (this.shouldFetchProducts(currentParams)) {
         this.fetchProducts();
       }
@@ -44,7 +43,11 @@ export default class ProductList extends Component {
 
   async fetchProducts() {
     const homeState = homeStore.getState();
-    const { isProductsLoading } = homeState.products;
+    const {
+      isProductsLoading,
+      pagination: { page },
+    } = homeState.products;
+    const { category1, category2, search, sort, limit } = homeState.filter;
 
     if (isProductsLoading) return;
 
@@ -56,14 +59,14 @@ export default class ProductList extends Component {
     });
 
     const params = {
-      page: homeState.products.pagination.page,
-      limit: homeState.filter.limit,
-      search: homeState.filter.search,
-      category1: homeState.filter.category1,
-      category2: homeState.filter.category2,
-      sort: homeState.filter.sort,
+      page,
+      limit,
+      search,
+      category1,
+      category2,
+      sort,
     };
-    console.log("params: ", params);
+    console.log(params);
     const { products, pagination } = await getProducts(params);
 
     homeStore.setState({

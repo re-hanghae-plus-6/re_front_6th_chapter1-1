@@ -19,6 +19,7 @@ const homeState = {
   categories: {
     categoryList: [],
     isCategoryLoading: false,
+    currentCategory: "",
   },
 
   // 필터 및 정렬 상태

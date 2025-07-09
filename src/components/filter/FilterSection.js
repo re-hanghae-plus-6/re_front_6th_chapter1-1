@@ -1,15 +1,22 @@
 import Component from "../../lib/Component";
 import CategoryItem from "./CategoryItem";
-import Breadcrumb from "./Breadcrumb";
-import { homeStore } from "../../store/homeStore";
 import { DEFAULT_LIMIT, DEFAULT_PAGE } from "../../constants";
+import { homeStore } from "../../store/homeStore";
+import { findBreadcrumb, findChildren } from "../../utils/findBreadcrumb";
+import Breadcrumb from "./Breadcrumb";
 
 export default class Filter extends Component {
   setup() {
+    this.child = new Map();
+
     this.unsubscribe = homeStore.subscribe(() => {
       this.render();
       this.setEvent();
       this.mounted();
+    });
+
+    this.setState({
+      categoryChildren: [],
     });
   }
 
@@ -68,6 +75,58 @@ export default class Filter extends Component {
     });
   }
 
+  search() {
+    const homeState = homeStore.getState();
+    const currentSearch = homeState.filter.search || "";
+
+    const searchInput = document.getElementById("search-input");
+    if (!searchInput) return;
+
+    searchInput.value = currentSearch;
+
+    searchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const search = e.target.value;
+
+        homeStore.setState({
+          filter: {
+            search,
+          },
+        });
+      }
+    });
+  }
+
+  selectCategory() {
+    const { categoryList } = homeStore.getState().categories;
+
+    const categoryFilterBtns = document.querySelectorAll(".category-filter-btn");
+
+    categoryFilterBtns.forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const selectedCategory = e.target.dataset.category;
+
+        const breadcrumb = findBreadcrumb(categoryList, selectedCategory);
+        const category1 = breadcrumb[0] || "";
+        const category2 = breadcrumb[1] || "";
+        console.log(breadcrumb);
+        homeStore.setState({
+          categories: {
+            currentCategory: selectedCategory,
+          },
+        });
+
+        homeStore.setState({
+          filter: {
+            category1,
+            category2,
+          },
+        });
+      });
+    });
+  }
+
   resetPage() {
     homeStore.setState({
       products: {
@@ -81,13 +140,30 @@ export default class Filter extends Component {
   setEvent() {
     this.selectLimit();
     this.selectSort();
+    this.search();
+    this.selectCategory();
+  }
+
+  mounted() {
+    const categoryBreadcrumbContainer = document.getElementById("category-breadcrumb-container");
+
+    if (!this.child.get("categoryBreadcrumb")) {
+      const categoryBreadcrumbInstance = new Breadcrumb(categoryBreadcrumbContainer);
+      this.addChild(categoryBreadcrumbInstance, "categoryBreadcrumb");
+    } else {
+      const categoryBreadcrumbInstance = this.child.get("categoryBreadcrumb");
+      categoryBreadcrumbInstance.$target = categoryBreadcrumbContainer;
+      categoryBreadcrumbInstance.render();
+    }
   }
 
   template() {
     const {
-      categories: { categoryList, isCategoryLoading },
+      categories: { isCategoryLoading, currentCategory, categoryList },
       filter: { limit, sort },
     } = homeStore.getState();
+
+    const categoryChildren = findChildren(categoryList, currentCategory);
 
     return /* HTML */ ` <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
       <!-- 검색창 -->
@@ -124,17 +200,13 @@ export default class Filter extends Component {
         <div class="space-y-2">
           <div class="flex items-center gap-2">
             <label class="text-sm text-gray-600">카테고리:</label>
-            <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">
-              전체 ${Breadcrumb()}
-            </button>
+            <div id="category-breadcrumb-container"></div>
           </div>
           <!-- 1depth 카테고리 -->
           <div class="flex flex-wrap gap-2">
             ${isCategoryLoading
               ? this.loadingTemplate()
-              : Object.keys(categoryList || {})
-                  .map((category) => CategoryItem({ category }))
-                  .join("")}
+              : categoryChildren.map((category) => CategoryItem({ category })).join("") || ""}
           </div>
           <!-- 2depth 카테고리 -->
         </div>

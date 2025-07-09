@@ -1,7 +1,7 @@
-import { getCategories, getProducts } from "../api/productApi";
+import { getCategories } from "../api/productApi";
 import Footer from "../components/common/Footer";
 import Header from "../components/common/Header";
-import Filter from "../components/filter/filter";
+import Filter from "../components/filter/FilterSection";
 import ProductList from "../components/product/ProductList";
 import Component from "../lib/Component";
 
@@ -9,8 +9,6 @@ import { homeStore } from "../store/homeStore";
 
 export default class HomePage extends Component {
   setup() {
-    this.child = new Map();
-
     this.unsubscribe = homeStore.subscribe(() => {
       this.render();
       this.setEvent();
@@ -18,7 +16,6 @@ export default class HomePage extends Component {
     });
 
     this.fetchCategories();
-    // this.fetchProducts();
   }
 
   async fetchCategories() {
@@ -48,49 +45,6 @@ export default class HomePage extends Component {
         isCategoryLoading: false,
       },
     });
-  }
-
-  async fetchProducts() {
-    const homeState = homeStore.getState();
-    const { isProductsLoading } = homeState.products;
-
-    if (isProductsLoading) return;
-
-    homeStore.setState({
-      products: {
-        ...homeState.products,
-        isProductsLoading: true,
-      },
-    });
-
-    const params = {
-      page: homeState.products.pagination.page,
-      limit: homeState.filter.limit,
-      search: homeState.filter.search,
-      category1: homeState.filter.category1,
-      category2: homeState.filter.category2,
-      sort: homeState.filter.sort,
-    };
-
-    const { products, pagination } = await getProducts(params);
-
-    homeStore.setState({
-      products: {
-        ...homeState.products,
-        isProductsLoading: false,
-        list: products,
-        total: pagination.total,
-        pagination,
-      },
-    });
-  }
-
-  addChild(childInstance, key) {
-    this.child.set(key, childInstance);
-  }
-
-  removeChild(key) {
-    this.child.delete(key);
   }
 
   mounted() {

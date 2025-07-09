@@ -21,6 +21,13 @@
 export default function ProductItem(product) {
   const { productId, image, title, lprice } = product;
 
+  // const { navigate } = useNavigate();
+  // const param = useParams();
+
+  // const handleClick = () => {
+  //   navigate(`/product/${param}`, true);
+  // };
+
   return /* HTML */ `<div
     class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
     data-product-id=${productId}

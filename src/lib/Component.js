@@ -6,6 +6,8 @@ export default class Component {
   constructor($target, props) {
     this.$target = $target; // 부모 DOM 요소 지정
     this.props = props; // props 지정
+    this.state = {}; // 초기 상태 설정
+    this.child = new Map();
     this.setup(); // 초기 상태 설정
     this.render(); // 초기 렌더링
   }
@@ -39,7 +41,19 @@ export default class Component {
 
   setState(newState) {
     // 🔷 상태를 업데이트하고 render()를 호출해 화면을 갱신
-    this.$state = { ...this.$state, ...newState };
+    this.state = { ...this.state, ...newState };
     this.render();
+  }
+
+  getState() {
+    return this.state;
+  }
+
+  addChild(childInstance, key) {
+    this.child.set(key, childInstance);
+  }
+
+  removeChild(key) {
+    this.child.delete(key);
   }
 }
