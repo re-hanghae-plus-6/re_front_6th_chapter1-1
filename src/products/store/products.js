@@ -1,7 +1,7 @@
 import { getProducts } from "../../api/productApi";
 import { observable } from "../../core/observer";
 
-const DEFAULT_PAGE = 1;
+const LOAD_DEFAULT_PAGE = 1;
 
 export const productsStore = observable({
   limit: 20,
@@ -25,48 +25,51 @@ export const productsStore = observable({
       category1: productsStore.category1,
       category2: productsStore.category2,
       sort: productsStore.sort,
+      page: productsStore.page,
     };
   },
   initSearchParams: () => {
     const searchParams = new URLSearchParams(window.location.search);
-    searchParams.set("page", DEFAULT_PAGE);
+    searchParams.set("page", LOAD_DEFAULT_PAGE);
     for (const [key, value] of searchParams) {
       productsStore[key] = value;
     }
   },
   setLimit(limit) {
     productsStore.limit = limit;
-    productsStore.page = DEFAULT_PAGE;
+    productsStore.load();
   },
   setSearch(search) {
     productsStore.search = search;
-    productsStore.page = DEFAULT_PAGE;
+    productsStore.load();
   },
   setCategory1(category1) {
     productsStore.category1 = category1;
-    productsStore.page = DEFAULT_PAGE;
+    productsStore.load();
   },
   setCategory2(category2) {
     productsStore.category2 = category2;
-    productsStore.page = DEFAULT_PAGE;
+    productsStore.load();
   },
   setSort(sort) {
     productsStore.sort = sort;
-    productsStore.page = DEFAULT_PAGE;
+    productsStore.load();
   },
   async load() {
-    await productsStore.fetchProducts(productsStore.params);
+    productsStore.page = LOAD_DEFAULT_PAGE;
+    const data = await productsStore.fetchProducts(productsStore.params);
+    productsStore.products = data.products;
     productsStore.isLoading = false;
   },
   async loadNextPage() {
-    productsStore.updateParams({ page: productsStore.page + 1 });
-    await productsStore.fetchProducts();
+    productsStore.page = productsStore.page + 1;
+    const data = await productsStore.fetchProducts();
+    productsStore.products = [...productsStore.products, ...data.products];
   },
   async fetchProducts() {
     productsStore.isFetching = true;
-    const data = await getProducts(productsStore.params);
+    const data = await getProducts(productsStore.getParams());
 
-    productsStore.products = [...productsStore.products, ...data.products];
     productsStore.currentPageProducts = data.products;
     productsStore.page = data.pagination.page;
     productsStore.hasNext = data.pagination.hasNext;
