@@ -2,18 +2,22 @@ import { LimitSelect } from "../components/LimitSelect.js";
 import { ProductItem } from "../components/ProductItem.js";
 import { LoadingList } from "../components/Loading.js";
 
-export const MainPage = ({
-  products = [],
-  total = 0,
-  loading = false,
-  categories = [],
-  limit = 20,
-  search = "",
-  sort = "price_asc",
-  isFirstLoad = true,
-  selectedCategory1 = "",
-  selectedCategory2 = "",
-}) => {
+export const MainPage = (appState) => {
+  // store 기반 상태 구조에 맞게 데이터 추출
+  const {
+    products: {
+      products = [],
+      total = 0,
+      loading = false,
+      limit = 20,
+      search = "",
+      sort = "price_asc",
+      isFirstLoad = true,
+    } = {},
+    categories = [],
+    categoriesLoading = false,
+    selectedCategories: { category1: selectedCategory1 = "", category2: selectedCategory2 = "" } = {},
+  } = appState || {};
   const categorylist = Object.entries(categories);
   return `
     <div class="min-h-screen bg-gray-50">
@@ -30,7 +34,6 @@ export const MainPage = ({
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M3 3h2l.4 2M7 13h10l4-8H5.4m2.6 8L6 2H3m4 11v6a1 1 0 001 1h1a1 1 0 001-1v-6M13 13v6a1 1 0 001 1h1a1 1 0 001-1v-6"></path>
                 </svg>
-                <span id="cart-count-badge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[20px] text-center font-bold" style="display:none;">0</span>
               </button>
             </div>
           </div>
@@ -69,7 +72,7 @@ export const MainPage = ({
                   ? `
               <div class="flex flex-wrap gap-2">
               ${
-                loading
+                categoriesLoading
                   ? '<div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>'
                   : categorylist
                       .map(

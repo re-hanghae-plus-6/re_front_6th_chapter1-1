@@ -1,6 +1,8 @@
 import { getProduct, getProducts } from "../api/productApi.js";
 import { Footer } from "./Footer.js";
 import { waitForMSW } from "../main.js";
+import { showToast } from "../components/Toast.js";
+import { cartStore } from "../stores/index.js";
 
 export async function ProductDetailPage({ productId }) {
   try {
@@ -20,11 +22,10 @@ export async function ProductDetailPage({ productId }) {
       sort: "price_asc",
     });
 
-    // 현재 상품을 제외한 관련 상품들 (전체)
+    // 현재 상품을 제외한 관련 상품들 (전체 호출)
     const relatedProducts = relatedProductsResponse.products.filter((p) => p.productId !== product.productId);
 
-    console.log("product", product);
-    // 렌더링
+    // 페이지 렌더링
     document.getElementById("root").innerHTML = `
       <div class="min-h-screen bg-gray-50">
         <header class="bg-white shadow-sm sticky top-0 z-40">
@@ -44,9 +45,6 @@ export async function ProductDetailPage({ productId }) {
                   <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m2.6 8L6 2H3m4 11v6a1 1 0 001 1h1a1 1 0 001-1v-6M13 13v6a1 1 0 001 1h1a1 1 0 001-1v-6"></path>
                   </svg>
-                  <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    1
-                  </span>
                 </button>
               </div>
             </div>
@@ -236,9 +234,63 @@ export async function ProductDetailPage({ productId }) {
     });
 
     document.getElementById("add-to-cart-btn").onclick = () => {
-      const quantity = parseInt(quantityInput.value);
-      alert(`${quantity}개 장바구니에 담았습니다!`);
+      try {
+        const productId = product.productId;
+        const quantity = parseInt(quantityInput.value);
+
+        // 상품 ID 유효성 검사
+        if (!productId) {
+          showToast("error");
+          return;
+        }
+
+        // 수량 유효성 검사
+        if (quantity < 1 || isNaN(quantity)) {
+          showToast("error");
+          return;
+        }
+
+        // cartStore를 통한 장바구니 추가
+        cartStore.addItem(productId, quantity);
+        showToast("add");
+
+        // 장바구니 뱃지 업데이트 (메인 페이지로 돌아갔을 때 반영되도록)
+        updateCartCountBadge();
+      } catch (error) {
+        console.error("장바구니 담기 중 오류 발생:", error);
+        showToast("error");
+      }
     };
+
+    // 장바구니 개수 뱃지 업데이트 함수 (상세 페이지용, store 기반)
+    function updateCartCountBadge() {
+      const cartBtn = document.getElementById("cart-icon-btn");
+      if (!cartBtn) return;
+
+      const uniqueProductCount = cartStore.getUniqueProductCount();
+
+      // 기존 뱃지 찾기
+      let badge = cartBtn.querySelector(".cart-badge");
+
+      if (uniqueProductCount > 0) {
+        // 뱃지가 없으면 생성, 있으면 재사용
+        if (!badge) {
+          badge = document.createElement("span");
+          badge.className =
+            "cart-badge absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center";
+          cartBtn.appendChild(badge);
+        }
+        badge.textContent = uniqueProductCount;
+      } else {
+        // 장바구니가 비어있으면 뱃지 제거
+        if (badge) {
+          badge.remove();
+        }
+      }
+    }
+
+    // 페이지 로드 시 장바구니 뱃지 업데이트
+    updateCartCountBadge();
   } catch (e) {
     console.log("e", e);
     document.getElementById("root").innerHTML = `

@@ -1,9 +1,8 @@
-import { getProducts } from "./api/productApi.js";
-import { getCategories } from "./api/productApi.js";
 import { showToast } from "./components/Toast.js";
 import { router } from "./router/index.js";
 import { MainPage } from "./pages/MainPage.js";
 import { Footer } from "./pages/Footer.js";
+import { cartStore, productStore, categoryStore, storeManager, getAppState } from "./stores/index.js";
 
 // MSW 초기화 상태 관리
 let mswReady = false;
@@ -39,32 +38,18 @@ export function waitForMSW() {
   return mswReadyPromise;
 }
 
-// 1. 상태를 한 곳에서 관리
-let state = {
-  products: [],
-  total: 0,
-  categories: [],
-  limit: 20,
-  sort: "price_asc",
-  search: "",
-  loading: false,
-  page: 1,
-  hasMore: true,
-  isFirstLoad: true, // 최초 진입 여부
-  selectedCategory1: "", // 선택된 1depth 카테고리
-  selectedCategory2: "", // 선택된 2depth 카테고리
-  // ...필요한 상태 추가
-};
-
-// 2. 상태에 따라 UI를 그리는 함수
+// Store 기반 렌더링 함수
 function render() {
   const path = window.location.pathname;
   const root = document.getElementById("root");
 
+  // store에서 현재 상태 가져오기
+  const appState = getAppState();
+
   // 메인 페이지는 상태와 함께 렌더링
   if (path === "/") {
     root.innerHTML = `
-      ${MainPage(state)}
+      ${MainPage(appState)}
       ${Footer()}
     `;
   } else {
@@ -82,6 +67,18 @@ function render() {
     });
   });
 
+  // 쇼핑몰 로고/제목 클릭 시 초기 상태로 리셋
+  const shopTitle = document.querySelector("h1 a[data-link]");
+  if (shopTitle) {
+    shopTitle.addEventListener("click", (e) => {
+      e.preventDefault();
+      // store를 통한 상태 초기화
+      storeManager.resetAll();
+      // 새로 데이터 로드
+      storeManager.initialize();
+    });
+  }
+
   // 장바구니 개수 뱃지 업데이트
   updateCartCountBadge();
 
@@ -89,14 +86,14 @@ function render() {
   const limitSelect = document.getElementById("limit-select");
   if (limitSelect) {
     limitSelect.addEventListener("change", (e) => {
-      onLimitChange(Number(e.target.value));
+      storeManager.changeLimit(Number(e.target.value));
     });
   }
 
   const sortSelect = document.getElementById("sort-select");
   if (sortSelect) {
     sortSelect.addEventListener("change", (e) => {
-      onSortChange(e.target.value);
+      storeManager.changeSorting(e.target.value);
     });
   }
 
@@ -104,7 +101,7 @@ function render() {
   if (searchInput) {
     searchInput.addEventListener("keypress", (e) => {
       if (e.key === "Enter") {
-        onSearchChange(e.target.value);
+        storeManager.searchProducts(e.target.value);
       }
     });
   }
@@ -112,17 +109,21 @@ function render() {
   // 장바구니 담기 버튼 이벤트 등록
   document.querySelectorAll(".add-to-cart-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
-      const productId = btn.getAttribute("data-product-id");
-      let cart = JSON.parse(localStorage.getItem("cart") || "[]");
+      try {
+        const productId = btn.getAttribute("data-product-id");
 
-      if (!cart.includes(productId)) {
-        cart.push(productId);
-        localStorage.setItem("cart", JSON.stringify(cart));
+        // 상품 ID 유효성 검사
+        if (!productId) {
+          showToast("error");
+          return;
+        }
+
+        // cartStore를 통한 장바구니 추가
+        cartStore.addItem(productId, 1);
         showToast("add");
         updateCartCountBadge();
-      } else if (cart.includes(productId)) {
-        showToast("already");
-      } else {
+      } catch (error) {
+        console.error("장바구니 담기 중 오류 발생:", error);
         showToast("error");
       }
     });
@@ -132,7 +133,7 @@ function render() {
   document.querySelectorAll(".category1-filter-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       const category1 = btn.getAttribute("data-category1");
-      onCategory1Change(category1);
+      storeManager.selectCategory1(category1);
     });
   });
 
@@ -140,7 +141,7 @@ function render() {
     btn.addEventListener("click", () => {
       const category1 = btn.getAttribute("data-category1");
       const category2 = btn.getAttribute("data-category2");
-      onCategory2Change(category1, category2);
+      storeManager.selectCategory2(category1, category2);
     });
   });
 
@@ -148,10 +149,10 @@ function render() {
     btn.addEventListener("click", () => {
       const action = btn.getAttribute("data-breadcrumb");
       if (action === "reset") {
-        onCategoryReset();
+        storeManager.resetCategory();
       } else if (action === "category1") {
         const category1 = btn.getAttribute("data-category1");
-        onCategory1Change(category1);
+        storeManager.selectCategory1(category1);
       }
     });
   });
@@ -161,153 +162,59 @@ function render() {
     window.addEventListener("scroll", () => {
       // 메인 페이지가 아니면 무한 스크롤 비활성화
       const path = window.location.pathname;
-      if (path !== "/" || state.loading || !state.hasMore) return;
+      const currentAppState = getAppState();
+      if (path !== "/" || currentAppState.products.loading || !currentAppState.products.hasMore) return;
 
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
 
       if (scrollTop + windowHeight >= documentHeight - 100) {
-        loadMoreProducts();
+        storeManager.loadMoreProducts();
       }
     });
     window.scrollHandlerAdded = true;
   }
 }
 
-// 3. 데이터 fetch 및 상태 갱신 함수
-async function fetchAndRender() {
-  state.loading = true;
-  state.total = 0; // 로딩 시작 시 0으로 초기화
-  render();
-  // 데이터 fetch
-  const [
-    {
-      products,
-      pagination: { total },
-    },
-    categories,
-  ] = await Promise.all([
-    getProducts({
-      page: state.page,
-      limit: state.limit,
-      sort: state.sort,
-      search: state.search,
-      category1: state.selectedCategory1,
-      category2: state.selectedCategory2,
-    }),
-    getCategories(),
-  ]);
-  state = {
-    ...state,
-    products,
-    total,
-    categories,
-    loading: false,
-    hasMore: products.length < total,
-    isFirstLoad: false,
-  };
-  render();
-}
-
-// 무한 스크롤을 위한 추가 상품 로드 함수
-async function loadMoreProducts() {
-  if (state.loading || !state.hasMore) return;
-
-  state.loading = true;
-  state.page += 1;
-  render();
-
-  const {
-    products: newProducts,
-    pagination: { hasNext },
-  } = await getProducts({
-    page: state.page,
-    limit: state.limit,
-    sort: state.sort,
-    search: state.search,
-    category1: state.selectedCategory1,
-    category2: state.selectedCategory2,
-  });
-
-  state = {
-    ...state,
-    products: [...state.products, ...newProducts],
-    loading: false,
-    hasMore: hasNext,
-  };
-
-  render();
-}
-
-// 4. 이벤트 핸들러는 상태를 바꾸고 fetchAndRender 호출
-function onLimitChange(newLimit) {
-  state.limit = newLimit;
-  return fetchAndRender();
-}
-
-function onSortChange(newSort) {
-  state.sort = newSort;
-  return fetchAndRender();
-}
-
-function onSearchChange(newSearch) {
-  state.search = newSearch;
-  return fetchAndRender();
-}
-
-// 카테고리 선택 함수들
-function onCategory1Change(category1) {
-  state = {
-    ...state,
-    selectedCategory1: category1,
-    selectedCategory2: "", // 1depth 변경 시 2depth 초기화
-    page: 1,
-    products: [],
-    hasMore: true,
-  };
-  fetchAndRender();
-}
-
-function onCategory2Change(category1, category2) {
-  state = {
-    ...state,
-    selectedCategory1: category1,
-    selectedCategory2: category2,
-    page: 1,
-    products: [],
-    hasMore: true,
-  };
-  fetchAndRender();
-}
-
-function onCategoryReset() {
-  state = {
-    ...state,
-    selectedCategory1: "",
-    selectedCategory2: "",
-    page: 1,
-    products: [],
-    hasMore: true,
-  };
-  fetchAndRender();
-}
-
-// 장바구니 개수 뱃지 표시 함수
+// 장바구니 개수 뱃지 표시 함수 (cartStore 기반)
 function updateCartCountBadge() {
-  const badge = document.getElementById("cart-count-badge");
-  if (!badge) return;
-  let cart = JSON.parse(localStorage.getItem("cart") || "[]");
-  if (cart.length > 0) {
-    badge.textContent = cart.length;
-    badge.style.display = "inline-block";
+  const cartBtn = document.getElementById("cart-icon-btn");
+  if (!cartBtn) return;
+
+  const uniqueProductCount = cartStore.getUniqueProductCount();
+
+  // 기존 뱃지 찾기
+  let badge = cartBtn.querySelector(".cart-badge");
+
+  if (uniqueProductCount > 0) {
+    // 뱃지가 없으면 생성, 있으면 재사용
+    if (!badge) {
+      badge = document.createElement("span");
+      badge.className =
+        "cart-badge absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center";
+      cartBtn.appendChild(badge);
+    }
+    badge.textContent = uniqueProductCount;
   } else {
-    badge.textContent = "0";
-    badge.style.display = "none";
+    // 장바구니가 비어있으면 뱃지 제거
+    if (badge) {
+      badge.remove();
+    }
   }
 }
 
-// 5. 앱 시작
+// Store 변화 구독 및 렌더링
+function setupStoreSubscriptions() {
+  // 모든 store 변화 시 렌더링
+  [cartStore, categoryStore, productStore].forEach((store) => {
+    store.subscribe(() => {
+      render();
+    });
+  });
+}
+
+// 앱 시작
 async function startApp() {
   // MSW 초기화 (테스트 환경이 아닌 경우)
   if (import.meta.env.MODE !== "test") {
@@ -318,32 +225,22 @@ async function startApp() {
     window.mswResolve && window.mswResolve();
   }
 
-  state.isFirstLoad = true;
+  // store 구독 설정
+  setupStoreSubscriptions();
+
+  // store 매니저를 통한 앱 초기화
+  await storeManager.initialize();
+
+  // 초기 렌더링
   render();
-  fetchAndRender();
 
   // popstate 이벤트 리스너 추가 (브라우저 뒤로가기/앞으로가기 및 테스트에서 사용)
-  window.addEventListener("popstate", () => {
-    // 앱 상태 초기화
-    state = {
-      products: [],
-      total: 0,
-      categories: [],
-      limit: 20,
-      sort: "price_asc",
-      search: "",
-      loading: false,
-      page: 1,
-      hasMore: true,
-      isFirstLoad: true,
-      selectedCategory1: "",
-      selectedCategory2: "",
-    };
-
+  window.addEventListener("popstate", async () => {
     // 스크롤 이벤트 리스너 초기화
     window.scrollHandlerAdded = false;
 
-    fetchAndRender();
+    // store 매니저를 통한 재초기화
+    await storeManager.initialize();
   });
 }
 
