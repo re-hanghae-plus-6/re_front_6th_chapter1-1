@@ -1,6 +1,7 @@
 import { Home } from "./pages/Home.js";
 import { Product } from "./pages/Product.js";
 import { NotFound } from "./pages/NotFound.js";
+import { addHeaderEvents } from "./components/Modal/CartModal.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -20,6 +21,8 @@ async function main() {
   } else {
     NotFound();
   }
+
+  addHeaderEvents();
 }
 
 window.addEventListener("popstate", main);

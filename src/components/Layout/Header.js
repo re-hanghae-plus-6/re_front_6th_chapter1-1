@@ -1,3 +1,5 @@
+import { CartModal } from "../Modal/CartModal";
+
 export const Header = ({ type = "home", cartCount = 0 }) => {
   const renderHeaderText = () => {
     return type === "home"
@@ -28,7 +30,6 @@ export const Header = ({ type = "home", cartCount = 0 }) => {
       <div class="flex items-center justify-between">
         ${renderHeaderText()}
         <div class="flex items-center space-x-2">
-          <!-- 장바구니 아이콘 -->
           <!-- 장바구니 아이콘 -->
           <button id="cart-icon-btn" class="relative p-2 text-gray-700 hover:text-gray-900 transition-colors">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
