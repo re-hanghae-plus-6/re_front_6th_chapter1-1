@@ -37,16 +37,24 @@ class HomePage extends Component {
     });
   }
 
+  fetchProducts({ page, limit, sort }) {
+    return getProducts({
+      page,
+      limit,
+      sort,
+    });
+  }
+
   handleLimitChange = async (value) => {
     const newLimitValue = Number(value);
-    const products = await getProducts({
+    const newProducts = await this.fetchProducts({
       page: this.state.query.page,
       limit: newLimitValue,
     });
     this.setState({
       ...this.state,
       loading: false,
-      products,
+      newProducts,
       query: {
         ...this.state.query,
         limit: newLimitValue,
@@ -56,17 +64,43 @@ class HomePage extends Component {
 
   handleSortChange = async (value) => {
     const newSortValue = value;
-    const products = await getProducts({
-      page: this.state.query.page,
+    const newProducts = await this.fetchProducts({
+      page: DEFAULT_PAGE,
       sort: newSortValue,
     });
     this.setState({
       ...this.state,
       loading: false,
-      products,
+      newProducts,
       query: {
         ...this.state.query,
+        page: DEFAULT_PAGE,
         sort: newSortValue,
+      },
+    });
+  };
+
+  fetchNextPageProducts = async () => {
+    if (this.state.loading) {
+      return;
+    }
+    const nextPage = this.state.query.page + 1;
+    const newProducts = await this.fetchProducts({
+      page: nextPage,
+      limit: this.state.query.limit,
+      sort: this.state.query.sort,
+    });
+
+    this.setState({
+      ...this.state,
+      loading: false,
+      products: {
+        ...newProducts,
+        products: [...this.state.products.products, ...newProducts.products],
+      },
+      query: {
+        ...this.state.query,
+        page: nextPage,
       },
     });
   };
@@ -87,6 +121,7 @@ class HomePage extends Component {
       query: this.state.query,
       onChangeLimit: this.handleLimitChange,
       onChangeSort: this.handleSortChange,
+      onFetchNextPageProducts: this.fetchNextPageProducts,
     }).mount();
 
     new ProductContainer(this.element.querySelector('#product-container'), {

@@ -25,7 +25,7 @@ class ProductContainer extends Component {
 
     new ProductList(this.element.querySelector('#product-list'), {
       loading: this.props.loading,
-      products: this.props.products ? this.props.products.products : null,
+      products: this.props.products ? this.props.products : null,
     }).mount();
   }
 }

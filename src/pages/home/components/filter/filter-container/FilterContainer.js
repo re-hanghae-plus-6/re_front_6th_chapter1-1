@@ -5,6 +5,21 @@ class FilterContainer extends Component {
     super(element, props);
   }
 
+  onMount() {
+    let observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          if (!this.props.loading) {
+            this.props.onFetchNextPageProducts();
+          }
+        }
+      });
+    });
+
+    const $footer = document.querySelector('#footer');
+    observer.observe($footer);
+  }
+
   attachEventListeners() {
     this.addEventListener(this.element, 'change', (event) => {
       if (event.target.id === 'limit-select') {
