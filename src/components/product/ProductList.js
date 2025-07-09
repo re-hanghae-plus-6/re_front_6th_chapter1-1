@@ -1,6 +1,7 @@
 import ProductItem from "./ProductItem";
 
 export default function ProductList({ products, total }) {
+  console.log("products: ", products);
   return /* HTML */ `<div class="mb-6">
     <div>
       <!-- 상품 개수 정보 -->

@@ -9,12 +9,18 @@ import useHomeStore, { homeStore } from "../store/homeStore";
 export default function HomePage() {
   // TODO : homeStore 디버깅용 코드 제거
 
+  const handler = componentHandler();
+
   const {
     products: { list, total },
   } = useHomeStore();
-  console.log("homeStore: ", useHomeStore());
 
-  componentHandler().init();
+  homeStore.subscribe(() => {
+    handler.render(homeStore.getState());
+  });
+
+  handler.init();
+  console.log("homeStore: ", list);
 
   return /* HTML */ `
     <div class="bg-gray-50">
@@ -35,6 +41,7 @@ export default function HomePage() {
 
 function componentHandler() {
   const {
+    // products: { list, total },
     categories: { categoryList, isCategoryLoading },
   } = useHomeStore();
 
@@ -43,7 +50,26 @@ function componentHandler() {
     fetchProducts();
   };
 
-  const render = () => {};
+  const render = (state) => {
+    console.log("state: ", state);
+    const pageHtml = `
+    <div class="bg-gray-50">
+      ${Header()}
+      <main class="maxProductList-w-md mx-auto px-4 py-4">
+        <!-- 검색 및 필터 -->
+        ${Filter()}
+        <!-- 상품 목록 -->
+        ${ProductList({
+          products: state.products.list,
+          total: state.products.total,
+        })}
+      </main>
+      ${Footer()}
+    </div>
+  `;
+
+    document.querySelector("#root").innerHTML = pageHtml;
+  };
 
   const fetchProducts = async () => {
     const params = {
