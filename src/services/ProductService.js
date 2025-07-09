@@ -1,0 +1,96 @@
+import { getProducts, getProduct } from '../api/productApi.js';
+
+export class ProductService {
+  static async fetchProducts(filters = {}) {
+    try {
+      const params = {
+        page: filters.page || 1,
+        limit: filters.limit || 20,
+        search: filters.search || '',
+        category1: filters.category1 || '',
+        category2: filters.category2 || '',
+        sort: filters.sort || 'price_asc',
+      };
+
+      const response = await getProducts(params);
+
+      // MSW 응답 구조에 맞게 변환
+      const products =
+        response.products || response.data || response.results || response;
+
+      // 필드명 매핑 (MSW 응답의 필드명을 앱에서 사용하는 필드명으로 변환)
+      const normalizedProducts = Array.isArray(products)
+        ? products.map((product) => ({
+            id: product.productId || product.id,
+            name: product.title || product.name,
+            price: parseInt(product.lprice) || product.price || 0,
+            image: product.image,
+            category1: product.category1,
+            category2: product.category2,
+            brand: product.brand,
+            link: product.link,
+            mallName: product.mallName,
+          }))
+        : [];
+
+      return {
+        ...response,
+        products: normalizedProducts,
+        data: normalizedProducts, // 일관성을 위해 data 필드도 추가
+      };
+    } catch (error) {
+      console.error('Failed to fetch products:', error);
+      throw error;
+    }
+  }
+
+  static async fetchProductById(id) {
+    try {
+      return await getProduct(id);
+    } catch (error) {
+      console.error('Failed to fetch product:', error);
+      throw error;
+    }
+  }
+
+  static sortProducts(products, sortType) {
+    const sorted = [...products];
+
+    switch (sortType) {
+      case 'price_asc':
+        return sorted.sort((a, b) => a.price - b.price);
+      case 'price_desc':
+        return sorted.sort((a, b) => b.price - a.price);
+      case 'name_asc':
+        return sorted.sort((a, b) => a.name.localeCompare(b.name));
+      case 'name_desc':
+        return sorted.sort((a, b) => b.name.localeCompare(a.name));
+      default:
+        return sorted;
+    }
+  }
+
+  static filterProducts(products, filters) {
+    let filtered = [...products];
+
+    if (filters.search) {
+      filtered = filtered.filter((product) =>
+        product.name.toLowerCase().includes(filters.search.toLowerCase()),
+      );
+    }
+
+    if (filters.category1) {
+      filtered = filtered.filter(
+        (product) => product.category1 === filters.category1,
+      );
+    }
+
+    if (filters.category2) {
+      filtered = filtered.filter(
+        (product) => product.category2 === filters.category2,
+      );
+    }
+
+    return filtered;
+  }
+}
