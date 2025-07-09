@@ -81,10 +81,10 @@ class FilterContainer extends Component {
                 id="limit-select"
                 class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="10">10개</option>
-                <option value="20" selected="">20개</option>
-                <option value="50">50개</option>
-                <option value="100">100개</option>
+                <option value="10" ${this.props.limit === 10 ? 'selected' : ''}>10개</option>
+                <option value="20" ${this.props.limit === 20 ? 'selected' : ''}>20개</option>
+                <option value="50" ${this.props.limit === 50 ? 'selected' : ''}>50개</option>
+                <option value="100" ${this.props.limit === 100 ? 'selected' : ''}>100개</option>
               </select>
             </div>
             <!-- 정렬 -->
@@ -105,6 +105,9 @@ class FilterContainer extends Component {
         </div>
       </div>
     `;
+
+    const select = this.element.querySelector('#limit-select');
+    select.addEventListener('change', this.props.onChangeLimit);
   }
 }
 

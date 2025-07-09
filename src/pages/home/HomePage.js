@@ -10,17 +10,39 @@ class HomePage extends Component {
       loading: true,
       products: null,
       categories: null,
+      page: 1,
+      limit: 20,
     };
   }
 
   async onMount() {
-    const [products, categories] = await Promise.all([getProducts(), getCategories()]);
+    const [products, categories] = await Promise.all([
+      getProducts({
+        page: this.state.page,
+        limit: this.state.limit,
+      }),
+      getCategories(),
+    ]);
     this.setState({
       loading: false,
       products,
       categories,
     });
   }
+
+  handleLimitChange = async (event) => {
+    const newLimit = Number(event.target.value);
+    const products = await getProducts({
+      page: this.state.page,
+      limit: newLimit,
+    });
+    this.setState({
+      ...this.state,
+      loading: false,
+      products,
+      limit: newLimit,
+    });
+  };
 
   render() {
     this.element.innerHTML = /* HTML */ `
@@ -37,7 +59,10 @@ class HomePage extends Component {
     new FilterContainer(this.element.querySelector('#filter-container'), {
       loading: this.state.loading,
       categories: this.state.categories,
+      limit: this.state.limit,
+      onChangeLimit: this.handleLimitChange,
     }).mount();
+
     new ProductContainer(this.element.querySelector('#product-container'), {
       loading: this.state.loading,
       products: this.state.products,
