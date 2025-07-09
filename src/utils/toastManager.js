@@ -18,6 +18,15 @@ const createToast = (message, type, duration) => {
 
 const showToast = (message, type = "info", duration = 3000) => {
   const container = Toast.getContainer();
+
+  const existingToasts = container.querySelectorAll('[id^="toast-"]');
+  existingToasts.forEach((toast) => {
+    const messageElement = toast.querySelector("p");
+    if (messageElement && messageElement.textContent === message) {
+      toast.remove();
+    }
+  });
+
   const toast = createToast(message, type, duration);
   container.appendChild(toast);
 };
