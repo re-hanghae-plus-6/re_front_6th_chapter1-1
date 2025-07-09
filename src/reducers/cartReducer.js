@@ -7,7 +7,7 @@ export function cartReducer(state, action) {
 
       const product = state.products.find((product) => product.productId === productId);
       if (!product) {
-        console.warn(`productId가 products에 없습니다.`);
+        console.warn(`productId가 products에 없습니다: ${productId}`);
         return state;
       }
 
@@ -19,6 +19,7 @@ export function cartReducer(state, action) {
           ...newItems[existingItemIndex],
           quantity: newItems[existingItemIndex].quantity + quantity,
         };
+
         return {
           ...state,
           cart: {
@@ -27,19 +28,17 @@ export function cartReducer(state, action) {
           },
         };
       } else {
+        const newItem = {
+          productId,
+          quantity,
+          selected: true,
+          product,
+        };
         return {
           ...state,
           cart: {
             ...state.cart,
-            items: [
-              ...state.cart.items,
-              {
-                productId,
-                quantity,
-                selected: true,
-                product,
-              },
-            ],
+            items: [...state.cart.items, newItem],
           },
         };
       }
@@ -120,6 +119,24 @@ export function cartReducer(state, action) {
         cart: {
           ...state.cart,
           items: state.cart.items.filter((item) => !item.selected),
+        },
+      };
+
+    case CART_ACTIONS.SHOW_CART_MODAL:
+      return {
+        ...state,
+        cart: {
+          ...state.cart,
+          isModalOpen: true,
+        },
+      };
+
+    case CART_ACTIONS.HIDE_CART_MODAL:
+      return {
+        ...state,
+        cart: {
+          ...state.cart,
+          isModalOpen: false,
         },
       };
 

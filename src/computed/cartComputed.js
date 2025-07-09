@@ -13,9 +13,16 @@ export class CartComputed {
 
   get totalPrice() {
     const items = this.#store.getState().cart.items;
-    return this.#computeWithCache("totalPrice", items, (items) =>
-      items.reduce((sum, item) => sum + item.product.price * item.quantity, 0),
-    );
+    return this.#computeWithCache("totalPrice", items, (items) => {
+      return items.reduce((sum, item) => {
+        if (!item.product || !item.product.lprice) {
+          console.warn("Invalid product in totalPrice calculation:", item);
+          return sum;
+        }
+        const price = parseInt(item.product.lprice, 10);
+        return sum + price * item.quantity;
+      }, 0);
+    });
   }
 
   get selectedItems() {
@@ -23,14 +30,16 @@ export class CartComputed {
     return this.#computeWithCache("selectedItems", items, (items) => items.filter((item) => item.selected));
   }
 
-  get selectedCount() {
-    const selectedItems = this.selectedItems;
-    return selectedItems.reduce((sum, item) => sum + item.quantity, 0);
-  }
-
   get selectedPrice() {
     const selectedItems = this.selectedItems;
-    return selectedItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+    return selectedItems.reduce((sum, item) => {
+      if (!item.product || !item.product.lprice) {
+        console.warn("Invalid product in selectedPrice calculation:", item);
+        return sum;
+      }
+      const price = parseInt(item.product.lprice, 10);
+      return sum + price * item.quantity;
+    }, 0);
   }
 
   get hasItems() {
@@ -56,16 +65,5 @@ export class CartComputed {
 
   clearCache() {
     this.#cache.clear();
-  }
-
-  hasProduct(productId) {
-    const items = this.#store.getState().cart.items;
-    return items.some((item) => item.productId === productId);
-  }
-
-  getProductQuantity(productId) {
-    const items = this.#store.getState().cart.items;
-    const item = items.find((item) => item.productId === productId);
-    return item ? item.quantity : 0;
   }
 }

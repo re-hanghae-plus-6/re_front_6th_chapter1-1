@@ -6,7 +6,8 @@ export const CART_ACTIONS = {
   TOGGLE_ALL_CART_ITEMS: "TOGGLE_ALL_CART_ITEMS",
   CLEAR_CART: "CLEAR_CART",
   REMOVE_SELECTED_ITEMS: "REMOVE_SELECTED_ITEMS",
-  TOGGLE_CART_MODAL: "TOGGLE_CART_MODAL",
+  SHOW_CART_MODAL: "SHOW_CART_MODAL",
+  HIDE_CART_MODAL: "HIDE_CART_MODAL",
 };
 
 export const cartActions = {
@@ -32,5 +33,6 @@ export const cartActions = {
   }),
   clearCart: () => ({ type: CART_ACTIONS.CLEAR_CART }),
   removeSelectedItems: () => ({ type: CART_ACTIONS.REMOVE_SELECTED_ITEMS }),
-  toggleCartModal: () => ({ type: CART_ACTIONS.TOGGLE_CART_MODAL }),
+  showCartModal: () => ({ type: CART_ACTIONS.SHOW_CART_MODAL }),
+  hideCartModal: () => ({ type: CART_ACTIONS.HIDE_CART_MODAL }),
 };
