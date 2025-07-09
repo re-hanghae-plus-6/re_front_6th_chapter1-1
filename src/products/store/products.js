@@ -1,14 +1,18 @@
 import { getProducts } from "../../api/productApi";
 import { observable } from "../../core/observer";
+import { router } from "../../core/router";
 
 const LOAD_DEFAULT_PAGE = 1;
-
-export const productsStore = observable({
+const defaultParams = {
   limit: 20,
   search: "",
   category1: "",
   category2: "",
   sort: "price_asc",
+};
+
+export const productsStore = observable({
+  ...defaultParams,
 
   isLoading: true,
   isFetching: false,
@@ -31,28 +35,33 @@ export const productsStore = observable({
   initSearchParams: () => {
     const searchParams = new URLSearchParams(window.location.search);
     searchParams.set("page", LOAD_DEFAULT_PAGE);
-    for (const [key, value] of searchParams) {
-      productsStore[key] = value;
+    for (const [key, value] of Object.entries(defaultParams)) {
+      productsStore[key] = searchParams.get(key) || value;
     }
   },
   setLimit(limit) {
     productsStore.limit = limit;
+    router.updateParams({ limit });
     productsStore.load();
   },
   setSearch(search) {
     productsStore.search = search;
+    router.updateParams({ search });
     productsStore.load();
   },
   setCategory1(category1) {
     productsStore.category1 = category1;
+    router.updateParams({ category1 });
     productsStore.load();
   },
   setCategory2(category2) {
     productsStore.category2 = category2;
+    router.updateParams({ category2 });
     productsStore.load();
   },
   setSort(sort) {
     productsStore.sort = sort;
+    router.updateParams({ sort });
     productsStore.load();
   },
   async load() {
