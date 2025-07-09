@@ -25,4 +25,15 @@ export const bindAllEvents = () => {
       fetchProducts({ sort });
     };
   }
+
+  // 상품 리스트 검색 이벤트
+  const searchInputElement = document.getElementById("search-input");
+  if (searchInputElement) {
+    searchInputElement.onkeydown = (e) => {
+      if (e.key === "Enter") {
+        const search = e.target.value;
+        fetchProducts({ search, page: 1 }); // 보통 검색 시 첫 페이지로 초기화
+      }
+    };
+  }
 };
