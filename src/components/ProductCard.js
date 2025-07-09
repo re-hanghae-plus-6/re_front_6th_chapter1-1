@@ -4,7 +4,7 @@ export default function ProductCard(product) {
     data-product-id="${product.productId}">
       <!-- 상품 이미지 -->
       <div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image">
-        <img src="https://shopping-phinf.pstatic.net/main_8506721/85067212996.1.jpg"
+        <img src="${product.image}"
             alt="PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장"
             class="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
             loading="lazy">

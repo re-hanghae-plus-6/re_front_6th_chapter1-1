@@ -1,11 +1,13 @@
 const useStore = (() => {
   // 장바구니, params 등 전역적으로 쓰일 상태들
   const globalState = {
-    filters: {
+    params: {
       category1: "",
       category2: "",
       search: "",
       sort: "price_asc",
+      page: 1,
+      limit: 20,
     },
 
     pagination: {

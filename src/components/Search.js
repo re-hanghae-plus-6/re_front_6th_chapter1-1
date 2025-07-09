@@ -1,4 +1,63 @@
-export default function Search() {
+// import useNavigate from "../core/useNavigate";
+import useStore from "../core/useStore";
+import Loading from "./Loading";
+
+const store = useStore();
+// const navigate = useNavigate();
+
+const events = [
+  {
+    el: window,
+    action: "keyup",
+    fn: (event) => {
+      if (event.key === "Enter") {
+        const searchInput = document.querySelector("#search-input");
+        const keyword = searchInput.value;
+        store.set("params.search", keyword);
+      }
+    },
+  },
+  {
+    el: "#limit-select",
+    action: "change",
+    fn: (event) => store.set("params.limit", event.target.value),
+  },
+  {
+    el: "#sort-select",
+    action: "change",
+    fn: (event) => store.set("params.sort", event.target.value),
+  },
+  {},
+];
+
+const bindEvent = (el, action, fn) => {
+  if (el === window) {
+    el?.addEventListener(action, fn);
+  } else {
+    document.querySelector(el)?.addEventListener(action, fn);
+  }
+};
+
+Search.mount = () => {
+  events.forEach((e) => {
+    const { el, action, fn } = e;
+    bindEvent(el, action, fn);
+  });
+
+  // Home.js에서도 같은 watch를 써야 할 것 같아서.. 중복으로 쓰는 게 의미가 있을지 몰라 주석
+  // store.watch((newValue) => {
+  //   const url = new URL(window.location);
+  //   Object.entries(newValue).forEach(([key, value]) => {
+  //     if (value !== "" && value) {
+  //       url.searchParams.set(key, value);
+  //     }
+  //   });
+  //   navigate.push({}, url.toString());
+  // }, "params");
+};
+
+export default function Search(categories = {}, isLoading = true) {
+  console.log(categories, "isLoading");
   return /* html */ `
     <!-- 검색 및 필터 -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
@@ -25,7 +84,25 @@ export default function Search() {
           </div>
           <!-- 1depth 카테고리 -->
           <div class="flex flex-wrap gap-2">
-            <div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>
+          ${
+            isLoading
+              ? Loading({ type: "category" })
+              : Object.keys(categories)
+                  .map(
+                    (category1) => /* html */ `
+                  <button
+                  data-category1="${category1}"
+                  class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
+              bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                  >
+                    ${category1}
+                  </button>
+                  `,
+                  )
+                  .join("")
+          }
+  
+          
           </div>
           <!-- 2depth 카테고리 -->
         </div>
