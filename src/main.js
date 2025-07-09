@@ -9,6 +9,7 @@ const enableMocking = () =>
   );
 
 let currentLimit = 20;
+let currentSort = "price_asc";
 
 let state = {
   categories: {},
@@ -23,7 +24,10 @@ const fetchAndRenderHomepage = async () => {
 
   try {
     const [{ products, pagination }, categories] = await Promise.all([
-      getProducts({ limit: currentLimit }),
+      getProducts({
+        limit: currentLimit,
+        sort: currentSort,
+      }),
       getCategories(),
     ]);
     state.categories = categories;
@@ -45,6 +49,15 @@ const attachEventListeners = () => {
 
     limitSelect.onchange = (event) => {
       currentLimit = parseInt(event.target.value);
+      fetchAndRenderHomepage();
+    };
+  }
+
+  const sortSelect = document.getElementById("sort-select");
+  if (sortSelect) {
+    sortSelect.value = currentSort;
+    sortSelect.onchange = (event) => {
+      currentSort = event.target.value;
       fetchAndRenderHomepage();
     };
   }
