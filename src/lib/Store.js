@@ -23,7 +23,22 @@ export default class Store {
 
   // 상태 업데이트
   setState(partialState) {
-    this.#state = { ...this.#state, ...partialState };
+    // 깊은 복사를 위한 재귀 함수
+    const deepMerge = (target, source) => {
+      const result = { ...target };
+
+      for (const key in source) {
+        if (source[key] && typeof source[key] === "object" && !Array.isArray(source[key])) {
+          result[key] = deepMerge(target[key] || {}, source[key]);
+        } else {
+          result[key] = source[key];
+        }
+      }
+
+      return result;
+    };
+
+    this.#state = deepMerge(this.#state, partialState);
     this.#notify();
   }
 

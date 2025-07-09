@@ -1,4 +1,4 @@
-import { getCategories } from "../api/productApi";
+import { getCategories, getProducts } from "../api/productApi";
 import Footer from "../components/common/Footer";
 import Header from "../components/common/Header";
 import Filter from "../components/filter/filter";
@@ -8,6 +8,8 @@ import { homeStore } from "../store/homeStore";
 
 export default class HomePage extends Component {
   setup() {
+    this.child = new Map();
+
     this.unsubscribe = homeStore.subscribe(() => {
       this.render();
       this.setEvent();
@@ -15,16 +17,22 @@ export default class HomePage extends Component {
     });
 
     this.fetchCategories();
+    this.fetchProducts();
   }
 
   async fetchCategories() {
     const homeState = homeStore.getState();
+    const { isCategoryLoading, categoryList } = homeState.categories;
 
-    const hasCategories = homeState.categories.categoryList.length > 0;
-    if (hasCategories) return;
+    // categoryList가 객체이고 키가 있거나, 이미 로딩 중이면 리턴
+    const hasCategories =
+      categoryList &&
+      (Array.isArray(categoryList)
+        ? categoryList.length > 0
+        : Object.keys(categoryList).length > 0);
+    if (hasCategories || isCategoryLoading) return;
 
     homeStore.setState({
-      ...homeState,
       categories: {
         ...homeState.categories,
         isCategoryLoading: true,
@@ -34,7 +42,6 @@ export default class HomePage extends Component {
     const categories = await getCategories();
 
     homeStore.setState({
-      ...homeState,
       categories: {
         ...homeState.categories,
         categoryList: categories,
@@ -43,9 +50,49 @@ export default class HomePage extends Component {
     });
   }
 
+  async fetchProducts() {
+    const homeState = homeStore.getState();
+    const { isProductLoading } = homeState.products;
+
+    if (isProductLoading) return;
+
+    homeStore.setState({
+      products: {
+        ...homeState.products,
+        isProductLoading: true,
+      },
+    });
+
+    const products = await getProducts();
+
+    homeStore.setState({
+      products: {
+        ...homeState.products,
+        isProductLoading: false,
+        list: products,
+      },
+    });
+  }
+
+  addChild(childInstance, key) {
+    this.child.set(key, childInstance);
+  }
+
+  removeChild(key) {
+    this.child.delete(key);
+  }
+
   mounted() {
     const filterContainer = document.querySelector("#filter-container");
-    new Filter(filterContainer);
+
+    if (!this.child.get("filter")) {
+      const filterInstance = new Filter(filterContainer);
+      this.addChild(filterInstance, "filter");
+    } else {
+      const filterInstance = this.child.get("filter");
+      filterInstance.$target = filterContainer;
+      filterInstance.render();
+    }
 
     // const productListContainer = document.querySelector("#product-list-container");
     // new ProductList(productListContainer);
