@@ -4,7 +4,7 @@ let categoryUnsubscribe = null;
 
 async function getCategoryList(store) {
   const response = await getCategories();
-  console.log("카테고리 응답:", response);
+
   store.setCategories(response);
 }
 
@@ -19,6 +19,7 @@ function CategoryFilter(store) {
 
 // 카테고리 필터 렌더링
 function renderCategoryFilter(state) {
+  console.log("filter update =>", state);
   return /* HTML */ `
     <div class="space-y-2">
       <div class="flex items-center gap-2">
@@ -69,7 +70,7 @@ function updateCategoryFilterUI(state) {
 }
 
 // 카테고리 클릭 핸들러
-function handleCategoryClick(category1) {
+function handleCategory1DepthClick(category1) {
   if (category1 === "reset") {
     // 전체 카테고리 선택 시 파라미터 제거
     const url = new URL(window.location.href);
@@ -80,6 +81,7 @@ function handleCategoryClick(category1) {
     const url = new URL(window.location.href);
     url.searchParams.set("category1", category1);
     window.history.pushState({}, "", url);
+    window.dispatchEvent(new CustomEvent("loadList"));
   }
 }
 
@@ -91,8 +93,7 @@ export function setupCategoryFilter() {
     filterContainer.addEventListener("click", (e) => {
       if (e.target.classList.contains("category1-filter-btn") || e.target.classList.contains("category-reset-btn")) {
         const { category1 } = e.target.dataset;
-        console.log("카테고리 클릭:", category1);
-        handleCategoryClick(category1);
+        handleCategory1DepthClick(category1);
       }
     });
   }

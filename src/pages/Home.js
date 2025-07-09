@@ -6,17 +6,12 @@ import { store } from "../store/store.js";
 import SearchBox, { cleanupSearchBox, setupSearchBox } from "../components/product-list/SearchBox.js";
 import { Header } from "../components/layout/Header.js";
 import Footer from "../components/layout/Footer.js";
-
+import { getQueryParam } from "../utils/getQueryParam.js";
 import { infiniteScroll, resetInfiniteScroll, cleanupInfiniteScroll } from "../utils/infiniteScroll.js";
 
 const listStore = store;
 
 // URL 파라미터에서 값을 안전하게 가져오는 함수
-function getQueryParam(paramName, defaultValue) {
-  const queryParams = new URLSearchParams(window.location.search);
-  return queryParams.get(paramName) || defaultValue;
-}
-
 async function fetchProducts() {
   const params = {
     limit: getQueryParam("limit", "20"),
