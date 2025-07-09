@@ -1,46 +1,79 @@
-// store.js - 싱글톤 패턴을 사용한 전역 상태 스토어
+// Store.js - 싱글톤 + 옵저버 패턴을 사용한 전역 상태 스토어
 
-// 싱글톤 스토어 클로저
-export const createStore = (() => {
-  let instance = null;
+export class Store {
+  static instance = null;
 
-  function Store(initialState = {}) {
-    if (instance) {
-      return instance;
+  constructor(initialState = {}) {
+    // 싱글톤 패턴: 이미 인스턴스가 있으면 반환
+    if (Store.instance) {
+      return Store.instance;
     }
 
-    let state = { ...initialState };
-    const listeners = new Set();
+    this.state = { ...initialState };
+    this.observers = new Set();
 
-    // 스토어 인스턴스 객체
-    instance = {
-      // 상태 가져오기
-      getState() {
-        return state;
-      },
+    // 동적 프로퍼티 정의 (상태 접근을 위한 getter/setter)
+    Object.keys(initialState).forEach((key) => {
+      Object.defineProperty(this, key, {
+        get: () => this.state[key],
+        set: (value) => {
+          this.state[key] = value;
+          this.notify();
+        },
+      });
+    });
 
-      // 상태 설정하기
-      setState(partial) {
-        state = { ...state, ...partial };
-        instance.notify();
-      },
-
-      // 구독하기
-      subscribe(listener) {
-        listeners.add(listener);
-
-        // 구독 해제 함수 반환
-        return () => listeners.delete(listener);
-      },
-
-      notify() {
-        // 모든 구독자에게 알림
-        listeners.forEach((listener) => listener());
-      },
-    };
-
-    return instance;
+    // 인스턴스 저장
+    Store.instance = this;
   }
 
-  return Store;
-})();
+  // 상태 가져오기
+  getState() {
+    return { ...this.state };
+  }
+
+  // 전체 상태 설정
+  setState(newState) {
+    this.state = { ...this.state, ...newState };
+    this.notify();
+  }
+
+  // 옵저버 등록 (구독)
+  subscribe(observer) {
+    this.observers.add(observer);
+
+    // 구독 해제 함수 반환
+    return () => {
+      this.observers.delete(observer);
+    };
+  }
+
+  // 옵저버 제거 (구독 해제)
+  unsubscribe(observer) {
+    this.observers.delete(observer);
+  }
+
+  // 모든 옵저버에게 알림
+  notify() {
+    this.observers.forEach((observer) => {
+      try {
+        observer(this.state);
+      } catch (error) {
+        console.error("Observer notification error:", error);
+      }
+    });
+  }
+
+  // 스토어 인스턴스 가져오기
+  static getInstance() {
+    if (!Store.instance) {
+      throw new Error("Store not initialized. Call new Store(initialState) first.");
+    }
+    return Store.instance;
+  }
+}
+
+// 스토어 생성 헬퍼 함수
+export function createStore(initialState = {}) {
+  return new Store(initialState);
+}
