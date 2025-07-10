@@ -1,5 +1,6 @@
 import { render } from "../main";
 import Header from "./Header";
+import Toast from "./Toast";
 
 ProductCard.mount = () => {
   const items = document.querySelectorAll(".product-card");
@@ -13,7 +14,7 @@ ProductCard.mount = () => {
     });
 
     item.querySelector(".add-to-cart-btn").addEventListener("click", () => {
-      console.log("장바구니 추가");
+      Toast.mount("addCart");
     });
   });
 };
