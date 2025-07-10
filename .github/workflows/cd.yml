@@ -41,7 +41,7 @@ jobs:
       run: pnpm install
       
     - name: Build
-      run: pnpm run deploy
+      run: pnpm run build:prod
       env:
         NODE_ENV: production
         
