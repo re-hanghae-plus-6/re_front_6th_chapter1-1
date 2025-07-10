@@ -9,7 +9,6 @@ class Cart {
       isOpen: false,
     };
 
-    // 스토어를 구독하여 상태가 변경되면 컴포넌트의 상태를 업데이트하고 다시 렌더링합니다.
     cartStore.subscribe((storeState) => {
       this.setState(storeState);
     });
@@ -23,32 +22,27 @@ class Cart {
     if (currentIs && !prevStateIsOpen) {
       // Cart is opening
       if (this.el) {
-        // If element already exists (e.g., from previous render, though it shouldn't be in DOM)
-        this.el.remove(); // Ensure it's removed from DOM if somehow present
+        this.el.remove();
         this.el = null;
       }
-      this.render(); // Create the element and attach events
-      document.body.appendChild(this.el); // Add to DOM
-      this.show(); // Ensure visibility (flex class)
+      this.render();
+      document.body.appendChild(this.el);
+      this.show();
     } else if (!currentIs && prevStateIsOpen) {
-      // Cart is closing
-      this.hide(); // Now hide() handles both hiding and DOM removal
+      this.hide();
     } else if (currentIs && prevStateIsOpen) {
-      // Cart is open, but content updated
       this.update();
     }
-    // If !currentIs && !prevStateIsOpen, do nothing (cart is already closed)
   }
 
-  // 전체를 다시 그리는 대신 변경된 부분만 업데이트합니다.
   update() {
     if (!this.el) return;
 
-    const contentContainer = this.el.querySelector(".max-h-[calc(90vh-120px)]");
+    const contentContainer = this.el.querySelector(".cart-content");
     if (contentContainer) {
       contentContainer.innerHTML = this.templateContent();
     }
-    this.addEvent(); // 동적으로 생성된 요소에 이벤트를 다시 연결해야 합니다.
+    this.addEvent();
   }
 
   show() {
@@ -150,7 +144,7 @@ class Cart {
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
               </button>
             </div>
-            <div class="flex flex-col max-h-[calc(90vh-120px)]">
+            <div class="flex flex-col cart-content max-h-[calc(90vh-120px)]">
               ${this.templateContent()}
             </div>
           </div>

@@ -3,36 +3,46 @@ import Detail from "../pages/Detail.js";
 import NotFound from "../pages/NotFound.js";
 import ExampleLayout from "../pages/ExampleLayout.js"; // 레이아웃 확인용(제출전에 삭제하자)
 
-const routes = {
-  "/": Home,
-  "/detail": Detail,
-  "/ex": ExampleLayout,
-};
+// const routes = {
+//   "/": Home,
+//   "/detail": Detail,
+//   "/ex": ExampleLayout,
+// };
 
-export function router() {
+export async function router() {
   const $app = document.querySelector("#app");
   if (!$app) return;
 
   let hashPath = location.hash.replace("#", "");
-  const queryStartIndex = hashPath.indexOf("?");
-  let path = "/"; // Default path
+  if (hashPath.startsWith("/")) {
+    hashPath = hashPath.substring(1);
+  }
+  const pathParts = hashPath.split("/");
+  let path = "/";
+  let params = {};
 
-  if (queryStartIndex !== -1) {
-    path = hashPath.substring(0, queryStartIndex) || "/";
+  if (pathParts.length > 1 && pathParts[0] === "product") {
+    path = "/product/:id";
+    params.id = pathParts[1];
   } else {
-    path = hashPath || "/";
+    path = `/${pathParts[0]}`;
   }
 
-  const Route = routes[path] || NotFound;
+  const routesWithParams = {
+    "/": Home,
+    "/product/:id": Detail,
+    "/ex": ExampleLayout,
+  };
 
-  // Route가 생성자 함수(클래스)인지 확인하여 인스턴스화
+  const Route = routesWithParams[path] || NotFound;
+
   const isClass = typeof Route === "function" && /^[A-Z]/.test(Route.name);
-  const Component = isClass ? new Route() : Route;
+  const component = isClass ? new Route() : Route;
+
+  if (component.init) {
+    await component.init();
+  }
 
   $app.innerHTML = "";
-  $app.appendChild(Component.render());
-
-  if (Component.init) {
-    Component.init();
-  }
+  $app.appendChild(component.render());
 }

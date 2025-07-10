@@ -1,62 +1,162 @@
-// pages/Detail.js
+import { getProduct, getProducts } from "../api/productApi";
+import { formatPrice } from "../utils/formatPrice";
+import { cartStore } from "../store/store.js";
 
-export default function Detail() {
-  const $page = document.createElement("div");
+class Detail {
+  constructor() {
+    this.el = null;
+    this.state = {
+      product: null,
+      relatedProducts: [],
+      quantity: 1,
+      loading: true,
+    };
+  }
 
-  $page.innerHTML = `
-        <main class="p-4">
-          <h1 class="text-2xl font-bold">상품 상세 페이지</h1>
-          <hr class="my-4">
-    
-          <!-- 뒤로가기 버튼 등 네비게이션 영역 -->
-          <div>
-            <a href="#/">목록으로</a>
+  async fetchProductDetails() {
+    const productId = location.hash.split("/")[1];
+    try {
+      const [product, allProducts] = await Promise.all([getProduct(productId), getProducts()]);
+      this.setState({
+        product,
+        relatedProducts: allProducts.filter((p) => p.id !== productId).slice(0, 19),
+        loading: false,
+      });
+    } catch (error) {
+      console.error("Error fetching product details:", error);
+      this.setState({ loading: false });
+    }
+  }
+
+  setState(newState) {
+    this.state = { ...this.state, ...newState };
+    if (this.el) {
+      const oldEl = this.el;
+      const newEl = this.render();
+      if (oldEl.parentNode) {
+        oldEl.parentNode.replaceChild(newEl, oldEl);
+      }
+      this.el = newEl;
+    }
+  }
+
+  template() {
+    if (this.state.loading) {
+      return `<div>Loading...</div>`;
+    }
+
+    if (!this.state.product) {
+      return `<div>Product not found</div>`;
+    }
+
+    const { name, price, imageUrl, description } = this.state.product;
+
+    return `
+      <main class="p-4">
+        <h1 class="text-2xl font-bold">상품 상세</h1>
+        <hr class="my-4">
+  
+        <div>
+          <a href="#/">목록으로</a>
+        </div>
+  
+        <div id="product-image-container" class="my-4">
+          <img src="${imageUrl}" alt="${name}">
+        </div>
+  
+        <div id="product-info-container">
+          <h1 class="text-2xl font-bold">${name}</h1>
+          <p id="product-price" class="text-xl font-bold my-2">${formatPrice(price)}원</p>
+          <p id="product-description">${description}</p>
+        </div>
+  
+        <div id="product-interaction-container" class="my-4">
+          <div class="flex items-center space-x-2">
+            <button id="quantity-decrease" class="px-3 py-1 border border-gray-300 rounded-md">-</button>
+            <input id="quantity-input" type="number" value="${this.state.quantity}" min="1" class="w-16 text-center border border-gray-300 rounded-md">
+            <button id="quantity-increase" class="px-3 py-1 border border-gray-300 rounded-md">+</button>
           </div>
-    
-          <!-- 상품 이미지가 들어갈 곳 -->
-          <div id="product-image-container" class="my-4">
-            <!-- 예: <img src="..." alt="..."> -->
-            <p>이미지 로딩 중...</p>
-          </div>
-    
-          <!-- 상품 정보 (이름, 가격, 설명)가 들어갈 곳 -->
-          <div id="product-info-container">
-            <h2 id="product-name" class="text-xl">상품 이름</h2>
-            <p id="product-price">가격</p>
-            <p id="product-description">설명</p>
-          </div>
-    
-          <!-- 수량 조절, 장바구니 버튼 등 인터랙션 영역 -->
-          <div id="product-interaction-container" class="my-4">
-            <!-- 예: <input type="number">, <button>장바구니</button> -->
-          </div>
-        </main>
-      `;
+          <button id="add-to-cart-btn" class="mt-4 w-full bg-blue-500 text-white py-2 rounded-md">장바구니 담기</button>
+        </div>
 
-  // 3. 데이터를 불러와서 화면을 업데이트하는 로직을 여기에 작성합니다.
-  //    (예: fetch로 상품 정보를 가져온 뒤, 위의 ...container 내부를 채우기)
-  //   const loadProductData = () => {
-  //     // const productId = ... // URL에서 상품 ID 파싱
-  //     // fetch(`/api/products/${productId}`)
-  //     //   .then(res => res.json())
-  //     //   .then(product => {
-  //     //     $page.querySelector('#product-name').textContent = product.name;
-  //     //     // ... 이런 식으로 데이터 채우기
-  //     //   });
-  //   };
+        <hr class="my-4">
 
-  // 4. 버튼 클릭 등 이벤트 리스너를 설정하는 로직을 여기에 작성합니다.
-  //   const addEventListeners = () => {
-  //     // const addToCartButton = $page.querySelector('#add-to-cart-btn');
-  //     // addToCartButton.addEventListener('click', () => {
-  //     //   // 장바구니 추가 로직
-  //     // });
-  //   };
+        <div>
+            <h2 class="text-xl font-bold">관련 상품</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                ${this.state.relatedProducts
+                  .map(
+                    (p) => `
+                    <div class="related-product-card border p-2 rounded-md" data-product-id="${p.id}">
+                        <a href="#/product/${p.id}">
+                            <img src="${p.imageUrl}" alt="${p.name}" class="w-full h-32 object-cover">
+                            <h3 class="mt-2 text-sm font-bold">${p.name}</h3>
+                            <p class="text-xs">${formatPrice(p.price)}원</p>
+                        </a>
+                    </div>
+                `,
+                  )
+                  .join("")}
+            </div>
+        </div>
+      </main>
+    `;
+  }
 
-  // 함수 실행
-  // loadProductData();
-  // addEventListeners();
+  render() {
+    let newEl = this.el;
+    if (!newEl) {
+      newEl = document.createElement("div");
+    }
+    newEl.innerHTML = this.template();
+    this.el = newEl;
+    this.addEventListeners();
+    return this.el;
+  }
 
-  // 5. 완성된 페이지 DOM 요소를 반환합니다.
-  return $page;
+  addEventListeners() {
+    // const $quantityInput = this.el.querySelector("#quantity-input");
+    const $increaseBtn = this.el.querySelector("#quantity-increase");
+    const $decreaseBtn = this.el.querySelector("#quantity-decrease");
+    const $addToCartBtn = this.el.querySelector("#add-to-cart-btn");
+
+    if ($increaseBtn) {
+      $increaseBtn.addEventListener("click", () => {
+        this.setState({ quantity: this.state.quantity + 1 });
+      });
+    }
+
+    if ($decreaseBtn) {
+      $decreaseBtn.addEventListener("click", () => {
+        if (this.state.quantity > 1) {
+          this.setState({ quantity: this.state.quantity - 1 });
+        }
+      });
+    }
+
+    if ($addToCartBtn) {
+      $addToCartBtn.addEventListener("click", () => {
+        const productToAdd = {
+          ...this.state.product,
+          productId: this.state.product.id,
+          lprice: this.state.product.price,
+        };
+        cartStore.addItem(productToAdd);
+        const $message = document.createElement("div");
+        $message.textContent = "장바구니에 추가되었습니다";
+        $message.className = "fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-lg";
+        document.body.appendChild($message);
+        setTimeout(() => {
+          document.body.removeChild($message);
+        }, 2000);
+      });
+    }
+  }
+
+  init() {
+    this.fetchProductDetails();
+    return this.render();
+  }
 }
+
+export default Detail;

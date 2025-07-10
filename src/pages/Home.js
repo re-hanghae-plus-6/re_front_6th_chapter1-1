@@ -17,41 +17,27 @@ const initialState = {
 class Home {
   constructor() {
     this.el = null;
-    const urlParams = new URLSearchParams(location.hash.replace(/^#/, ""));
-    const initialFilters = {
-      page: parseInt(urlParams.get("page")) || 1,
-      limit: parseInt(urlParams.get("limit")) || 20,
-      sort: urlParams.get("sort") || "price_asc",
-      search: urlParams.get("search") || "",
-      category1: urlParams.get("category1") || undefined,
-      category2: urlParams.get("category2") || undefined,
-    };
-
-    this.state = {
-      ...initialState,
-      filters: { ...initialState.filters, ...initialFilters },
-    };
+    this.state = { ...initialState };
     this.searchFilter = new SearchFilter(this.handleFilterChange.bind(this));
     this.fetchProductsDebounced = this.debounce(this.fetchProducts.bind(this), 100); // ✅ debounce 적용
+
+    window.addEventListener("popstate", (e) => {
+      this.setState({ filters: e.state || initialState.filters, loading: true });
+      this.fetchProducts();
+    });
   }
 
   handleFilterChange(newFilters) {
     const updatedFilters = { ...this.state.filters, ...newFilters, page: 1 };
-
-    // URL 해시 업데이트
     const params = new URLSearchParams();
     for (const key in updatedFilters) {
       if (updatedFilters[key] !== undefined && updatedFilters[key] !== "" && updatedFilters[key] !== null) {
         params.set(key, updatedFilters[key]);
       }
     }
-    location.hash = `?${params.toString()}`;
-
-    // 라우터가 URL 변경을 감지하고 페이지를 재렌더링할 것이므로,
-    // 여기서는 별도의 setState나 fetchProducts 호출이 필요 없습니다.
-    // this.setState({ filters: updatedFilters, loading: true }); // 제거
-    // this.fetchProducts(); // 제거
-    // this.fetchProductsDebounced(); // 제거
+    history.pushState(updatedFilters, "", `?${params.toString()}`);
+    this.setState({ filters: updatedFilters, loading: true });
+    this.fetchProducts();
   }
   debounce(func, delay) {
     let timeout;
@@ -165,8 +151,7 @@ class Home {
   }
 
   init() {
-    // URL에서 필터 값을 읽어와서 초기 상태를 설정합니다.
-    const urlParams = new URLSearchParams(location.hash.replace(/^#/, ""));
+    const urlParams = new URLSearchParams(window.location.search);
     const initialFilters = {
       page: parseInt(urlParams.get("page")) || 1,
       limit: parseInt(urlParams.get("limit")) || 20,
@@ -175,24 +160,10 @@ class Home {
       category1: urlParams.get("category1") || undefined,
       category2: urlParams.get("category2") || undefined,
     };
-    this.setState({ filters: initialFilters }); // 초기 필터 상태 설정
+    this.setState({ filters: { ...initialState.filters, ...initialFilters } });
 
     this.fetchProducts();
     this.searchFilter.fetchCategories();
-    // SearchFilter의 상태를 초기화합니다.
-    // selectedCategories는 배열이므로, category1이 있을 때만 추가하고, category2는 category1이 있을 때만 추가합니다.
-    const selectedCategoriesForSearchFilter = [];
-    if (initialFilters.category1) {
-      selectedCategoriesForSearchFilter.push(initialFilters.category1);
-      if (initialFilters.category2) {
-        selectedCategoriesForSearchFilter.push(initialFilters.category2);
-      }
-    }
-
-    this.searchFilter.setState({
-      selectedCategories: selectedCategoriesForSearchFilter,
-      searchQuery: initialFilters.search || "",
-    });
     return this.el;
   }
 }
