@@ -4,61 +4,20 @@ import { ProductSkeletonCard } from "../components/product/ProductSkeletonCard.j
 import { ProductCard } from "../components/product/ProductCard.js";
 import { ProductFilterPanel } from "../components/product/ProductFilterPanel.js";
 import { LoadingIndicator } from "../components/common/LoadingIndicator.js";
-import { productState, productStore, resetProductState } from "../core/productState.js";
+import { productStore, productState } from "../core/productState.js";
+import { productFilterStore, productFilterState } from "../core/productFilterState.js";
 import { normalizeCategories } from "../utils/normalizeCategories.js";
 
-let unsubscribe = null; // 구독 해제 함수
 export const HomePage = () => {
-  if (unsubscribe) {
-    unsubscribe(); // 이전 구독 해제
-    unsubscribe = null; // 초기화
-  }
-  // DOM이 준비된 뒤 상태 변경 → 렌더 업데이트 구독
   setTimeout(async () => {
-    resetProductState(); // 상태 초기화
     bindFilterEvents();
+    productFilterStore.subscribe(renderFilter);
+    productStore.subscribe(renderProducts);
     await loadCategories().then(loadProducts);
-    unsubscribe = productStore.subscribe(handleStateChange); // unmount 시 해제 필요하면 반환값 사용
   }, 0);
 
-  /* ---------- 구독 시 실행 ---------- */
-  function handleStateChange() {
-    console.log("상품 상태 변경:", productState.filters.limit);
-    renderFilter();
-    renderProducts();
-  }
-
-  /* ---------- 데이터 로딩 ---------- */
-  async function loadCategories() {
-    const res = await fetch("/api/categories");
-    const raw = await res.json();
-    productStore.setState({
-      categories: normalizeCategories(raw),
-      loadingCategories: false,
-    });
-  }
-
-  async function loadProducts(page = 1) {
-    const { filters } = productState; // Proxy 덕분에 최신값
-    const qs = new URLSearchParams({
-      page,
-      limit: filters.limit,
-      search: filters.search,
-      category1: filters.category1,
-      category2: filters.category2,
-      sort: filters.sort,
-    });
-    const res = await fetch(`/api/products?${qs.toString()}`);
-    const data = await res.json();
-
-    productStore.setState({
-      products: page === 1 ? data.products : [...productState.products, ...data.products],
-      total: data.pagination.total,
-    });
-  }
-
-  /* ---------- 렌더 ---------- */
   function renderFilter() {
+    console.log("필터 상태 변경", productFilterState.filters);
     document.getElementById("filter-panel").innerHTML = ProductFilterPanel();
   }
 
@@ -71,21 +30,46 @@ export const HomePage = () => {
     infoEl.style.display = "block";
   }
 
-  /* ---------- 이벤트 위임 ---------- */
+  async function loadCategories() {
+    const res = await fetch("/api/categories");
+    const raw = await res.json();
+    productFilterStore.setState({
+      categories: normalizeCategories(raw),
+      loadingCategories: false,
+    });
+  }
+
+  async function loadProducts(page = 1) {
+    const filters = productFilterState.filters;
+    const qs = new URLSearchParams({
+      page,
+      limit: filters.limit,
+      search: filters.search,
+      category1: filters.category1,
+      category2: filters.category2,
+      sort: filters.sort,
+    });
+    const res = await fetch(`/api/products?${qs.toString()}`);
+    const data = await res.json();
+    productStore.setState({
+      products: data.products,
+      total: data.pagination.total,
+    });
+  }
+
   function bindFilterEvents() {
     const panel = document.getElementById("filter-panel");
 
     panel?.addEventListener("click", (e) => {
       const t = e.target;
       if (t.classList.contains("category1-filter-btn")) {
-        productStore.setState({
-          filters: { category1: t.dataset.category1, category2: "" },
-        });
+        productFilterStore.setState({ category1: t.dataset.category1, category2: "" });
         loadProducts();
       }
       if (t.classList.contains("category2-filter-btn")) {
-        productStore.setState({
-          filters: { category1: t.dataset.category1, category2: t.dataset.category2 },
+        productFilterStore.setState({
+          category1: t.dataset.category1,
+          category2: t.dataset.category2,
         });
         loadProducts();
       }
@@ -94,11 +78,13 @@ export const HomePage = () => {
     panel?.addEventListener("change", (e) => {
       const t = e.target;
       if (t.id === "limit-select") {
-        productStore.setState({ filters: { limit: +t.value } });
+        console.log("페이지당 상품 수 변경", t.value);
+        productFilterStore.setState({ filters: { limit: +t.value } });
+        console.log("필터 상태", productFilterState.filters);
         loadProducts();
       }
       if (t.id === "sort-select") {
-        productStore.setState({ filters: { sort: t.value } });
+        productFilterStore.setState({ filters: { sort: t.value } });
         loadProducts();
       }
     });
@@ -106,17 +92,12 @@ export const HomePage = () => {
     panel?.addEventListener("keydown", (e) => {
       const t = e.target;
       if (t.id === "search-input" && e.key === "Enter") {
-        productStore.setState({ filters: { search: t.value.trim() } });
+        productFilterStore.setState({ filters: { search: t.value.trim() } });
         loadProducts();
       }
     });
-
-    /* ► 무한 스크롤 (예시)
-       IntersectionObserver나 scroll 이벤트로 page++ 호출
-       loadProducts(nextPage) 처럼 활용 가능 */
   }
 
-  /* ---------- 최초 마크업 ---------- */
   return /*html*/ `
     <div class="min-h-screen bg-gray-50">
       ${DefaultHeader()}
