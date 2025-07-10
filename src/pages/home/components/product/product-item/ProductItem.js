@@ -1,10 +1,36 @@
 import Component from '../../../../../core/Component.js';
 import { numberUtils } from '../../../../../utils/numberUtils.js';
+import cartLocalStorage from '../../../../../store/cartLocalStorage.js';
 
 class ProductItem extends Component {
   constructor(element, props) {
     super(element, props);
   }
+
+  attachEventListeners() {
+    this.addEventListener(this.element, 'click', (event) => {
+      if (event.target.id === 'cart-add-button') {
+        const { productId, title, image, lprice } = this.props;
+        const cartItems = cartLocalStorage.get('cartProducts') || [];
+        const idx = cartItems.findIndex((i) => i.productId === productId);
+
+        if (idx > -1) {
+          cartItems[idx].quantity += 1;
+        } else {
+          cartItems.push({
+            productId,
+            title,
+            image,
+            lprice,
+            quantity: 1,
+          });
+        }
+
+        cartLocalStorage.set('cartProducts', cartItems);
+      }
+    });
+  }
+
   render() {
     const { productId, title, image, lprice } = this.props;
 
@@ -30,7 +56,7 @@ class ProductItem extends Component {
           </p>
         </div>
         <!-- 장바구니 버튼 -->
-        <button class="w-full bg-blue-600 text-white text-sm py-2 px-3 rounded-md
+        <button id="cart-add-button" class="w-full bg-blue-600 text-white text-sm py-2 px-3 rounded-md
                hover:bg-blue-700 transition-colors add-to-cart-btn" data-product-id="${productId}">
           장바구니 담기
         </button>
