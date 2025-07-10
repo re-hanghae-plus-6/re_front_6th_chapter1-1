@@ -182,6 +182,8 @@ function handleEsc(e) {
 }
 
 function handleModalClick(e) {
+  // 모달 내부 클릭은 전역(document) 클릭 핸들러로 버블링되지 않도록 차단한다
+  e.stopPropagation();
   // 닫기 버튼
   if (e.target.closest("#cart-modal-close-btn")) {
     closeCartModal();

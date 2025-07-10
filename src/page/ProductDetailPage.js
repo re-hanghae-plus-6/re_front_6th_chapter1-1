@@ -307,14 +307,13 @@ function attachEventListeners() {
         return;
       }
 
-      // 장바구니 담기
+      // 장바구니 담기 – 장바구니 로직은 글로벌 핸들러가 수행하므로 별도 메시지를 표시하지 않는다.
       const cartBtn = e.target.closest("#add-to-cart-btn");
       if (cartBtn) {
-        console.log("[AddToCart] clicked (delegated)");
         const productId = cartBtn.getAttribute("data-product-id");
         const { quantity } = store.getState();
-        console.log(`상품 ${productId}를 ${quantity}개 장바구니에 추가`);
-        showMessage("장바구니에 추가되었습니다");
+        console.log(`[ProductDetail] Add to cart clicked – pid:${productId} qty:${quantity}`);
+        /* showMessage 제거 → 중복 텍스트 방지 */
       }
     });
 
@@ -341,37 +340,4 @@ function attachEventListeners() {
   });
 }
 
-// 메시지 표시 함수
-function showMessage(message) {
-  const messageElement = document.getElementById("cart-message");
-  if (messageElement) {
-    messageElement.textContent = message;
-    messageElement.className = "mt-3 text-center text-sm text-green-600 font-medium";
-    messageElement.style.display = "block";
-
-    // 3초 후 메시지 숨기기
-    setTimeout(() => {
-      messageElement.style.display = "none";
-    }, 3000);
-  }
-
-  // 추가로 Toast도 표시 (테스트 호환성을 위해)
-  const existingToast = document.querySelector(".toast-message");
-  if (existingToast) {
-    existingToast.remove();
-  }
-
-  const toastElement = document.createElement("div");
-  toastElement.className =
-    "toast-message fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-green-600 text-white px-4 py-3 rounded-lg shadow-lg";
-  toastElement.textContent = message;
-
-  document.body.appendChild(toastElement);
-
-  // 3초 후 자동 제거
-  setTimeout(() => {
-    if (toastElement.parentNode) {
-      toastElement.parentNode.removeChild(toastElement);
-    }
-  }, 3000);
-}
+// showMessage 함수는 중복 텍스트를 유발하므로 제거했습니다.
