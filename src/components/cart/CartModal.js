@@ -1,6 +1,5 @@
 import cart from "../../@store/cart";
 import initializeHandlers from "../../handlers";
-import { formatNumber } from "../../utils/function";
 
 export const CartModal = (state) => {
   function init() {
@@ -122,7 +121,7 @@ function render(state, { uniqueCartItems = [], totalQuantity = 0, totalPrice = 0
 
                 <div class="text-right ml-3">
                  <p class="item-price text-sm font-medium text-gray-900" data-product-id="${item.productId}">
-                    ${formatNumber(item.lprice * item.quantity)}원
+                    ${item.lprice * item.quantity}원
                   </p>
                   <button class="cart-item-remove-btn mt-1 text-xs text-red-600 hover:text-red-800" data-product-id="${item.productId}">
                     삭제
@@ -145,7 +144,7 @@ function render(state, { uniqueCartItems = [], totalQuantity = 0, totalPrice = 0
           </div>
           <div class="flex justify-between items-center mb-4">
             <span class="text-lg font-bold text-gray-900">총 금액</span>
-            <span class="text-xl font-bold text-blue-600">${formatNumber(totalPrice)}원</span>
+            <span class="text-xl font-bold text-blue-600">${totalPrice}원</span>
           </div>
           <div class="space-y-2">
             <button
