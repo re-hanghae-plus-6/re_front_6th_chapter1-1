@@ -29,6 +29,7 @@ describe("1. 상품 목록 로딩", () => {
     expect(screen.queryByText(/총 의 상품/i)).not.toBeInTheDocument();
 
     // 상품 모두 렌더링되었는지 확인
+
     expect(
       await screen.findByText(/pvc 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장/i),
     ).toBeInTheDocument();
@@ -47,7 +48,6 @@ describe("2. 상품 목록 조회", () => {
     await screen.findByText(/pvc 투명 젤리 쇼핑백/i);
 
     // 데이터 로딩 완료 후 UI 확인
-    screen.logTestingPlaygroundURL();
 
     // 상품 카드들이 존재하는지 확인
     const productCards = document.querySelectorAll(".product-card, [data-product-id]");

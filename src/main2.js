@@ -433,7 +433,10 @@ function main() {
           <div class="space-y-2">
             <div class="flex items-center gap-2">
               <label class="text-sm text-gray-600">카테고리:</label>
-              <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button><span class="text-xs text-gray-500">&gt;</span><button data-breadcrumb="category1" data-category1="생활/건강" class="text-xs hover:text-blue-800 hover:underline">생활/건강</button><span class="text-xs text-gray-500">&gt;</span><span class="text-xs text-gray-600 cursor-default">주방용품</span>
+              <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
+              <span class="text-xs text-gray-500">&gt;</span>
+              <button data-breadcrumb="category1" data-category1="생활/건강" class="text-xs hover:text-blue-800 hover:underline">생활/건강</button>
+              <span class="text-xs text-gray-500">&gt;</span><span class="text-xs text-gray-600 cursor-default">주방용품</span>
             </div>
             <div class="space-y-2">
               <div class="flex flex-wrap gap-2">

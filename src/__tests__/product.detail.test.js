@@ -37,10 +37,11 @@ const 상품_상세페이지_접속 = async () => {
   });
 };
 
-describe("1. 상품 클릭시 상세 페이지 이동", () => {
+describe.only("1. 상품 클릭시 상세 페이지 이동", () => {
   test("상품 목록에서 상품 이미지 클릭 시 상세 페이지로 이동되며, 상품 이미지, 설명, 가격 등의 상세 정보가 표시된다", async () => {
     goTo("/");
     await 상품_상세페이지_접속();
+    screen.logTestingPlaygroundURL();
 
     // 상품 상세 페이지가 로드되었는지 확인
     expect(await screen.findByText("상품 상세")).toBeInTheDocument();

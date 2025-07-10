@@ -1,16 +1,18 @@
-import CategoryFilter, { cleanupCategoryFilter, setupCategoryFilter } from "./CategoryFilter.js";
+import CategoryFilter, { cleanupCategoryFilter } from "./CategoryFilter.js";
+import { store } from "../../store/store.js";
+// import CategoryFilter2, { cleanupCategoryFilter, setupCategoryFilter } from "./CategoryFilter2.js";
 
 let searchBoxUnsubscribe = null;
 
-function SearchBox(store) {
-  const initHTML = renderUI(store);
+function SearchBox() {
+  const initHTML = renderUI();
   searchBoxUnsubscribe = store.subscribe(updateSearchBoxUI);
 
   return initHTML;
 }
 
 // 초기 렌더링
-function renderUI(store) {
+function renderUI() {
   return /* HTML */ `
     <div id="filter-container" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
       <!-- 검색창 -->
@@ -39,7 +41,7 @@ function renderUI(store) {
       <!-- 필터 옵션 -->
       <div class="space-y-3">
         <!-- 카테고리 필터 -->
-        ${CategoryFilter(store)}
+        ${CategoryFilter().render()}
         <!-- 기존 필터들 -->
         <div class="flex gap-2 items-center justify-between">
           <!-- 페이지당 상품 수 -->
@@ -93,7 +95,7 @@ export function cleanupSearchBox() {
 // SearchBox 컴포넌트의 이벤트 리스너를 등록하는 함수
 export function setupSearchBox() {
   // CategoryFilter 이벤트 리스너 설정
-  setupCategoryFilter();
+  CategoryFilter().setup();
 
   // URL 파라미터에서 초기값 설정
   const url = new URL(window.location.href);

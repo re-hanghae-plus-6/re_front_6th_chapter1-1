@@ -20,11 +20,11 @@ afterEach(() => {
   localStorage.clear();
 });
 
-describe("7. 카테고리 선택", () => {
+describe.only("7. 카테고리 선택", () => {
   test("현재 선택된 카테고리 경로가 브레드크럼으로 표시된다", async () => {
+    screen.logTestingPlaygroundURL();
     await screen.findByText(/총 의 상품/i);
     const target = screen.getByText("생활/건강");
-
     await userEvent.click(target);
 
     expect(await screen.findByText("300개")).toBeInTheDocument();
@@ -34,6 +34,7 @@ describe("7. 카테고리 선택", () => {
     const category2 = await screen.findByText("자동차용품");
     await userEvent.click(category2);
 
+    screen.logTestingPlaygroundURL();
     expect(await screen.findByText("11개")).toBeInTheDocument();
     expect(screen.getByText("카테고리:").parentNode.textContent.trim()).toMatch(/생활\/건강/);
     expect(screen.getByText("카테고리:").parentNode.textContent.trim()).toMatch(/자동차용품/);

@@ -1,5 +1,5 @@
-import Router from "./router/router.js";
-import routes from "./routes.js";
+import { Router } from "./router/router.js";
+// import routes from "./routes.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -10,16 +10,17 @@ const enableMocking = () =>
 
 function main() {
   const router = Router();
+  window.router = router;
   // 장바구니 모달 추가
 
   // 라우트 등록
 
-  Object.entries(routes).forEach(([path, component]) => {
-    router.addRoute(path, component);
-  });
+  // Object.entries(routes).forEach(([path, component]) => {
+  //   router.addRoute(path, component);
+  // });
 
   router.init();
-  router.navigate("/");
+  // router.navigate(window.location.pathname);
 }
 
 // 애플리케이션 시작

@@ -8,6 +8,8 @@ class Store {
     this.state = {
       products: [],
       categories: {},
+      pagination: {},
+      filters: {},
       loading: false,
       error: null,
     };
@@ -31,6 +33,12 @@ class Store {
   setState(newState) {
     this.state = { ...this.state, ...newState };
     this.notify();
+  }
+  setPagination(pagination) {
+    this.setState({ pagination, loading: false, error: null });
+  }
+  setFilters(filters) {
+    this.setState({ filters, loading: false, error: null });
   }
 
   // 로딩 시작
