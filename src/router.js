@@ -1,0 +1,84 @@
+export class Router {
+  constructor() {
+    this.routes = new Map();
+    this.currentRoute = null;
+
+    // 브라우저 뒤로가기/앞으로가기 이벤트 처리
+    window.addEventListener("popstate", () => {
+      this.handleRouteChange(location.pathname, false);
+    });
+  }
+
+  // 라우트 등록
+  addRoute(path, handler) {
+    this.routes.set(path, handler);
+  }
+
+  // URL 변경 및 페이지 렌더링
+  navigate(path, pushState = true) {
+    if (pushState) {
+      history.pushState(null, "", path);
+    }
+    this.handleRouteChange(path);
+  }
+
+  // 라우트 변경 처리
+  handleRouteChange(path) {
+    this.currentRoute = path;
+
+    // 정확히 매칭되는 라우트 찾기
+    if (this.routes.has(path)) {
+      this.routes.get(path)();
+      return;
+    }
+
+    // 동적 라우트 매칭 (/product/123 형태)
+    for (const [routePath, handler] of this.routes) {
+      const match = this.matchRoute(routePath, path);
+      if (match) {
+        handler(match.params);
+        return;
+      }
+    }
+
+    // 404 처리
+    console.warn("Route not found:", path);
+    this.navigate("/", false);
+  }
+
+  // 라우트 매칭 로직
+  matchRoute(routePath, actualPath) {
+    const routeParts = routePath.split("/");
+    const actualParts = actualPath.split("/");
+
+    if (routeParts.length !== actualParts.length) {
+      return null;
+    }
+
+    const params = {};
+
+    for (let i = 0; i < routeParts.length; i++) {
+      const routePart = routeParts[i];
+      const actualPart = actualParts[i];
+
+      if (routePart.startsWith(":")) {
+        // 동적 파라미터
+        const paramName = routePart.slice(1);
+        params[paramName] = actualPart;
+      } else if (routePart !== actualPart) {
+        // 정확히 매칭되지 않으면 false
+        return null;
+      }
+    }
+
+    return { params };
+  }
+
+  // 현재 경로 반환
+  getCurrentPath() {
+    return this.currentRoute || location.pathname;
+  }
+}
+
+// 전역 라우터 인스턴스
+export const router = new Router();
