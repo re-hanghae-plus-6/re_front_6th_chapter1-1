@@ -4,6 +4,7 @@ import { NotFoundPage } from "./pages/NotFoundPage.js";
 import { Header } from "./app/components/Header.js";
 
 let currentMountedPage = null;
+let currentPageComponent = null;
 let isHeaderInitialized = false;
 
 export function render() {
@@ -28,12 +29,13 @@ export function render() {
 
     if (typeof Page.onMount === "function") {
       if (routePath !== currentMountedPage) {
-        if (currentMountedPage && typeof Page.onUnmount === "function") {
-          Page.onUnmount();
+        if (currentMountedPage && currentPageComponent && typeof currentPageComponent.onUnmount === "function") {
+          currentPageComponent.onUnmount();
         }
 
         Page.onMount();
         currentMountedPage = routePath;
+        currentPageComponent = Page;
       }
     }
   } catch (error) {

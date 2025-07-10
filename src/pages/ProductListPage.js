@@ -264,7 +264,7 @@ export const ProductListPage = () => {
 };
 
 const setupStateSubscription = () => {
-  productStore.subscribe((newState, prevState) => {
+  return productStore.subscribe((newState, prevState) => {
     if (!prevState || newState.categories !== prevState.categories) {
       const currentParams = getURLParams(defaultParams);
       updateElement("#category-list", renderCategories(newState.categories, currentParams.category1));
@@ -438,10 +438,13 @@ const loadProductListPageInitialData = async (params) => {
   }
 };
 
+let storeUnsubscribe = null;
+let infiniteScrollCleanup = null;
+
 const setupPageComponents = () => {
-  setupStateSubscription();
+  storeUnsubscribe = setupStateSubscription();
   setupEventHandlers();
-  setupProductInfiniteScroll();
+  infiniteScrollCleanup = setupProductInfiniteScroll();
 };
 
 ProductListPage.onMount = async () => {
@@ -449,4 +452,16 @@ ProductListPage.onMount = async () => {
 
   setupPageComponents();
   await loadProductListPageInitialData(currentParams);
+};
+
+ProductListPage.onUnmount = () => {
+  if (storeUnsubscribe) {
+    storeUnsubscribe();
+    storeUnsubscribe = null;
+  }
+
+  if (infiniteScrollCleanup) {
+    infiniteScrollCleanup();
+    infiniteScrollCleanup = null;
+  }
 };

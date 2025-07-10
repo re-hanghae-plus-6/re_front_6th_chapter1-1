@@ -303,8 +303,10 @@ const setupEventHandlers = () => {
   });
 };
 
+let storeUnsubscribe = null;
+
 const setupStateSubscriptions = () => {
-  productDetailStore.subscribe((newState, prevState) => {
+  return productDetailStore.subscribe((newState, prevState) => {
     if (!prevState || newState.isLoading !== prevState.isLoading) {
       const $main = document.querySelector("main");
       if ($main) {
@@ -369,7 +371,14 @@ ProductDetailPage.onMount = () => {
     return;
   }
 
-  setupStateSubscriptions();
+  storeUnsubscribe = setupStateSubscriptions();
   setupEventHandlers();
   loadProductDetail(productId);
+};
+
+ProductDetailPage.onUnmount = () => {
+  if (storeUnsubscribe) {
+    storeUnsubscribe();
+    storeUnsubscribe = null;
+  }
 };
