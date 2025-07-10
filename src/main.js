@@ -163,7 +163,11 @@ async function handleSearch(searchValue) {
 }
 
 function addToCart(productId) {
-  state.cart.push(productId);
+  const product = state.products.find((p) => p.productId === productId);
+
+  if (product) {
+    state.cart.push(product);
+  }
   render();
 }
 

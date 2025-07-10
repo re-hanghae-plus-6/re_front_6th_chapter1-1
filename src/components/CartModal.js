@@ -1,15 +1,7 @@
-export const CartModal = ({ cart, products }) => {
-  // 장바구니에 담긴 상품들의 상세 정보
-  const cartItems = cart
-    .map((productId) => {
-      const product = products.find((p) => p.id === productId);
-      return product;
-    })
-    .filter(Boolean);
-
-  // 중복 상품 개수 계산
-  const cartItemsWithCount = cartItems.reduce((acc, product) => {
-    const existingItem = acc.find((item) => item.id === product.id);
+export const CartModal = ({ cart }) => {
+  // count 프로퍼티를 아이템에 추가
+  const cartItemsWithCount = cart.reduce((acc, product) => {
+    const existingItem = acc.find((item) => item.productId === product.productId);
     if (existingItem) {
       existingItem.count++;
     } else {
@@ -18,7 +10,7 @@ export const CartModal = ({ cart, products }) => {
     return acc;
   }, []);
 
-  const totalPrice = cartItemsWithCount.reduce((sum, item) => sum + item.price * item.count, 0);
+  const totalPrice = cartItemsWithCount.reduce((sum, item) => sum + Number(item.lprice) * item.count, 0);
 
   return `
     <div class="fixed inset-0 z-50 overflow-y-auto cart-modal">
@@ -34,7 +26,7 @@ export const CartModal = ({ cart, products }) => {
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M3 3h2l.4 2M7 13h10l4-8H5.4m2.6 8L6 2H3m4 11v6a1 1 0 001 1h1a1 1 0 001-1v-6M13 13v6a1 1 0 001 1h1a1 1 0 001-1v-6"></path>
               </svg>
-              장바구니
+              장바구니 (${cartItemsWithCount.length})
             </h2>
             <button class="modal-close-btn text-gray-400 hover:text-gray-600 p-1">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -70,18 +62,19 @@ export const CartModal = ({ cart, products }) => {
                         (item) => `
                       <div class="flex items-center justify-between p-3 border rounded-lg bg-gray-50">
                         <div class="flex items-center space-x-3">
-                          <img src="${item.thumbnail}" alt="${item.title}" class="w-12 h-12 object-cover rounded">
+                          <img src="${item.image}" alt="${item.title}" class="w-12 h-12 object-cover rounded">
                           <div>
                             <h4 class="font-medium text-sm">${item.title}</h4>
-                            <p class="text-gray-500 text-xs">₩${item.price.toLocaleString()}</p>
+                            <p class="text-gray-500 text-xs">₩${Number(item.lprice).toLocaleString()}</p>
                           </div>
                         </div>
+                        <div class='flex flex-col'> 
                         <div class="flex items-center space-x-2">
                           <span class="text-sm font-medium">×${item.count}</span>
-                          <button class="remove-item-btn text-red-500 hover:text-red-700" data-product-id="${item.id}">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                            </svg>
+                         
+                        </div>
+                         <button class="text-sm remove-item-btn text-red-500 hover:text-red-700" data-product-id="${item.id}">
+                            삭제
                           </button>
                         </div>
                       </div>
@@ -94,7 +87,7 @@ export const CartModal = ({ cart, products }) => {
                 <div class="sticky bottom-0 bg-white border-t border-gray-200 p-4">
                   <div class="flex justify-between items-center font-bold mb-4">
                     <span>총합:</span>
-                    <span>₩${totalPrice.toLocaleString()}</span>
+                    <span>₩${Number(totalPrice).toLocaleString()}</span>
                   </div>
                   <div class="flex gap-2">
                     <button class="modal-close-btn flex-1 px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50">
