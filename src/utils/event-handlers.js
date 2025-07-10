@@ -215,13 +215,13 @@ export const handleProductClick = (e) => {
  */
 export const handleProductDetailEvents = (e) => {
   // 수량 증가 버튼
-  if (e.target.id === "quantity-increase") {
+  if (e.target.id === "quantity-increase" || e.target.closest("#quantity-increase")) {
     productDetailService.increaseQuantity();
     return;
   }
 
   // 수량 감소 버튼
-  if (e.target.id === "quantity-decrease") {
+  if (e.target.id === "quantity-decrease" || e.target.closest("#quantity-decrease")) {
     productDetailService.decreaseQuantity();
     return;
   }
