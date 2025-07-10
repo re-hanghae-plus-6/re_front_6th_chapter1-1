@@ -1,5 +1,6 @@
 import { fetchProducts } from "../entities/products";
 import { productsStore } from "../store";
+import { navigate } from "./navigate";
 
 export const bindAllEvents = () => {
   // 상품 리스트 개수 Limit 선택 이벤트
@@ -35,5 +36,16 @@ export const bindAllEvents = () => {
         fetchProducts({ search, page: 1 }); // 보통 검색 시 첫 페이지로 초기화
       }
     };
+  }
+
+  // 상품 리스트에서 상품 클릭시 상세페이지로 이동 이벤트
+  const productItemElements = document.querySelectorAll(".product-card");
+  if (productItemElements) {
+    productItemElements.forEach((element) => {
+      element.addEventListener("click", () => {
+        const productId = element.dataset.productId;
+        navigate(`/product/${productId}`);
+      });
+    });
   }
 };

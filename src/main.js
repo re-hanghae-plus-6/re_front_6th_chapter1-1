@@ -1,8 +1,8 @@
-import { Router } from "./router/Router.js";
 import { categoriesStore, productsStore } from "./store.js";
 import { fetchProducts } from "./entities/products.js";
 import { fetchCategories } from "./entities/categories.js";
-import { bindAllEvents } from "./events/bindAllEvents.js";
+
+import { renderHtml } from "./utils/renderHtml.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -11,10 +11,6 @@ const enableMocking = () =>
     }),
   );
 
-const renderHtml = async () => {
-  document.body.querySelector("#root").innerHTML = await Router();
-  bindAllEvents();
-};
 window.addEventListener("popstate", renderHtml);
 async function main() {
   const {
@@ -23,7 +19,7 @@ async function main() {
 
   fetchProducts({ limit });
   fetchCategories();
-  // document.body.querySelector("#root").innerHTML = await Router();
+
   productsStore.subscribe(renderHtml);
   categoriesStore.subscribe(renderHtml);
   renderHtml();
