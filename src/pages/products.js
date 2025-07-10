@@ -4,18 +4,14 @@ import { Header } from "../components/Header";
 import { Layouy } from "../components/Layout";
 import { Products } from "../components/Products";
 import { Component } from "../core/Component";
-import { productsStore2 } from "../store/products";
+import { productsStore } from "../store/products";
 import { html } from "../utils/html";
 
 export function ProductsPage($root) {
-  productsStore2.initSearchParams();
-  productsStore2.loadCategories().then(() => {
-    productsStore2.loadProducts();
+  productsStore.initSearchParams();
+  productsStore.loadCategories().then(() => {
+    productsStore.loadProducts();
   });
-  // productsStore.initSearchParams();
-  // productsStore.loadCategories().then(() => {
-  //   productsStore.loadProducts();
-  // });
 
   const layout = new Layouy({
     header: new Header({ nav: new Nav() }),

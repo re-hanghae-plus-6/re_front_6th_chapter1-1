@@ -1,7 +1,7 @@
 import { Component } from "../core/Component";
 import { router } from "../core/router";
 import { cartStore } from "../store/cart";
-import { productsStore, productsStore2 } from "../store/products";
+import { productsStore } from "../store/products";
 import { html } from "../utils/html";
 
 export class Products extends Component {
@@ -12,7 +12,7 @@ export class Products extends Component {
   #firstPageData = {};
 
   renderContainer() {
-    const { isLoading, hasNext } = productsStore2;
+    const { isLoading, hasNext } = productsStore;
     return html`<div ${this.dataAttribute.attribute} class="mb-6">
       <!-- 상품 그리드 -->
       <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
@@ -23,11 +23,11 @@ export class Products extends Component {
   }
 
   render() {
-    // const { limit, page, total, products, currentPageProducts, isLoading, hasNext, isFetching } = productsStore;
-    const { params, data } = productsStore2;
-    const { page, total, products, currentPageProducts, isLoading, hasNext, isFetching } = data;
-    const { limit } = params;
-    console.log("Products render", page);
+    const { limit, page, total, products, currentPageProducts, isLoading, hasNext, isFetching } = productsStore;
+    // const { params, data } = productsStore2;
+    // const { page, total, products, currentPageProducts, isLoading, hasNext, isFetching } = data;
+    // const { limit } = params;
+    // console.log("Products render", page);
     if (isLoading) {
       return;
     } else if (page === 1) {
