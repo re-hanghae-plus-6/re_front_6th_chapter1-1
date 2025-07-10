@@ -14,7 +14,7 @@ export default function initializeHandlers(state, render) {
   cartHandlers.handleSelectAllCheckbox(state, render);
 
   // 상품 리스트 관련
-  productHandlers.setupScrollInfinityHandler(state, render);
+  productHandlers.infinityScrollHandler(state, render);
 
   // 필터 관련
   filterHandlers.handleCategory1Filter(state, render);
