@@ -35,7 +35,6 @@ class Controller {
     if (currentRoute === "/" || !currentRoute) {
       if (!this.controllers.productList) {
         this.controllers.productList = new ProductListController();
-        await this.controllers.productList.initialize();
         this.controllers.productList.setupEventListeners();
       }
       await this.controllers.productList.loadInitialData();

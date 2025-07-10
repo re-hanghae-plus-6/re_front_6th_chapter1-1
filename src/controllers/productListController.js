@@ -13,10 +13,6 @@ export class ProductListController {
     return store.getState();
   }
 
-  async initialize() {
-    await this.loadInitialData();
-  }
-
   setupEventListeners() {
     // 기존 이벤트 리스너 제거
     this.#eventListeners.forEach(({ element, type, handler }) => {

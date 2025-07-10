@@ -34,15 +34,17 @@ async function main() {
   window.addEventListener("popstate", async () => {
     isHandlingRouteChange = true;
     store.dispatch(actions.navigate(location.pathname));
+    render(); // 라우트 변경 시작 시 즉시 렌더링
     await controller.handleRouteChange(location.pathname);
     isHandlingRouteChange = false;
+    // store.subscribe가 자동으로 렌더링 처리
   });
 
-  isHandlingRouteChange = true;
   store.dispatch(actions.navigate(location.pathname));
+  render();
+  isHandlingRouteChange = true;
   await controller.handleRouteChange(location.pathname);
   isHandlingRouteChange = false;
-  render();
 }
 
 // 애플리케이션 시작
