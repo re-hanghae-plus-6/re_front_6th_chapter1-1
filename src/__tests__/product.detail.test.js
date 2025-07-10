@@ -110,7 +110,7 @@ describe("3. 관련 상품 기능", () => {
     expect(document.querySelector(".related-product-card [data-product-id='85067212996']")).toBe(null);
 
     // 관련 상품 클릭
-    await userEvent.click(relatedProductCards[0]);
+    relatedProductCards[0].click();
     await screen.findByRole("heading", {
       level: 1,
       name: "샷시 풍지판 창문 바람막이 베란다 문 틈막이 창틀 벌레 차단 샤시 방충망 틈새막이",

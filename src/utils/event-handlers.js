@@ -2,6 +2,103 @@ import { productListService, productDetailService } from "../services/index.js";
 import { router } from "../routes/index.js";
 
 /**
+ * 토스트 메시지 표시 함수
+ */
+const showToastMessage = (message) => {
+  // 기존 토스트 메시지가 있으면 제거
+  const existingToast = document.querySelector(".toast-message");
+  if (existingToast) {
+    existingToast.remove();
+  }
+
+  // 메시지 타입에 따른 토스트 생성
+  const getToastHTML = (message) => {
+    if (message === "장바구니에 추가되었습니다") {
+      return `
+        <div class="bg-green-600 text-white px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2 max-w-sm">
+          <div class="flex-shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+          </div>
+          <p class="text-sm font-medium">${message}</p>
+          <button id="toast-close-btn" class="flex-shrink-0 ml-2 text-white hover:text-gray-200">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      `;
+    } else if (message === "선택된 상품들이 삭제되었습니다") {
+      return `
+        <div class="bg-blue-600 text-white px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2 max-w-sm">
+          <div class="flex-shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <p class="text-sm font-medium">${message}</p>
+          <button id="toast-close-btn" class="flex-shrink-0 ml-2 text-white hover:text-gray-200">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      `;
+    } else {
+      return `
+        <div class="bg-red-600 text-white px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2 max-w-sm">
+          <div class="flex-shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </div>
+          <p class="text-sm font-medium">${message}</p>
+          <button id="toast-close-btn" class="flex-shrink-0 ml-2 text-white hover:text-gray-200">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      `;
+    }
+  };
+
+  // 새로운 토스트 메시지 생성
+  const toast = document.createElement("div");
+  toast.className = "toast-message flex flex-col gap-2 items-center justify-center mx-auto";
+  toast.style.cssText = `
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    width: fit-content;
+  `;
+  toast.innerHTML = getToastHTML(message);
+
+  // DOM에 추가
+  document.body.appendChild(toast);
+
+  // 닫기 버튼 이벤트 리스너
+  const closeBtn = toast.querySelector("#toast-close-btn");
+  if (closeBtn) {
+    closeBtn.addEventListener("click", () => {
+      if (toast && toast.parentNode) {
+        toast.remove();
+      }
+    });
+  }
+
+  // 3초 후 자동 제거
+  setTimeout(() => {
+    if (toast && toast.parentNode) {
+      toast.remove();
+    }
+  }, 3000);
+};
+
+/**
  * 검색 이벤트 핸들러
  */
 export const handleSearchKeydown = async (e) => {
@@ -119,8 +216,7 @@ export const handleProductDetailEvents = (e) => {
   if (e.target.id === "add-to-cart-btn") {
     const success = productDetailService.addToCart();
     if (success) {
-      // TODO: 토스트 메시지 표시
-      console.log("장바구니에 추가되었습니다");
+      showToastMessage("장바구니에 추가되었습니다");
     }
     return;
   }

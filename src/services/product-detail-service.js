@@ -55,6 +55,7 @@ class ProductDetailService {
 
     this.state.loading = true;
     this.state.error = null;
+    this.state.relatedProducts = []; // 관련 상품 초기화
     this.notifyListeners();
 
     try {
@@ -69,12 +70,13 @@ class ProductDetailService {
       }
 
       this.state.product = product;
-
-      // 관련 상품 로드 (같은 카테고리의 다른 상품들)
-      await this.loadRelatedProducts(product);
-
       this.state.loading = false;
+
+      // 상품 정보만 먼저 렌더링
       this.notifyListeners();
+
+      // 관련 상품은 별도로 비동기 로드
+      this.loadRelatedProductsAsync(product);
     } catch (error) {
       console.error("상품 상세 정보 로드 실패:", error);
       this.state.error = "상품 정보를 불러오는데 실패했습니다.";
@@ -84,7 +86,7 @@ class ProductDetailService {
   }
 
   /**
-   * 관련 상품 로드
+   * 관련 상품 로드 (동기)
    */
   async loadRelatedProducts(product) {
     try {
@@ -100,6 +102,30 @@ class ProductDetailService {
     } catch (error) {
       console.error("관련 상품 로드 실패:", error);
       this.state.relatedProducts = [];
+    }
+  }
+
+  /**
+   * 관련 상품 비동기 로드
+   */
+  async loadRelatedProductsAsync(product) {
+    try {
+      // 같은 category2의 다른 상품들을 가져옴
+      const response = await getProducts({
+        category1: product.category1,
+        category2: product.category2,
+        limit: 20, // 관련 상품 최대 20개
+      });
+
+      // 현재 상품을 제외한 관련 상품들
+      this.state.relatedProducts = response.products.filter((p) => p.productId !== product.productId);
+
+      // 관련 상품 로드 완료 후 렌더링 업데이트
+      this.notifyListeners();
+    } catch (error) {
+      console.error("관련 상품 로드 실패:", error);
+      this.state.relatedProducts = [];
+      this.notifyListeners();
     }
   }
 
