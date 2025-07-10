@@ -1,7 +1,25 @@
 import Component from '../../../core/Component.js';
 import cartStore from '../../../store/cartStore.js';
+import cartLocalStorage from '../../../store/cartLocalStorage.js';
 
 class Header extends Component {
+  constructor(element, props) {
+    super(element, props);
+    this.unsubscribeCartStorage = null;
+  }
+
+  onMount() {
+    // 장바구니 데이터 변경시 자동 리렌더
+    this.unsubscribeCartStorage = cartLocalStorage.subscribe('cartProducts', () => {
+      this.render();
+    });
+  }
+
+  onUnmount() {
+    // 구독 해제
+    if (this.unsubscribeCartStorage) this.unsubscribeCartStorage();
+  }
+
   attachEventListeners() {
     this.addEventListener(this.element, 'click', (event) => {
       if (event.target.closest('#cart-icon-btn')) {
@@ -13,6 +31,9 @@ class Header extends Component {
   }
 
   render() {
+    const cartItems = cartLocalStorage.get('cartProducts') || [];
+    const cartItemsLength = cartItems.length || 0;
+
     this.element.innerHTML = /* HTML */ `
       <header class="bg-white shadow-sm sticky top-0 z-40">
         <div class="max-w-md mx-auto px-4 py-4">
@@ -36,7 +57,7 @@ class Header extends Component {
                 </svg>
                 <span
                   class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"
-                  >4</span
+                  >${cartItemsLength}</span
                 >
               </button>
             </div>
