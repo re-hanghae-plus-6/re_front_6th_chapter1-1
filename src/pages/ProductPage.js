@@ -1,3 +1,4 @@
+import { getProduct } from "../api/productApi";
 import { Component } from "../core/Component";
 
 export class ProductPage extends Component {
@@ -5,40 +6,27 @@ export class ProductPage extends Component {
     super(props);
 
     this.state = {
-      loading: false,
+      loading: true,
       product: {},
     };
+
+    this.on(Component.EVENTS.MOUNT, () => {
+      const { productId } = this.props.router.routeParams;
+      this.#loadProduct(productId);
+    });
   }
 
-  // /**
-  //  * 라우터에서 호출되는 파라미터 설정 메서드
-  //  *
-  //  * @param {Object} routeParams - 라우트 파라미터 (:id 등)
-  //  * @param {Object} queryParams - 쿼리 파라미터 (?page=1 등)
-  //  */
-  // setRouteParams(routeParams = {}, queryParams = {}) {
-  //   this.setState({
-  //     ...this.state,
-  //     routeParams,
-  //     queryParams,
-  //   });
-
-  //   this.#loadProduct(routeParams.productId);
-  // }
-
-  // async #loadProduct(productId) {
-  //   try {
-  //     this.setState({ loading: true });
-  //     const product = await getProduct(productId);
-  //     this.setState({ product });
-  //   } catch (error) {
-  //     if (error instanceof Error) {
-  //       console.error("상품 로딩 실패:", error.message);
-  //     }
-  //   } finally {
-  //     this.setState({ loading: false });
-  //   }
-  // }
+  async #loadProduct(productId) {
+    try {
+      const product = await getProduct(productId);
+      this.setState({ product, loading: false });
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("상품 로딩 실패:", error.message);
+        this.setState({ loading: false });
+      }
+    }
+  }
 
   bindEvents(element) {
     element.addEventListener("click", (e) => {
