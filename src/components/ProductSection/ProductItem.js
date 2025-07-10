@@ -1,4 +1,5 @@
 import { navigate } from "../../utils/navigate";
+import { cartStore } from "../../states/cart/cartStore";
 
 export const ProductItem = (product) => {
   return /* HTML */ `<div
@@ -34,6 +35,28 @@ export const ProductItem = (product) => {
 };
 
 document.addEventListener("click", (e) => {
+  const cartBtn = e.target.closest(".add-to-cart-btn");
+  if (cartBtn) {
+    const card = cartBtn.closest(".product-card");
+    if (!card) return;
+
+    const productId = card.dataset.productId;
+    const image = card.querySelector("img")?.src;
+    const title = card.querySelector("h3")?.textContent;
+    const lprice = card.querySelector(".text-lg.font-bold.text-gray-900")?.textContent;
+
+    const cartItem = {
+      productId,
+      title,
+      image,
+      lprice,
+      quantity: 1,
+    };
+
+    cartStore.addItem(cartItem);
+    return;
+  }
+
   const card = e.target.closest(".product-card");
   if (card) {
     const productId = card.dataset.productId;

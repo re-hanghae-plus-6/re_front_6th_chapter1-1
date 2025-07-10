@@ -1,8 +1,10 @@
 import { Home } from "./pages/Home.js";
 import { Product } from "./pages/Product.js";
 import { NotFound } from "./pages/NotFound.js";
-import { addHeaderEvents } from "./components/Modal/CartModal.js";
 import { getCartCount } from "./states/cart/cartStore.js";
+import { cartStore } from "./states/cart/cartStore.js";
+import { renderCartCount } from "./components/Layout/Header.js";
+import { addHeaderEvents } from "./components/Modal/CartModal.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -16,13 +18,23 @@ async function main() {
   const cartCount = getCartCount();
 
   if (path === "/") {
-    Home({ cartCount: cartCount });
+    Home(cartCount);
   } else if (path.startsWith("/product/")) {
     const productId = path.split("/product/")[1];
-    await Product(productId);
+    await Product(productId, cartCount);
   } else {
     NotFound();
   }
+
+  cartStore.subscribe((items) => {
+    const cartBtn = document.querySelector("#cart-icon-btn");
+    if (!cartBtn) return;
+
+    const existing = cartBtn.querySelector("span");
+    if (existing) existing.remove();
+
+    cartBtn.insertAdjacentHTML("beforeend", renderCartCount(items.length));
+  });
 
   addHeaderEvents();
 }

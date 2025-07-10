@@ -7,12 +7,12 @@ import { Footer } from "../components/Layout/Footer";
 import { RelatedProductSection } from "../components/RelatedProductSection/RelatedProductSection";
 import { navigate } from "../utils/navigate";
 
-function renderProductPage(state) {
+function renderProductPage(state, cartCount) {
   const { isLoading, product, relatedProducts } = state;
 
   render(/* HTML */ `
     <div class="min-h-screen bg-gray-50">
-      ${Header({ type: "product" })}
+      ${Header({ type: "product", cartCount })}
       ${isLoading
         ? `<main class="max-w-md mx-auto px-4 py-4">
         <div class="py-20 bg-gray-50 flex items-center justify-center">
@@ -116,7 +116,7 @@ function renderProductPage(state) {
   addEvents();
 }
 
-export async function Product(productId) {
+export async function Product(productId, cartCount) {
   productDetailState.isLoading = true;
   renderProductPage(productDetailState);
 
@@ -134,7 +134,7 @@ export async function Product(productId) {
       relatedProductList.products.filter((product) => product.productId !== productId).slice(0, 4) || [];
 
     productDetailState.isLoading = false;
-    renderProductPage(productDetailState);
+    renderProductPage(productDetailState, cartCount);
   } catch (e) {
     console.error(e);
   }

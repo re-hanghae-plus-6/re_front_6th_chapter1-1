@@ -17,7 +17,7 @@ let prev = { ...productListState };
 function renderHomePage(state, cartCount) {
   render(/* HTML */ `
     <div class="bg-gray-50">
-      ${Header({ type: "home", cartCount: cartCount })}
+      ${Header({ type: "home", cartCount })}
       <main class="max-w-md mx-auto px-4 py-4">
         ${FilterSection({
           search: state.search,
@@ -75,7 +75,7 @@ async function loadProducts({ isInit = false } = {}) {
   }
 }
 
-export function Home(cartCount = cartCount) {
+export function Home(cartCount) {
   if (!store) {
     store = createStore(productListState);
 
