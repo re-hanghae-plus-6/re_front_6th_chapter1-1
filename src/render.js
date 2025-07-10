@@ -4,6 +4,7 @@ import { Header } from "./pages/Header.js";
 import { router } from "./router/index.js";
 import { showToast } from "./components/Toast.js";
 import { ProductItem } from "./components/ProductItem.js";
+import { bindCartIconEvent } from "./components/CartModal.js";
 import { cartStore, categoryStore, productStore, storeManager, getAppState } from "./stores/index.js";
 
 /**
@@ -88,6 +89,9 @@ function bindEvents() {
 
   // 장바구니 개수 뱃지 업데이트
   updateCartCountBadge();
+
+  // 장바구니 아이콘 이벤트
+  bindCartIconEvent();
 
   // 폼 컨트롤 이벤트
   bindFormEvents();

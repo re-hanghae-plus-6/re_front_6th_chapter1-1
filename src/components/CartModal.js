@@ -297,12 +297,18 @@ function bindCartModalEvents() {
 
 // 선택된 상품 정보 업데이트
 function updateSelectedInfo() {
+  // 장바구니가 비어있거나 모달이 없으면 종료
+  const modal = document.querySelector(".cart-modal");
+  if (!modal) return;
+
+  const cartItems = cartStore.getCartItems();
+  if (Object.keys(cartItems).length === 0) return;
+
   const selectedCheckboxes = document.querySelectorAll(".cart-item-checkbox:checked");
   const selectedCount = selectedCheckboxes.length;
 
   // 선택된 상품들의 총 금액 계산
   let selectedAmount = 0;
-  const cartItems = cartStore.getCartItems();
   const products = productStore.getState().products;
 
   selectedCheckboxes.forEach((checkbox) => {
@@ -319,17 +325,20 @@ function updateSelectedInfo() {
   const removeSelectedBtn = document.getElementById("cart-modal-remove-selected-btn");
 
   if (selectedCount > 0) {
-    selectedInfo.style.display = "flex";
-    removeSelectedBtn.style.display = "block";
+    if (selectedInfo) selectedInfo.style.display = "flex";
+    if (removeSelectedBtn) removeSelectedBtn.style.display = "block";
 
     document.querySelectorAll(".selected-count").forEach((el) => {
       el.textContent = selectedCount;
     });
 
-    document.querySelector(".selected-amount").textContent = `${formatPrice(selectedAmount)}원`;
+    const selectedAmountEl = document.querySelector(".selected-amount");
+    if (selectedAmountEl) {
+      selectedAmountEl.textContent = `${formatPrice(selectedAmount)}원`;
+    }
   } else {
-    selectedInfo.style.display = "none";
-    removeSelectedBtn.style.display = "none";
+    if (selectedInfo) selectedInfo.style.display = "none";
+    if (removeSelectedBtn) removeSelectedBtn.style.display = "none";
   }
 
   // 전체 선택 체크박스 상태 업데이트
@@ -359,8 +368,10 @@ export function showCartModal() {
   // 이벤트 바인딩
   bindCartModalEvents();
 
-  // 초기 선택 정보 업데이트
-  updateSelectedInfo();
+  // 초기 선택 정보 업데이트 (장바구니에 아이템이 있을 때만)
+  if (Object.keys(cartItems).length > 0) {
+    updateSelectedInfo();
+  }
 }
 
 // 장바구니 모달 숨김
@@ -375,6 +386,13 @@ export function hideCartModal() {
 export function bindCartIconEvent() {
   const cartIcon = document.getElementById("cart-icon-btn");
   if (cartIcon) {
-    cartIcon.addEventListener("click", showCartModal);
+    // 기존 이벤트 리스너 제거 (중복 방지)
+    cartIcon.removeEventListener("click", showCartModal);
+    // 새 이벤트 리스너 추가
+    cartIcon.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      showCartModal();
+    });
   }
 }
