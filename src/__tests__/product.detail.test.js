@@ -29,8 +29,9 @@ const 상품_상세페이지_접속 = async () => {
 
   expect(productImage).toBeInTheDocument();
 
-  // 상품 이미지 클릭
-  await userEvent.click(productImage);
+  // ? userEvent에서 productImage.click()으로 변경
+  productImage.click();
+
   await screen.findByRole("heading", {
     level: 1,
     name: "PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장",
