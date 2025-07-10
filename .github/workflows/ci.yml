@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  unit:
+  hard-basic:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -24,11 +24,10 @@ jobs:
         with:
           node-version: 22
           cache: 'pnpm'
-      - name: Install dependencies
-        run: |
+      - run: |
           pnpm install
-          pnpm run test
-  e2e:
+          pnpm run test:hard:basic
+  hard-advanced:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
@@ -47,4 +46,44 @@ jobs:
         run: |
           pnpm install
           npx playwright install --with-deps
-          pnpm run test:e2e
+          pnpm run test:hard:advanced
+  easy-basic:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: |
+          pnpm install
+          npx playwright install --with-deps
+          pnpm run test:easy:basic
+  easy-advanced:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: |
+          pnpm install
+          npx playwright install --with-deps
+          pnpm run test:easy:advanced
