@@ -130,6 +130,8 @@ function createRouteRenderer() {
 
       if (component && typeof component === "object" && component.html) {
         $root.innerHTML = component.html;
+        // 라우트 렌더링 후 로컬스토리지에 저장된 장바구니 뱃지를 갱신한다
+        updateCartBadge();
         componentCleanup = component.cleanup;
       }
     } catch (err) {
