@@ -28,7 +28,12 @@ function renderHomePage(state, cartCount) {
           limit: state.limit,
           sort: state.sort,
         })}
-        ${ProductSection({ isLoading: state.isLoading, products: state.products, total: state.total })}
+        ${ProductSection({
+          isLoading: state.isLoading,
+          products: state.products,
+          total: state.total,
+          hasNext: state.hasNext,
+        })}
       </main>
       ${Footer()}
     </div>
@@ -38,7 +43,7 @@ function renderHomePage(state, cartCount) {
 }
 
 async function loadProducts({ isInit = false } = {}) {
-  const state = isInit ? getQueryState() : store.getState();
+  const state = isInit ? getQueryState({ resetPage: isInit }) : store.getState();
 
   store.setState({
     ...(isInit ? state : {}),
@@ -75,6 +80,44 @@ async function loadProducts({ isInit = false } = {}) {
   }
 }
 
+async function loadMoreProducts() {
+  const state = store.getState();
+  if (state.loading || !state.hasNext) return;
+
+  const currentProducts = state.products;
+  const nextPage = state.page + 1;
+
+  store.setState({
+    isLoading: true,
+  });
+
+  try {
+    const data = await getProducts({
+      page: nextPage,
+      limit: parseInt(state.limit),
+      search: state.search,
+      category1: state.category1,
+      category2: state.category2,
+      sort: state.sort,
+    });
+
+    store.setState({
+      products: [...currentProducts, ...data.products],
+      total: data.pagination.total,
+      isLoading: false,
+      page: nextPage,
+      hasNext: nextPage * parseInt(state.limit) < data.pagination.total,
+    });
+
+    updateUrlState(state);
+  } catch (e) {
+    console.error(e);
+    store.setState({
+      isLoading: false,
+    });
+  }
+}
+
 export function Home(cartCount) {
   if (!store) {
     store = createStore(productListState);
@@ -93,7 +136,9 @@ export function Home(cartCount) {
       prev = { ...state };
     });
 
-    loadProducts({ isInit: true });
+    loadProducts({ isInit: true }).then(() => {
+      updateUrlState(store.getState());
+    });
   }
 }
 
@@ -169,6 +214,15 @@ function addEvents() {
       });
     };
   }
+
+  window.addEventListener("scroll", () => {
+    const currentState = store.getState();
+    if (currentState.isLoading || !currentState.hasNext) return;
+
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+      loadMoreProducts();
+    }
+  });
 
   window.addEventListener("popstate", () => {
     const queryState = getQueryState();
