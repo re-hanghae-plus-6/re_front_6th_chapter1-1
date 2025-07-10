@@ -41,7 +41,7 @@ productPage.afterRender = () => {
   const searchInput = document.getElementById("search-input");
   const limitSelect = document.getElementById("limit-select");
   const sortSelect = document.getElementById("sort-select");
-
+  const productGrid = document.getElementById("products-grid");
   if (searchInput) {
     searchInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
@@ -70,12 +70,25 @@ productPage.afterRender = () => {
       navigate(`${location.pathname}?${params.toString()}`);
     });
   }
+  if (productGrid) {
+    productGrid.addEventListener("click", (e) => {
+      const imageArea = e.target.closest(".product-image");
+      if (!imageArea) return;
+
+      const card = imageArea.closest(".product-card");
+      const productId = card?.dataset.productId;
+      if (productId) {
+        navigate(`/product/detail?productId=${productId}`);
+      }
+    });
+  }
 };
 
 export function productItem() {
   return /* HTML */ state.products
     .map(
       (product) => `<div
+      id="product-list"
     class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
     data-product-id="${product.productId}"
   >
