@@ -339,7 +339,7 @@ class Cart extends Component {
                 장바구니
                 ${cartItems.length
                   ? `<span class="text-sm font-normal text-gray-600 ml-1">(${cartItems.length})</span>`
-                  : null}
+                  : ''}
               </h2>
 
               <button id="cart-modal-close-btn" class="text-gray-400 hover:text-gray-600 p-1">
