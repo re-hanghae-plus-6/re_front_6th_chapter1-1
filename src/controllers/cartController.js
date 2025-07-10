@@ -28,6 +28,26 @@ export class CartController {
         this.#handleRemoveItem(event);
         return;
       }
+
+      if (event.target.closest(".cart-item-checkbox")) {
+        this.#handleItemSelection(event);
+        return;
+      }
+
+      if (event.target.id === "cart-modal-select-all-checkbox") {
+        this.#handleSelectAll(event);
+        return;
+      }
+
+      if (event.target.id === "cart-modal-remove-selected-btn") {
+        this.#handleRemoveSelected(event);
+        return;
+      }
+
+      if (event.target.id === "cart-modal-clear-cart-btn") {
+        this.#handleClearCart(event);
+        return;
+      }
     };
 
     document.addEventListener("click", clickHandler);
@@ -75,8 +95,6 @@ export class CartController {
       if (priceElement) {
         priceElement.textContent = `${previousValues.price.toLocaleString()}원`;
       }
-
-      store.dispatch(actions.showToast("수량 업데이트에 실패했습니다.", "error"));
     }
   }
 
@@ -124,15 +142,12 @@ export class CartController {
         if (priceElement) {
           priceElement.textContent = `${previousValues.price.toLocaleString()}원`;
         }
-
-        store.dispatch(actions.showToast("수량 업데이트에 실패했습니다.", "error"));
       }
     } else {
       try {
         store.dispatch(actions.updateCartQuantity(productId, newQuantity));
       } catch (error) {
         console.error("아이템 제거 실패:", error);
-        store.dispatch(actions.showToast("아이템 제거에 실패했습니다.", "error"));
       }
     }
   }
@@ -145,6 +160,31 @@ export class CartController {
     if (!productId) return;
 
     store.dispatch(actions.removeFromCart(productId));
+  }
+
+  #handleItemSelection(event) {
+    const checkbox = event.target.closest(".cart-item-checkbox");
+    if (!checkbox) return;
+
+    const productId = checkbox.getAttribute("data-product-id");
+    if (!productId) return;
+
+    store.dispatch(actions.toggleCartItemSelection(productId));
+  }
+
+  #handleSelectAll(event) {
+    const selectAllCheckbox = event.target;
+    const isChecked = selectAllCheckbox.checked;
+
+    store.dispatch(actions.toggleAllCartItems(isChecked));
+  }
+
+  #handleRemoveSelected() {
+    store.dispatch(actions.removeSelectedItems());
+  }
+
+  #handleClearCart() {
+    store.dispatch(actions.clearCart());
   }
 
   cleanup() {
