@@ -31,14 +31,9 @@ export function initRender() {
     if (state.newlyLoadedProducts.length > 0 && !state.isFirstLoad) {
       appendNewProducts();
     }
-    // 무한 스크롤 로딩 중이 아닌 경우에만 전체 렌더링
-    else if (!state.loading || state.isFirstLoad) {
+    // 그 외의 경우는 모두 전체 렌더링
+    else {
       render();
-    }
-    // 무한 스크롤 로딩 중인 경우 (loading=true && !isFirstLoad)에는
-    // 로딩 UI만 추가하고 전체 렌더링은 하지 않음
-    else if (state.loading && !state.isFirstLoad) {
-      addInfiniteScrollLoadingUI();
     }
   });
 
@@ -318,32 +313,6 @@ export function appendNewProducts() {
   // 새로 추가된 상품들에 이벤트 바인딩
   bindProductEvents();
   bindNavigationEvents();
-}
-
-/**
- * 무한 스크롤 로딩 UI 추가
- */
-function addInfiniteScrollLoadingUI() {
-  // 이미 로딩 UI가 있다면 추가하지 않음
-  if (document.getElementById("infinite-scroll-loading")) return;
-
-  const productsContainer = document.querySelector(".grid.grid-cols-2.gap-4.mb-6")?.parentElement;
-  if (!productsContainer) return;
-
-  const loadingHTML = `
-    <div class="text-center py-4" id="infinite-scroll-loading">
-      <div class="inline-flex items-center">
-        <svg class="animate-spin h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" 
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        <span class="text-sm text-gray-600">상품을 불러오는 중...</span>
-      </div>
-    </div>
-  `;
-
-  productsContainer.insertAdjacentHTML("beforeend", loadingHTML);
 }
 
 /**

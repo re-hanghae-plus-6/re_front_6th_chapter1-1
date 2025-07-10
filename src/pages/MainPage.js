@@ -164,7 +164,7 @@ export const MainPage = (appState) => {
             <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
               <!-- 로딩 스켈레톤 (초기 로딩시에만) -->
               ${
-                loading && isFirstLoad
+                isFirstLoad
                   ? LoadingList()
                   : products
                       .map(

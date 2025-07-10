@@ -14,8 +14,12 @@ class StoreManager {
 
   // 스토어들 간의 구독 관계 설정
   setupSubscriptions() {
+    let isInitializing = false;
+
     // 카테고리 변경 시 상품 목록 업데이트 및 URL 동기화
     categoryStore.subscribe(() => {
+      if (isInitializing) return; // 초기화 중에는 구독 로직 실행하지 않음
+
       const categoryState = categoryStore.getSelectedCategories();
       const productState = productStore.getState();
 
@@ -36,6 +40,8 @@ class StoreManager {
 
     // 상품 필터 변경 시 URL 동기화
     productStore.subscribe(() => {
+      if (isInitializing) return; // 초기화 중에는 구독 로직 실행하지 않음
+
       const productState = productStore.getState();
       const categoryState = categoryStore.getSelectedCategories();
 
@@ -51,6 +57,11 @@ class StoreManager {
         });
       }
     });
+
+    // 초기화 상태 제어 함수들
+    this.setInitializing = (value) => {
+      isInitializing = value;
+    };
   }
 
   // URL 파라미터에서 모든 스토어 상태 초기화
@@ -111,15 +122,23 @@ class StoreManager {
 
   // 앱 초기화
   async initialize() {
-    // URL에서 상태 복원
-    this.initFromURL();
+    // 초기화 시작 - 구독 로직 비활성화
+    this.setInitializing(true);
 
-    // 카테고리 로드
-    await categoryStore.loadCategories();
+    try {
+      // URL에서 상태 복원
+      this.initFromURL();
 
-    // 상품 로드
-    const categoryState = categoryStore.getSelectedCategories();
-    await productStore.loadProducts(categoryState);
+      // 카테고리 로드
+      await categoryStore.loadCategories();
+
+      // 상품 로드
+      const categoryState = categoryStore.getSelectedCategories();
+      await productStore.loadProducts(categoryState);
+    } finally {
+      // 초기화 완료 - 구독 로직 활성화
+      this.setInitializing(false);
+    }
   }
 }
 
