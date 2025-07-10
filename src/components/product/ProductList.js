@@ -2,10 +2,15 @@ import { getProducts } from "../../api/productApi";
 import Component from "../../lib/Component";
 import { homeStore } from "../../store/homeStore";
 import ProductItem from "./ProductItem";
+import { useNavigate } from "../../hook/useRouter.js";
 
 export default class ProductList extends Component {
   setup() {
     this.prevFilterState = null;
+
+    // ! 이벤트 핸들러를 미리 바인딩해서 보관
+    // ! this.handleClick이 항상 같은 함수 객체가 되도록
+    this.handleProductClick = this.handleProductClick.bind(this);
 
     this.unsubscribe = homeStore.subscribe(() => {
       const currentState = homeStore.getState();
@@ -30,6 +35,17 @@ export default class ProductList extends Component {
     });
   }
 
+  setEvent() {
+    this.$target.addEventListener("click", this.handleProductClick);
+  }
+
+  cleanup() {
+    this.$target.removeEventListener("click", this.handleProductClick);
+
+    // 상태 구독 해제
+    if (this.unsubscribe) this.unsubscribe();
+  }
+
   shouldFetchProducts(currentParams) {
     // 첫 번째 로드인 경우
     if (!this.prevFilterState) {
@@ -39,6 +55,16 @@ export default class ProductList extends Component {
     // 필터 조건이 변경된 경우
     const paramKeys = ["page", "search", "category1", "category2", "sort", "limit"];
     return paramKeys.some((key) => this.prevFilterState[key] !== currentParams[key]);
+  }
+
+  handleProductClick(e) {
+    const { navigate } = useNavigate();
+
+    const productCard = e.target.closest(".product-card");
+    if (productCard) {
+      const productId = productCard.dataset.productId;
+      navigate(`/product/${productId}`);
+    }
   }
 
   async fetchProducts() {
@@ -66,7 +92,7 @@ export default class ProductList extends Component {
       category2,
       sort,
     };
-    console.log(params);
+
     const { products, pagination } = await getProducts(params);
 
     homeStore.setState({

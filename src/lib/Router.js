@@ -41,6 +41,7 @@ export class Router {
 
     // 새 컴포넌트 인스턴스 생성
     const ComponentClass = route.component;
+    console.log("새 컴포넌트 생성:", ComponentClass.name);
 
     this.currentInstance = new ComponentClass(this.rootElement, {
       params: this.params,

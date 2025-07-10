@@ -7,7 +7,8 @@ export default class Component {
     this.$target = $target; // 부모 DOM 요소 지정
     this.props = props; // props 지정
     this.state = {}; // 초기 상태 설정
-    this.child = new Map();
+    this.child = new Map(); // 하위 컴포넌트 저장 (중복 인스턴스 방지)
+
     this.setup(); // 초기 상태 설정
     this.render(); // 초기 렌더링
   }
@@ -27,12 +28,26 @@ export default class Component {
     return "";
   }
 
+  cleanup() {
+    // 🔷 기존 이벤트/자원을 정리하는 훅
+    // 하위 클래스에서 오버라이드
+  }
+
   render() {
     // 🔷 template()로부터 HTML 문자열을 받아
     // 부모 DOM에 렌더링하고, mounted()를 호출
+
+    // 🔷 기존 자원 정리
+    this.cleanup();
+
+    // 🔷 새로운 렌더링 시작
     this.$target.innerHTML = this.template();
-    this.setEvent(); // 이벤트 바인딩
-    this.mounted?.(); // 하위 컴포넌트 렌더링
+
+    // 🔷 새 이벤트 바인딩
+    this.setEvent();
+
+    // 🔷 후처리
+    this.mounted?.();
   }
 
   setEvent() {
@@ -54,6 +69,20 @@ export default class Component {
   }
 
   removeChild(key) {
+    const child = this.child.get(key);
+    if (child?.cleanup) {
+      child.cleanup();
+    }
     this.child.delete(key);
+  }
+
+  destroy() {
+    // 🔷 컴포넌트 완전 제거
+    // 외부에서 강제로 unmount할 때 호출
+    // 하위 컴포넌트 정리 및 부모 DOM 정리
+    this.cleanup();
+    this.child.forEach((child) => child.cleanup?.());
+    this.child.clear();
+    this.$target.innerHTML = "";
   }
 }
