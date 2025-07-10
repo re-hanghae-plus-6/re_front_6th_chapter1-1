@@ -7,8 +7,8 @@ import { state } from "../@store/store.js";
 
 export const Home = () => {
   async function init() {
-    document.body.querySelector("#root").innerHTML = render();
-    initializeHandlers(state, render);
+    render();
+
     const [categoryData, productData] = await Promise.all([
       getCategories(),
       getProducts({
@@ -24,8 +24,7 @@ export const Home = () => {
     state.categories = categoryData;
     state.isLoading = false;
 
-    document.body.querySelector("#root").innerHTML = render();
-    initializeHandlers(state, render);
+    render();
   }
 
   init();
@@ -40,11 +39,12 @@ function render() {
     isLoading: state.isLoading,
   });
   const productSection = ProductList({ products: state.products, total: state.total, isLoading: state.isLoading });
-  return Layout({
-    cart: state.cart,
+  document.body.querySelector("#root").innerHTML = Layout({
     children: `
       ${filterSection}
       ${productSection}
     `,
   });
+
+  initializeHandlers(state, render);
 }
