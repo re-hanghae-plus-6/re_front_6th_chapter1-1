@@ -271,7 +271,23 @@ function setupModalEvents() {
       return;
     }
 
-    // 상품 삭제 버튼 클릭
+    if (event.target.matches("#cart-modal-select-all-checkbox")) {
+      // 현재 전체 선택 상태 확인 (중복 상품 제거한 배열로 확인)
+      const uniqueCartItems = [...new Set(state.cart.map((item) => item.productId))];
+      const isAllChecked = uniqueCartItems.every((productId) => state.selectedCartItems.includes(productId));
+
+      if (isAllChecked) {
+        // 모든 아이템이 선택되어 있다면 전체 해제
+        state.selectedCartItems = [];
+      } else {
+        // 일부만 선택되어 있거나 아무것도 선택되지 않았다면 전체 선택
+        state.selectedCartItems = uniqueCartItems;
+      }
+
+      renderCartModal();
+      return;
+    }
+
     if (event.target.matches(".cart-item-remove-btn")) {
       const productId = event.target.dataset.productId;
       removeFromCart(productId);

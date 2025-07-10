@@ -16,6 +16,10 @@ export const CartModal = ({ cart, selectedCartItems = [] }) => {
   const selectedItems = cartItemsWithCount.filter((item) => selectedCartItems.includes(item.productId));
   const selectedTotalPrice = selectedItems.reduce((sum, item) => sum + Number(item.lprice) * item.count, 0);
 
+  // 전체 선택 상태 확인
+  const isAllSelected =
+    cartItemsWithCount.length > 0 && cartItemsWithCount.every((item) => selectedCartItems.includes(item.productId));
+
   return `
     <div class="fixed inset-0 z-50 overflow-y-auto cart-modal">
       <!-- 배경 오버레이 -->
@@ -44,7 +48,7 @@ export const CartModal = ({ cart, selectedCartItems = [] }) => {
                 <!-- 전체 선택 섹션 -->
       <div class="p-4 border-b border-gray-200 bg-gray-50">
         <label class="flex items-center text-sm text-gray-700">
-          <input type="checkbox" id="cart-modal-select-all-checkbox" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-2">
+          <input type="checkbox" id="cart-modal-select-all-checkbox" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-2" ${isAllSelected ? "checked" : ""}>
           전체선택 (${cartItemsWithCount.length})
         </label>
       </div>
