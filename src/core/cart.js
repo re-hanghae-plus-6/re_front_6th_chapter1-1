@@ -1,18 +1,24 @@
 import CartModal from "../components/cart/CartModal.js";
 import { getProduct } from "../api/productApi.js";
 
+// LocalStorage key 상수화
+const STORAGE_KEY = "shopping_cart";
+
 let cart = [];
 
+// 현재 장바구니 상태를 LocalStorage 에 저장
 function persist() {
-  localStorage.setItem("cart", JSON.stringify(cart));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
 }
 
+// 초기 로드 시 LocalStorage 로부터 장바구니 복원
 function initStorage() {
   try {
-    const items = localStorage.getItem("cart");
+    const items = localStorage.getItem(STORAGE_KEY);
     if (items) cart = JSON.parse(items);
   } catch {
-    throw new Error("Failed to load cart");
+    // 파싱 오류 시 안전하게 초기화
+    cart = [];
   }
 }
 
@@ -23,9 +29,10 @@ export function getCartItems() {
   return cart;
 }
 
+// 장바구니에 담긴 상품 종류 수를 반환 (동일 상품 중복은 1로 계산)
 export function getCartCount() {
   syncFromStorage();
-  return cart.reduce((sum, item) => sum + item.quantity, 0);
+  return cart.length;
 }
 
 function getSelectedIds() {
@@ -123,7 +130,7 @@ export function selectAll(selected) {
 // Helper to keep in-memory cart in sync with localStorage (important for test isolation)
 function syncFromStorage() {
   try {
-    const items = localStorage.getItem("cart");
+    const items = localStorage.getItem(STORAGE_KEY);
     cart = items ? JSON.parse(items) : [];
   } catch {
     cart = [];
