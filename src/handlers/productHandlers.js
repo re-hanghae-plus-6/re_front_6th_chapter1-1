@@ -3,7 +3,7 @@ import { getProducts } from "../api/productApi.js";
 import { navigateTo } from "../router/router.js";
 
 /** 무한 스크롤 */
-export function setupScrollInfinityHandler(state, render) {
+export function infinityScrollHandler(state, render) {
   //스크롤 이벤트 중복 실행 방지
   let ticking = false;
 
