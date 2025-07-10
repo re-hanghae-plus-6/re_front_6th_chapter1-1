@@ -1,5 +1,4 @@
 export const header = (props) => {
-  // mainStatus 대신 props를 받도록 변경
   const headerHome = /*html*/ `
     <header class="bg-white shadow-sm sticky top-0 z-40">
       <div class="max-w-md mx-auto px-4 py-4">
