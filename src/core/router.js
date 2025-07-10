@@ -1,5 +1,5 @@
-const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
-// const BASE_PATH = "/front_6th_chapter1-1";
+// const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
+const BASE_PATH = "/front_6th_chapter1-1";
 
 class Router {
   #pagesMap = new Map();
@@ -55,6 +55,8 @@ class Router {
   }
 
   #navigateTo({ pathname = location.pathname, params = {} } = {}) {
+    pathname = this.#ensureBasePath(pathname);
+
     if (this.#pageDispose) {
       this.#pageDispose();
     }
@@ -70,8 +72,6 @@ class Router {
   }
 
   #matchPage({ pathname = location.pathname, params = {} } = {}) {
-    pathname = this.#ensureBasePath(pathname);
-
     if (this.#pagesMap.has(pathname)) {
       return this.#pagesMap.get(pathname);
     }
