@@ -8,66 +8,66 @@ export interface PageModule {
   mount?: (root: HTMLElement) => void | (() => void);
 }
 
-interface RouteObj {
-  routeRegex: RegExp;
-  page: PageModule;
-}
+let routes: Array<{ pattern: string; page: PageModule }> = [];
+let cleanup: (() => void) | undefined;
 
-let routes: RouteObj[] = [];
-let currentCleanup: (() => void) | undefined;
+function matchRoute(pattern: string, pathname: string) {
+  const patternParts = pattern.split("/");
+  const pathParts = pathname.split("/");
 
-function compile(pattern: string): RegExp {
-  // ^ … $ : 문자열의 시작과 끝을 고정해 완전 일치만 통과
-  // '/product/:id' → '^/product/(?<id>[^/]+)$'
-  const regexStr = "^" + pattern.replace(/:([^/]+)/g, (_, key) => `(?<${key}>[^/]+)`) + "$";
-  return new RegExp(regexStr);
+  if (patternParts.length !== pathParts.length) return null;
+
+  const params: Record<string, string> = {};
+
+  for (let i = 0; i < patternParts.length; i++) {
+    const patternPart = patternParts[i];
+    const pathPart = pathParts[i];
+
+    if (patternPart.startsWith(":")) {
+      params[patternPart.slice(1)] = pathPart;
+    } else if (patternPart !== pathPart) {
+      return null;
+    }
+  }
+
+  return params;
 }
 
 function render(urlStr: string) {
-  // 1) 이전 페이지 정리
-  currentCleanup?.();
-  currentCleanup = undefined;
+  // 리스너 등 이전 페이지 정리
+  cleanup?.();
+  cleanup = undefined;
 
-  // 2) URL 분해
+  // URL 분해
   const url = new URL(urlStr, location.origin);
-  const pathname = url.pathname;
   const queryParams = Object.fromEntries(url.searchParams.entries()) as Record<string, string>;
 
-  // 3) 매칭되는 라우트 탐색
-  const matched = routes.find(({ routeRegex }) => routeRegex.test(pathname));
+  // 매칭되는 라우트 탐색
+  for (const { pattern, page } of routes) {
+    const pathParams = matchRoute(pattern, url.pathname);
+    if (pathParams) {
+      const rootEl = document.getElementById("root")!;
 
-  if (!matched) {
-    document.getElementById("root")!.textContent = "404 | 페이지를 찾을 수 없습니다";
-    return;
+      rootEl.innerHTML = page.render(pathParams, queryParams);
+
+      if (page.mount) {
+        const maybeCleanup = page.mount(rootEl);
+        if (typeof maybeCleanup === "function") cleanup = maybeCleanup;
+      }
+      return;
+    }
   }
 
-  const { routeRegex, page } = matched;
-  const pathParams = (routeRegex.exec(pathname)?.groups ?? {}) as Record<string, string>;
-
-  const rootEl = document.getElementById("root")!;
-
-  // 4) HTML 삽입
-  rootEl.innerHTML = page.render(pathParams, queryParams);
-
-  // 5) mount 훅 실행 후 cleanup 저장
-  if (page.mount) {
-    const maybeCleanup = page.mount(rootEl);
-    if (typeof maybeCleanup === "function") currentCleanup = maybeCleanup;
-  }
+  document.getElementById("root")!.textContent = "404 | 페이지를 찾을 수 없습니다";
 }
 
 function navigate(path: string, replace = false) {
-  if (replace) history.replaceState(null, "", path);
-  else history.pushState(null, "", path);
+  history[replace ? "replaceState" : "pushState"](null, "", path);
   render(path);
 }
 
-// routeMap: { '/': fn, ... }
 function initRouter(routeMap: Record<string, PageModule>) {
-  routes = Object.keys(routeMap).map((pattern) => ({
-    routeRegex: compile(pattern),
-    page: routeMap[pattern],
-  }));
+  routes = Object.entries(routeMap).map(([pattern, page]) => ({ pattern, page }));
 
   document.addEventListener("click", (e) => {
     // 클릭한 요소의 가장 가까운 data-link 속성을 가진 a태그는 라우팅을 수행(a태그의 기본동작 인터셉트)
@@ -77,7 +77,7 @@ function initRouter(routeMap: Record<string, PageModule>) {
     navigate(a.pathname + a.search);
   });
 
-  // 앞으로/뒤로 가기 동작 시 현재 URL 전체(path + query)로 다시 렌더
+  // 앞으로/뒤로 가기 동작 시에도 SPA처럼 동작하기 위해 렌더 함수를 popstate에 등록
   window.addEventListener("popstate", () => render(location.pathname + location.search));
 
   // 최초 페이지 유입 시 페이지를 그려줌 (쿼리 포함)
