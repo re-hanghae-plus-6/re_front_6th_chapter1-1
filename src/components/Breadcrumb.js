@@ -18,14 +18,14 @@ export class Breadcrumb extends Component {
   setEvent() {
     super.setEvent();
     this.addEvent("click", ({ target: { dataset } }) => {
-      if ("breadcrumb" in dataset) {
-        productsStore.setCategory1("");
-        productsStore.setCategory2("");
+      if ("category2" in dataset) {
+        productsStore.setCategory2(dataset.category2);
       } else if ("category1" in dataset) {
         productsStore.setCategory1(dataset.category1);
         productsStore.setCategory2("");
-      } else if ("category2" in dataset) {
-        productsStore.setCategory2(dataset.category2);
+      } else if ("breadcrumb" in dataset) {
+        productsStore.setCategory1("");
+        productsStore.setCategory2("");
       }
     });
   }
