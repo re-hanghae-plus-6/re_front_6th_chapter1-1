@@ -6,6 +6,7 @@ import { Header } from "../components/Layout/Header";
 import { Footer } from "../components/Layout/Footer";
 import { RelatedProductSection } from "../components/RelatedProductSection/RelatedProductSection";
 import { navigate } from "../utils/navigate";
+import { cartStore } from "../states/cart/cartStore";
 
 function renderProductPage(state, cartCount) {
   const { isLoading, product, relatedProducts } = state;
@@ -113,7 +114,7 @@ function renderProductPage(state, cartCount) {
     </div>
   `);
 
-  addEvents();
+  addEvents(product);
 }
 
 export async function Product(productId, cartCount) {
@@ -140,7 +141,7 @@ export async function Product(productId, cartCount) {
   }
 }
 
-function addEvents() {
+function addEvents(product) {
   document.querySelector(".go-to-product-list")?.addEventListener("click", () => {
     navigate("/");
   });
@@ -193,6 +194,29 @@ function addEvents() {
       if (current < maxStock) {
         quantityInput.value = current + 1;
       }
+    });
+  }
+
+  const cartBtn = document.querySelector("#add-to-cart-btn");
+  if (cartBtn) {
+    cartBtn.addEventListener("click", () => {
+      console.log("dd");
+      const productId = product.productId;
+      const image = product.image;
+      const title = product.title;
+      const lprice = product.lprice;
+
+      const productItem = {
+        productId,
+        title,
+        image,
+        lprice,
+        quantity: parseInt(quantityInput.value),
+      };
+      console.log(productItem);
+
+      cartStore.addItem(productItem);
+      return;
     });
   }
 }
