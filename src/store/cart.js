@@ -54,7 +54,6 @@ export const cartStore = observable({
     return cartStore.items.has(productId);
   },
   addItem(product) {
-    console.log("addItem");
     toast.success("장바구니에 추가되었습니다");
 
     if (cartStore.hasItem(product.productId)) {

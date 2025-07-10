@@ -9,7 +9,6 @@ export class Products extends Component {
   #moreStatusId = "more-status";
   #intersectionObserver = null;
   #producrCardSkeletonRepeatCount = 4;
-  #firstPageData = {};
 
   renderContainer() {
     const { isLoading, hasNext } = productsStore;
@@ -24,23 +23,10 @@ export class Products extends Component {
 
   render() {
     const { limit, page, total, products, currentPageProducts, isLoading, hasNext, isFetching } = productsStore;
-    // const { params, data } = productsStore2;
-    // const { page, total, products, currentPageProducts, isLoading, hasNext, isFetching } = data;
-    // const { limit } = params;
-    // console.log("Products render", page);
+
     if (isLoading) {
       return;
     } else if (page === 1) {
-      if (
-        this.#firstPageData.total === total &&
-        this.#firstPageData.limit === limit &&
-        this.#firstPageData.page === page &&
-        JSON.stringify(this.#firstPageData.products) === JSON.stringify(products)
-      ) {
-        return;
-      }
-
-      this.#firstPageData = { total, limit, page, products };
       const filledProducts = this.#ensureProductsCount({ total, limit, page, products });
 
       this.#renderFirstPage({ total, currentPageProducts: filledProducts, isLoading, hasNext });
@@ -55,7 +41,6 @@ export class Products extends Component {
   setEvent() {
     super.setEvent();
     this.addEvent("click", ({ target }) => {
-      console.log(target);
       const $addCartBtn = target.closest("button[data-product-id]");
       if ($addCartBtn) {
         const { productId } = $addCartBtn.dataset;
@@ -100,7 +85,7 @@ export class Products extends Component {
   }
 
   #renderFirstPage({ total, currentPageProducts, isLoading, hasNext }) {
-    const newHtml = html`<div ${this.dataAttribute.attribute} class="mb-6">
+    this.$el.innerHTML = html`<div ${this.dataAttribute.attribute} class="mb-6">
       <div ${this.dataAttribute.attribute}>
         <!-- 상품 개수 정보 -->
         ${this.#total({ total })}
@@ -113,13 +98,6 @@ export class Products extends Component {
         ${this.#moreStatus({ isLoading, hasNext })}
       </div>
     </div>`;
-
-    console.log("this.$el.innerHTML", this.$el.innerHTML === newHtml);
-    if (this.$el.innerHTML === newHtml) {
-      return;
-    }
-
-    this.$el.innerHTML = newHtml;
   }
 
   #appendProducts({ currentPageProducts }) {
