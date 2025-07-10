@@ -6,12 +6,27 @@ class Cart extends Component {
     super(element, props);
   }
 
+  closeCartModal() {
+    cartStore.setState({
+      isOpen: false,
+    });
+  }
+
   attachEventListeners() {
     this.addEventListener(this.element, 'click', (event) => {
       if (event.target.closest('#cart-modal-close-btn')) {
-        cartStore.setState({
-          isOpen: false,
-        });
+        this.closeCartModal();
+      }
+
+      const state = cartStore.getState();
+      if (!event.target.closest('#cart-content') && state.isOpen) {
+        this.closeCartModal();
+      }
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        this.closeCartModal();
       }
     });
   }
@@ -21,6 +36,7 @@ class Cart extends Component {
       <div class="cart-modal-overlay fixed top-0 left-0 w-full h-full bg-[#000]/30 z-[100]">
         <div class="flex min-h-full items-end justify-center p-0 sm:items-center sm:p-4">
           <div
+            id="cart-content"
             class="relative bg-white rounded-t-lg sm:rounded-lg shadow-xl w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-hidden"
           >
             <!-- 헤더 -->
