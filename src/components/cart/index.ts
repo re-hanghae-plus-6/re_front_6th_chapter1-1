@@ -92,8 +92,8 @@ export async function 장바구니() {
   };
 
   overlay.innerHTML = await createLayout();
-  const rootEl = document.getElementById("root") ?? document.body;
-  rootEl.appendChild(overlay);
+  const rootEl = document.getElementById("root");
+  rootEl?.appendChild(overlay);
 
   const closeBtnEl = overlay.querySelector<HTMLButtonElement>("#cart-modal-close-btn");
   const cleanup = () => {

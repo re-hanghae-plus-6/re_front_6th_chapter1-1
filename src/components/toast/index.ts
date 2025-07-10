@@ -20,7 +20,8 @@ export function 토스트(message: string, variant: ToastVariant = "success", du
     // Always attach the toast container to `document.body` so that it remains
     // independent from the application root. This ensures toasts persist even
     // if the root element is re-rendered or replaced.
-    document.body.appendChild(container);
+    const rootEl = document.getElementById("root");
+    rootEl?.appendChild(container);
   }
 
   const wrapper = document.createElement("div");
