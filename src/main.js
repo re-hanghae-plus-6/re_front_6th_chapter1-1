@@ -1,8 +1,11 @@
-import { getCategories, getProducts } from "./api/productApi.js";
+import { getCategories, getProduct, getProducts } from "./api/productApi.js";
 import { InfiniteScroll } from "./utils.js";
 import HomPage from "./pages/HomePage/index";
 import { toast } from "./pages/HomePage/components/Toast.js";
 import { CartModal } from "./components/CartModal/index.js";
+import { Router } from "./core/router";
+import renderProductDetail from "./pages/DetailPage/index.js";
+import NotFoundPage from "./pages/NotFound/index.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -27,9 +30,16 @@ let appState = {
     category1: "",
     category2: "",
   },
+
+  currentProduct: null,
+  productLoading: false,
+  relatedProducts: [],
+
+  currentPage: "home",
 };
 
 let infiniteScroll = null;
+let router = null;
 
 const getFiltersFromUrl = () => {
   const params = new URLSearchParams(window.location.search);
@@ -89,22 +99,73 @@ const cartModal = new CartModal({
   selector: document.body,
 });
 
+function renderHomePage(state) {
+  return HomPage(state);
+}
+
 function render() {
   const state = getFullState();
-  const html = HomPage(state);
-  const root = document.body.querySelector("#root");
+  let html = "";
 
+  switch (state.currentPage) {
+    case "home":
+      html = renderHomePage(state);
+      break;
+    case "product-detail":
+      html = renderProductDetail(state);
+      break;
+    case "404":
+      html = NotFoundPage();
+      break;
+    default:
+      html = renderHomePage(state);
+  }
+
+  const root = document.body.querySelector("#root");
   if (root) {
     root.innerHTML = html;
   }
 }
 
-async function loadInitialData() {
-  if (appState.loading) return;
-  setAppState({ loading: true });
+async function loadProductDetail(productId) {
+  setAppState({
+    productLoading: true,
+    currentProduct: null,
+    relatedProducts: [],
+  });
 
   try {
-    const currentParams = getFiltersFromUrl();
+    const product = await getProduct(productId);
+
+    setAppState({
+      currentProduct: product,
+      productLoading: false,
+    });
+
+    const relatedProductsData = await getProducts({
+      category1: product.category1,
+      category2: product.category2,
+      limit: 20,
+    });
+
+    const relatedProducts = relatedProductsData.products.filter((p) => p.productId !== productId);
+
+    setAppState({
+      relatedProducts,
+    });
+  } catch (error) {
+    console.error("상품 상세 로딩 실패:", error);
+    setAppState({ productLoading: false });
+  }
+}
+
+async function loadInitialData() {
+  if (!appState.loading) {
+    setAppState({ loading: true });
+  }
+
+  try {
+    const currentParams = appState.filters || getFiltersFromUrl();
     const productParams = {
       page: 1,
       limit: parseInt(currentParams.limit, 10),
@@ -115,6 +176,7 @@ async function loadInitialData() {
     };
 
     const [categoriesData, productsData] = await Promise.all([getCategories(), getProducts(productParams)]);
+
     setAppState({
       categories: categoriesData,
       products: productsData.products,
@@ -225,112 +287,220 @@ const applyFilter = async (newFilterValues) => {
   }
 };
 
-function initEventListeners() {
-  const root = document.body.querySelector("#root");
+function initRouter() {
+  router = new Router();
 
-  window.addEventListener("popstate", async () => {
+  router.addRoute("/", async () => {
     const urlFilters = getFiltersFromUrl();
 
     setAppState({
+      currentPage: "home",
+      currentProduct: null,
+      productLoading: false,
+      relatedProducts: [],
       filters: urlFilters,
-      products: [],
-      hasNext: false,
-      page: 1,
+      loading: true,
     });
 
-    try {
-      await loadInitialData();
-      initInfiniteScroll();
-    } catch (error) {
-      console.error("페이지 네비게이션 실패:", error);
-    }
+    await loadInitialData();
+    initInfiniteScroll();
+    initEventListeners();
   });
 
-  root.addEventListener("change", async (event) => {
-    const { target } = event;
-
-    if (target.id === "limit-select") {
-      await applyFilter({ limit: parseInt(target.value, 10) });
-    }
-
-    if (target.id === "sort-select") {
-      await applyFilter({ sort: target.value });
-    }
+  router.addRoute("/products/:id", async (productId) => {
+    setAppState({ currentPage: "product-detail" });
+    await loadProductDetail(productId);
+    initEventListeners();
   });
 
-  root.addEventListener("click", async (event) => {
-    const { target } = event;
+  router.addRoute("*", () => {
+    setAppState({ currentPage: "404" });
+  });
+}
 
-    // 장바구니 아이콘 클릭 - 상태를 통해 열기
-    if (target.id === "cart-icon-btn") {
-      setAppState({ cartModalOpen: true });
-      return;
+function initEventListeners() {
+  const root = document.body.querySelector("#root");
+  if (!root) return;
+
+  root.removeEventListener("change", handleRootChange);
+  root.removeEventListener("click", handleRootClick);
+  root.removeEventListener("keydown", handleRootKeydown);
+
+  root.addEventListener("change", handleRootChange);
+  root.addEventListener("click", handleRootClick);
+  root.addEventListener("keydown", handleRootKeydown);
+}
+
+async function handleRootChange(event) {
+  const { target } = event;
+
+  if (target.id === "limit-select") {
+    await applyFilter({ limit: parseInt(target.value, 10) });
+  }
+
+  if (target.id === "sort-select") {
+    await applyFilter({ sort: target.value });
+  }
+}
+
+async function handleRootClick(event) {
+  const { target } = event;
+
+  if (target.id === "cart-icon-btn") {
+    setAppState({ cartModalOpen: true });
+    return;
+  }
+
+  if (target.classList.contains("add-to-cart-btn") || target.id === "add-to-cart-btn") {
+    const productId = target.dataset.productId;
+    let selectedProduct = null;
+
+    if (appState.currentPage === "home") {
+      selectedProduct = appState.products.find((product) => product.productId === productId);
     }
 
-    // 상품 장바구니 담기
-    if (target.classList.contains("add-to-cart-btn")) {
-      const productId = target.dataset.productId;
-      const selectedProduct = appState.products.find((product) => product.productId === productId);
+    if (!selectedProduct && appState.currentProduct) {
+      selectedProduct = appState.currentProduct;
+    }
 
-      if (selectedProduct) {
-        const existingItem = appState.cart.find((item) => item.productId === productId);
-
-        if (existingItem) {
-          const updatedCart = appState.cart.map((item) =>
-            item.productId === productId ? { ...item, quantity: item.quantity + 1 } : item,
-          );
-          setAppState({ cart: updatedCart });
-        } else {
-          setAppState({
-            cart: [...appState.cart, { ...selectedProduct, quantity: 1, selected: false }],
-          });
-        }
-
-        toast.open("CREATE");
+    if (selectedProduct) {
+      let quantity = 1;
+      const quantityInput = document.querySelector("#quantity-input");
+      if (quantityInput) {
+        quantity = parseInt(quantityInput.value, 10) || 1;
       }
-      return;
+      const existingItem = appState.cart.find((item) => item.productId === productId);
+
+      if (existingItem) {
+        const updatedCart = appState.cart.map((item) =>
+          item.productId === productId ? { ...item, quantity: item.quantity + quantity } : item,
+        );
+        setAppState({ cart: updatedCart });
+      } else {
+        setAppState({
+          cart: [...appState.cart, { ...selectedProduct, quantity, selected: false }],
+        });
+      }
+
+      toast.open("CREATE");
+    }
+    return;
+  }
+
+  if (target.classList.contains("breadcrumb-link")) {
+    const category1 = target.dataset.category1;
+    const category2 = target.dataset.category2;
+
+    if (category1) {
+      await applyFilter({ category1, category2: "", search: "" });
+      router.navigate(`/?category1=${category1}`);
+    }
+    if (category2) {
+      await applyFilter({ category1: appState.currentProduct.category1, category2, search: "" });
+      router.navigate(`/?category1=${appState.currentProduct.category1}&category2=${category2}`);
     }
 
-    if (event.target.dataset.category1) {
-      const category1 = event.target.dataset.category1;
-      await applyFilter({ category1, category2: "" });
-    }
+    return;
+  }
 
-    if (event.target.dataset.category2) {
-      const category2 = event.target.dataset.category2;
-      await applyFilter({ category2 });
+  if (
+    target.classList.contains("product-image") ||
+    target.classList.contains("product-info") ||
+    target.closest(".product-image") ||
+    target.closest(".product-info")
+  ) {
+    event.preventDefault();
+    const productCard = target.closest(".product-card");
+    const productId = productCard?.dataset.productId || target.dataset.productId;
+    if (productId) {
+      router.navigate(`/products/${productId}`);
     }
+    return;
+  }
 
-    if (event.target.dataset.breadcrumb === "reset") {
-      await applyFilter({ category1: "", category2: "" });
+  if (target.closest(".related-product-card")) {
+    const relatedCard = target.closest(".related-product-card");
+    const productId = relatedCard.dataset.productId;
+    if (productId) {
+      router.navigate(`/products/${productId}`);
     }
+    return;
+  }
 
-    if (event.target.dataset.breadcrumb === "reset-category1") {
-      await applyFilter({ category2: "" });
+  if (target.closest("#quantity-increase")) {
+    event.preventDefault();
+    const quantityInput = document.querySelector("#quantity-input");
+    if (quantityInput) {
+      const currentValue = parseInt(quantityInput.value, 10) || 1;
+      const maxValue = parseInt(quantityInput.getAttribute("max"), 10) || 999;
+      if (currentValue < maxValue) {
+        quantityInput.value = currentValue + 1;
+        quantityInput.dispatchEvent(new Event("input", { bubbles: true }));
+      }
     }
-  });
+    return;
+  }
 
-  root.addEventListener("keydown", async (event) => {
-    if (event.target.id === "search-input" && event.key === "Enter") {
-      event.preventDefault();
-      const search = event.target.value.trim();
-      await applyFilter({ search });
+  if (target.closest("#quantity-decrease")) {
+    event.preventDefault();
+    const quantityInput = document.querySelector("#quantity-input");
+    if (quantityInput) {
+      const currentValue = parseInt(quantityInput.value, 10) || 1;
+      if (currentValue > 1) {
+        quantityInput.value = currentValue - 1;
+        quantityInput.dispatchEvent(new Event("input", { bubbles: true }));
+      }
     }
-  });
+    return;
+  }
+
+  if (event.target.dataset.category1) {
+    const category1 = event.target.dataset.category1;
+    await applyFilter({ category1, category2: "" });
+    router.navigate(`/?category1=${category1}`);
+  }
+
+  if (event.target.dataset.category2) {
+    const category2 = event.target.dataset.category2;
+    await applyFilter({ category2 });
+    router.navigate(`/?category2=${category2}`);
+  }
+
+  if (event.target.dataset.breadcrumb === "reset") {
+    await applyFilter({ category1: "", category2: "" });
+    router.navigate("/");
+  }
+
+  if (event.target.dataset.breadcrumb === "category1") {
+    await applyFilter({ category2: "" });
+    router.navigate("/");
+  }
+
+  if (target.closest(".go-to-product-list")) {
+    router.navigate("/");
+    return;
+  }
+}
+
+async function handleRootKeydown(event) {
+  if (event.target.id === "search-input" && event.key === "Enter") {
+    event.preventDefault();
+    const search = event.target.value.trim();
+    await applyFilter({ search });
+  }
 }
 
 async function main() {
   const initialFilters = getFiltersFromUrl();
-  setAppState({ filters: initialFilters });
 
-  initEventListeners();
+  setAppState({
+    filters: initialFilters,
+    currentPage: "home",
+  });
 
-  try {
-    await loadInitialData();
-    initInfiniteScroll();
-  } catch (error) {
-    console.error("초기 상품 로딩 실패:", error);
-  }
+  initRouter();
+
+  await router.handleRoute();
 }
 
 // 애플리케이션 시작

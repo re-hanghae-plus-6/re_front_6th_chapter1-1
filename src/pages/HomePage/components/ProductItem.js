@@ -3,16 +3,17 @@ export const ProductItem = ({ brand, image, lprice, productId, title }) => {
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
         data-product-id="${productId}">
         <!-- 상품 이미지 -->
-        <div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image">
+        <div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image" data-product-id="${productId}">
             <img src="${image}"
                 alt="${title}"
-                class="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                class="w-full h-full object-cover hover:scale-105 transition-transform duration-200 product-image"
+                data-product-id="${productId}"
                 loading="lazy">
         </div>
         <!-- 상품 정보 -->
         <div class="p-3">
-            <div class="cursor-pointer product-info mb-3">
-            <h3 class="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
+            <div class="cursor-pointer product-info mb-3" data-product-id="${productId}">
+            <h3 class="text-sm font-medium text-gray-900 line-clamp-2 mb-1 product-info" data-product-id="${productId}">
                 ${title}
             </h3>
             <p class="text-xs text-gray-500 mb-2">${brand}</p>
