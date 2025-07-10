@@ -25,7 +25,18 @@ class HomePageController {
 
   async init() {
     loadCart();
-    await Promise.all([this.fetchProducts(), productService.getCategories().then((c) => (this.state.categories = c))]);
+    // 1) 초깃값 로딩 상태 활성화 → 로딩 UI(스켈레톤, "카테고리 로딩 중...") 표시
+    this.state.loading = true;
+    this.render();
+
+    // 2) 상품·카테고리 동시 요청
+    const [, categories] = await Promise.all([this.fetchProducts(), productService.getCategories().then((c) => c)]);
+
+    // 3) 응답 데이터 상태 반영
+    this.state.categories = categories;
+    this.state.loading = false;
+
+    // 4) 최종 렌더링 및 스크롤 설정
     this.render();
     this.setupInfiniteScroll();
   }
