@@ -1,4 +1,4 @@
-const Toast = (() => {
+export const Toast = (() => {
   // Private 변수들
   let toastContainer = null;
   let activeToasts = new Map();
@@ -8,18 +8,12 @@ const Toast = (() => {
   function createContainer() {
     if (toastContainer) return toastContainer;
 
-    const containerHTML = `
-        <div class="flex flex-col gap-2 items-center justify-center mx-auto" style="width: fit-content;">
-          <!-- 토스트들이 여기에 동적으로 추가됩니다 -->
-        </div>
-      `;
-
     toastContainer = document.createElement("div");
-    toastContainer.className = "fixed top-4 right-4 z-50";
-    toastContainer.innerHTML = containerHTML;
+    toastContainer.className =
+      "fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 flex flex-col gap-2 items-center justify-center";
     document.body.appendChild(toastContainer);
 
-    return toastContainer.firstElementChild;
+    return toastContainer;
   }
 
   /* 토스트 HTML 생성 */
@@ -128,5 +122,3 @@ const Toast = (() => {
     },
   };
 })();
-
-export default Toast;

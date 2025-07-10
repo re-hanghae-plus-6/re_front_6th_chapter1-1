@@ -4,8 +4,42 @@ import { ProductEmpty } from "../components/product/ProductEmpty";
 import ProductFilter from "../components/product/ProductFilter";
 import ProductItem from "../components/product/ProductItem";
 import { InfiniteScrollSpinner } from "../components/product/ProductLoading";
+import { CartStorage } from "../utils/CartStorage";
 
 import { createCategoryCache, initializeFilterEventListeners } from "../utils/productFilterUtils";
+
+/**
+ * 장바구니 버튼 이벤트 리스너 연결
+ */
+function initializeCartEventListeners() {
+  // 기존 이벤트 리스너 제거 (중복 방지)
+  document.removeEventListener("click", handleCartButtonClick);
+  // 새 이벤트 리스너 추가 (이벤트 위임)
+  document.addEventListener("click", handleCartButtonClick);
+}
+
+/**
+ * 장바구니 버튼 클릭 핸들러
+ */
+function handleCartButtonClick(event) {
+  if (event.target.classList.contains("add-to-cart-btn")) {
+    const productId = event.target.getAttribute("data-product-id");
+    if (productId) {
+      const productCard = event.target.closest(".product-card");
+      if (productCard) {
+        const product = {
+          productId: productId,
+          title: productCard.querySelector("h3")?.textContent || "",
+          image: productCard.querySelector("img")?.src || "",
+          lprice: parseInt(productCard.querySelector(".text-lg")?.textContent?.replace(/[^\d]/g, "") || "0"),
+          brand: productCard.querySelector(".text-xs")?.textContent || "",
+        };
+
+        CartStorage.save(product);
+      }
+    }
+  }
+}
 
 // 무한 스크롤 상태 관리
 let currentPage = 1;
@@ -129,6 +163,9 @@ export const loadProductList = async (query) => {
         <div class="grid grid-cols-2 gap-4 mb-6">${productListHTML}</div>
       </div>
     `;
+
+    // 장바구니 버튼 이벤트 리스너 연결
+    initializeCartEventListeners();
 
     // 스크롤 이벤트 리스너 등록
     window.addEventListener("scroll", handleScroll);
