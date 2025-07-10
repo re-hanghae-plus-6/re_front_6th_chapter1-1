@@ -2,7 +2,7 @@ import { getCategories, getProducts } from "./api/productApi.js";
 import { InfiniteScroll } from "./utils.js";
 import HomPage from "./pages/HomePage/index";
 import { toast } from "./pages/HomePage/components/Toast.js";
-import { CartModal } from "./pages/HomePage/components/CartModal.js";
+import { CartModal } from "./components/CartModal/index.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -18,6 +18,7 @@ let appState = {
   loading: false,
   hasNext: false,
   cart: [],
+  cartModalOpen: false,
   page: 1,
   filters: {
     limit: 20,
@@ -58,7 +59,21 @@ const updateUrl = (newParams) => {
 };
 
 const setAppState = (newState) => {
-  appState = { ...appState, ...newState };
+  const prevState = { ...appState };
+
+  appState = { ...prevState, ...newState };
+
+  if (prevState.cartModalOpen !== appState.cartModalOpen) {
+    if (appState.cartModalOpen) {
+      cartModal.open();
+    } else {
+      cartModal.close();
+    }
+  }
+
+  if (appState.cartModalOpen) {
+    cartModal.update();
+  }
   render();
 
   if (infiniteScroll && newState.hasNext !== undefined) {
@@ -68,12 +83,20 @@ const setAppState = (newState) => {
 
 const getFullState = () => appState;
 
-const cartModal = new CartModal({ getState: getFullState, setState: setAppState });
+const cartModal = new CartModal({
+  getState: getFullState,
+  setState: setAppState,
+  selector: document.body,
+});
 
 function render() {
   const state = getFullState();
   const html = HomPage(state);
-  document.body.querySelector("#root").innerHTML = html;
+  const root = document.body.querySelector("#root");
+
+  if (root) {
+    root.innerHTML = html;
+  }
 }
 
 async function loadInitialData() {
@@ -203,7 +226,7 @@ const applyFilter = async (newFilterValues) => {
 };
 
 function initEventListeners() {
-  const root = document.querySelector("#root");
+  const root = document.body.querySelector("#root");
 
   window.addEventListener("popstate", async () => {
     const urlFilters = getFiltersFromUrl();
@@ -235,32 +258,34 @@ function initEventListeners() {
     }
   });
 
-  window.addEventListener("click", async (event) => {
+  root.addEventListener("click", async (event) => {
     const { target } = event;
 
+    // 장바구니 아이콘 클릭 - 상태를 통해 열기
     if (target.id === "cart-icon-btn") {
-      cartModal.open();
+      setAppState({ cartModalOpen: true });
       return;
     }
 
-    if (target.id === "cart-modal-close-btn" || target.classList.contains("cart-modal-overlay")) {
-      cartModal.close();
-      return;
-    }
-  });
+    // 상품 장바구니 담기
+    if (target.classList.contains("add-to-cart-btn")) {
+      const productId = target.dataset.productId;
+      const selectedProduct = appState.products.find((product) => product.productId === productId);
 
-  root.addEventListener("click", async (event) => {
-    if (event.target.classList.contains("add-to-cart-btn") && event.target.dataset.productId) {
-      const productId = event.target.dataset.productId;
-      const selectedProducts = appState.products.find((product) => product.productId === productId);
-      const existingItem = appState.cart.find((product) => product.productId === selectedProducts.productId);
+      if (selectedProduct) {
+        const existingItem = appState.cart.find((item) => item.productId === productId);
 
-      if (selectedProducts) {
-        if (existingItem && "quantity" in existingItem) {
-          existingItem.quantity += 1;
+        if (existingItem) {
+          const updatedCart = appState.cart.map((item) =>
+            item.productId === productId ? { ...item, quantity: item.quantity + 1 } : item,
+          );
+          setAppState({ cart: updatedCart });
         } else {
-          setAppState({ cart: [...appState.cart, { ...selectedProducts, quantity: 1 }] });
+          setAppState({
+            cart: [...appState.cart, { ...selectedProduct, quantity: 1, selected: false }],
+          });
         }
+
         toast.open("CREATE");
       }
       return;
@@ -290,14 +315,6 @@ function initEventListeners() {
       event.preventDefault();
       const search = event.target.value.trim();
       await applyFilter({ search });
-    }
-
-    if (event.key === "Escape") {
-      event.preventDefault();
-      const cartModalElement = document.querySelector(".cart-modal");
-      if (cartModalElement) {
-        cartModal.close();
-      }
     }
   });
 }
