@@ -14,8 +14,10 @@ export default class ProductDetailPage extends Component {
   setup() {
     this.handleProductClick = this.handleProductClick.bind(this);
 
+    const [param] = useParam("id");
+
     this.state = {
-      productId: useParam("id"),
+      productId: param,
       product: {},
       relatedProducts: [],
       isLoading: false,

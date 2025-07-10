@@ -1,10 +1,5 @@
 import { Router } from "../lib/Router";
 
-/**
- * 현재 경로의 동적 파라미터를 반환하는 훅
- * 예: /product/:id 경로에서 /product/123 접속 시 { id: "123" } 반환
- * @returns {Object} 경로 파라미터 객체
- */
 export function useParams() {
   const router = Router.getInstance();
   if (!router) {
@@ -12,14 +7,9 @@ export function useParams() {
     return {};
   }
 
-  return router.getParams();
+  return [router.getParams(), router.setParams];
 }
 
-/**
- * 특정 경로 파라미터 값을 반환하는 훅
- * @param {string} key - 파라미터 키
- * @returns {string|undefined} 파라미터 값
- */
 export function useParam(key) {
   const router = Router.getInstance();
   if (!router) {
@@ -27,43 +17,29 @@ export function useParam(key) {
     return undefined;
   }
 
-  return router.getParams(key);
+  return [router.getParams(key), (value) => router.setParam(key, value)];
 }
 
-/**
- * 현재 URL의 쿼리 파라미터를 반환하는 훅
- * 예: /products?category=electronics&page=2 접속 시 { category: "electronics", page: "2" } 반환
- * @returns {Object} 쿼리 파라미터 객체
- */
-export function useSearchParams() {
+export function useQueryParams() {
   const router = Router.getInstance();
   if (!router) {
-    console.warn("useSearchParams: Router instance not found");
+    console.warn("useQueryParams: Router instance not found");
     return {};
   }
 
-  return router.getQueryParams();
+  return [router.getQueryParams(), router.setQueryParams];
 }
 
-/**
- * 특정 쿼리 파라미터 값을 반환하는 훅
- * @param {string} key - 쿼리 파라미터 키
- * @returns {string|undefined} 쿼리 파라미터 값
- */
-export function useSearchParam(key) {
+export function useQueryParam(key) {
   const router = Router.getInstance();
   if (!router) {
-    console.warn("useSearchParam: Router instance not found");
+    console.warn("useQueryParam: Router instance not found");
     return undefined;
   }
 
-  return router.getQueryParams(key);
+  return [router.getQueryParams(key), (value) => router.setQueryParam(key, value)];
 }
 
-/**
- * 프로그래밍 방식으로 네비게이션하는 훅
- * @returns {Object} navigate 함수와 현재 경로 정보를 포함한 객체
- */
 export function useNavigate() {
   const router = Router.getInstance();
   if (!router) {

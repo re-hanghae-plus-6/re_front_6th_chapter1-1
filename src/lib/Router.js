@@ -50,13 +50,30 @@ export class Router {
   }
 
   navigate(to, replace = false) {
+    // 경로 정규화: 쿼리스트링 앞의 / 제거
+    const normalizedPath = this.normalizePath(to);
+
     if (replace) {
-      window.history.replaceState(null, "", to);
+      window.history.replaceState(null, "", normalizedPath);
     } else {
-      window.history.pushState(null, "", to);
+      window.history.pushState(null, "", normalizedPath);
     }
 
     this.handleRouteChange();
+  }
+
+  // 경로 정규화: 쿼리스트링 앞의 / 제거
+  normalizePath(path) {
+    // 쿼리스트링이 있는 경우
+    if (path.includes("?")) {
+      const [pathname, search] = path.split("?");
+      // pathname이 /로 시작하지 않으면 / 추가
+      const normalizedPathname = pathname.startsWith("/") ? pathname : `/${pathname}`;
+      return `${normalizedPathname}?${search}`;
+    }
+
+    // 쿼리스트링이 없는 경우
+    return path.startsWith("/") ? path : `/${path}`;
   }
 
   getCurrentPath() {
@@ -136,11 +153,66 @@ export class Router {
     return { ...this.params };
   }
 
+  setParam(key, value) {
+    this.params[key] = value;
+  }
+
+  setParams(params) {
+    this.params = params;
+  }
+
   getQueryParams(key) {
     if (key) {
       return this.queryParams[key];
     }
     return { ...this.queryParams };
+  }
+
+  setQueryParam(key, value) {
+    console.log("setQueryParam", key, value);
+
+    // 값이 없거나 빈 문자열이면 파라미터 제거
+    if (value === undefined || value === null || value === "") {
+      delete this.queryParams[key];
+    } else {
+      this.queryParams[key] = value;
+    }
+
+    // URL 업데이트
+    this.updateURL();
+  }
+
+  setQueryParams(queryParams) {
+    // 기존 파라미터 모두 제거
+    Object.keys(this.queryParams).forEach((key) => {
+      delete this.queryParams[key];
+    });
+
+    // 새 파라미터 설정
+    Object.entries(queryParams).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        this.queryParams[key] = value;
+      }
+    });
+
+    // URL 업데이트
+    this.updateURL();
+  }
+
+  updateURL() {
+    const url = new URL(window.location);
+
+    url.search = "";
+
+    Object.entries(this.queryParams).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        url.searchParams.set(key, value.toString());
+      }
+    });
+
+    // URL 업데이트 (히스토리 스택에 추가하지 않음)
+    window.history.replaceState(null, "", url.toString());
+    console.log("URL 업데이트됨:", url.toString());
   }
 
   static getInstance() {

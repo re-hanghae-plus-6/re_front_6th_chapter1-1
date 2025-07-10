@@ -1,8 +1,9 @@
 import { getProducts } from "../../api/productApi";
+import useFilter from "../../hook/useFilter.js";
+import { useNavigate } from "../../hook/useRouter.js";
 import Component from "../../lib/Component";
 import { homeStore } from "../../store/homeStore";
 import ProductItem from "./ProductItem";
-import { useNavigate } from "../../hook/useRouter.js";
 
 export default class ProductList extends Component {
   setup() {
@@ -14,14 +15,16 @@ export default class ProductList extends Component {
     this.handleProductClick = this.handleProductClick.bind(this);
 
     this.unsubscribe = homeStore.subscribe(() => {
+      const { limit, sort, search, category1, category2 } = useFilter();
+
       const currentState = homeStore.getState();
       const currentParams = {
         page: currentState.products.pagination.page,
-        limit: currentState.filter.limit,
-        search: currentState.filter.search,
-        category1: currentState.filter.category1,
-        category2: currentState.filter.category2,
-        sort: currentState.filter.sort,
+        limit,
+        search,
+        category1,
+        category2,
+        sort,
       };
 
       if (this.shouldFetchProducts(currentParams)) {
@@ -74,7 +77,7 @@ export default class ProductList extends Component {
       isProductsLoading,
       pagination: { page },
     } = homeState.products;
-    const { category1, category2, search, sort, limit } = homeState.filter;
+    const { limit, sort, search, category1, category2 } = useFilter();
 
     if (isProductsLoading) return;
 

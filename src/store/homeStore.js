@@ -1,4 +1,4 @@
-import { DEFAULT_LIMIT, DEFAULT_PAGE, DEFAULT_SORT } from "../constants";
+import { DEFAULT_PAGE } from "../constants";
 import Store from "../lib/Store";
 
 const homeState = {
@@ -20,15 +20,6 @@ const homeState = {
     categoryList: [],
     isCategoryLoading: false,
     currentCategory: "",
-  },
-
-  // 필터 및 정렬 상태
-  filter: {
-    search: "",
-    category1: "",
-    category2: "",
-    sort: DEFAULT_SORT,
-    limit: DEFAULT_LIMIT,
   },
 
   // 장바구니 상태
