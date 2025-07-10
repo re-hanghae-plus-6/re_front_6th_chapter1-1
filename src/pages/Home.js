@@ -3,12 +3,9 @@ import Loading from "../components/Loading";
 import ProductCard from "../components/ProductCard";
 import ProductList from "../components/ProductList";
 import Search from "../components/Search";
-import useNavigate from "../core/useNavigate";
 import useRender from "../core/useRender";
-import useStore from "../core/useStore";
+import { store } from "../main";
 
-const store = useStore();
-const navigate = useNavigate();
 const state = {
   isLoading: true,
   products: [],
@@ -104,13 +101,14 @@ Home.mount = async () => {
   ProductCard.mount();
 
   store.watch(async (newValue) => {
+    console.log("watch");
     const url = new URL(window.location);
     Object.entries(newValue).forEach(([key, value]) => {
       if (value !== "" && value) {
         url.searchParams.set(key, value);
       }
     });
-    navigate.push({}, url.toString());
+    window.history.pushState({}, "", url.toString());
 
     await fetchProducts(newValue);
     await fetchCategories();

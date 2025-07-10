@@ -1,5 +1,7 @@
 import Layout from "./components/Layout.js";
+import useNavigate from "./core/useNavigate.js";
 import useRender from "./core/useRender.js";
+import useStore from "./core/useStore.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -8,11 +10,13 @@ const enableMocking = () =>
     }),
   );
 
-const render = useRender();
+export const render = useRender();
+export const navigate = useNavigate();
+export const store = useStore();
 
 function main() {
   // #root Element에 Layout HTML 삽입
-  render.draw("#root", Layout());
+  render.init();
 
   // Page에 init, mount 실행
   render.view();
@@ -20,10 +24,10 @@ function main() {
   // Layout 컴포넌트 마운트
   Layout.mount?.();
 
-  window.addEventListener("urlChange", (event) => {
-    if (event.detail.isUrlChange) {
-      render.view();
-    }
+  window.addEventListener("popstate", () => {
+    render.init();
+    Layout.mount?.();
+    render.view();
   });
 }
 

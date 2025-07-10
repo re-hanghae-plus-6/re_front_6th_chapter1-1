@@ -1,9 +1,9 @@
-import useRender from "../core/useRender";
+import { render } from "../main";
 import Footer from "./footer";
 import Header from "./Header";
 
 Layout.mount = () => {
-  const render = useRender();
+  console.log("test");
   render.draw("#header", Header());
   render.draw("#footer", Footer());
 };

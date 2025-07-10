@@ -1,16 +1,18 @@
+import Layout from "../components/Layout";
 import routes from "../routes";
-import useNavigate from "./useNavigate";
 
 const useRender = () => {
-  const navigate = useNavigate();
-
+  const init = () => {
+    document.querySelector("#root").innerHTML = Layout();
+  };
   const draw = (tag, html) => {
+    // document.querySelector("#root").innerHTML = Layout();
     document.querySelector(tag).innerHTML = html;
   };
 
   const view = async () => {
     for (const route of routes) {
-      const match = navigate.getCurrentUrl().match(route.path);
+      const match = window.location.pathname.match(route.path);
       if (!match) continue;
       const Page = route.component;
       Page.init?.(match?.[1]);
@@ -20,7 +22,7 @@ const useRender = () => {
     }
   };
 
-  return { draw, view };
+  return { init, draw, view };
 };
 
 export default useRender;

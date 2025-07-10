@@ -1,9 +1,6 @@
 import { getProduct, getProducts } from "../api/productApi";
 import Loading from "../components/Loading";
-import useNavigate from "../core/useNavigate";
-import useRender from "../core/useRender";
-
-const navigate = useNavigate();
+import { render } from "../main.js";
 
 const state = {
   isLoading: true,
@@ -18,12 +15,13 @@ const methods = {
     state.isLoading = false;
   },
   fetchRelatedProducts: async (category1, category2) => {
+    state.isLoading = true;
     const products = await getProducts({ category1, category2 });
-    console.log(products);
     state.relatedProducts = products.products.filter((product) => product.productId !== state.product.productId);
+    state.isLoading = false;
   },
 
-  goToProductList: () => navigate.push({}, "/"),
+  goToProductList: () => window.history.pushState.push({}, "", "/"),
 
   handleAddCard: (productId) => {
     console.log("test", productId);
@@ -31,24 +29,25 @@ const methods = {
 };
 
 Product.mount = async () => {
-  const render = useRender();
-  const productId = navigate.getCurrentUrl().match(/\d+/)[0];
+  state.isLoading = true;
+  const productId = window.location.pathname.match(/\d+/)[0];
   await methods.fetchProduct(productId);
-  // console.log(state.product.category1, "state.product.category1");
   await methods.fetchRelatedProducts(state.product.category1, state.product.category);
-  // const test = await methods.fetchRelatedProducts(data.category1, data.category2);
-  // console.log(test, "Test..");
+
   render.draw("main", Product());
+  // // console.log(state.product.category1, "state.product.category1");
+  // // const test = await methods.fetchRelatedProducts(data.category1, data.category2);
+  // // console.log(test, "Test..");
 
-  const goToProductListBtn = document.querySelector(".go-to-product-list");
-  goToProductListBtn.addEventListener("click", () => {
-    methods.goToProductList();
-  });
+  // const goToProductListBtn = document.querySelector(".go-to-product-list");
+  // goToProductListBtn.addEventListener("click", () => {
+  //   methods.goToProductList();
+  // });
 
-  const cartBtn = document.getElementById("add-to-cart-btn");
-  cartBtn.addEventListener("click", () => {
-    methods.handleAddCard(productId);
-  });
+  // const cartBtn = document.getElementById("add-to-cart-btn");
+  // cartBtn.addEventListener("click", () => {
+  //   methods.handleAddCard(productId);
+  // });
 
   // .go-to-product-list ->상품 목록 돌아가기
   // #add-to-cart-btn -> 장바구니 담기
@@ -58,7 +57,7 @@ Product.mount = async () => {
 export default function Product() {
   return /* html */ `
     ${
-      state.isLoading && state.product
+      state.isLoading
         ? Loading({ type: "product" })
         : /* html */
           `

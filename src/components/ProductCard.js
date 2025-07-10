@@ -1,13 +1,12 @@
-import useNavigate from "../core/useNavigate";
-
-const navigate = useNavigate();
+import { render } from "../main";
 
 ProductCard.mount = () => {
   const items = document.querySelectorAll(".product-card");
   items.forEach((item) => {
     const productId = item.getAttribute("data-product-id");
     item.querySelector("img").addEventListener("click", () => {
-      navigate.push({}, `/product/${productId}`);
+      window.history.pushState({}, "", `/product/${productId}`);
+      render.view();
     });
 
     item.querySelector(".add-to-cart-btn").addEventListener("click", () => {

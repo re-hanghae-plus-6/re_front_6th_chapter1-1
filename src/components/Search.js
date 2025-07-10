@@ -1,9 +1,5 @@
-// import useNavigate from "../core/useNavigate";
-import useStore from "../core/useStore";
+import { store } from "../main";
 import Loading from "./Loading";
-
-const store = useStore();
-// const navigate = useNavigate();
 
 const events = [
   {
