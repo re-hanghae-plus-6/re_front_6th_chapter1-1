@@ -345,3 +345,9 @@ const 장바구니_선택있음 = `
   </div>
 </div>
 `;
+
+const CartLayout = `
+
+`;
+
+export default CartLayout;
