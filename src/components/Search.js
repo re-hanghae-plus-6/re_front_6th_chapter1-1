@@ -39,23 +39,18 @@ const bindEvent = (el, action, fn) => {
 };
 
 Search.mount = () => {
+  const limit = store.get("params")["limit"];
+  const sort = store.get("params")["sort"];
+
+  document.querySelector("#limit-select").value = limit;
+  document.querySelector("#sort-select").value = sort;
+
   events.forEach((e) => {
     const { el, action, fn } = e;
     bindEvent(el, action, fn);
   });
 
   return;
-
-  // Home.js에서도 같은 watch를 써야 할 것 같아서.. 중복으로 쓰는 게 의미가 있을지 몰라 주석
-  // store.watch((newValue) => {
-  //   const url = new URL(window.location);
-  //   Object.entries(newValue).forEach(([key, value]) => {
-  //     if (value !== "" && value) {
-  //       url.searchParams.set(key, value);
-  //     }
-  //   });
-  //   navigate.push({}, url.toString());
-  // }, "params");
 };
 
 export default function Search(categories = {}, isLoading = true) {
@@ -117,7 +112,7 @@ export default function Search(categories = {}, isLoading = true) {
               <option value="10">
                 10개
               </option>
-              <option value="20" selected="">
+              <option value="20">
                 20개
               </option>
               <option value="50">
@@ -133,7 +128,7 @@ export default function Search(categories = {}, isLoading = true) {
             <label class="text-sm text-gray-600">정렬:</label>
             <select id="sort-select" class="text-sm border border-gray-300 rounded px-2 py-1
                           focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-              <option value="price_asc" selected="">가격 낮은순</option>
+              <option value="price_asc">가격 낮은순</option>
               <option value="price_desc">가격 높은순</option>
               <option value="name_asc">이름순</option>
               <option value="name_desc">이름 역순</option>
