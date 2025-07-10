@@ -33,6 +33,20 @@ const Header = ({ cartCount = 0, isDetail = false }) => {
       </h1>
     `;
 
+  // init 함수 추가
+  Header.init = () => {
+    const cartIconBtn = document.getElementById("cart-icon-btn");
+    if (cartIconBtn) {
+      // 기존 이벤트 리스너 제거 (중복 방지)
+      cartIconBtn.removeEventListener("click", Header.handleCartClick);
+      // 새 이벤트 리스너 추가
+      cartIconBtn.addEventListener("click", Header.handleCartClick);
+    }
+  };
+
+  // 장바구니 아이콘 클릭 시 모달 열기
+  Header.handleCartClick = () => {};
+
   return /* HTML */ `
     <header class="bg-white shadow-sm sticky top-0 z-40">
       <div class="max-w-md mx-auto px-4 py-4">
