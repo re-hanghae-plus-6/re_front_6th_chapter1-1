@@ -1,4 +1,4 @@
-import { LimitSelect } from "../components/LimitSelect.js";
+import { LimitSelectedBox } from "../components/LimitSelectedBox.js";
 import { ProductItem } from "../components/ProductItem.js";
 import { LoadingList } from "../components/Loading.js";
 
@@ -107,7 +107,7 @@ export const MainPage = (appState) => {
             <div class="flex gap-2 items-center justify-between">
               <!-- 페이지당 상품 수 -->
               <div class="flex items-center gap-2">
-                ${LimitSelect({ value: limit })}
+                ${LimitSelectedBox({ value: limit })}
               </div>
               <!-- 정렬 -->
               <div class="flex items-center gap-2">
