@@ -19,7 +19,6 @@ const homeState = {
   categories: {
     categoryList: [],
     isCategoryLoading: false,
-    currentCategory: "",
   },
 
   // 장바구니 상태

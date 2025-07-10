@@ -30,14 +30,14 @@ export function useQueryParams() {
   return [router.getQueryParams(), router.setQueryParams];
 }
 
-export function useQueryParam(key) {
+export function useQueryParam() {
   const router = Router.getInstance();
   if (!router) {
     console.warn("useQueryParam: Router instance not found");
     return undefined;
   }
 
-  return [router.getQueryParams(key), (value) => router.setQueryParam(key, value)];
+  return (key, value) => router.setQueryParam(key, value);
 }
 
 export function useNavigate() {

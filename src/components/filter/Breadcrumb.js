@@ -1,9 +1,15 @@
+import { useQueryParam } from "../../hook/useRouter";
 import Component from "../../lib/Component";
 import { homeStore } from "../../store/homeStore";
 import { findBreadcrumb } from "../../utils/findBreadcrumb";
+import { getCurrentCategory } from "../../utils/getCurrentCatetory";
 
 export default class Breadcrumb extends Component {
+  setup() {}
+
   selectBreadcrumb() {
+    const setQueryParam = useQueryParam();
+
     const resetButton = document.querySelector('[data-breadcrumb="reset"]');
     const categoryButtons = document.querySelectorAll('[data-breadcrumb="category"]');
 
@@ -13,12 +19,9 @@ export default class Breadcrumb extends Component {
           currentCategory: "",
         },
       });
-      homeStore.setState({
-        filter: {
-          category1: "",
-          category2: "",
-        },
-      });
+
+      setQueryParam("category1", "");
+      setQueryParam("category2", "");
     });
 
     categoryButtons.forEach((button) => {
@@ -36,12 +39,9 @@ export default class Breadcrumb extends Component {
             currentCategory: selectedCategory,
           },
         });
-        homeStore.setState({
-          filter: {
-            category1,
-            category2,
-          },
-        });
+
+        setQueryParam("category1", category1);
+        setQueryParam("category2", category2);
       });
     });
   }
@@ -63,8 +63,9 @@ export default class Breadcrumb extends Component {
 
   template() {
     const {
-      categories: { currentCategory, categoryList },
+      categories: { categoryList },
     } = homeStore.getState();
+    const currentCategory = getCurrentCategory();
     const categoryBreadcrumb = findBreadcrumb(categoryList, currentCategory);
 
     return /* HTML */ `

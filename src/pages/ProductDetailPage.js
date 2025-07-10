@@ -8,7 +8,11 @@ import StarEmpty from "../components/icon/StarEmpty";
 import StarFilled from "../components/icon/StarFilled";
 import { useNavigate, useParam } from "../hook/useRouter";
 import Component from "../lib/Component";
-import { homeStore } from "../store/homeStore";
+import getFilter from "../utils/getFilter";
+
+const CHILD_COMPONENT = {
+  HEADER: "header",
+};
 
 export default class ProductDetailPage extends Component {
   setup() {
@@ -43,8 +47,7 @@ export default class ProductDetailPage extends Component {
   }
 
   async fetchRelatedProducts() {
-    const homeState = homeStore.getState();
-    const { category1, category2 } = homeState.filter;
+    const { category1, category2 } = getFilter();
 
     if (this.stateisLoading) return;
 
@@ -117,6 +120,21 @@ export default class ProductDetailPage extends Component {
     </div>`;
   }
 
+  mounted() {
+    if (this.state.isLoading) return;
+
+    const $headerContainer = document.querySelector("#detail-header-container");
+
+    if (!this.child.get(CHILD_COMPONENT.HEADER)) {
+      const headerInstance = new ProductDetailHeader($headerContainer);
+      this.addChild(headerInstance, CHILD_COMPONENT.HEADER);
+    } else {
+      const headerInstance = this.child.get(CHILD_COMPONENT.HEADER);
+      headerInstance.$target = $headerContainer;
+      headerInstance.render();
+    }
+  }
+
   template() {
     const { product, relatedProducts, isLoading } = this.state;
     const { productId, image, title, lprice, stock, description, rating, reviewCount } = product;
@@ -126,7 +144,8 @@ export default class ProductDetailPage extends Component {
     }
 
     return /* HTML */ `<div class="min-h-screen bg-gray-50">
-      ${ProductDetailHeader()}
+      <div id="detail-header-container"></div>
+
       <main class="max-w-md mx-auto px-4 py-4">
         <!-- 브레드크럼 -->
 

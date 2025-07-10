@@ -1,10 +1,11 @@
-import { DEFAULT_LIMIT, DEFAULT_PAGE, DEFAULT_SORT } from "../../constants";
-import useFilter from "../../hook/useFilter";
+import { DEFAULT_PAGE } from "../../constants";
 import { useQueryParam } from "../../hook/useRouter";
 import Component from "../../lib/Component";
 import { Router } from "../../lib/Router";
 import { homeStore } from "../../store/homeStore";
 import { findBreadcrumb, findChildren } from "../../utils/findBreadcrumb";
+import { getCurrentCategory } from "../../utils/getCurrentCatetory";
+import getFilter from "../../utils/getFilter";
 import Breadcrumb from "./Breadcrumb";
 import CategoryItem from "./CategoryItem";
 
@@ -34,12 +35,12 @@ export default class Filter extends Component {
   }
 
   selectLimit() {
-    const [limit, setQueryParam] = useQueryParam("limit");
-    const currentLimit = limit || DEFAULT_LIMIT;
+    const setQueryParam = useQueryParam();
+    const { limit } = getFilter();
 
     const limitOptions = document.querySelectorAll("#limit-select option");
     limitOptions.forEach((option) => {
-      if (option.value === currentLimit) {
+      if (option.value === limit) {
         option.selected = true;
       }
     });
@@ -51,17 +52,17 @@ export default class Filter extends Component {
 
       this.resetPage();
 
-      setQueryParam(limit);
+      setQueryParam("limit", limit);
     });
   }
 
   selectSort() {
-    const [sort, setQueryParam] = useQueryParam("sort");
-    const currentSort = sort || DEFAULT_SORT;
+    const setQueryParam = useQueryParam();
+    const { sort } = getFilter();
 
     const sortOptions = document.querySelectorAll("#sort-select option");
     sortOptions.forEach((option) => {
-      if (option.value === currentSort) {
+      if (option.value === sort) {
         option.selected = true;
       }
     });
@@ -73,18 +74,18 @@ export default class Filter extends Component {
       const sort = e.target.value;
 
       this.resetPage();
-      setQueryParam(sort);
+      setQueryParam("sort", sort);
     });
   }
 
   search() {
-    const [search, setQueryParam] = useQueryParam("search");
-    const currentSearch = search || "";
+    const setQueryParam = useQueryParam();
+    const { search } = getFilter();
 
     const searchInput = document.getElementById("search-input");
     if (!searchInput) return;
 
-    searchInput.value = currentSearch;
+    searchInput.value = search;
 
     searchInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
@@ -92,17 +93,17 @@ export default class Filter extends Component {
         const search = e.target.value;
 
         this.setSearchParam("search", search);
-        setQueryParam(search);
+        setQueryParam("search", search);
       }
     });
   }
 
   selectCategory() {
+    const setQueryParam = useQueryParam();
     const { categoryList } = homeStore.getState().categories;
-    const [, setCategory1] = useQueryParam("category1");
-    const [, setCategory2] = useQueryParam("category2");
 
     const categoryFilterBtns = document.querySelectorAll(".category-filter-btn");
+    if (!categoryFilterBtns.length) return;
 
     categoryFilterBtns.forEach((btn) => {
       btn.addEventListener("click", (e) => {
@@ -112,21 +113,8 @@ export default class Filter extends Component {
         const newCategory1 = breadcrumb[0] || "";
         const newCategory2 = breadcrumb[1] || "";
 
-        homeStore.setState({
-          categories: {
-            currentCategory: selectedCategory,
-          },
-        });
-
-        setCategory1(newCategory1);
-        setCategory2(newCategory2);
-
-        homeStore.setState({
-          filter: {
-            category1: newCategory1,
-            category2: newCategory2,
-          },
-        });
+        setQueryParam("category1", newCategory1);
+        setQueryParam("category2", newCategory2);
       });
     });
   }
@@ -163,10 +151,11 @@ export default class Filter extends Component {
 
   template() {
     const {
-      categories: { isCategoryLoading, currentCategory, categoryList },
+      categories: { isCategoryLoading, categoryList },
     } = homeStore.getState();
 
-    const { limit, sort } = useFilter();
+    const { limit, sort } = getFilter();
+    const currentCategory = getCurrentCategory();
 
     const categoryChildren = findChildren(categoryList, currentCategory);
 

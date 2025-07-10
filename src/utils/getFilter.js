@@ -1,7 +1,7 @@
 import { DEFAULT_LIMIT, DEFAULT_SORT } from "../constants";
-import { useQueryParams } from "./useRouter";
+import { useQueryParams } from "../hook/useRouter";
 
-export default function useFilter() {
+export default function getFilter() {
   const [queryParams] = useQueryParams();
 
   const limit = queryParams.limit || DEFAULT_LIMIT;
