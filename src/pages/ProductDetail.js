@@ -2,6 +2,8 @@ import { getProduct } from "../api/productApi.js";
 import { header } from "../components/header.js";
 import { footer } from "../components/footer.js";
 import { NotFound } from "./NotFound.js";
+import { addCart, updateHeaderCartCount } from "../utils/cart.js";
+import { showToast } from "../template/toast.js";
 
 // 상품 상세 정보를 렌더링하는 함수
 export const ProductDetail = (props) => {
@@ -31,7 +33,7 @@ export const ProductDetail = (props) => {
   `;
 
   appRoot.innerHTML = loadingHTML;
-
+  addEventListeners();
   // 비동기 함수로 상품 정보를 가져와서 실제 UI로 교체
   (async () => {
     try {
@@ -133,10 +135,10 @@ export const ProductDetail = (props) => {
           </div>
           <!-- 상품 목록으로 이동 -->
           <div class="mb-6">
-            <button class="block w-full text-center bg-gray-100 text-gray-700 py-3 px-4 rounded-md 
-              hover:bg-gray-200 transition-colors go-to-product-list">
+            <a href="/" data-link class="block w-full text-center bg-gray-100 text-gray-700 py-3 px-4 rounded-md 
+              hover:bg-gray-200 transition-colors go-to-product-list cursor-pointer">
               상품 목록으로 돌아가기
-            </button>
+            </a>
           </div>
           <!-- 관련 상품 -->
           <div class="bg-white rounded-lg shadow-sm">
@@ -183,3 +185,58 @@ export const ProductDetail = (props) => {
   // 라우터의 innerHTML 호출을 만족시키기 위함
   return "";
 };
+
+function addEventListeners(product) {
+  let quantity = 1; // 수량 상태 초기화
+
+  const quantityInput = document.querySelector("#quantity-input");
+  const decreaseBtn = document.querySelector("#quantity-decrease");
+  const increaseBtn = document.querySelector("#quantity-increase");
+  const addToCartBtn = document.querySelector("#add-to-cart-btn");
+  const backBtn = document.querySelector(".go-to-product-list");
+
+  // 수량 업데이트 함수
+  const updateQuantity = (newQuantity) => {
+    quantity = Math.max(1, Math.min(newQuantity, product.stock));
+    if (quantityInput) {
+      quantityInput.value = quantity;
+    }
+  };
+
+  // 수량 조절 버튼 이벤트
+  if (decreaseBtn) {
+    decreaseBtn.addEventListener("click", () => updateQuantity(quantity - 1));
+  }
+  if (increaseBtn) {
+    increaseBtn.addEventListener("click", () => updateQuantity(quantity + 1));
+  }
+  if (quantityInput) {
+    quantityInput.addEventListener("change", (e) => {
+      const value = parseInt(e.target.value, 10);
+      if (!isNaN(value)) {
+        updateQuantity(value);
+      }
+    });
+  }
+
+  // 장바구니 담기 버튼 이벤트
+  if (addToCartBtn) {
+    addToCartBtn.addEventListener("click", () => {
+      addCart(product, quantity);
+      showToast("장바구니에 추가되었습니다.");
+      updateHeaderCartCount(); // 리렌더링 없이 헤더 카운트만 업데이트
+    });
+  }
+
+  // (선택) 관련 상품 클릭 이벤트 추가
+  // const relatedProductCards = document.querySelectorAll(".related-product-card");
+  // relatedProductCards.forEach(card => {
+  //   card.addEventListener("click", () => {
+  //     const newProductId = card.dataset.productId;
+  //     // 라우터의 navigate 함수를 호출하여 페이지 이동
+  //     window.history.pushState({}, "", `/product/${newProductId}`);
+  //     // ProductDetail 함수를 다시 실행하여 페이지를 새로 그림
+  //     ProductDetail({ urlParams: { id: newProductId } });
+  //   });
+  // });
+}

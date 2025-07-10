@@ -1,4 +1,6 @@
-import { loadProductsAndUpdateUI } from "../main.js"; // main.js에서 필요한 함수 임포트
+import { loadProductsAndUpdateUI } from "../main.js";
+import { addCart, updateHeaderCartCount } from "../utils/cart.js";
+import { showToast } from "../template/toast.js";
 
 export function setupCommonEventListeners(mainStatus, appRouter) {
   /** change */
@@ -37,7 +39,7 @@ export function setupCommonEventListeners(mainStatus, appRouter) {
   document.body.addEventListener("click", (e) => {
     const productCard = e.target.closest(".product-card"); // 클릭된 요소의 가장 가까운
 
-    const addToCartBtn = e.target.closest(".add-to-cart-btn"); // 클릭된 요소가 장바구니 버튼인지
+    const addToCartBtn = e.target.closest("#add-to-cart-btn"); // 클릭된 요소가 장바구니 버튼인지
 
     // 상품 카드가 클릭되었고, 장바구니 버튼이 아닌 경우에만 상세 페이지로 이동
     if (productCard && !addToCartBtn) {
@@ -47,13 +49,16 @@ export function setupCommonEventListeners(mainStatus, appRouter) {
         appRouter.navigate(`/product/${productId}`); // 라우터로 페이지 이동
       }
     }
-  });
-  // TODO: 상품 상세 장바구니 담기 버튼 클릭 이벤트 => 토스트 메세지 구현
-  document.body.addEventListener("click", (e) => {
-    const addToCartBtn = e.target.id === "add-to-cart-btn";
-    debugger;
+
     if (addToCartBtn) {
-      const productId = e.target.closest("#add-to-cart-btn").dataset.productId;
+      const productId = addToCartBtn.dataset.productId;
+      const product = mainStatus.products.find((p) => p.productId === productId);
+      if (product) {
+        addCart(product);
+        showToast("장바구니에 추가되었습니다");
+        updateHeaderCartCount();
+      }
+      return;
     }
   });
   // TODO: 그 외 다른 이벤트 설정.....
