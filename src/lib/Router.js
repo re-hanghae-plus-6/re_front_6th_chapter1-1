@@ -222,7 +222,6 @@ export class Router {
       detail: { queryParams: { ...this.queryParams } },
     });
     window.dispatchEvent(event);
-    console.log("queryParamsChange: ", this.queryParams);
   }
 
   static getInstance() {

@@ -55,10 +55,6 @@ export default class ProductList extends Component {
         },
       },
     });
-    const { category1, category2 } = getFilter();
-    console.log("???????여기선 ??????", category1, category2);
-    // 상품 목록 재조회
-    // this.fetchProducts();
   }
 
   setEvent() {
@@ -97,22 +93,12 @@ export default class ProductList extends Component {
   }
 
   async fetchProducts() {
-    // ! queryParam 디버깅용
-    // const router = Router.getInstance();
-    // const [queryParams] = useQueryParams();
-
-    // console.log("router: ", router);
-    // console.log("router.queryParams: ", router.queryParams);
-    // console.log("useQueryParams: ", queryParams);
-
     const homeState = homeStore.getState();
     const {
       isProductsLoading,
       pagination: { page },
     } = homeState.products;
     const { limit, sort, search, category1, category2 } = getFilter();
-    console.log("!!!!!!!!!!!!!!!!!!!!!!category2: ", category2);
-    console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!isProductsLoading: ", isProductsLoading);
 
     if (isProductsLoading) return;
 
@@ -132,7 +118,6 @@ export default class ProductList extends Component {
       sort,
     };
 
-    console.log("!!!!!!!!!!!!!!!!!!!!!!params: ", params);
     const { products, pagination } = await getProducts(params);
 
     homeStore.setState({
