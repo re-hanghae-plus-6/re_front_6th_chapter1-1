@@ -33,18 +33,65 @@ export function createRouter(config = {}) {
   }
 
   /**
-   * 경로를 라우트 설정과 매칭하는 함수 (임시 구현)
+   * 경로를 라우트 설정과 매칭하는 함수 (동적 라우팅 지원)
    */
   function matchRoute(path) {
-    // 일단 기본적인 매칭만 구현
+    // 1. 정적 라우트 먼저 체크
     for (const route of routes) {
       if (route.path === path) {
-        return route;
+        return { ...route, params: {} };
       }
     }
 
-    // 매칭되지 않으면 404
-    return { path: "*", component: "NotFound" };
+    // 2. 동적 라우트 체크
+    for (const route of routes) {
+      const match = matchDynamicRoute(route.path, path);
+      if (match) {
+        return { ...route, params: match.params };
+      }
+    }
+
+    // 3. 매칭되지 않으면 404
+    return { path: "*", component: "NotFound", params: {} };
+  }
+
+  /**
+   * 동적 라우트 매칭 헬퍼 함수
+   * @param {string} routePath - 라우트 패턴 (예: "/product/:id")
+   * @param {string} currentPath - 현재 경로 (예: "/product/123")
+   */
+  function matchDynamicRoute(routePath, currentPath) {
+    // 동적 라우트 패턴이 아니면 null 반환
+    if (!routePath.includes(":")) {
+      return null;
+    }
+
+    const routeParts = routePath.split("/");
+    const pathParts = currentPath.split("/");
+
+    // 경로 길이가 다르면 매칭 실패
+    if (routeParts.length !== pathParts.length) {
+      return null;
+    }
+
+    const params = {};
+
+    // 각 부분을 비교하며 파라미터 추출
+    for (let i = 0; i < routeParts.length; i++) {
+      const routePart = routeParts[i];
+      const pathPart = pathParts[i];
+
+      if (routePart.startsWith(":")) {
+        // 동적 파라미터 부분
+        const paramName = routePart.slice(1); // ':' 제거
+        params[paramName] = pathPart;
+      } else if (routePart !== pathPart) {
+        // 정적 부분이 다르면 매칭 실패
+        return null;
+      }
+    }
+
+    return { params };
   }
 
   /**

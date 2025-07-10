@@ -16,9 +16,11 @@ function HomePage() {
   `;
 }
 
-function ProductDetailPage() {
+function ProductDetailPage(params = {}) {
+  const { id } = params;
   return `
-    <h1>상세 페이지</h1>
+    <h1>상품 상세 페이지</h1>
+    <p>상품 ID: ${id || "없음"}</p>
     <p>현재 경로: ${window.location.pathname}</p>
   `;
 }
@@ -45,7 +47,7 @@ function main() {
   router = createRouter({
     routes: [
       { path: "/", component: "Home" },
-      { path: "/product", component: "ProductDetail" }, // Todo: 동적 라우팅 구현
+      { path: "/product/:id", component: "ProductDetail" }, // 동적 라우팅으로 변경
       { path: "*", component: "NotFound" },
     ],
 
@@ -57,7 +59,7 @@ function main() {
           html = HomePage();
           break;
         case "ProductDetail":
-          html = ProductDetailPage();
+          html = ProductDetailPage(route.params); // 파라미터 전달
           break;
         case "NotFound":
         default:
