@@ -2,8 +2,6 @@ export const Category = (depth = 0) => {
   // 1st depth
   if (depth > 0) {
     return `
-        <main class="max-w-md mx-auto px-4 py-4">
-          <!-- 검색 및 필터 -->
           <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
             <!-- 검색창 -->
             <div class="mb-4">
@@ -78,12 +76,10 @@ export const Category = (depth = 0) => {
               </div>
             </div>
           </div>
-        </main>
-      `;
+       `;
   }
 
   return `
-      <main class="max-w-md mx-auto px-4 py-4">
         <!-- 검색 및 필터 -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
           <!-- 검색창 -->
@@ -149,7 +145,7 @@ export const Category = (depth = 0) => {
               <div class="flex items-center gap-2">
                 <label class="text-sm text-gray-600">정렬:</label>
                 <select id="sort-select" class="text-sm border border-gray-300 rounded px-2 py-1
-                             focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+  focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                   <option value="price_asc" selected="">가격 낮은순</option>
                   <option value="price_desc">가격 높은순</option>
                   <option value="name_asc">이름순</option>
@@ -159,6 +155,5 @@ export const Category = (depth = 0) => {
             </div>
           </div>
         </div>
-      </main>
     `;
 };
