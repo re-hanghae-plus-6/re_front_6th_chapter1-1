@@ -44,6 +44,8 @@ Search.mount = () => {
     bindEvent(el, action, fn);
   });
 
+  return;
+
   // Home.js에서도 같은 watch를 써야 할 것 같아서.. 중복으로 쓰는 게 의미가 있을지 몰라 주석
   // store.watch((newValue) => {
   //   const url = new URL(window.location);

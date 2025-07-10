@@ -13,12 +13,12 @@ const state = {
   isLoading: true,
   products: [],
   pagination: {},
+  categories: {},
 };
 
 const fetchProducts = async (params = {}) => {
   state.isLoading = true;
   const productData = await getProducts(params);
-  const categoriesData = await getCategories();
   state.isLoading = false;
 
   // 무한 스크롤 방식 구현으로 누적된 product 값
@@ -29,64 +29,66 @@ const fetchProducts = async (params = {}) => {
   }
 
   state.pagination = productData.pagination;
-
-  return {
-    categories: categoriesData,
-  };
 };
 
-const loadMoreProducts = (trigger, callback) => {
-  const io = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          callback();
-        }
-      });
-    },
-    {
-      root: null,
-      rootMargin: "0px",
-      threshold: 1.0,
-    },
-  );
-
-  io.observe(trigger);
+const fetchCategories = async () => {
+  const categoriesData = await getCategories();
+  state.categories = categoriesData;
 };
 
-const loadMoreProductsCallback = () => {
-  const currentPage = store.get("params")["page"];
-  const hasNextPage = state.pagination.hasNext;
-  if (!hasNextPage) return;
-  const render = useRender();
-  const nextPage = currentPage + 1;
+// const loadMoreProducts = (trigger, callback) => {
+//   const io = new IntersectionObserver(
+//     (entries) => {
+//       entries.forEach((entry) => {
+//         if (entry.isIntersecting) {
+//           callback();
+//         }
+//       });
+//     },
+//     {
+//       root: null,
+//       rootMargin: "0px",
+//       threshold: 1.0,
+//     },
+//   );
 
-  fetchProducts({ ...store.get("params"), page: nextPage }).then(({ categories }) => {
-    render.draw(
-      "main",
-      Home({
-        products: state.products,
-        pagination: state.pagination,
-        isLoading: state.isLoading,
-        categories,
-      }),
-    );
+//   io.observe(trigger);
+// };
 
-    Search.mount();
-    ProductCard.mount();
+// const loadMoreProductsCallback = () => {
+//   const currentPage = store.get("params")["page"];
+//   const hasNextPage = state.pagination.hasNext;
+//   if (!hasNextPage) return;
+//   const render = useRender();
+//   const nextPage = currentPage + 1;
 
-    setTimeout(() => {
-      const trigger = document.getElementById("scroll-trigger");
-      if (trigger) {
-        loadMoreProducts(trigger, loadMoreProductsCallback);
-      }
-    }, 200);
-  });
-};
+//   fetchProducts({ ...store.get("params"), page: nextPage }).then(({ categories }) => {
+//     render.draw(
+//       "main",
+//       Home({
+//         products: state.products,
+//         pagination: state.pagination,
+//         isLoading: state.isLoading,
+//         categories,
+//       }),
+//     );
+
+//     Search.mount();
+//     ProductCard.mount();
+
+//     setTimeout(() => {
+//       const trigger = document.getElementById("scroll-trigger");
+//       if (trigger) {
+//         loadMoreProducts(trigger, loadMoreProductsCallback);
+//       }
+//     }, 200);
+//   });
+// };
 
 Home.mount = async () => {
   const render = useRender();
-  const { categories } = await fetchProducts();
+  await fetchProducts();
+  await fetchCategories();
 
   render.draw(
     "main",
@@ -94,7 +96,7 @@ Home.mount = async () => {
       products: state.products,
       pagination: state.pagination,
       isLoading: state.isLoading,
-      categories,
+      categories: state.categories,
     }),
   );
 
@@ -102,7 +104,6 @@ Home.mount = async () => {
   ProductCard.mount();
 
   store.watch(async (newValue) => {
-    console.log("watch");
     const url = new URL(window.location);
     Object.entries(newValue).forEach(([key, value]) => {
       if (value !== "" && value) {
@@ -111,17 +112,14 @@ Home.mount = async () => {
     });
     navigate.push({}, url.toString());
 
-    const { categories } = await fetchProducts(newValue);
-    render.draw(
-      "main",
-      Home({ products: state.products, pagination: state.pagination, isLoading: state.isLoading, categories }),
-    );
+    await fetchProducts(newValue);
+    render.draw("main", Home({ products: state.products, pagination: state.pagination, isLoading: state.isLoading }));
     Search.mount();
     ProductCard.mount();
   }, "params");
 
-  const scrollTrigger = document.getElementById("scroll-trigger");
-  loadMoreProducts(scrollTrigger, loadMoreProductsCallback);
+  // const scrollTrigger = document.getElementById("scroll-trigger");
+  // loadMoreProducts(scrollTrigger, loadMoreProductsCallback);
 };
 
 export default function Home({ products, pagination, isLoading, categories }) {
