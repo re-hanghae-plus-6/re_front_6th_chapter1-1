@@ -128,7 +128,7 @@ export class ProductListPage extends Component {
     element.addEventListener("click", (e) => {
       const route = e.target.dataset.route;
       if (route) {
-        this.router.navigate(route);
+        this.props.router.navigate(route);
       }
     });
 
