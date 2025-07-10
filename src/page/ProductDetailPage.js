@@ -2,6 +2,7 @@ import MainLayout from "../components/layout/MainLayout.js";
 import RelatedProducts from "../components/product/RelatedProducts.js";
 import { getProducts } from "../api/productApi.js";
 import createStore from "../core/store.js";
+import { getCartCount, updateCartBadge } from "../core/cart.js";
 
 // 상품 상세 페이지 초기 상태
 const initialState = {
@@ -103,6 +104,7 @@ async function fetchRelatedProducts(product) {
 
 // 렌더링 함수
 function render(state, cartCount) {
+  cartCount = getCartCount();
   const $root = document.getElementById("root");
   let html = "";
 
@@ -134,6 +136,9 @@ function render(state, cartCount) {
   if ($root) {
     $root.innerHTML = html;
   }
+
+  // 헤더 렌더 이후 뱃지 동기화
+  updateCartBadge();
 
   // 이벤트 리스너 부착 DOM이 그려지고 난 뒤
   if (state.product) {
