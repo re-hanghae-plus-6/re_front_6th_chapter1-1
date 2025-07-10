@@ -8,8 +8,10 @@ import { productStore, productState } from "../core/productState.js";
 import { productFilterStore, productFilterState } from "../core/productFilterState.js";
 import { normalizeCategories } from "../utils/normalizeCategories.js";
 import { createComponent } from "../core/createComponent.js";
+import { useInfiniteScroll } from "../utils/useInfiniteScroll.js";
 
 let subscriptions = [];
+let unsubscribeScroll;
 export const HomePage = createComponent({
   setup() {
     function bindFilterEvents() {
@@ -18,11 +20,12 @@ export const HomePage = createComponent({
       panel?.addEventListener("click", (e) => {
         const t = e.target;
         if (t.classList.contains("category1-filter-btn")) {
-          productFilterStore.setState({ category1: t.dataset.category1, category2: "" });
+          productFilterStore.setState({ filters: { page: 1 }, category1: t.dataset.category1, category2: "" });
           loadProducts();
         }
         if (t.classList.contains("category2-filter-btn")) {
           productFilterStore.setState({
+            filters: { page: 1 },
             category1: t.dataset.category1,
             category2: t.dataset.category2,
           });
@@ -33,12 +36,11 @@ export const HomePage = createComponent({
       panel?.addEventListener("change", (e) => {
         const t = e.target;
         if (t.id === "limit-select") {
-          console.log("Limit changed to:", t.value);
-          productFilterStore.setState({ filters: { limit: +t.value } });
+          productFilterStore.setState({ filters: { page: 1, limit: +t.value } });
           loadProducts();
         }
         if (t.id === "sort-select") {
-          productFilterStore.setState({ filters: { sort: t.value } });
+          productFilterStore.setState({ filters: { page: 1, sort: t.value } });
           loadProducts();
         }
       });
@@ -46,7 +48,7 @@ export const HomePage = createComponent({
       panel?.addEventListener("keydown", (e) => {
         const t = e.target;
         if (t.id === "search-input" && e.key === "Enter") {
-          productFilterStore.setState({ filters: { search: t.value.trim() } });
+          productFilterStore.setState({ filters: { page: 1, search: t.value.trim() } });
           loadProducts();
         }
       });
@@ -61,7 +63,7 @@ export const HomePage = createComponent({
       });
     }
 
-    async function loadProducts(page = 1) {
+    async function loadProducts(page = 1, append = false) {
       const loadingEl = document.getElementById("loading-indicator");
       if (loadingEl) loadingEl.style.display = "block";
 
@@ -78,7 +80,7 @@ export const HomePage = createComponent({
       const data = await res.json();
 
       productStore.setState({
-        products: data.products,
+        products: append ? [...productState.products, ...data.products] : data.products,
         total: data.pagination.total,
       });
 
@@ -132,8 +134,6 @@ export const HomePage = createComponent({
   async onMount(ctx) {
     console.log("홈페이지 컴포넌트가 마운트되었습니다.");
     setTimeout(async () => {
-      ctx.bindFilterEvents();
-
       // 초기 상태 설정
       productFilterStore.setState({
         filters: {
@@ -152,16 +152,34 @@ export const HomePage = createComponent({
         total: 0,
       });
 
-      subscriptions.push(productFilterStore.subscribe(ctx.renderFilter));
-      subscriptions.push(productStore.subscribe(ctx.renderProducts));
+      ctx.bindFilterEvents();
 
+      subscriptions.push(productFilterStore.subscribe(ctx.renderFilter));
       await ctx.loadCategories();
+
+      subscriptions.push(productStore.subscribe(ctx.renderProducts));
       await ctx.loadProducts();
+
+      let isLoading = false;
+
+      unsubscribeScroll = useInfiniteScroll(async () => {
+        if (isLoading) return;
+
+        if (productState.products.length >= productState.total) return;
+
+        isLoading = true;
+        const next = productFilterState.filters.page + 1;
+        productFilterStore.setState({ filters: { page: next } });
+        await ctx.loadProducts(next, true);
+
+        isLoading = false;
+      });
     }, 0);
   },
   onUnmount() {
     console.log("홈페이지 컴포넌트가 언마운트되었습니다.");
     subscriptions.forEach((unsubscribe) => unsubscribe());
     subscriptions = [];
+    unsubscribeScroll?.();
   },
 });
