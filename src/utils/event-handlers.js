@@ -347,6 +347,7 @@ export const handleCartEvents = (e) => {
   if (e.target.classList.contains("cart-item-remove-btn")) {
     const productId = e.target.dataset.productId;
     cartService.removeFromCart(productId);
+    showToastMessage("상품이 삭제되었습니다");
     return;
   }
 
