@@ -1,4 +1,4 @@
-const useNavigate = () => {
+const useNavigate = (() => {
   // 전 URL과 현재 URL을 비교하여 커스텀 이벤트 생성
   let prevUrl = location.pathname;
   let prevSearchParams = location.search;
@@ -23,25 +23,26 @@ const useNavigate = () => {
 
   window.addEventListener("popstate", emitUrlChangeEvent);
 
-  return {
-    push: (state = {}, url) => {
-      history.pushState(state, "", url);
-      emitUrlChangeEvent();
-    },
-    replace: (state = {}, url) => {
-      history.replaceState(state, "", url);
-      emitUrlChangeEvent();
-    },
-    go: (n) => {
-      history.go(n);
-    },
-    back: () => {
-      history.back();
-    },
-    getCurrentUrl: () => {
-      return window.location.pathname;
-    },
+  const push = (state = {}, url) => {
+    history.pushState(state, "", url);
+    emitUrlChangeEvent();
   };
-};
+
+  const replace = (state = {}, url) => {
+    history.replaceState(state, "", url);
+    emitUrlChangeEvent();
+  };
+  const go = (n) => {
+    history.go(n);
+  };
+  const back = () => {
+    history.back();
+  };
+  const getCurrentUrl = () => {
+    return window.location.pathname;
+  };
+
+  return () => ({ push, replace, go, back, getCurrentUrl });
+})();
 
 export default useNavigate;
