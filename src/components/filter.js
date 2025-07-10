@@ -92,6 +92,17 @@ export function changeSortEvent() {
   });
 }
 
+export function changeSearchEvent() {
+  const input = document.getElementById("search-input");
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      const search = e.target.value;
+      window.dispatchEvent(new CustomEvent("changeSearch", { detail: { search } }));
+      setSearchValue(search);
+    }
+  });
+}
+
 export function setLimitValue(limit) {
   const select = document.getElementById("limit-select");
   if (select) select.value = limit;
@@ -100,4 +111,9 @@ export function setLimitValue(limit) {
 export function setSortValue(sort) {
   const select = document.getElementById("sort-select");
   if (select) select.value = sort;
+}
+
+export function setSearchValue(search) {
+  const input = document.getElementById("search-input");
+  if (input) input.value = search;
 }

@@ -1,7 +1,7 @@
 import Header from "../components/header.js";
 import ProductCard from "../components/product-card.js";
 import Footer from "../components/footer.js";
-import Filter, { changeLimitEvent, changeSortEvent } from "../components/filter.js";
+import Filter, { changeLimitEvent, changeSortEvent, changeSearchEvent } from "../components/filter.js";
 import { getProducts } from "../api/productApi.js";
 import { Store } from "../store.js";
 
@@ -35,6 +35,7 @@ ListPage.mount = function () {
       });
       changeLimitEvent();
       changeSortEvent();
+      changeSearchEvent();
     });
   }
 
@@ -47,6 +48,12 @@ ListPage.mount = function () {
 
   window.addEventListener("changeSort", (e) => {
     store.setSort(e.detail.sort);
+    fetchAndRender();
+  });
+
+  window.addEventListener("changeSearch", (e) => {
+    console.log("changeSearch", e.detail.search);
+    store.setSearch(e.detail.search);
     fetchAndRender();
   });
 };

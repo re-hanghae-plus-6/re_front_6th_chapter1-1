@@ -1,10 +1,11 @@
 import ListPage from "./pages/list.js";
 import DetailPage from "./pages/detail.js";
+import NotFoundPage from "./pages/404.js";
 
 export function getPageComponentByPath(path) {
   if (path === "/") return ListPage;
   if (path === "/detail") return DetailPage;
-  return () => "<div>페이지를 찾을 수 없습니다</div>";
+  return NotFoundPage;
 }
 
 export function renderRoute() {
