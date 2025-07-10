@@ -280,7 +280,12 @@ const createModalContainer = () => {
   modalContainer.id = "cart-modal-container";
   modalContainer.className = "fixed inset-0 z-50 overflow-y-auto cart-modal-overlay";
   modalContainer.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
-  document.body.appendChild(modalContainer);
+  const rootElement = document.getElementById("root");
+  if (rootElement) {
+    rootElement.appendChild(modalContainer);
+  } else {
+    document.body.appendChild(modalContainer);
+  }
   return modalContainer;
 };
 
