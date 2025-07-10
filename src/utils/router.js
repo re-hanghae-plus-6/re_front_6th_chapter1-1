@@ -1,136 +1,102 @@
-// // 라우터 유틸리티
-// class Router {
-//   constructor() {
-//     this.routes = new Map();
-//     this.currentPath = "/";
-//     this.isInitialized = false;
-//     this.pendingInitialRoute = window.location.pathname;
-//   }
+// 간결한 라우터
+class Router {
+  constructor() {
+    this.routes = new Map();
+    this.currentPath = "/";
+    this.currentParams = {};
+  }
 
-//   // 라우트 등록
-//   register(path, handler) {
-//     this.routes.set(path, handler);
-//   }
+  register(path, handler) {
+    this.routes.set(path, handler);
+    return this;
+  }
 
-//   // 라우터 초기화 완료 후 초기 경로 처리
-//   initializeRoutes() {
-//     if (!this.isInitialized) {
-//       this.isInitialized = true;
-//       console.log("라우터 초기화 완료, 초기 경로 처리:", this.pendingInitialRoute);
-//       this.navigate(this.pendingInitialRoute, false);
-//     }
-//   }
+  navigate(path, updateHistory = true) {
+    this.currentPath = path || "/";
 
-//   // 패턴 매칭 함수
-//   matchRoute(requestedPath) {
-//     console.log("경로 매칭 시도:", requestedPath);
-//     console.log("등록된 라우트:", Array.from(this.routes.keys()));
+    if (updateHistory) {
+      history.pushState({}, "", path);
+    }
 
-//     for (const [pattern, handler] of this.routes) {
-//       // 정확한 매칭
-//       if (pattern === requestedPath) {
-//         console.log("정확한 매칭 발견:", pattern);
-//         return { handler, params: {} };
-//       }
+    const match = this.matchRoute(path);
+    if (match) {
+      this.currentParams = match.params;
+      match.handler(match.params);
+    } else {
+      this.handle404();
+    }
+    return this;
+  }
 
-//       // 동적 라우트 매칭 (예: /product/:id)
-//       if (pattern.includes(":")) {
-//         const patternParts = pattern.split("/");
-//         const pathParts = requestedPath.split("/");
+  matchRoute(path) {
+    // 정확한 매칭
+    if (this.routes.has(path)) {
+      return { handler: this.routes.get(path), params: {} };
+    }
 
-//         if (patternParts.length === pathParts.length) {
-//           const params = {};
-//           let isMatch = true;
+    // 동적 라우트 매칭
+    for (const [pattern, handler] of this.routes) {
+      if (pattern.includes(":")) {
+        const params = this.extractParams(pattern, path);
+        if (params) {
+          return { handler, params };
+        }
+      }
+    }
+    return null;
+  }
 
-//           for (let i = 0; i < patternParts.length; i++) {
-//             if (patternParts[i].startsWith(":")) {
-//               // 동적 파라미터 추출
-//               const paramName = patternParts[i].substring(1);
-//               params[paramName] = pathParts[i];
-//             } else if (patternParts[i] !== pathParts[i]) {
-//               isMatch = false;
-//               break;
-//             }
-//           }
+  extractParams(pattern, path) {
+    const patternParts = pattern.split("/");
+    const pathParts = path.split("/");
 
-//           if (isMatch) {
-//             console.log("동적 매칭 발견:", pattern, "파라미터:", params);
-//             return { handler, params };
-//           }
-//         }
-//       }
-//     }
+    if (patternParts.length !== pathParts.length) return null;
 
-//     console.log("매칭되는 라우트 없음");
-//     return null;
-//   }
+    const params = {};
+    for (let i = 0; i < patternParts.length; i++) {
+      if (patternParts[i].startsWith(":")) {
+        params[patternParts[i].slice(1)] = pathParts[i];
+      } else if (patternParts[i] !== pathParts[i]) {
+        return null;
+      }
+    }
+    return params;
+  }
 
-//   // 페이지 이동
-//   navigate(path, updateHistory = true) {
-//     console.log("페이지 이동 시도:", path);
-//     this.currentPath = path;
+  handle404() {
+    const notFoundHandler = this.routes.get("/404");
+    if (notFoundHandler) {
+      this.currentParams = {};
+      notFoundHandler();
+    } else if (this.currentPath !== "/404") {
+      this.navigate("/404", false);
+    }
+  }
 
-//     if (updateHistory) {
-//       window.history.pushState({ path }, "", path);
-//     }
+  getCurrentPath() {
+    return this.currentPath;
+  }
 
-//     const match = this.matchRoute(path);
-//     if (match) {
-//       // 파라미터를 전역에서 접근할 수 있도록 설정
-//       this.currentParams = match.params;
-//       console.log("핸들러 실행:", path);
-//       match.handler();
-//     } else {
-//       console.log("404 처리:", path);
-//       // 404 처리 - 등록된 404 핸들러가 있으면 사용, 없으면 기본 404 페이지
-//       const notFoundHandler = this.routes.get("/404");
-//       if (notFoundHandler) {
-//         notFoundHandler();
-//       } else {
-//         this.navigate("/404", false);
-//       }
-//     }
-//   }
+  getCurrentParams() {
+    return this.currentParams;
+  }
 
-//   // 현재 경로 가져오기
-//   getCurrentPath() {
-//     return this.currentPath;
-//   }
+  init() {
+    // 브라우저 뒤로가기/앞으로가기 처리
+    window.addEventListener("popstate", () => {
+      this.navigate(location.pathname, false);
+    });
 
-//   // 현재 파라미터 가져오기
-//   getCurrentParams() {
-//     return this.currentParams || {};
-//   }
+    // 초기 경로 처리
+    this.navigate(location.pathname, false);
+    return this;
+  }
+}
 
-//   // URL 파라미터 파싱 (쿼리 스트링)
-//   getParams() {
-//     const urlParams = new URLSearchParams(window.location.search);
-//     const params = {};
-//     for (const [key, value] of urlParams) {
-//       params[key] = value;
-//     }
-//     return params;
-//   }
+// 전역 라우터 인스턴스
+export const router = new Router();
 
-//   // URL 변경 감지 (수동으로 URL을 수정했을 때)
-//   handleUrlChange() {
-//     const currentPath = window.location.pathname;
-//     if (currentPath !== this.currentPath) {
-//       this.navigate(currentPath, false);
-//     }
-//   }
-
-//   // 디버깅용: 등록된 라우트 확인
-//   getRegisteredRoutes() {
-//     return Array.from(this.routes.keys());
-//   }
-// }
-
-// // 전역 라우터 인스턴스
-// export const router = new Router();
-
-// // 편의 함수들
-// export const navigateTo = (path) => router.navigate(path);
-// export const getCurrentPath = () => router.getCurrentPath();
-// export const getCurrentParams = () => router.getCurrentParams();
-// export const getParams = () => router.getParams();
+// 편의 함수들
+export const navigateTo = (path) => router.navigate(path);
+export const getCurrentPath = () => router.getCurrentPath();
+export const getCurrentParams = () => router.getCurrentParams();
