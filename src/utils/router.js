@@ -1,11 +1,10 @@
-
-import { render as mainRender} from "../main.js";
+import { render as mainRender } from "../main.js";
 import store from "../store/store.js";
 
 const triggerRender = () => {
-    const state = store.getState();
-    mainRender(state);
-}
+  const state = store.getState();
+  mainRender(state);
+};
 
 // 특정 id 를 클릭하면, 아래 처럼 어떤 페이지를 불러올것인지 (2번째 인자에)
 window.addEventListener("popstate", triggerRender);
@@ -13,10 +12,10 @@ window.addEventListener("popstate", triggerRender);
 // a href 에 따라 url 변경 -> 그러면 4번째 줄 코드 호출
 
 const router = {
-    navigateTo: (path)=> {
-        window.history.pushState({}, "", `${path}`);
-        triggerRender();
-    }
-}
+  navigateTo: (path) => {
+    window.history.pushState({}, "", `${path}`);
+    triggerRender();
+  },
+};
 
 export default router;

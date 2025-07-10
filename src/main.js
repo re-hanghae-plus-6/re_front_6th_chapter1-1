@@ -29,7 +29,7 @@ const state = {
   hasMore: true,
 };
 
-export let render = function(state) {
+export let render = function (state) {
   const rootDOM = document.body.querySelector("#root");
   rootDOM.innerHTML = MainLayout({
     content: `
@@ -51,8 +51,7 @@ export let render = function(state) {
       `,
     showBackButton: false,
   });
-
-}
+};
 
 async function main() {
   state.loading = true;
@@ -67,8 +66,8 @@ async function main() {
   ] = await Promise.all([getProducts({}), getCategories()]);
 
   store.setState({
-    categories
-  })
+    categories,
+  });
   state.products = products;
   state.total = total;
   state.loading = false;
@@ -114,9 +113,7 @@ function attachEventListeners() {
       if (e.target.matches("[data-category2]")) {
         const category1 = e.target.getAttribute("data-category1");
         const category2 = e.target.getAttribute("data-category2");
-        router.navigateTo(
-          `/category1=${encodeURIComponent(category1)}&category2=${encodeURIComponent(category2)}`
-        );
+        router.navigateTo(`/category1=${encodeURIComponent(category1)}&category2=${encodeURIComponent(category2)}`);
       }
     };
   });
@@ -144,7 +141,7 @@ function attachEventListeners() {
 
 // 렌더 후마다 핸들러 재연결
 const originalRender = render;
-render = function(...args) {
+render = function (...args) {
   const result = originalRender.apply(this, args);
   attachEventListeners();
   return result;
