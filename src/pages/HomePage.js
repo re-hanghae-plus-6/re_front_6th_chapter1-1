@@ -127,6 +127,24 @@ export const HomePage = createComponent({
     setTimeout(async () => {
       ctx.bindFilterEvents();
 
+      // 초기 상태 설정
+      productFilterStore.setState({
+        filters: {
+          page: 1,
+          limit: 20,
+          search: "",
+          category1: "",
+          category2: "",
+          sort: "price_asc",
+        },
+        categories: [],
+        loadingCategories: true,
+      });
+      productStore.setState({
+        products: [],
+        total: 0,
+      });
+
       subscriptions.push(productFilterStore.subscribe(ctx.renderFilter));
       subscriptions.push(productStore.subscribe(ctx.renderProducts));
 
