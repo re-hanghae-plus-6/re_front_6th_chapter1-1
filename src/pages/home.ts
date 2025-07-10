@@ -18,6 +18,7 @@ interface State {
   products: Product[];
   total: number;
   loading: boolean;
+  error: boolean;
   limit: number;
   sort: string;
   page: number;
@@ -42,6 +43,7 @@ export const homePage: PageModule = {
       products: [],
       total: 0,
       loading: true,
+      error: false,
       limit: 20,
       sort: "price_asc",
       page: 1,
@@ -61,6 +63,7 @@ export const homePage: PageModule = {
       const cartCount = getCartCount();
       root.innerHTML = 상품목록_레이아웃({
         loading: state.loading,
+        error: state.error,
         total: state.total,
         products: state.products.map((product) => ({
           id: product.productId,
@@ -87,6 +90,7 @@ export const homePage: PageModule = {
       const productClickableEls = root.querySelectorAll(".product-image, .product-info");
       const addToCartBtnEls = root.querySelectorAll(".add-to-cart-btn");
       const cartIconEl = root.querySelector("#cart-icon-btn") as HTMLButtonElement | null;
+      const retryButtonEl = root.querySelector("#retry-button") as HTMLButtonElement | null;
 
       const handleLimitChange = (e: Event) => {
         const select = e.target as HTMLSelectElement;
@@ -134,6 +138,11 @@ export const homePage: PageModule = {
         rerender();
       };
 
+      const handleRetry = () => {
+        setState({ error: false, loading: true });
+        initData();
+      };
+
       if (limitSelectEl) {
         limitSelectEl.value = String(state.limit);
         limitSelectEl.addEventListener("change", handleLimitChange);
@@ -160,6 +169,8 @@ export const homePage: PageModule = {
       addToCartBtnEls.forEach((btn) => btn.addEventListener("click", handleAddToCart));
 
       if (cartIconEl) cartIconEl.addEventListener("click", 장바구니);
+
+      if (retryButtonEl) retryButtonEl.addEventListener("click", handleRetry);
     };
 
     const updateProducts = async (options = { isAppend: false }) => {
@@ -187,7 +198,7 @@ export const homePage: PageModule = {
             loading: false,
           });
       } catch (err) {
-        root.textContent = "상품을 불러오는데 실패했습니다.";
+        setState({ loading: false, error: true });
         console.error(err);
       }
     };
@@ -209,9 +220,10 @@ export const homePage: PageModule = {
           products: data.products as Product[],
           total: data.pagination.total ?? data.products.length,
           loading: false,
+          error: false,
         });
       } catch (err) {
-        root.textContent = "데이터를 불러오는데 실패했습니다.";
+        setState({ loading: false, error: true });
         console.error(err);
       }
     };
