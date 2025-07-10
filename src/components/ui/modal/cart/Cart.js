@@ -6,23 +6,81 @@ import { numberUtils } from '../../../../utils/numberUtils.js';
 class Cart extends Component {
   constructor(element, props) {
     super(element, props);
+    this.unsubscribeCartStorage = null;
+  }
+
+  onMount() {
+    // 장바구니 데이터 변경시 자동 리렌더
+    this.unsubscribeCartStorage = cartLocalStorage.subscribe('cartProducts', () => {
+      this.render();
+    });
+  }
+
+  onUnmount() {
+    // 구독 해제
+    if (this.unsubscribeCartStorage) this.unsubscribeCartStorage();
   }
 
   closeCartModal() {
     cartStore.setState({
       isOpen: false,
     });
+    this.unmount();
   }
+
+  handleSelectAllItems() {}
+
+  handleSelectItem() {}
+
+  handleChangeQuantity(items, productId, action) {
+    const updatedCartItems = items.map((item) => {
+      if (item.productId !== productId) {
+        return item;
+      }
+
+      let newQuantity = item.quantity;
+      if (action === 'increase') {
+        newQuantity += 1;
+      } else if (action === 'decrease') {
+        newQuantity = Math.max(1, item.quantity - 1);
+      }
+
+      return { ...item, quantity: newQuantity };
+    });
+
+    cartLocalStorage.set('cartProducts', updatedCartItems);
+  }
+
+  handleRemoveItem() {}
+
+  handleClearAllItems() {}
 
   attachEventListeners() {
     this.addEventListener(this.element, 'click', (event) => {
       if (event.target.closest('#cart-modal-close-btn')) {
         this.closeCartModal();
+        return;
       }
 
-      const state = cartStore.getState();
-      if (!event.target.closest('#cart-content') && state.isOpen) {
+      const cartState = cartStore.getState();
+      if (!event.target.closest('#cart-content') && cartState.isOpen) {
         this.closeCartModal();
+        return;
+      }
+
+      const products = cartLocalStorage.get('cartProducts');
+      const decreaseBtn = event.target.closest('.quantity-decrease-btn');
+      if (decreaseBtn) {
+        const productId = decreaseBtn.dataset.productId;
+        this.handleChangeQuantity(products, productId, 'decrease');
+        return;
+      }
+
+      const increaseBtn = event.target.closest('.quantity-increase-btn');
+      if (increaseBtn) {
+        const productId = increaseBtn.dataset.productId;
+        this.handleChangeQuantity(products, productId, 'increase');
+        return;
       }
     });
 
