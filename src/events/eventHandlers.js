@@ -48,6 +48,13 @@ export function setupCommonEventListeners(mainStatus, appRouter) {
       }
     }
   });
-
+  // TODO: 상품 상세 장바구니 담기 버튼 클릭 이벤트 => 토스트 메세지 구현
+  document.body.addEventListener("click", (e) => {
+    const addToCartBtn = e.target.id === "add-to-cart-btn";
+    debugger;
+    if (addToCartBtn) {
+      const productId = e.target.closest("#add-to-cart-btn").dataset.productId;
+    }
+  });
   // TODO: 그 외 다른 이벤트 설정.....
 }
