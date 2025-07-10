@@ -1,392 +1,93 @@
-function Category({ loading = false }) {
-  const depth = 1;
-
+function Category({ loading = false, categories = {}, selectedCategory1, selectedCategory2 }) {
   if (loading) {
     return Loading();
   }
 
-  switch (depth) {
-    case 0:
-      return /* HTML */ `${상품목록_레이아웃_카테고리_0Depth}`;
-    case 1:
-      return /* HTML */ `${상품목록_레이아웃_카테고리_1Depth}`;
-    case 2:
-      return /* HTML */ `${상품목록_레이아웃_카테고리_2Depth}`;
-    default:
-      return /* HTML */ `${상품목록_레이아웃_카테고리_0Depth}`;
-  }
+  return CategoryView({ categories, selectedCategory1, selectedCategory2 });
 }
 
 function Loading() {
-  return /* HTML */ `<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
-    <!-- 검색창 -->
-    <div class="mb-4">
-      <div class="relative">
-        <input
-          type="text"
-          id="search-input"
-          placeholder="상품명을 검색해보세요..."
-          value=""
-          class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
-                focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        />
-        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            ></path>
-          </svg>
-        </div>
+  return /* HTML */ `
+    <div class="space-y-2">
+      <div class="flex items-center gap-2">
+        <label class="text-sm text-gray-600">카테고리:</label>
+        <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>
       </div>
     </div>
-    <!-- 필터 옵션 -->
-    <div class="space-y-3">
-      <!-- 카테고리 필터 -->
-      <div class="space-y-2">
-        <div class="flex items-center gap-2">
-          <label class="text-sm text-gray-600">카테고리:</label>
-          <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
-        </div>
-        <!-- 1depth 카테고리 -->
-        <div class="flex flex-wrap gap-2">
-          <div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>
-        </div>
-        <!-- 2depth 카테고리 -->
-      </div>
-      <!-- 기존 필터들 -->
-      <div class="flex gap-2 items-center justify-between">
-        <!-- 페이지당 상품 수 -->
-        <div class="flex items-center gap-2">
-          <label class="text-sm text-gray-600">개수:</label>
-          <select
-            id="limit-select"
-            class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="10">10개</option>
-            <option value="20" selected="">20개</option>
-            <option value="50">50개</option>
-            <option value="100">100개</option>
-          </select>
-        </div>
-        <!-- 정렬 -->
-        <div class="flex items-center gap-2">
-          <label class="text-sm text-gray-600">정렬:</label>
-          <select
-            id="sort-select"
-            class="text-sm border border-gray-300 rounded px-2 py-1
-                   focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="price_asc" selected="">가격 낮은순</option>
-            <option value="price_desc">가격 높은순</option>
-            <option value="name_asc">이름순</option>
-            <option value="name_desc">이름 역순</option>
-          </select>
-        </div>
-      </div>
-    </div>
-  </div>`;
+  `;
 }
 
-const 상품목록_레이아웃_카테고리_0Depth = /* HTML */ `
-  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
-    <!-- 검색창 -->
-    <div class="mb-4">
-      <div class="relative">
-        <input
-          type="text"
-          id="search-input"
-          placeholder="상품명을 검색해보세요..."
-          value=""
-          class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
-                    focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        />
-        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            ></path>
-          </svg>
-        </div>
+function CategoryView({ categories, selectedCategory1, selectedCategory2 }) {
+  // 브레드크럼 생성
+  const breadcrumbParts = ["전체"];
+  if (selectedCategory1) breadcrumbParts.push(selectedCategory1);
+  if (selectedCategory2) breadcrumbParts.push(selectedCategory2);
+
+  const breadcrumbHTML = breadcrumbParts
+    .map((part, index) => {
+      if (index === 0) {
+        return `<button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">${part}</button>`;
+      } else if (index === breadcrumbParts.length - 1) {
+        // 마지막 요소는 클릭 불가능한 텍스트
+        return `<span class="text-xs text-gray-700">${part}</span>`;
+      } else {
+        // 중간 요소는 클릭 가능한 버튼
+        return `<button data-breadcrumb="category1" data-category1="${part}" class="text-xs hover:text-blue-800 hover:underline">${part}</button>`;
+      }
+    })
+    .join('<span class="text-xs text-gray-500">&gt;</span>');
+
+  // 현재 표시할 카테고리 버튼들 결정
+  let categoryButtons = "";
+
+  if (selectedCategory2) {
+    // 2depth 선택됨 → 더 이상 표시할 카테고리 없음
+    categoryButtons = "";
+  } else if (selectedCategory1) {
+    // 1depth 선택됨 → 2depth 카테고리들 표시
+    const category2List = Object.keys(categories[selectedCategory1] || {});
+    categoryButtons = category2List
+      .map(
+        (category2) => `
+      <button
+        data-category1="${selectedCategory1}"
+        data-category2="${category2}"
+        class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+      >
+        ${category2}
+      </button>
+    `,
+      )
+      .join("");
+  } else {
+    // 아무것도 선택 안됨 → 1depth 카테고리들 표시
+    const category1List = Object.keys(categories);
+    categoryButtons = category1List
+      .map(
+        (category1) => `
+      <button
+        data-category1="${category1}"
+        class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+      >
+        ${category1}
+      </button>
+    `,
+      )
+      .join("");
+  }
+
+  return /* HTML */ `
+    <div class="space-y-2">
+      <div class="flex items-center gap-2">
+        <label class="text-sm text-gray-600">카테고리:</label>
+        ${breadcrumbHTML}
       </div>
+      ${categoryButtons ? `<div class="flex flex-wrap gap-2">${categoryButtons}</div>` : ""}
     </div>
-    <!-- 필터 옵션 -->
-    <div class="space-y-3">
-      <!-- 카테고리 필터 -->
-      <div class="space-y-2">
-        <div class="flex items-center gap-2">
-          <label class="text-sm text-gray-600">카테고리:</label>
-          <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
-        </div>
-        <!-- 1depth 카테고리 -->
-        <div class="flex flex-wrap gap-2">
-          <button
-            data-category1="생활/건강"
-            class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
-             bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-          >
-            생활/건강
-          </button>
-          <button
-            data-category1="디지털/가전"
-            class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
-             bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-          >
-            디지털/가전
-          </button>
-        </div>
-        <!-- 2depth 카테고리 -->
-      </div>
-      <!-- 기존 필터들 -->
-      <div class="flex gap-2 items-center justify-between">
-        <!-- 페이지당 상품 수 -->
-        <div class="flex items-center gap-2">
-          <label class="text-sm text-gray-600">개수:</label>
-          <select
-            id="limit-select"
-            class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="10">10개</option>
-            <option value="20" selected="">20개</option>
-            <option value="50">50개</option>
-            <option value="100">100개</option>
-          </select>
-        </div>
-        <!-- 정렬 -->
-        <div class="flex items-center gap-2">
-          <label class="text-sm text-gray-600">정렬:</label>
-          <select
-            id="sort-select"
-            class="text-sm border border-gray-300 rounded px-2 py-1
-                       focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="price_asc" selected="">가격 낮은순</option>
-            <option value="price_desc">가격 높은순</option>
-            <option value="name_asc">이름순</option>
-            <option value="name_desc">이름 역순</option>
-          </select>
-        </div>
-      </div>
-    </div>
-  </div>
-`;
-
-const 상품목록_레이아웃_카테고리_1Depth = /* HTML */ `
-  <main class="max-w-md mx-auto px-4 py-4">
-    <!-- 검색 및 필터 -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
-      <!-- 검색창 -->
-      <div class="mb-4">
-        <div class="relative">
-          <input
-            type="text"
-            id="search-input"
-            placeholder="상품명을 검색해보세요..."
-            value=""
-            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
-                    focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              ></path>
-            </svg>
-          </div>
-        </div>
-      </div>
-
-      <!-- 필터 옵션 -->
-      <div class="space-y-3">
-        <!-- 카테고리 필터 -->
-        <div class="space-y-2">
-          <div class="flex items-center gap-2">
-            <label class="text-sm text-gray-600">카테고리:</label>
-            <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button
-            ><span class="text-xs text-gray-500">&gt;</span
-            ><button
-              data-breadcrumb="category1"
-              data-category1="생활/건강"
-              class="text-xs hover:text-blue-800 hover:underline"
-            >
-              생활/건강
-            </button>
-          </div>
-          <div class="space-y-2">
-            <div class="flex flex-wrap gap-2">
-              <button
-                data-category1="생활/건강"
-                data-category2="생활용품"
-                class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-              >
-                생활용품
-              </button>
-              <button
-                data-category1="생활/건강"
-                data-category2="주방용품"
-                class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-              >
-                주방용품
-              </button>
-              <button
-                data-category1="생활/건강"
-                data-category2="문구/사무용품"
-                class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-              >
-                문구/사무용품
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- 기존 필터들 -->
-        <div class="flex gap-2 items-center justify-between">
-          <!-- 페이지당 상품 수 -->
-          <div class="flex items-center gap-2">
-            <label class="text-sm text-gray-600">개수:</label>
-            <select
-              id="limit-select"
-              class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="10">10개</option>
-              <option value="20" selected="">20개</option>
-              <option value="50">50개</option>
-              <option value="100">100개</option>
-            </select>
-          </div>
-          <!-- 정렬 -->
-          <div class="flex items-center gap-2">
-            <label class="text-sm text-gray-600">정렬:</label>
-            <select
-              id="sort-select"
-              class="text-sm border border-gray-300 rounded px-2 py-1
-                       focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="price_asc" selected="">가격 낮은순</option>
-              <option value="price_desc">가격 높은순</option>
-              <option value="name_asc">이름순</option>
-              <option value="name_desc">이름 역순</option>
-            </select>
-          </div>
-        </div>
-      </div>
-    </div>
-  </main>
-`;
-
-const 상품목록_레이아웃_카테고리_2Depth = /* HTML */ `
-  <main class="max-w-md mx-auto px-4 py-4">
-    <!-- 검색 및 필터 -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
-      <!-- 검색창 -->
-      <div class="mb-4">
-        <div class="relative">
-          <input
-            type="text"
-            id="search-input"
-            placeholder="상품명을 검색해보세요..."
-            value=""
-            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
-                    focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              ></path>
-            </svg>
-          </div>
-        </div>
-      </div>
-
-      <!-- 필터 옵션 -->
-      <div class="space-y-3">
-        <!-- 카테고리 필터 -->
-        <div class="space-y-2">
-          <div class="flex items-center gap-2">
-            <label class="text-sm text-gray-600">카테고리:</label>
-            <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button
-            ><span class="text-xs text-gray-500">&gt;</span
-            ><button
-              data-breadcrumb="category1"
-              data-category1="생활/건강"
-              class="text-xs hover:text-blue-800 hover:underline"
-            >
-              생활/건강</button
-            ><span class="text-xs text-gray-500">&gt;</span
-            ><span class="text-xs text-gray-600 cursor-default">주방용품</span>
-          </div>
-          <div class="space-y-2">
-            <div class="flex flex-wrap gap-2">
-              <button
-                data-category1="생활/건강"
-                data-category2="생활용품"
-                class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-              >
-                생활용품
-              </button>
-              <button
-                data-category1="생활/건강"
-                data-category2="주방용품"
-                class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-blue-100 border-blue-300 text-blue-800"
-              >
-                주방용품
-              </button>
-              <button
-                data-category1="생활/건강"
-                data-category2="문구/사무용품"
-                class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-              >
-                문구/사무용품
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- 기존 필터들 -->
-        <div class="flex gap-2 items-center justify-between">
-          <!-- 페이지당 상품 수 -->
-          <div class="flex items-center gap-2">
-            <label class="text-sm text-gray-600">개수:</label>
-            <select
-              id="limit-select"
-              class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="10">10개</option>
-              <option value="20" selected="">20개</option>
-              <option value="50">50개</option>
-              <option value="100">100개</option>
-            </select>
-          </div>
-          <!-- 정렬 -->
-          <div class="flex items-center gap-2">
-            <label class="text-sm text-gray-600">정렬:</label>
-            <select
-              id="sort-select"
-              class="text-sm border border-gray-300 rounded px-2 py-1
-                       focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="price_asc" selected="">가격 낮은순</option>
-              <option value="price_desc">가격 높은순</option>
-              <option value="name_asc">이름순</option>
-              <option value="name_desc">이름 역순</option>
-            </select>
-          </div>
-        </div>
-      </div>
-    </div>
-  </main>
-`;
+  `;
+}
 
 export default Category;
