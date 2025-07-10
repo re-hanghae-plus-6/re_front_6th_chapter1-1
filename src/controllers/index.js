@@ -54,6 +54,21 @@ class Controller {
       this.controllers.cartModal.setupEventListeners();
     }
   }
+
+  cleanup() {
+    if (this.controllers.productList) {
+      this.controllers.productList.cleanup();
+      this.controllers.productList = null;
+    }
+    if (this.controllers.productDetail) {
+      this.controllers.productDetail.cleanup();
+      this.controllers.productDetail = null;
+    }
+    if (this.controllers.cartModal) {
+      this.controllers.cartModal.cleanup();
+      this.controllers.cartModal = null;
+    }
+  }
 }
 
 export const controller = new Controller();

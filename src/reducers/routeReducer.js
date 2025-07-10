@@ -7,10 +7,6 @@ export const routeReducer = (state, action) => {
         window.history.pushState(null, "", action.payload);
       }
 
-      import("../controllers/index.js").then(({ controller }) => {
-        controller.handleRouteChange(action.payload);
-      });
-
       return {
         ...state,
         currentRoute: action.payload,

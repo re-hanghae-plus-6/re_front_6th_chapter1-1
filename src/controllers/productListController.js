@@ -1,12 +1,13 @@
 import { store } from "../store.js";
 import { actions } from "../actions/index.js";
 import { getProducts, getCategories } from "../api/productApi.js";
+import { getQueryParams, updateQueryParams } from "../utils/urlUtils.js";
 
 export class ProductListController {
   #eventListeners = [];
 
   constructor() {
-    this.#setupEventListeners();
+    this.storeSubscription = null;
   }
 
   get state() {
@@ -14,6 +15,9 @@ export class ProductListController {
   }
 
   setupEventListeners() {
+    this.storeSubscription = store.subscribe(() => {
+      this.syncUIState();
+    });
     // 기존 이벤트 리스너 제거
     this.#eventListeners.forEach(({ element, type, handler }) => {
       element.removeEventListener(type, handler);
@@ -28,12 +32,23 @@ export class ProductListController {
     store.dispatch(actions.loadInitialData());
 
     try {
+      const queryParams = getQueryParams();
+
+      store.dispatch(
+        actions.changeFilters({
+          sort: queryParams.sort,
+          search: queryParams.search,
+        }),
+      );
+      store.dispatch(actions.changeLimit(parseInt(queryParams.limit)));
+
       const [categories, productsData] = await Promise.all([
         getCategories(),
         getProducts({
           page: 1,
-          limit: 20,
-          sort: "price_asc",
+          limit: parseInt(queryParams.limit),
+          sort: queryParams.sort,
+          search: queryParams.search,
         }),
       ]);
 
@@ -139,18 +154,21 @@ export class ProductListController {
     }
 
     store.dispatch(actions.changeLimit(newSelectLimit));
+    updateQueryParams({ limit: newSelectLimit });
     this.fetchProducts();
   }
 
   #handleSortChange(event) {
     const newSelectSort = event.target.value;
     store.dispatch(actions.changeSorts(newSelectSort));
+    updateQueryParams({ sort: newSelectSort });
     this.fetchProducts();
   }
 
   #handleSearchChange(event) {
     const searchValue = event.target.value.trim();
     store.dispatch(actions.searchProducts(searchValue));
+    updateQueryParams({ search: searchValue });
     this.fetchProducts();
   }
 
@@ -251,7 +269,26 @@ export class ProductListController {
     store.dispatch(actions.showCartModal());
   }
 
+  syncUIState() {
+    const { filters, pagination } = this.state;
+
+    // select 요소들 상태 동기화
+    const limitSelect = document.querySelector("#limit-select");
+    const sortSelect = document.querySelector("#sort-select");
+    const searchInput = document.querySelector("#search-input");
+
+    if (limitSelect) limitSelect.value = pagination.limit.toString();
+    if (sortSelect) sortSelect.value = filters.sort || "price_asc";
+    if (searchInput) searchInput.value = filters.search || "";
+  }
+
   cleanup() {
+    // store 구독 해제
+    if (this.storeSubscription) {
+      this.storeSubscription();
+      this.storeSubscription = null;
+    }
+
     this.#eventListeners.forEach(({ element, type, handler }) => {
       element.removeEventListener(type, handler);
     });
