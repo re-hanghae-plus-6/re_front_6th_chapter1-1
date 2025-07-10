@@ -289,7 +289,11 @@ function ensureOverlay() {
   });
 
   cartContainer.addEventListener("click", handleModalClick);
-  document.body.appendChild(cartContainer);
+  // 테스트 스냅샷이 #root 영역을 대상으로 하기 때문에, 모달 오버레이를
+  // #root 안에 삽입해야 접근성 트리에 포함된다. #root 가 없을 경우(테스트 외 환경)
+  //에는 기존대로 body에 삽입하도록 하여 유연성을 유지한다.
+  const rootElement = document.querySelector("#root");
+  (rootElement || document.body).appendChild(cartContainer);
 }
 
 // 모달 open
