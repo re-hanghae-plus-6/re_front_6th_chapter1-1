@@ -1,7 +1,7 @@
 export default function RelatedProductItem({ product }) {
   const { productId, image, title, lprice } = product;
 
-  return /* HTML */ ` <div
+  return /* HTML */ `<div
     class="bg-gray-50 rounded-lg p-3 related-product-card cursor-pointer"
     data-product-id="${productId}"
   >

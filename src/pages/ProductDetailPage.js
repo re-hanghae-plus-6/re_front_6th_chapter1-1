@@ -1,73 +1,133 @@
-import Breadcrumb from "../components/common/Breadcrumb";
+import { getProduct, getProducts } from "../api/productApi";
 import Footer from "../components/common/Footer";
 import Header from "../components/common/Header";
+import Loading from "../components/common/Loading";
 import MinusIcon from "../components/icon/MinusIcon";
 import PlusIcon from "../components/icon/PlusIcon";
-import RelatedProductItem from "../components/product/RelatedProductItem";
+import StarEmpty from "../components/icon/StarEmpty";
+import StarFilled from "../components/icon/StarFilled";
+import { useNavigate, useParam } from "../hook/useRouter";
 import Component from "../lib/Component";
-import { useParam } from "../hook/useRouter";
+import { homeStore } from "../store/homeStore";
 
 export default class ProductDetailPage extends Component {
   setup() {
-    // URL 파라미터에서 productId 가져오기
-    this.productId = useParam("id");
+    this.handleProductClick = this.handleProductClick.bind(this);
 
-    // 임시 데이터 (나중에 API로 교체)
     this.state = {
-      product: {
-        productId: this.productId,
-        image: "https://shopping-phinf.pstatic.net/main_8506721/85067212996.1.jpg",
-        title: "PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장",
-        lprice: 220,
-        stock: 107,
-        description:
-          "PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장에 대한 상세 설명입니다. 브랜드의 우수한 품질을 자랑하는 상품으로, 고객 만족도가 높은 제품입니다.",
-        rating: 4.0,
-        reviewCount: 749,
-      },
+      productId: useParam("id"),
+      product: {},
       relatedProducts: [],
+      isLoading: false,
     };
+
+    this.fetchProduct();
+    this.fetchRelatedProducts();
+  }
+
+  async fetchProduct() {
+    if (this.stateisLoading) return;
+
+    this.setState({
+      isLoading: true,
+    });
+
+    const product = await getProduct(this.state.productId);
+
+    this.setState({
+      product,
+      isLoading: false,
+    });
+  }
+
+  async fetchRelatedProducts() {
+    const homeState = homeStore.getState();
+    const { category1, category2 } = homeState.filter;
+
+    if (this.stateisLoading) return;
+
+    const params = {
+      page: 1,
+      limit: 20,
+      search: "",
+      category1,
+      category2,
+    };
+
+    const { products } = await getProducts(params);
+    const filteredProducts = products.filter(
+      (product) => product.productId !== this.state.productId,
+    );
+    this.setState({
+      relatedProducts: filteredProducts,
+    });
+  }
+
+  handleProductClick(e) {
+    const { navigate } = useNavigate();
+
+    const relatedProductCard = e.target.closest(".related-product-card");
+    if (relatedProductCard) {
+      const productId = relatedProductCard.dataset["productId"];
+      console.log(relatedProductCard.dataset);
+      navigate(`/product/${productId}`);
+    }
+  }
+
+  setEvent() {
+    this.$target.addEventListener("click", this.handleProductClick);
+  }
+
+  cleanup() {
+    this.$target.removeEventListener("click", this.handleProductClick);
+  }
+
+  starTemplate() {
+    const filledStars = Math.floor(this.state.product.rating || 0); // rating이 없으면 0으로 처리
+    const emptyStars = 5 - filledStars;
+
+    let starsHTML = "";
+
+    // 채워진 별들
+    for (let i = 0; i < filledStars; i++) {
+      starsHTML += StarFilled();
+    }
+
+    // 빈 별들
+    for (let i = 0; i < emptyStars; i++) {
+      starsHTML += StarEmpty();
+    }
+
+    return /* HTML */ `<div class="flex items-center">${starsHTML}</div>`;
+  }
+
+  relatedProductTemplate(product) {
+    const { productId, image, title, lprice } = product;
+
+    return /* HTML */ `<div
+      class="bg-gray-50 rounded-lg p-3 related-product-card cursor-pointer"
+      data-product-id="${productId}"
+    >
+      <div class="aspect-square bg-white rounded-md overflow-hidden mb-2">
+        <img src="${image}" alt="${title}" class="w-full h-full object-cover" loading="lazy" />
+      </div>
+      <h3 class="text-sm font-medium text-gray-900 mb-1 line-clamp-2">${title}</h3>
+      <p class="text-sm font-bold text-blue-600">${lprice}원</p>
+    </div>`;
   }
 
   template() {
-    const { product, relatedProducts } = this.state;
+    const { product, relatedProducts, isLoading } = this.state;
     const { productId, image, title, lprice, stock, description, rating, reviewCount } = product;
 
-    const renderStars = () => {
-      return /* HTML */ `<div class="flex items-center">
-        <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-          <path
-            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292c.3.921-.755 1.688-1.54 1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-          ></path>
-        </svg>
-        <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-          <path
-            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292c.3.921-.755 1.688-1.54 1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-          ></path>
-        </svg>
-        <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-          <path
-            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292c.3.921-.755 1.688-1.54 1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-          ></path>
-        </svg>
-        <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-          <path
-            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292c.3.921-.755 1.688-1.54 1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-          ></path>
-        </svg>
-        <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-          <path
-            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292c.3.921-.755 1.688-1.54 1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-          ></path>
-        </svg>
-      </div>`;
-    };
+    if (isLoading) {
+      return Loading();
+    }
 
     return /* HTML */ `<div class="min-h-screen bg-gray-50">
       ${Header()}
       <main class="max-w-md mx-auto px-4 py-4">
         <!-- 브레드크럼 -->
-        ${Breadcrumb({ segments: ["홈", "생활/건강", "생활용품"] })}
 
         <!-- 상품 상세 정보 -->
         <div class="bg-white rounded-lg shadow-sm mb-6">
@@ -75,8 +135,8 @@ export default class ProductDetailPage extends Component {
           <div class="p-4">
             <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4">
               <img
-                src=${image}
-                alt=${title}
+                src="${image}"
+                alt="${title}"
                 class="w-full h-full object-cover product-detail-image"
               />
             </div>
@@ -86,7 +146,7 @@ export default class ProductDetailPage extends Component {
               <h1 class="text-xl font-bold text-gray-900 mb-3">${title}</h1>
               <!-- 평점 및 리뷰 -->
               <div class="flex items-center mb-3">
-                ${renderStars()}
+                ${this.starTemplate()}
                 <span class="ml-2 text-sm text-gray-600">${rating} (${reviewCount}개 리뷰)</span>
               </div>
               <!-- 가격 -->
@@ -157,21 +217,12 @@ export default class ProductDetailPage extends Component {
           </div>
           <div class="p-4">
             <div class="grid grid-cols-2 gap-3 responsive-grid">
-              ${relatedProducts.map(RelatedProductItem).join("")}
+              ${relatedProducts.map(this.relatedProductTemplate).join("")}
             </div>
           </div>
         </div>
       </main>
       ${Footer()}
     </div>`;
-  }
-
-  setEvent() {
-    // 상품 목록으로 돌아가기 버튼
-    this.$target.addEventListener("click", (e) => {
-      if (e.target.classList.contains("go-to-product-list")) {
-        window.history.back();
-      }
-    });
   }
 }
