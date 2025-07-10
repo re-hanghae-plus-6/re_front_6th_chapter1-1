@@ -1,19 +1,22 @@
 import { Footer } from "../components/Footer";
 import { Header } from "../components/Header";
 import { Layouy } from "../components/Layout";
+import { ProductDetail } from "../components/product-detail/ProductDetail";
 import { Component } from "../core/Component";
-import { router } from "../core/router";
+import { productDetailStore } from "../store/product-detail";
 import { html } from "../utils/html";
 
 export function ProductDetailPage($root) {
+  productDetailStore.initSearchParams();
+  productDetailStore.loadProduct();
+
   const layout = new Layouy({
     header: new Header({ nav: new Nav() }),
-    main: new Main({}),
+    main: new ProductDetail(),
     footer: new Footer(),
   });
   document.querySelector($root).innerHTML = html`${layout}`;
   layout.setup();
-  console.log(router.getParams());
 
   return () => {
     layout.dispose();
@@ -30,11 +33,5 @@ class Nav extends Component {
       </button>
       <h1 class="text-lg font-bold text-gray-900">상품 상세</h1>
     </div>`;
-  }
-}
-
-class Main extends Component {
-  renderContainer() {
-    return html`<main ${this.dataAttribute.attribute} class="max-w-md mx-auto px-4 py-4"></main>`;
   }
 }
