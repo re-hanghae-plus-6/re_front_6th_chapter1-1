@@ -12,9 +12,6 @@ export default function ProductList(products, pagination) {
         <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
           ${products?.map((product) => ProductCard(product)).join("")}
         </div>
-        <div class="text-center py-4 text-sm text-gray-500">
-          모든 상품을 확인했습니다
-        </div>
       </div>
     </div>
   `;
