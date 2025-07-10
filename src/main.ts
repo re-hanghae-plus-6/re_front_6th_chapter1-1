@@ -3,6 +3,7 @@
 import { initRouter } from "./router.ts";
 import { homePage } from "./pages/home.ts";
 import { detailPage } from "./pages/product-detail.ts";
+import { notFoundPage } from "./pages/not-found.ts";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -16,6 +17,7 @@ async function bootstrap() {
   initRouter({
     "/": homePage,
     "/product/:id": detailPage,
+    "/404": notFoundPage,
   });
 }
 

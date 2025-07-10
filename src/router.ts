@@ -58,7 +58,7 @@ function render(urlStr: string) {
     }
   }
 
-  document.getElementById("root")!.textContent = "404 | 페이지를 찾을 수 없습니다";
+  navigate("/404", true);
 }
 
 function navigate(path: string, replace = false) {
