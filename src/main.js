@@ -1,6 +1,8 @@
 import { getProducts, getCategories } from "./api/productApi.js";
 import { createRouter } from "./router.js"; // 라우터 임포트
 import { throttle } from "./utils/throttle.js"; // throttle 함수 임포트
+import { setupCommonEventListeners } from "./events/eventHandlers.js"; // 새로 추가된 이벤트 핸들러 임포트
+
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
     worker.start({
@@ -64,8 +66,8 @@ const handleScroll = () => {
 };
 const throttledScrollHandler = throttle(handleScroll, 200); // 200ms 간격으로 호출 제한
 
-// API 호출 및 렌더링을 담당하는 함수
-async function loadProductsAndUpdateUI() {
+// API 호출 및 렌더링을 담당하는 함수 (export 추가)
+export async function loadProductsAndUpdateUI() {
   isInit && (mainStatus.loading = true);
 
   appRouter.updateStateAndRender(mainStatus); // 로딩 상태 먼저 반영
@@ -73,7 +75,6 @@ async function loadProductsAndUpdateUI() {
   try {
     // 카테고리와 제품 목록을 동시에 요청하여 성능 최적화
     const [categories, productsData] = await Promise.all([getCategories(), getProducts(mainStatus.params)]);
-
     mainStatus.categories = categories;
     mainStatus.products = productsData.products;
     mainStatus.total = productsData.pagination.total;
@@ -86,59 +87,14 @@ async function loadProductsAndUpdateUI() {
   }
 }
 
-// 이벤트 핸들러 설정 함수
-function setupEventListeners() {
-  /** change */
-  let shouldUpdate = false;
-  document.body.addEventListener("change", (e) => {
-    const target = e.target;
-
-    if (target.id === "limit-select") {
-      mainStatus.params.limit = parseInt(target.value, 10);
-      shouldUpdate = true;
-    } else if (target.id === "sort-select") {
-      mainStatus.params.sort = target.value;
-      mainStatus.params.limit = 20;
-      shouldUpdate = true;
-    }
-
-    if (shouldUpdate) {
-      mainStatus.params.page = 1; // 필터 변경 시 첫 페이지로 초기화
-      loadProductsAndUpdateUI();
-    }
-  });
-
-  document.body.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && e.target.id === "search-input") {
-      mainStatus.params.search = e.target.value;
-      shouldUpdate = true;
-    } else {
-      return;
-    }
-    if (shouldUpdate) {
-      mainStatus.params.page = 1; // 필터 변경 시 첫 페이지로 초기화
-      loadProductsAndUpdateUI();
-    }
-  });
-  // 스크롤 이벤트 리스너 등록
+// 스크롤 이벤트 리스너 추가 함수 (외부에서 호출 가능하도록 export)
+export function addScrollListener() {
   window.addEventListener("scroll", throttledScrollHandler);
-  // 상품 카드 클릭 이벤트 (이벤트 위임)
-  document.body.addEventListener("click", (e) => {
-    const productCard = e.target.closest(".product-card"); // 클릭된 요소의 가장 가까운
+}
 
-    const addToCartBtn = e.target.closest(".add-to-cart-btn"); // 클릭된 요소가 장바구니 버튼인지
-
-    // 상품 카드가 클릭되었고, 장바구니 버튼이 아닌 경우에만 상세 페이지로 이동
-    if (productCard && !addToCartBtn) {
-      const productId = productCard.dataset.productId; // data-product-id 속성에서 productId를
-
-      if (productId) {
-        appRouter.navigate(`/product/${productId}`); // 라우터로 페이지 이동
-      }
-    }
-  });
-
-  // TODO: 그 외 다른 이벤트 설정.....
+// 스크롤 이벤트 리스너 제거 함수 (외부에서 호출 가능하도록 export)
+export function removeScrollListener() {
+  window.removeEventListener("scroll", throttledScrollHandler);
 }
 
 async function main() {
@@ -148,8 +104,11 @@ async function main() {
   // 초기 데이터 로드 및 UI 업데이트
   await loadProductsAndUpdateUI();
 
-  // 이벤트 리스너 설정
-  setupEventListeners();
+  // 기타 이벤트 리스너 설정 (스크롤 제외)
+  setupCommonEventListeners(mainStatus, appRouter); // 변경된 부분
+
+  // 초기에는 홈 페이지이므로 스크롤 리스너 추가
+  addScrollListener();
 }
 
 // 애플리케이션 시작
