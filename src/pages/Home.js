@@ -14,8 +14,7 @@ const state = {
 };
 
 const fetchProducts = async (params = {}) => {
-  console.log(params, "params..");
-  if (params.page && params.page > 1) {
+  if (params.page && params.page > 1 && state.pagination && state.pagination.hasNext) {
     state.isLoadingMore = true;
     renderHome();
   } else {
@@ -34,7 +33,6 @@ const fetchProducts = async (params = {}) => {
   }
 
   state.pagination = productData.pagination;
-  renderHome();
 };
 
 const fetchCategories = async () => {
@@ -52,8 +50,10 @@ const fetchMoreProducts = (io = null) => {
   io = new IntersectionObserver(
     (entries) => {
       if (entries[0].isIntersecting) {
-        const currentPage = store.get("params")["page"];
-        store.set("params.page", currentPage + 1);
+        if (state.pagination && state.pagination.hasNext) {
+          const currentPage = store.get("params")["page"];
+          store.set("params.page", currentPage + 1);
+        }
       }
     },
     {
@@ -94,7 +94,6 @@ Home.mount = async () => {
   ProductCard.mount();
 
   store.watch(async (newValue) => {
-    console.log("test");
     const url = new URL(window.location);
     Object.entries(newValue).forEach(([key, value]) => {
       if (value !== "" && value) {
@@ -112,7 +111,7 @@ Home.mount = async () => {
   }, "params");
 };
 
-export default function Home({ products, pagination, isLoading, categories }) {
+export default function Home({ products, pagination, isLoading, categories, isLoadingMore }) {
   return /* html */ `
     ${Search(categories, isLoading)}
     <!-- 상품 목록 -->
@@ -120,6 +119,14 @@ export default function Home({ products, pagination, isLoading, categories }) {
       <div>
         <!-- 상품 그리드 -->
         ${state.isLoading ? Loading({ type: "products" }) : ProductList(products, pagination)}
+        ${
+          isLoadingMore
+            ? Loading({ type: "products" })
+            : /* html */ `
+              <div class="text-center py-4 text-sm text-gray-500">
+                모든 상품을 확인했습니다
+              </div>`
+        }
         </div>
         <div id="scroll-trigger"  class="h-4"></div>
         </div>
