@@ -1114,7 +1114,7 @@ const _404_ = `
     </main>
   `;
 
-const ExampleLayout = {
+class ExampleLayout {
   render() {
     const el = document.createElement("div");
     el.innerHTML = `
@@ -1140,8 +1140,7 @@ const ExampleLayout = {
     <br />
     ${_404_}`;
     return el;
-  },
-  // 이 페이지는 정적이라 init이 필요 없습니다.
-};
+  }
+}
 
 export default ExampleLayout;

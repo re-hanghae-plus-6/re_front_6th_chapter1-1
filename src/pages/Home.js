@@ -1,6 +1,7 @@
 import { getProducts } from "../api/productApi.js";
 import SearchFilter from "../components/list/SearchFilter.js";
 import { cartStore } from "../store/store.js";
+import { router } from "../router/router.js";
 
 const initialState = {
   products: [],
@@ -109,6 +110,7 @@ class Home {
             </div>
             <div class="p-3">
               <h3 class="text-sm font-medium text-gray-900 line-clamp-2 mb-1">${item.title}</h3>
+              <p class="text-sm text-gray-500">${item.brand}</p>
               <p class="text-lg font-bold text-gray-900">${parseInt(item.lprice).toLocaleString()}원</p>
               <button class="w-full mt-2 bg-blue-600 text-white text-sm py-2 px-3 rounded-md hover:bg-blue-700 transition-colors add-to-cart-btn" data-product-id="${item.productId}">장바구니 담기</button>
             </div>
@@ -141,11 +143,21 @@ class Home {
   addEventListeners() {
     this.el.querySelectorAll(".add-to-cart-btn").forEach((btn) => {
       btn.addEventListener("click", (e) => {
+        e.preventDefault();
         const productId = e.currentTarget.dataset.productId;
         const product = this.state.products.find((p) => p.productId === productId);
         if (product) {
           cartStore.addItem(product);
         }
+      });
+    });
+
+    this.el.querySelectorAll(".product-image").forEach((img) => {
+      img.addEventListener("click", (e) => {
+        e.preventDefault();
+        const productId = e.currentTarget.closest(".product-card").dataset.productId;
+        history.pushState({}, "", `/product/${productId}`);
+        router(); // 라우터 함수 호출
       });
     });
   }

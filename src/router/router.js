@@ -13,31 +13,19 @@ export async function router() {
   const $app = document.querySelector("#app");
   if (!$app) return;
 
-  let hashPath = location.hash.replace("#", "");
-  if (hashPath.startsWith("/")) {
-    hashPath = hashPath.substring(1);
-  }
-  const pathParts = hashPath.split("/");
-  let path = "/";
-  let params = {};
+  const path = window.location.pathname;
+  let component;
 
-  if (pathParts.length > 1 && pathParts[0] === "product") {
-    path = "/product/:id";
-    params.id = pathParts[1];
+  if (path === "/") {
+    component = new Home();
+  } else if (path.startsWith("/product/")) {
+    const productId = path.split("/")[2];
+    component = new Detail({ productId });
+  } else if (path === "/ex") {
+    component = new ExampleLayout();
   } else {
-    path = `/${pathParts[0]}`;
+    component = new NotFound();
   }
-
-  const routesWithParams = {
-    "/": Home,
-    "/product/:id": Detail,
-    "/ex": ExampleLayout,
-  };
-
-  const Route = routesWithParams[path] || NotFound;
-
-  const isClass = typeof Route === "function" && /^[A-Z]/.test(Route.name);
-  const component = isClass ? new Route() : Route;
 
   if (component.init) {
     await component.init();
@@ -46,3 +34,5 @@ export async function router() {
   $app.innerHTML = "";
   $app.appendChild(component.render());
 }
+
+window.addEventListener("popstate", router);

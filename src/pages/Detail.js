@@ -3,23 +3,47 @@ import { formatPrice } from "../utils/formatPrice";
 import { cartStore } from "../store/store.js";
 
 class Detail {
-  constructor() {
+  constructor(options = {}) {
     this.el = null;
     this.state = {
       product: null,
       relatedProducts: [],
       quantity: 1,
       loading: true,
+      productId: options.productId, // productId를 생성자에서 받아서 상태에 저장
     };
   }
 
   async fetchProductDetails() {
-    const productId = location.hash.split("/")[1];
+    const { productId } = this.state; // 상태에서 productId 가져오기
+    console.log("Fetching product details for productId:", productId);
+    if (!productId) {
+      console.error("Product ID is missing.");
+      this.setState({ loading: false });
+      return;
+    }
     try {
-      const [product, allProducts] = await Promise.all([getProduct(productId), getProducts()]);
+      const [fetchedProduct, allProducts] = await Promise.all([getProduct(productId), getProducts()]);
+
+      // API 응답의 속성 이름을 UI에서 사용하는 이름으로 매핑
+      const product = {
+        productId: fetchedProduct.productId,
+        title: fetchedProduct.title,
+        image: fetchedProduct.image,
+        lprice: fetchedProduct.lprice,
+        rating: fetchedProduct.rating || 0,
+        category1: fetchedProduct.category1 || "",
+        category2: fetchedProduct.category2 || "",
+        category3: fetchedProduct.category3 || "",
+        category4: fetchedProduct.category3 || "",
+        stock: fetchedProduct.stock || 0,
+        reviewCount: fetchedProduct.reviewCount || 0,
+        description: fetchedProduct.description || "",
+      };
+
       this.setState({
         product,
-        relatedProducts: allProducts.filter((p) => p.id !== productId).slice(0, 19),
+        relatedProducts: allProducts.products.filter((p) => p.productId !== productId).slice(0, 19),
         loading: false,
       });
     } catch (error) {
@@ -42,71 +66,159 @@ class Detail {
 
   template() {
     if (this.state.loading) {
-      return `<div>Loading...</div>`;
+      return `<div class="py-20 bg-gray-50 flex items-center justify-center">
+          <div class="text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p class="text-gray-600">상품 정보를 불러오는 중...</p>
+          </div>
+        </div>`;
     }
 
     if (!this.state.product) {
       return `<div>Product not found</div>`;
     }
 
-    const { name, price, imageUrl, description } = this.state.product;
+    const { title, image, lprice, description, rating } = this.state.product;
 
     return `
-      <main class="p-4">
-        <h1 class="text-2xl font-bold">상품 상세</h1>
-        <hr class="my-4">
-  
-        <div>
-          <a href="#/">목록으로</a>
-        </div>
-  
-        <div id="product-image-container" class="my-4">
-          <img src="${imageUrl}" alt="${name}">
-        </div>
-  
-        <div id="product-info-container">
-          <h1 class="text-2xl font-bold">${name}</h1>
-          <p id="product-price" class="text-xl font-bold my-2">${formatPrice(price)}원</p>
-          <p id="product-description">${description}</p>
-        </div>
-  
-        <div id="product-interaction-container" class="my-4">
-          <div class="flex items-center space-x-2">
-            <button id="quantity-decrease" class="px-3 py-1 border border-gray-300 rounded-md">-</button>
-            <input id="quantity-input" type="number" value="${this.state.quantity}" min="1" class="w-16 text-center border border-gray-300 rounded-md">
-            <button id="quantity-increase" class="px-3 py-1 border border-gray-300 rounded-md">+</button>
+        <!-- 브레드크럼 -->
+        <nav class="mb-4">
+          <div class="flex items-center space-x-2 text-sm text-gray-600">
+            <a href="/" data-link="" class="hover:text-blue-600 transition-colors">홈</a>
+            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+            <button class="breadcrumb-link" data-category1="생활/건강">
+              생활/건강
+            </button>
+            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+            <button class="breadcrumb-link" data-category2="생활용품">
+              생활용품
+            </button>
           </div>
-          <button id="add-to-cart-btn" class="mt-4 w-full bg-blue-500 text-white py-2 rounded-md">장바구니 담기</button>
+        </nav>
+        <!-- 상품 상세 정보 -->
+        <div class="bg-white rounded-lg shadow-sm mb-6">
+          <!-- 상품 이미지 -->
+          <div class="p-4">
+            <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4">
+               <img src="${image}" alt="${title}">
+            </div>
+            <!-- 상품 정보 -->
+            <div>
+              <p class="text-sm text-gray-600 mb-1"></p>
+              <h1 class="text-xl font-bold text-gray-900 mb-3">${title}</h1>
+              <!-- 평점 및 리뷰 -->
+              <div class="flex items-center mb-3">
+                <div class="flex items-center">
+                  ${Array(rating)
+                    .fill(0)
+                    .map(
+                      () => `
+                    <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                    </svg>
+                  `,
+                    )
+                    .join("")}
+                  ${Array(5 - rating)
+                    .fill(0)
+                    .map(
+                      () => `
+                    <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                    </svg>
+                  `,
+                    )
+                    .join("")}
+                </div>
+                <span class="ml-2 text-sm text-gray-600">${this.state.product.rating}.0 (${this.state.product.reviewCount}개 리뷰)</span>
+              </div>
+              <!-- 가격 -->
+              <div class="mb-4">
+                <span class="text-2xl font-bold text-blue-600">${parseInt(lprice).toLocaleString()}원</span>
+              </div>
+              <!-- 재고 -->
+              <div class="text-sm text-gray-600 mb-4">
+                재고 107개
+              </div>
+              <!-- 설명 -->
+              <div class="text-sm text-gray-700 leading-relaxed mb-6">
+                ${description}
+              </div>
+            </div>
+          </div>
+          <!-- 수량 선택 및 액션 -->
+          <div class="border-t border-gray-200 p-4">
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-sm font-medium text-gray-900">수량</span>
+              <div class="flex items-center">
+                <button id="quantity-decrease" class="w-8 h-8 flex items-center justify-center border border-gray-300 
+                   rounded-l-md bg-gray-50 hover:bg-gray-100">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                  </svg>
+                </button>
+                <input type="number" id="quantity-input" value="${this.state.quantity}" min="1" max="107" class="w-16 h-8 text-center text-sm border-t border-b border-gray-300 
+                  focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                <button id="quantity-increase" class="w-8 h-8 flex items-center justify-center border border-gray-300 
+                   rounded-r-md bg-gray-50 hover:bg-gray-100">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <!-- 액션 버튼 -->
+            <button id="add-to-cart-btn" data-product-id="85067212996" class="w-full bg-blue-600 text-white py-3 px-4 rounded-md 
+                 hover:bg-blue-700 transition-colors font-medium">
+              장바구니 담기
+            </button>
+          </div>
+        </div>
+  
+        <!-- 상품 목록으로 이동 -->
+        <div class="mb-6">
+          <button class="block w-full text-center bg-gray-100 text-gray-700 py-3 px-4 rounded-md 
+            hover:bg-gray-200 transition-colors go-to-product-list">
+            상품 목록으로 돌아가기
+          </button>
         </div>
 
-        <hr class="my-4">
-
-        <div>
-            <h2 class="text-xl font-bold">관련 상품</h2>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+         <!-- 관련 상품 -->
+        <div class="bg-white rounded-lg shadow-sm">
+          <div class="p-4 border-b border-gray-200">
+            <h2 class="text-lg font-bold text-gray-900">관련 상품</h2>
+            <p class="text-sm text-gray-600">같은 카테고리의 다른 상품들</p>
+          </div>
+          <div class="p-4">
+            <div class="grid grid-cols-2 gap-3 responsive-grid">
                 ${this.state.relatedProducts
                   .map(
                     (p) => `
-                    <div class="related-product-card border p-2 rounded-md" data-product-id="${p.id}">
-                        <a href="#/product/${p.id}">
-                            <img src="${p.imageUrl}" alt="${p.name}" class="w-full h-32 object-cover">
-                            <h3 class="mt-2 text-sm font-bold">${p.name}</h3>
-                            <p class="text-xs">${formatPrice(p.price)}원</p>
-                        </a>
+                     <div class="bg-gray-50 rounded-lg p-3 related-product-card cursor-pointer" data-product-id="p.id">
+                      <div class="aspect-square bg-white rounded-md overflow-hidden mb-2">
+                        <img src="${p.imageUrl}" alt="${p.name}" class="w-full h-32 object-cover">
+                        <h3 class="text-sm font-medium text-gray-900 mb-1 line-clamp-2">${p.name}</h3>
+                        <p class="text-sm font-bold text-blue-600">${formatPrice(p.price)}원</p>
+                      </div>
                     </div>
                 `,
                   )
                   .join("")}
+              </div>
             </div>
         </div>
-      </main>
     `;
   }
 
   render() {
     let newEl = this.el;
     if (!newEl) {
-      newEl = document.createElement("div");
+      newEl = document.createElement("main");
+      newEl.className = "max-w-md mx-auto px-4 py-4";
     }
     newEl.innerHTML = this.template();
     this.el = newEl;
@@ -119,6 +231,11 @@ class Detail {
     const $increaseBtn = this.el.querySelector("#quantity-increase");
     const $decreaseBtn = this.el.querySelector("#quantity-decrease");
     const $addToCartBtn = this.el.querySelector("#add-to-cart-btn");
+    const $goToProductListBtn = this.el.querySelector(".go-to-product-list");
+
+    $goToProductListBtn.addEventListener("click", () => {
+      window.history.back();
+    });
 
     if ($increaseBtn) {
       $increaseBtn.addEventListener("click", () => {
@@ -153,8 +270,8 @@ class Detail {
     }
   }
 
-  init() {
-    this.fetchProductDetails();
+  async init() {
+    await this.fetchProductDetails();
     return this.render();
   }
 }
