@@ -3,6 +3,7 @@ import { Footer } from "./Footer.js";
 import { waitForMSW } from "../main.js";
 import { showToast } from "../components/Toast.js";
 import { cartStore } from "../stores/index.js";
+import { formatPrice } from "../utils/formatters.js";
 
 export async function ProductDetailPage({ productId }) {
   try {
@@ -116,7 +117,7 @@ export async function ProductDetailPage({ productId }) {
                 </div>
                 <!-- 가격 -->
                 <div class="mb-4">
-                  <span class="text-2xl font-bold text-blue-600">${product.lprice}원</span>
+                  <span class="text-2xl font-bold text-blue-600">${formatPrice(product.lprice)}원</span>
                 </div>
                 <!-- 재고 -->
                 <div class="text-sm text-gray-600 mb-4">
@@ -182,7 +183,7 @@ export async function ProductDetailPage({ productId }) {
                       <img src="${relatedProduct.image}" alt="${relatedProduct.title}" class="w-full h-full object-cover" loading="lazy">
                     </div>
                     <h3 class="text-sm font-medium text-gray-900 mb-1 line-clamp-2">${relatedProduct.title}</h3>
-                    <p class="text-sm font-bold text-blue-600">${relatedProduct.lprice}원</p>
+                    <p class="text-sm font-bold text-blue-600">${formatPrice(relatedProduct.lprice)}원</p>
                   </div>
                 `,
                   )

@@ -162,7 +162,7 @@ export const MainPage = (appState) => {
             }
             <!-- 상품 그리드 -->
             <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
-              <!-- 로딩 스켈레톤 (첫 로드 시에만) -->
+              <!-- 로딩 스켈레톤 (초기 로딩시에만) -->
               ${
                 loading && isFirstLoad
                   ? LoadingList()
@@ -180,7 +180,7 @@ export const MainPage = (appState) => {
             ${
               loading && !isFirstLoad
                 ? `
-            <div class="text-center py-4" id="infinite-scroll-loading">
+            <div class="text-center py-4">
               <div class="inline-flex items-center">
                 <svg class="animate-spin h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

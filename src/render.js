@@ -265,9 +265,19 @@ function bindInfiniteScrollEvent() {
 
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
       const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
+      const documentHeight = Math.max(
+        document.body.scrollHeight,
+        document.body.offsetHeight,
+        document.documentElement.clientHeight,
+        document.documentElement.scrollHeight,
+        document.documentElement.offsetHeight,
+      );
 
-      if (scrollTop + windowHeight >= documentHeight - 100) {
+      // 페이지 하단에 가까워지면 추가 상품 로드 (매우 민감하게)
+      if (
+        scrollTop + windowHeight >= documentHeight - 10 ||
+        scrollTop + windowHeight >= document.body.scrollHeight - 10
+      ) {
         storeManager.loadMoreProducts();
       }
     });
