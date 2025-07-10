@@ -1,6 +1,7 @@
 import FilterSection from "../components/filter/FilterSection.js";
 import ProductGrid from "../components/product/ProductGrid.js";
 import MainLayout from "../components/layout/MainLayout.js";
+import { getCartCount, updateCartBadge } from "../core/cart.js";
 import { getProducts, getCategories } from "../api/productApi.js";
 import createStore from "../core/store.js";
 import { getQueryParams, updateQueryParams } from "../core/router.js";
@@ -77,6 +78,8 @@ function cleanup() {
 
 // 렌더링 함수
 function render(state, cartCount) {
+  // cartCount 매 렌더마다 로컬스토리지와 동기화하여 최신 값 사용
+  cartCount = getCartCount();
   const $root = document.getElementById("root");
   if (!$root) return "";
 
@@ -103,6 +106,9 @@ function render(state, cartCount) {
     title: "쇼핑몰",
   });
 
+  // 헤더가 새로 렌더링된 뒤 뱃지를 DOM에 적용
+  updateCartBadge();
+
   attachEventListeners();
 }
 
@@ -120,6 +126,8 @@ function shouldRefetchProducts(current, prev) {
 
 // URL 쿼리스트링 동기화
 function syncUrlWithState(state) {
+  // 홈 페이지가 아닌 경우(URL 이동 후 HomePage의 비동기 로직이 늦게 도착한 경우)에는 URL을 건드리지 않는다.
+  if (window.location.pathname !== "/") return;
   const queryParams = stateToQueryParams(state);
   updateQueryParams(queryParams, { replace: true });
 }
@@ -166,7 +174,8 @@ async function initialize() {
 // 상품 목록 재조회
 async function fetchProducts() {
   const state = store.getState();
-  store.setState({ loading: true });
+  const storeRef = store; // 현재 스토어 캡처
+  storeRef.setState({ loading: true });
   try {
     const response = await getProducts({
       page: state.currentPage,
@@ -177,7 +186,7 @@ async function fetchProducts() {
       sort: state.selectedSort,
     });
     const hasMore = state.currentPage * parseInt(state.selectedLimit) < response.pagination.total;
-    store.setState({
+    storeRef.setState({
       products: response.products,
       total: response.pagination.total,
       loading: false,
@@ -185,10 +194,10 @@ async function fetchProducts() {
     });
 
     // URL 쿼리스트링 동기화 (current 페이지 반영)
-    syncUrlWithState(store.getState());
+    syncUrlWithState(storeRef.getState());
   } catch (e) {
     console.error("상품 데이터 로딩 실패:", e);
-    store.setState({ loading: false });
+    if (store === storeRef) storeRef.setState({ loading: false });
   }
 }
 
@@ -206,10 +215,11 @@ function handlePopState() {
 // 추가 상품 로드 (무한 스크롤)
 async function loadMoreProducts() {
   const state = store.getState();
+  const storeRef = store;
   if (state.loading || !state.hasMore) return;
 
   const nextPage = state.currentPage + 1;
-  store.setState({ loading: true });
+  storeRef.setState({ loading: true });
 
   try {
     const response = await getProducts({
@@ -224,7 +234,7 @@ async function loadMoreProducts() {
     const newProducts = [...state.products, ...response.products];
     const hasMore = nextPage * parseInt(state.selectedLimit) < response.pagination.total;
 
-    store.setState({
+    storeRef.setState({
       products: newProducts,
       total: response.pagination.total,
       currentPage: nextPage,
@@ -233,10 +243,10 @@ async function loadMoreProducts() {
     });
 
     // URL 쿼리스트링 동기화 (current 페이지 반영)
-    syncUrlWithState(store.getState());
+    syncUrlWithState(storeRef.getState());
   } catch (e) {
     console.error("추가 상품 로딩 실패:", e);
-    store.setState({ loading: false });
+    if (store === storeRef) storeRef.setState({ loading: false });
   }
 }
 
