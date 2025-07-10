@@ -73,7 +73,7 @@ export const CartModal = ({ cart }) => {
                           <span class="text-sm font-medium">×${item.count}</span>
                          
                         </div>
-                         <button class="text-sm remove-item-btn text-red-500 hover:text-red-700" data-product-id="${item.id}">
+                                                   <button class="text-sm remove-item-btn text-red-500 hover:text-red-700" data-product-id="${item.productId}">
                             삭제
                           </button>
                         </div>

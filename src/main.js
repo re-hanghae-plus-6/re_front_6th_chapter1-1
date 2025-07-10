@@ -171,6 +171,23 @@ function addToCart(productId) {
   render();
 }
 
+function removeFromCart(productId) {
+  // 해당 상품의 첫 번째 인스턴스만 제거
+  const index = state.cart.findIndex((item) => item.productId === productId);
+  if (index !== -1) {
+    state.cart.splice(index, 1);
+
+    // 모달 내용만 업데이트
+    const modalContent = document.querySelector(".cart-modal .flex.flex-col");
+    if (modalContent) {
+      const newModalHTML = CartModal({ cart: state.cart });
+      // 내용 부분만 교체
+      modalContent.innerHTML = newModalHTML;
+    }
+    showToast({ type: "delete" });
+  }
+}
+
 function showCartModal() {
   // 이미 모달이 열려있다면 return
   if (document.querySelector(".cart-modal")) {
@@ -205,6 +222,13 @@ function setupModalEvents() {
 
   // 새로운 이벤트 리스너 생성
   modalClickHandler = (event) => {
+    // 상품 삭제 버튼 클릭
+    if (event.target.matches(".remove-item-btn")) {
+      const productId = event.target.dataset.productId;
+      removeFromCart(productId);
+      return;
+    }
+
     // 닫기 버튼 클릭 (모든 닫기 버튼 확인)
     const closeButtons = document.querySelectorAll(".modal-close-btn");
     for (const closeBtn of closeButtons) {
