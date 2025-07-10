@@ -1,19 +1,9 @@
+import { createObservable } from "./observable.js";
+
 // 함수형 URLStore
 function createURLStore() {
-  let listeners = [];
-
-  // 구독자 등록
-  function subscribe(listener) {
-    listeners.push(listener);
-    return () => {
-      listeners = listeners.filter((l) => l !== listener);
-    };
-  }
-
-  // 상태 변경 알림
-  function notify() {
-    listeners.forEach((listener) => listener());
-  }
+  // 옵저버 패턴 생성
+  const observable = createObservable();
 
   // URL 파라미터 읽기
   function getQueryParams() {
@@ -49,7 +39,7 @@ function createURLStore() {
     if (newParams.page && newParams.page !== 1) url.searchParams.set("current", newParams.page.toString());
 
     window.history.pushState({}, "", url);
-    notify();
+    observable.notify();
   }
 
   // URL 초기화 (홈으로)
@@ -65,12 +55,12 @@ function createURLStore() {
     url.searchParams.delete("current");
 
     window.history.pushState({}, "", url.pathname);
-    notify();
+    observable.notify();
   }
 
   // 공개 API 반환
   return {
-    subscribe,
+    subscribe: observable.subscribe,
     getQueryParams,
     updateURL,
     resetURL,

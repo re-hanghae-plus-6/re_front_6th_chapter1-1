@@ -1,9 +1,11 @@
 import { getProducts } from "../api/productApi.js";
+import { createObservable } from "./observable.js";
 
 // 함수형 ProductStore
 function createProductStore() {
   // private 상태
   let products = [];
+  let newlyLoadedProducts = []; // 새로 로드된 상품들을 추적
   let total = 0;
   let limit = 20;
   let sort = "price_asc";
@@ -12,26 +14,15 @@ function createProductStore() {
   let hasMore = true;
   let loading = false;
   let isFirstLoad = true;
-  let listeners = [];
 
-  // 구독자 등록
-  function subscribe(listener) {
-    listeners.push(listener);
-    return () => {
-      listeners = listeners.filter((l) => l !== listener);
-    };
-  }
-
-  // 상태 변경 알림
-  function notify() {
-    listeners.forEach((listener) => listener());
-  }
+  // 옵저버 패턴 생성
+  const observable = createObservable();
 
   // 상품 목록 로드
   async function loadProducts(params = {}) {
     loading = true;
     total = 0;
-    notify();
+    observable.notify();
 
     try {
       const {
@@ -58,7 +49,7 @@ function createProductStore() {
       hasMore = false;
     } finally {
       loading = false;
-      notify();
+      observable.notify();
     }
   }
 
@@ -68,7 +59,8 @@ function createProductStore() {
 
     loading = true;
     page += 1;
-    notify();
+    newlyLoadedProducts = []; // 새로 로드된 상품 초기화
+    observable.notify();
 
     try {
       const {
@@ -85,13 +77,14 @@ function createProductStore() {
       });
 
       products = [...products, ...newProducts];
+      newlyLoadedProducts = newProducts; // 새로 로드된 상품들 저장
       hasMore = hasNext;
     } catch (error) {
       console.error("추가 상품 로드 실패:", error);
       hasMore = false;
     } finally {
       loading = false;
-      notify();
+      observable.notify();
     }
   }
 
@@ -99,33 +92,42 @@ function createProductStore() {
   function setSearch(searchTerm) {
     search = searchTerm;
     resetPagination();
-    notify();
+    observable.notify();
   }
 
   // 정렬 변경
   function setSort(sortType) {
     sort = sortType;
     resetPagination();
-    notify();
+    observable.notify();
   }
 
   // 페이지당 아이템 수 변경
   function setLimit(newLimit) {
     limit = newLimit;
     resetPagination();
-    notify();
+    observable.notify();
   }
 
   // 페이지네이션 초기화
   function resetPagination() {
     page = 1;
     products = [];
+    newlyLoadedProducts = [];
     hasMore = true;
+  }
+
+  // 새로 로드된 상품들 반환 및 초기화
+  function getAndClearNewlyLoadedProducts() {
+    const result = [...newlyLoadedProducts];
+    newlyLoadedProducts = [];
+    return result;
   }
 
   // 전체 상태 초기화
   function reset() {
     products = [];
+    newlyLoadedProducts = [];
     total = 0;
     limit = 20;
     sort = "price_asc";
@@ -134,7 +136,7 @@ function createProductStore() {
     hasMore = true;
     loading = false;
     isFirstLoad = true;
-    notify();
+    observable.notify();
   }
 
   // URL 파라미터에서 상태 복원
@@ -144,13 +146,14 @@ function createProductStore() {
     limit = params.limit || 20;
     page = params.page || 1; // URLStore에서 current를 page로 변환해서 전달
     resetPagination();
-    notify();
+    observable.notify();
   }
 
   // 현재 상태 반환
   function getState() {
     return {
       products,
+      newlyLoadedProducts,
       total,
       limit,
       sort,
@@ -164,7 +167,7 @@ function createProductStore() {
 
   // 공개 API 반환
   return {
-    subscribe,
+    subscribe: observable.subscribe,
     loadProducts,
     loadMoreProducts,
     setSearch,
@@ -174,6 +177,7 @@ function createProductStore() {
     reset,
     setFromURLParams,
     getState,
+    getAndClearNewlyLoadedProducts,
   };
 }
 

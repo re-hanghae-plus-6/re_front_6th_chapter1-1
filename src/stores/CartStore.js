@@ -1,8 +1,12 @@
+import { createObservable } from "./observable.js";
+
 // 함수형 CartStore
 function createCartStore() {
   // private 상태
   let cartItems = loadCartFromStorage();
-  let listeners = [];
+
+  // 옵저버 패턴 생성
+  const observable = createObservable();
 
   // 로컬스토리지에서 장바구니 데이터 로드
   function loadCartFromStorage() {
@@ -18,19 +22,6 @@ function createCartStore() {
     localStorage.setItem("shopping_cart", JSON.stringify(cartItems));
   }
 
-  // 구독자 등록
-  function subscribe(listener) {
-    listeners.push(listener);
-    return () => {
-      listeners = listeners.filter((l) => l !== listener);
-    };
-  }
-
-  // 상태 변경 알림
-  function notify() {
-    listeners.forEach((listener) => listener());
-  }
-
   // 상품을 장바구니에 추가
   function addItem(productId, quantity = 1) {
     if (!productId) return false;
@@ -43,7 +34,7 @@ function createCartStore() {
       }
 
       saveCartToStorage();
-      notify();
+      observable.notify();
       return true;
     } catch (error) {
       console.error("장바구니 추가 중 오류:", error);
@@ -56,7 +47,7 @@ function createCartStore() {
     if (cartItems[productId]) {
       delete cartItems[productId];
       saveCartToStorage();
-      notify();
+      observable.notify();
     }
   }
 
@@ -67,7 +58,7 @@ function createCartStore() {
     } else {
       cartItems[productId] = quantity;
       saveCartToStorage();
-      notify();
+      observable.notify();
     }
   }
 
@@ -75,7 +66,7 @@ function createCartStore() {
   function clearCart() {
     cartItems = {};
     saveCartToStorage();
-    notify();
+    observable.notify();
   }
 
   // 고유 상품 개수 반환
@@ -95,7 +86,7 @@ function createCartStore() {
 
   // 공개 API 반환
   return {
-    subscribe,
+    subscribe: observable.subscribe,
     addItem,
     removeItem,
     updateQuantity,
