@@ -8,7 +8,7 @@ export class CartComputed {
 
   get totalCount() {
     const items = this.#store.getState().cart.items;
-    return this.#computeWithCache("totalCount", items, (items) => items.reduce((sum, item) => sum + item.quantity, 0));
+    return this.#computeWithCache("totalCount", items, (items) => items.length);
   }
 
   get totalPrice() {
