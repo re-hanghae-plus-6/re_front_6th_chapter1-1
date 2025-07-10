@@ -3,6 +3,78 @@ import { Toast } from "../components/Toast.js";
 export const CartStorage = (() => {
   const STORAGE_KEY = "SHOPPING_CART";
 
+  // 이벤트 시스템
+  const eventListeners = new Set();
+
+  // 카운터 요소 관리
+  const counterElements = new Set();
+  let currentCount = 0;
+
+  // 이벤트 발생 함수
+  function emitCartChange() {
+    eventListeners.forEach((listener) => listener());
+  }
+
+  // 이벤트 리스너 등록
+  function addEventListener(listener) {
+    eventListeners.add(listener);
+  }
+
+  // 이벤트 리스너 제거
+  function removeEventListener(listener) {
+    eventListeners.delete(listener);
+  }
+
+  // 카운터 요소 등록
+  function registerCounter(element) {
+    counterElements.add(element);
+    updateCounterElement(element);
+  }
+
+  // 카운터 요소 제거
+  function unregisterCounter(element) {
+    counterElements.delete(element);
+  }
+
+  // 카운터 요소 업데이트
+  function updateCounterElement(element) {
+    if (currentCount > 0) {
+      let countSpan = element.querySelector("span");
+      if (!countSpan) {
+        countSpan = document.createElement("span");
+        countSpan.className =
+          "absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center";
+        element.appendChild(countSpan);
+      }
+      countSpan.textContent = currentCount;
+    } else {
+      const countSpan = element.querySelector("span");
+      if (countSpan) {
+        countSpan.remove();
+      }
+    }
+  }
+
+  // 모든 카운터 요소 업데이트
+  function updateAllCounters() {
+    counterElements.forEach(updateCounterElement);
+  }
+
+  // 카운트 업데이트
+  function updateCount() {
+    const newCount = getTotalCount();
+    if (newCount !== currentCount) {
+      currentCount = newCount;
+      updateAllCounters();
+    }
+  }
+
+  // 카운터 시스템 초기화
+  function initCounter() {
+    updateCount();
+    addEventListener(updateCount);
+  }
+
   /* 장바구니 저장 */
   function save(newItem) {
     try {
@@ -21,6 +93,9 @@ export const CartStorage = (() => {
 
       localStorage.setItem(STORAGE_KEY, JSON.stringify(currentItems));
       Toast.success("장바구니에 추가되었습니다.");
+
+      // 이벤트 발생
+      emitCartChange();
     } catch {
       Toast.error("장바구니 저장에 실패했습니다.");
     }
@@ -42,6 +117,9 @@ export const CartStorage = (() => {
     try {
       localStorage.removeItem(STORAGE_KEY);
       Toast.success("장바구니가 모두 삭제되었습니다.");
+
+      // 이벤트 발생
+      emitCartChange();
     } catch {
       Toast.error("장바구니 초기화에 실패했습니다.");
     }
@@ -61,6 +139,9 @@ export const CartStorage = (() => {
         currentItems[itemIndex].quantity = newQuantity;
       }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(currentItems));
+
+      // 이벤트 발생
+      emitCartChange();
     } catch {
       Toast.error("수량 업데이트에 실패했습니다.");
     }
@@ -73,6 +154,9 @@ export const CartStorage = (() => {
       const filteredItems = currentItems.filter((item) => item.productId !== productId);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(filteredItems));
       Toast.success("상품이 장바구니에서 삭제되었습니다.");
+
+      // 이벤트 발생
+      emitCartChange();
     } catch {
       Toast.error("상품 삭제에 실패했습니다.");
     }
@@ -110,5 +194,11 @@ export const CartStorage = (() => {
     getTotalCount, // 장바구니 총 개수
     getTotalPrice, // 장바구니 총 금액
     getItemQuantity, // 장바구니 특정 상품 수량
+    addEventListener, // 이벤트 리스너 등록
+    removeEventListener, // 이벤트 리스너 제거
+    registerCounter, // 카운터 요소 등록
+    unregisterCounter, // 카운터 요소 제거
+    initCounter, // 카운터 시스템 초기화
+    getCount: () => currentCount, // 현재 카운트 반환
   };
 })();

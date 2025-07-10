@@ -1,10 +1,8 @@
-import Header from "./Header.js";
 import Footer from "./Footer.js";
+import Header from "./Header.js";
 
-export function Layout({ pageComponent, cartCount = 0, isDetailPage = false }) {
+export function Layout({ pageComponent, isDetailPage = false }) {
   return /* HTML */ `
-    <div class="min-h-screen bg-gray-50">
-      ${Header({ cartCount, isDetail: isDetailPage })} ${pageComponent()} ${Footer()}
-    </div>
+    <div class="min-h-screen bg-gray-50">${Header({ isDetail: isDetailPage })} ${pageComponent()} ${Footer()}</div>
   `;
 }

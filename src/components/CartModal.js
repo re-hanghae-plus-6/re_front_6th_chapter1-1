@@ -1,4 +1,4 @@
-const CartModal = (() => {
+export const CartModal = (() => {
   let isOpen = false;
   let modalElement = null;
 
@@ -31,8 +31,22 @@ const CartModal = (() => {
           </div>
           <!-- 컨텐츠 -->
           <div class="flex flex-col max-h-[calc(90vh-120px)]">
-            <div id="cart-content">
-              <!-- 장바구니 내용이 여기에 들어감 -->
+            <!-- 빈 장바구니 -->
+            <div class="flex-1 flex items-center justify-center p-8">
+              <div class="text-center">
+                <div class="text-gray-400 mb-4">
+                  <svg class="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M3 3h2l.4 2M7 13h10l4-8H5.4m2.6 8L6 2H3m4 11v6a1 1 0 001 1h1a1 1 0 001-1v-6M13 13v6a1 1 0 001 1h1a1 1 0 001-1v-6"
+                    ></path>
+                  </svg>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">장바구니가 비어있습니다</h3>
+                <p class="text-gray-600">원하는 상품을 담아보세요!</p>
+              </div>
             </div>
           </div>
         </div>
@@ -106,5 +120,3 @@ const CartModal = (() => {
     },
   };
 })();
-
-export default CartModal;

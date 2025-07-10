@@ -1,6 +1,8 @@
+import Header from "./components/layout/Header.js";
 import { Layout } from "./components/layout/Layout.js";
 import { initializeApp } from "./config/app.js";
 import { ProductList } from "./pages/ProductList.js";
+import { CartStorage } from "./utils/CartStorage.js";
 
 const appState = {
   cartCount: 0,
@@ -13,7 +15,6 @@ function renderApp(PageComponent) {
 
   const html = Layout({
     pageComponent: PageComponent,
-    cartCount: appState.cartCount,
     isDetailPage: appState.isDetailPage,
   });
 
@@ -22,6 +23,13 @@ function renderApp(PageComponent) {
   if (typeof PageComponent.init === "function") {
     PageComponent.init();
   }
+
+  if (typeof Header.init === "function") {
+    Header.init();
+  }
+
+  // CartStorage 카운터 시스템 초기화
+  CartStorage.initCounter();
 }
 
 // 라우터 설정

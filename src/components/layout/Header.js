@@ -1,3 +1,6 @@
+import { CartStorage } from "../../utils/CartStorage";
+import { CartModal } from "../CartModal";
+
 const cartIcon = (count) => {
   if (count <= 0) return "";
   return `
@@ -19,7 +22,7 @@ const backButton = () => `
  * @param {number} cartCount 장바구니 아이템 개수
  * @param {boolean} isDetail 상품 상세 페이지 여부
  */
-const Header = ({ cartCount = 0, isDetail = false }) => {
+const Header = ({ isDetail = false }) => {
   const leftContent = isDetail
     ? `
       <div class="flex items-center space-x-3">
@@ -38,14 +41,22 @@ const Header = ({ cartCount = 0, isDetail = false }) => {
     const cartIconBtn = document.getElementById("cart-icon-btn");
     if (cartIconBtn) {
       // 기존 이벤트 리스너 제거 (중복 방지)
-      cartIconBtn.removeEventListener("click", Header.handleCartClick);
+      cartIconBtn.removeEventListener("click", handleCartClick);
       // 새 이벤트 리스너 추가
-      cartIconBtn.addEventListener("click", Header.handleCartClick);
+      cartIconBtn.addEventListener("click", handleCartClick);
+
+      // CartStorage 카운터 시스템에 등록
+      CartStorage.registerCounter(cartIconBtn);
     }
+
+    // CartStorage 카운터 시스템 초기화
+    CartStorage.initCounter();
   };
 
   // 장바구니 아이콘 클릭 시 모달 열기
-  Header.handleCartClick = () => {};
+  const handleCartClick = () => {
+    CartModal.open();
+  };
 
   return /* HTML */ `
     <header class="bg-white shadow-sm sticky top-0 z-40">
@@ -62,7 +73,7 @@ const Header = ({ cartCount = 0, isDetail = false }) => {
                   d="M3 3h2l.4 2M7 13h10l4-8H5.4m2.6 8L6 2H3m4 11v6a1 1 0 001 1h1a1 1 0 001-1v-6M13 13v6a1 1 0 001 1h1a1 1 0 001-1v-6"
                 ></path>
               </svg>
-              ${cartIcon(cartCount)}
+              ${cartIcon(CartStorage.getTotalCount())}
             </button>
           </div>
         </div>
