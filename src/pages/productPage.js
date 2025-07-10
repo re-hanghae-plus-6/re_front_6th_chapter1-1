@@ -1,39 +1,77 @@
+import { navigate } from "../routes/router";
 let state = {
   isLoading: false,
-  isFetching: false,
   error: null,
   products: [],
+  total: 0,
 };
 
 async function getProducts() {
-  const queryString = window.location.search;
-  const params = new URLSearchParams(queryString);
+  const params = new URLSearchParams(location.search);
   try {
     const response = await fetch(`/api/products?${params.toString()}`);
     if (!response.ok) throw new Error("네트워크 오류");
+
     const data = await response.json();
-    const { products } = data;
-    console.log("productPage data:", data);
-    state.products = [...state.products, ...products];
+    state.products = data.products;
+    state.total = data.pagination.total || 0;
     state.error = null;
   } catch (error) {
     state.error = error.message;
   } finally {
     state.isLoading = false;
-    state.isFetching = false;
   }
 }
-
-export function productPage() {
-  getProducts();
+export async function productPage() {
+  if (!state.isLoading) {
+    state.isLoading = true;
+    state.error = null;
+    state.products = [];
+    await getProducts();
+  }
   const params = new URLSearchParams(location.search);
   const search = params.get("search") || "";
   const limit = params.get("limit") || 20;
-  const sort = params.get("limit") || "price_asc";
+  const sort = params.get("sort") || "price_asc";
   const total = params.get("total") || 0;
   const searchParams = { search, limit, sort, total };
   return state.isLoading ? loadingContent() : productContent(searchParams);
 }
+productPage.afterRender = () => {
+  const searchInput = document.getElementById("search-input");
+  const limitSelect = document.getElementById("limit-select");
+  const sortSelect = document.getElementById("sort-select");
+
+  if (searchInput) {
+    searchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        const params = new URLSearchParams(location.search);
+        params.set("search", e.target.value.trim());
+        params.set("page", 1); // 검색 시 페이지 초기화
+        navigate(`${location.pathname}?${params.toString()}`);
+      }
+    });
+  }
+
+  if (limitSelect) {
+    limitSelect.addEventListener("change", (e) => {
+      const params = new URLSearchParams(location.search);
+      params.set("limit", e.target.value);
+      params.set("page", 1);
+      navigate(`${location.pathname}?${params.toString()}`);
+    });
+  }
+
+  if (sortSelect) {
+    sortSelect.addEventListener("change", (e) => {
+      const params = new URLSearchParams(location.search);
+      params.set("sort", e.target.value);
+      params.set("page", 1);
+      navigate(`${location.pathname}?${params.toString()}`);
+    });
+  }
+};
+
 export function productItem() {
   return /* HTML */ state.products
     .map(
@@ -189,7 +227,7 @@ function productContent(searchParams) {
           <div>
             <!-- 상품 개수 정보 -->
             <div class="mb-4 text-sm text-gray-600">
-              총 <span class="font-medium text-gray-900">${searchParams.total || 0}개</span>의 상품
+              총 <span class="font-medium text-gray-900">${state.total || 0}개</span>의 상품
             </div>
             <!-- 상품 그리드 -->
             <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">${productItem()}</div>
