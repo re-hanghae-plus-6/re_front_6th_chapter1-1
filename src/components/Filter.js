@@ -73,14 +73,9 @@ const Filter = ({ isLoading, categoriesData }) => {
 const Category = (isLoading, data) => {
   const { category1, category2 } = getProductParams();
 
-  // const selectedCategory1 = category1 ?? "";
-
-  // const oneDepth = data ? Object.keys(data) : [];
-  // const twoDepth = data?.[selectedCategory1] ? Object.keys(data?.[selectedCategory1]) : [];
-
   return `
     <div id="category-select" class="space-y-2">
-      <div class="flex items-center gap-2">
+      <div class="breadcrumb-container flex items-center gap-2">
         <label class="text-sm text-gray-600">카테고리:</label>
         <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
         ${category1 ? `<span class="text-xs text-gray-500">&gt;</span><button data-breadcrumb="category1" data-category1=${category1} class="text-xs hover:text-blue-800 hover:underline">${category1}</button>` : ""}
@@ -107,11 +102,11 @@ const CategoryButtons = (isLoading, data) => {
   }
 
   return twoDepth.length === 0
-    ? oneDepth?.map((category1) => CategoryButton(category1)).join("\n")
+    ? oneDepth?.map((category1) => Category1Button(category1)).join("\n")
     : twoDepth?.map((category2) => Category2Button(selectedCategory1, category2)).join("\n");
 };
 
-const CategoryButton = (category1) => {
+const Category1Button = (category1) => {
   return `
     <button
       data-category1=${category1}
@@ -123,11 +118,17 @@ const CategoryButton = (category1) => {
 };
 
 const Category2Button = (category1, category2) => {
+  const productParams = getProductParams();
+  const isSelected = productParams?.category2 === category2;
+
+  const defaultColor = `bg-white border-gray-300 text-gray-700 hover:bg-gray-50`;
+  const selectedColor = `bg-blue-100 border-blue-300 text-blue-800`;
+
   return `
     <button
       data-category1=${category1}
       data-category2=${category2}
-      class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+      class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors ${isSelected ? selectedColor : defaultColor}"
     >
       ${category2}
     </button>

@@ -69,17 +69,54 @@ const MainPage = () => {
     document.querySelector("#category-select")?.addEventListener("click", (e) => {
       const target = e.target;
 
-      if (!target.classList.contains("category1-filter-btn")) {
+      if (target.classList.contains("category1-filter-btn")) {
+        const category1 = target.dataset.category1;
+
+        const url = new URL(window.location.href);
+        url.searchParams.set("category1", category1);
+        history.pushState(null, "", url.toString());
+
+        fetch();
+
         return;
       }
 
-      const category1 = target.dataset.category1;
+      if (target.classList.contains("category2-filter-btn")) {
+        const category2 = target.dataset.category2;
 
-      const url = new URL(window.location.href);
-      url.searchParams.set("category1", category1);
-      history.pushState(null, "", url.toString());
+        const url = new URL(window.location.href);
+        url.searchParams.set("category2", category2);
+        history.pushState(null, "", url.toString());
 
-      mainStore.setState();
+        fetch();
+
+        return;
+      }
+    });
+
+    document.querySelector(".breadcrumb-container").addEventListener("click", (e) => {
+      const target = e.target?.dataset?.breadcrumb;
+
+      if (target === "reset") {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("category1");
+        url.searchParams.delete("category2");
+        history.pushState(null, "", url.toString());
+
+        fetch();
+
+        return;
+      }
+
+      if (target === "category1") {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("category2");
+        history.pushState(null, "", url.toString());
+
+        fetch();
+
+        return;
+      }
     });
   };
 
