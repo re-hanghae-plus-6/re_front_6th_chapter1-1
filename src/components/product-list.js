@@ -1,4 +1,4 @@
-export default function ProductCard({ isLoading, fetchData }) {
+export default function ProductList({ isLoading, fetchData }) {
   if (isLoading) {
     return /* HTML */ `
       <div class="grid grid-cols-2 gap-4 mb-6">
