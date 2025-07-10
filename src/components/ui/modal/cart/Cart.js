@@ -69,7 +69,13 @@ class Cart extends Component {
     cartLocalStorage.set('cartProducts', updatedCartItems);
   }
 
-  handleRemoveItem() {}
+  handleRemoveItem(items, productId) {
+    const updatedCartItems = items.filter((item) => {
+      return item.productId !== productId;
+    });
+
+    cartLocalStorage.set('cartProducts', updatedCartItems);
+  }
 
   handleClearAllItems() {}
 
@@ -111,6 +117,12 @@ class Cart extends Component {
       const allCheckbox = event.target.closest('#cart-modal-select-all-checkbox');
       if (allCheckbox) {
         this.handleSelectAllItems(products);
+      }
+
+      const cartItemRemoveBtn = event.target.closest('.cart-item-remove-btn');
+      if (cartItemRemoveBtn) {
+        const productId = cartItemRemoveBtn.dataset.productId;
+        this.handleRemoveItem(products, productId);
       }
     });
 
