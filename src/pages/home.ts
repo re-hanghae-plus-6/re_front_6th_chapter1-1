@@ -5,7 +5,7 @@ import type { PageModule } from "../router.ts";
 import { navigate } from "../router.ts";
 import { createQueryParams } from "../utils/queryParams.ts";
 import { 토스트 } from "../components/toast/index.ts";
-import { addToCart, getCartCount } from "../utils/cart.ts";
+import { cartStore } from "../stores/cart-store.ts";
 import { 장바구니 } from "../components/cart/index.ts";
 
 interface Product {
@@ -84,7 +84,7 @@ export const homePage: PageModule = {
     };
 
     const rerender = () => {
-      const cartCount = getCartCount();
+      const cartCount = cartStore.getCount();
       root.innerHTML = 상품목록_레이아웃({
         loading: state.loading,
         error: state.error,
@@ -225,9 +225,8 @@ export const homePage: PageModule = {
       const quantity = Math.max(1, parseInt(quantityInput?.value || "1", 10));
       const unitPrice = Number(btn.dataset.productPrice ?? "0");
       const title = btn.dataset.productTitle ?? "";
-      addToCart(productId, quantity, unitPrice, title);
+      cartStore.add(productId, quantity, unitPrice, title);
       토스트("장바구니에 추가되었습니다", "success");
-      rerender();
     };
 
     const handleRetry = () => {

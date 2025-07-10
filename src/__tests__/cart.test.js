@@ -1,6 +1,7 @@
 import { findByText, getByText, queryByText, screen } from "@testing-library/dom";
 import { userEvent } from "@testing-library/user-event";
 import { afterEach, beforeAll, beforeEach, describe, expect, test } from "vitest";
+import { cartStore } from "../stores/cart-store.ts";
 
 const goTo = (path) => {
   window.history.pushState({}, "", path);
@@ -27,7 +28,8 @@ beforeEach(() => goTo("/"));
 afterEach(() => {
   // 각 테스트 후 상태 초기화
   document.getElementById("root").innerHTML = "";
-  localStorage.clear();
+  // 로컬스토리지를 확실하게 초기화 하기 위해서 테스트를 수정하였습니다.
+  cartStore.__resetForTest();
 });
 
 describe("1. 장바구니 모달", () => {

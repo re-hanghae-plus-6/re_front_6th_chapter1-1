@@ -4,7 +4,7 @@ import { 상품상세_레이아웃 } from "../components/product-detail/index.ts
 import { navigate } from "../router.ts";
 import { 토스트 } from "../components/toast/index.ts";
 import { 장바구니 } from "../components/cart/index.ts";
-import { addToCart, getCartCount } from "../utils/cart.ts";
+import { cartStore } from "../stores/cart-store.ts";
 
 interface Product {
   productId: string;
@@ -27,7 +27,7 @@ interface State {
 
 export const detailPage: PageModule = {
   render() {
-    return 상품상세_레이아웃({ loading: true, cartCount: getCartCount() });
+    return 상품상세_레이아웃({ loading: true, cartCount: cartStore.getCount() });
   },
 
   mount(root) {
@@ -51,7 +51,7 @@ export const detailPage: PageModule = {
         product: state.product ?? undefined,
         relatedProducts: state.relatedProducts,
         qty: state.qty,
-        cartCount: getCartCount(),
+        cartCount: cartStore.getCount(),
       });
 
       if (!state.loading) bindEvents();
@@ -77,9 +77,8 @@ export const detailPage: PageModule = {
       if (!inputEl || !state.product) return;
       const qty = Math.max(1, parseInt(inputEl.value || "1", 10));
       const unitPrice = Number(state.product.lprice ?? 0);
-      addToCart(state.product.productId, qty, unitPrice, state.product.title);
+      cartStore.add(state.product.productId, qty, unitPrice, state.product.title);
       토스트("장바구니에 추가되었습니다", "success");
-      rerender();
     };
 
     const handleRelatedProductClick = (productId: string) => {

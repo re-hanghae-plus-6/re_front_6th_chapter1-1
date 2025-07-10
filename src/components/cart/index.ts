@@ -1,7 +1,9 @@
-import { getCartItems as _getStoredItems, setCartItems } from "../../utils/cart.ts";
+import { cartStore } from "../../stores/cart-store.ts";
 import type { CartItem } from "../../types/cart.ts";
 import { getProduct } from "../../api/productApi.js";
 import { 장바구니_빈컨텐츠, 장바구니_아이템리스트 } from "./cart-body.ts";
+import { 장바구니_정산 } from "./cart-footer.ts";
+import { 장바구니_전체선택 } from "./cart-select-section.ts";
 import { 토스트 } from "../toast/index.ts";
 
 export async function 장바구니() {
@@ -11,7 +13,7 @@ export async function 장바구니() {
   overlay.className = "cart-modal-overlay fixed inset-0 bg-black/50 flex items-center justify-center z-50";
   const createLayout = async () => {
     try {
-      const stored: CartItem[] = _getStoredItems();
+      const stored: CartItem[] = cartStore.getItems();
       // placeholder 아이템: 가격/제목은 추후 보강
       const cartItems: CartItem[] = stored.map((s) => ({
         id: s.id,
@@ -26,30 +28,7 @@ export async function 장바구니() {
 
       const contentsHtml = itemsCount === 0 ? 장바구니_빈컨텐츠 : 장바구니_아이템리스트(cartItems);
 
-      const footerHtml =
-        itemsCount === 0
-          ? ""
-          : `
-        <div class="sticky bottom-0 bg-white border-t border-gray-200 p-4">
-          <!-- 선택된 아이템 정보 -->
-          <div id="cart-modal-selected-info" class="flex justify-between items-center mb-3 text-sm">
-            <span class="text-gray-600">선택한 상품 (0개)</span>
-            <span class="font-medium">0원</span>
-          </div>
-          <!-- 총 금액 -->
-          <div class="flex justify-between items-center mb-4">
-            <span class="text-lg font-bold text-gray-900">총 금액</span>
-            <span class="text-xl font-bold text-blue-600">${totalPrice.toLocaleString()}원</span>
-          </div>
-          <!-- 액션 버튼들 -->
-          <div class="space-y-2">
-            <button id="cart-modal-remove-selected-btn" class="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition-colors text-sm">선택한 상품 삭제 (0개)</button>
-            <div class="flex gap-2">
-              <button id="cart-modal-clear-cart-btn" class="flex-1 bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 transition-colors text-sm">전체 비우기</button>
-              <button id="cart-modal-checkout-btn" class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors text-sm">구매하기</button>
-            </div>
-          </div>
-        </div>`;
+      const footerHtml = itemsCount === 0 ? "" : 장바구니_정산(totalPrice);
 
       const countSpan = itemsCount === 0 ? "" : `(${itemsCount})`;
 
@@ -69,18 +48,7 @@ export async function 장바구니() {
             </svg>
           </button>
         </div>
-        <!-- 전체 선택 & 선택 삭제 -->
-        ${
-          itemsCount === 0
-            ? ""
-            : `
-        <div id="cart-modal-select-section" class="p-4 border-b border-gray-200 bg-gray-50">
-          <label class="flex items-center text-sm text-gray-700">
-            <input type="checkbox" id="cart-modal-select-all-checkbox" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-2" />
-            <span id="cart-modal-select-all-label">전체선택 (${itemsCount}개)</span>
-          </label>
-        </div>`
-        }
+        ${itemsCount === 0 ? "" : 장바구니_전체선택(itemsCount)}
         <div class="flex-1 overflow-y-auto">${contentsHtml}</div>
         ${footerHtml}
       </div>
@@ -111,30 +79,31 @@ export async function 장바구니() {
   });
   window.addEventListener("keydown", handleEsc);
 
-  // ---- 수량 증감 로직 ----
-  const recalc = () => {
+  // ---- 수량 증감/재계산 로직 ----
+  // recalc & updateSelectionUI 정의는 아래에 위치
+
+  function recalc() {
     const cartItemEls = overlay.querySelectorAll<HTMLElement>(".cart-item");
     let qtySum = 0;
     let priceSum = 0;
     const stored: CartItem[] = [];
-
-    cartItemEls.forEach((el) => {
-      const id = el.dataset.productId ?? "";
-      const unitPrice = Number(el.dataset.unitPrice ?? 0);
-      const input = el.querySelector<HTMLInputElement>(".quantity-input");
-      const qty = Number(input?.value ?? 1);
+    cartItemEls.forEach((itemEl) => {
+      const unitPrice = Number(itemEl.dataset.unitPrice ?? 0);
+      const qtyInput = itemEl.querySelector<HTMLInputElement>(".quantity-input");
+      const qty = Number(qtyInput?.value ?? 1);
       qtySum += qty;
-      priceSum += qty * unitPrice;
-      const titleText = el.querySelector<HTMLElement>(".cart-item-title")?.textContent ?? "";
-      stored.push({ id, qty, price: unitPrice, title: titleText });
+      priceSum += unitPrice * qty;
+
+      const titleText = itemEl.querySelector<HTMLElement>(".cart-item-title")?.textContent ?? "";
+      stored.push({ id: itemEl.dataset.productId ?? "", qty, price: unitPrice, title: titleText });
 
       // 소계 갱신
-      const subtotal = el.querySelector<HTMLParagraphElement>(".text-right p");
+      const subtotal = itemEl.querySelector<HTMLParagraphElement>(".text-right p");
       if (subtotal) subtotal.textContent = `${(unitPrice * qty).toLocaleString()}원`;
     });
 
-    // 로컬스토리지 동기화
-    setCartItems(stored);
+    // 상태 동기화 (스토어 내부에서 localStorage persist)
+    cartStore.setItems(stored);
 
     // 헤더 배지
     const badgeEl = overlay.querySelector<HTMLSpanElement>("h2 span.text-sm");
@@ -145,21 +114,55 @@ export async function 장바구니() {
     const footerEl = overlay.querySelector<HTMLElement>(".sticky.bottom-0");
 
     if (qtySum === 0) {
-      if (footerEl) footerEl.style.display = "none";
+      footerEl && (footerEl.style.display = "none");
     } else {
-      if (totalEl) totalEl.textContent = `${priceSum.toLocaleString()}원`;
-      if (footerEl) footerEl.style.display = "block";
+      totalEl && (totalEl.textContent = `${priceSum.toLocaleString()}원`);
+      footerEl && (footerEl.style.display = "block");
     }
 
     const globalBadge = document.querySelector<HTMLSpanElement>("#cart-icon-btn span");
     if (qtySum === 0) {
       globalBadge?.remove();
     } else {
-      if (globalBadge) globalBadge.textContent = String(qtySum);
+      globalBadge && (globalBadge.textContent = String(qtySum));
     }
 
     updateSelectionUI();
-  };
+  }
+
+  function updateSelectionUI() {
+    const label = overlay.querySelector<HTMLSpanElement>("#cart-modal-select-all-label");
+    const itemsCnt = overlay.querySelectorAll<HTMLInputElement>(".cart-item-checkbox").length;
+    const checkedCnt = overlay.querySelectorAll<HTMLInputElement>(".cart-item-checkbox:checked").length;
+
+    label && (label.textContent = `전체선택 (${itemsCnt}개)`);
+
+    const section = overlay.querySelector<HTMLElement>("#cart-modal-select-section");
+    section && (section.style.display = itemsCnt === 0 ? "none" : "flex");
+
+    const master = overlay.querySelector<HTMLInputElement>("#cart-modal-select-all-checkbox");
+    if (master) master.checked = itemsCnt === checkedCnt;
+
+    const selectedInfo = overlay.querySelector<HTMLElement>("#cart-modal-selected-info");
+    const removeSelectedBtn = overlay.querySelector<HTMLButtonElement>("#cart-modal-remove-selected-btn");
+
+    if (selectedInfo && removeSelectedBtn) {
+      let selectedPrice = 0;
+      overlay.querySelectorAll<HTMLInputElement>(".cart-item-checkbox:checked").forEach((cb) => {
+        const itemEl = cb.closest<HTMLElement>(".cart-item");
+        if (itemEl) {
+          const unitPrice = Number(itemEl.dataset.unitPrice ?? 0);
+          const input = itemEl.querySelector<HTMLInputElement>(".quantity-input");
+          const qty = Number(input?.value ?? 1);
+          selectedPrice += unitPrice * qty;
+        }
+      });
+
+      selectedInfo.querySelector<HTMLSpanElement>(".text-gray-600")!.textContent = `선택한 상품 (${checkedCnt}개)`;
+      selectedInfo.querySelector<HTMLSpanElement>(".font-medium")!.textContent = `${selectedPrice.toLocaleString()}원`;
+      removeSelectedBtn.textContent = `선택한 상품 삭제 (${checkedCnt}개)`;
+    }
+  }
 
   const handleQtyChange = (btn: HTMLElement, delta: number) => {
     const itemEl = btn.closest(".cart-item");
@@ -238,61 +241,22 @@ export async function 장바구니() {
 
   // change 이벤트 처리(체크박스)
   overlay.addEventListener("change", (e) => {
-    const target = e.target as HTMLElement;
-    if (target.id === "cart-modal-select-all-checkbox") {
-      const checked = (target as HTMLInputElement).checked;
-      overlay.querySelectorAll<HTMLInputElement>(".cart-item-checkbox").forEach((cb) => (cb.checked = checked));
+    const el = e.target as HTMLInputElement;
+
+    // 마스터 체크박스 토글 → 모든 개별 체크박스 동기화
+    if (el.id === "cart-modal-select-all-checkbox") {
+      overlay.querySelectorAll<HTMLInputElement>(".cart-item-checkbox").forEach((cb) => (cb.checked = el.checked));
     }
-    if (target.classList.contains("cart-item-checkbox")) {
-      const all = overlay.querySelectorAll<HTMLInputElement>(".cart-item-checkbox").length;
-      const checkedCnt = overlay.querySelectorAll<HTMLInputElement>(".cart-item-checkbox:checked").length;
-      const master = overlay.querySelector<HTMLInputElement>("#cart-modal-select-all-checkbox");
-      if (master) master.checked = all === checkedCnt;
+
+    // (개별 또는 마스터) 체크박스 변경 후 UI 갱신
+    if (el.id === "cart-modal-select-all-checkbox" || el.classList.contains("cart-item-checkbox")) {
+      updateSelectionUI();
     }
-    updateSelectionUI();
   });
-
-  const updateSelectionUI = () => {
-    const label = overlay.querySelector<HTMLSpanElement>("#cart-modal-select-all-label");
-    const itemsCnt = overlay.querySelectorAll<HTMLInputElement>(".cart-item-checkbox").length;
-    const checkedCnt = overlay.querySelectorAll<HTMLInputElement>(".cart-item-checkbox:checked").length;
-
-    if (label) label.textContent = `전체선택 (${itemsCnt}개)`;
-
-    const section = overlay.querySelector<HTMLElement>("#cart-modal-select-section");
-    if (section) {
-      if (itemsCnt === 0) {
-        section.style.display = "none";
-      } else {
-        section.style.display = "flex";
-      }
-    }
-
-    // 선택된 상품 정보 업데이트
-    const selectedInfo = overlay.querySelector<HTMLElement>("#cart-modal-selected-info");
-    const removeSelectedBtn = overlay.querySelector<HTMLButtonElement>("#cart-modal-remove-selected-btn");
-
-    if (selectedInfo && removeSelectedBtn) {
-      let selectedPrice = 0;
-      overlay.querySelectorAll<HTMLInputElement>(".cart-item-checkbox:checked").forEach((cb) => {
-        const itemEl = cb.closest<HTMLElement>(".cart-item");
-        if (itemEl) {
-          const unitPrice = Number(itemEl.dataset.unitPrice ?? 0);
-          const input = itemEl.querySelector<HTMLInputElement>(".quantity-input");
-          const qty = Number(input?.value ?? 1);
-          selectedPrice += unitPrice * qty;
-        }
-      });
-
-      selectedInfo.querySelector<HTMLSpanElement>(".text-gray-600")!.textContent = `선택한 상품 (${checkedCnt}개)`;
-      selectedInfo.querySelector<HTMLSpanElement>(".font-medium")!.textContent = `${selectedPrice.toLocaleString()}원`;
-      removeSelectedBtn.textContent = `선택한 상품 삭제 (${checkedCnt}개)`;
-    }
-  };
 
   // 상세 정보 보강: 가격/제목 업데이트 후 recalc 호출
   const enrichDetails = async () => {
-    const stored = _getStoredItems();
+    const stored = cartStore.getItems();
     if (!stored.length) return;
     try {
       const infos = await Promise.all(stored.map((s) => getProduct(s.id)));
@@ -309,6 +273,8 @@ export async function 장바구니() {
         const img = itemEl.querySelector<HTMLImageElement>("img");
         if (img && info.image) img.src = info.image;
       });
+      // test 환경에서 afterEach로 로컬스토리지 클리어를 한다해도, fetch가 recalc를 다시 호출해서 발생하는 수량누적을 가드함
+      if (!overlay.isConnected) return;
       recalc();
     } catch (e) {
       console.error(e);
