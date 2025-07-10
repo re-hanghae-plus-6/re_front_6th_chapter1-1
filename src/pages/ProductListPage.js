@@ -23,6 +23,7 @@ export class ProductListPage extends Component {
       },
       filters: {
         search: params.get("search") || "",
+        sort: params.get("sort") || "",
       },
       categories: {},
       isOpenCartModal: false,
@@ -43,7 +44,6 @@ export class ProductListPage extends Component {
     });
 
     this.on(Component.EVENTS.UPDATE, () => {
-      console.log("### STATE", this.state);
       // 더 이상 불러올 컨텐츠 없음, InfiniteScroll 인스턴스 정리
       if (!this.state.pagination.hasNext) {
         infinite.destroy();
@@ -106,7 +106,11 @@ export class ProductListPage extends Component {
     // this.setState({ loading: true });
 
     try {
-      const products = await getProducts(params);
+      const products = await getProducts({
+        ...this.state.filters,
+        ...this.state.pagination,
+        ...params,
+      });
       this.setState({ ...products });
       updateURLParams(params);
     } catch (error) {
