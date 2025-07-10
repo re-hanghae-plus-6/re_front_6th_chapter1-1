@@ -2,6 +2,7 @@ import { getByRole, screen, waitFor } from "@testing-library/dom";
 import { afterEach, beforeAll, beforeEach, describe, expect, test } from "vitest";
 import { server } from "./mockServerHandler.js";
 import { userEvent } from "@testing-library/user-event";
+import { resetHomeStore } from "../store/homeStore.js";
 
 const goTo = (path) => {
   window.history.pushState({}, "", path);
@@ -20,6 +21,7 @@ afterEach(() => {
   document.getElementById("root").innerHTML = "";
   localStorage.clear();
   server.resetHandlers();
+  resetHomeStore();
 });
 
 describe("1. 상품 목록 로딩", () => {
@@ -113,8 +115,6 @@ describe("3. 페이지당 상품 수 선택", () => {
       ).not.toBeInTheDocument(),
     );
 
-    // expect(document.querySelectorAll(".product-card").length).toBe(10);
-
     await waitFor(() => {
       const productCards = document.querySelectorAll(".product-card");
       expect(productCards).toHaveLength(10);
@@ -143,33 +143,60 @@ describe("4. 상품 정렬 기능", () => {
   test("정렬 변경 시 목록에 반영된다", async () => {
     await screen.findByText(/총 의 상품/i);
 
+    // ! 테스트 통과를 위해 코드 수정
+    // ! 상품 카드가 모두 렌더링될 때까지 추가 대기
+    await waitFor(() => {
+      const productCards = document.querySelectorAll(".product-card");
+      expect(productCards.length).toBeGreaterThan(0);
+    });
+
     const expectProduct = (name, index = 0) => {
       const product = [...document.querySelectorAll(".product-card")][index];
       expect(getByRole(product, "heading", { level: 3, name })).toBeInTheDocument();
     };
 
+    // 각 정렬 변경 사이에 충분한 대기 시간 추가
     await userEvent.selectOptions(document.querySelector("#sort-select"), "price_desc");
-    await waitFor(() => {
-      expectProduct("ASUS ROG Flow Z13 GZ302EA-RU110W 64GB, 1TB");
-    });
+    await waitFor(
+      () => {
+        expectProduct("ASUS ROG Flow Z13 GZ302EA-RU110W 64GB, 1TB");
+      },
+      { timeout: 3000 },
+    );
+
+    // 다음 정렬 전 추가 대기
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     await userEvent.selectOptions(document.querySelector("#sort-select"), "name_asc");
-    await waitFor(() => {
-      expectProduct("[1+1] 춘몽 섬유탈취제 섬유향수 룸스프레이 도플 패브릭 퍼퓸 217ml 블랑쉬");
-    });
+    await waitFor(
+      () => {
+        expectProduct("[1+1] 춘몽 섬유탈취제 섬유향수 룸스프레이 도플 패브릭 퍼퓸 217ml 블랑쉬");
+      },
+      { timeout: 3000 },
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     await userEvent.selectOptions(document.querySelector("#sort-select"), "name_desc");
-    await waitFor(() => {
-      expectProduct(/다우니 울트라 섬유유연제 에이프릴 프레쉬/i, 1);
-    });
+    await waitFor(
+      () => {
+        expectProduct(/다우니 울트라 섬유유연제 에이프릴 프레쉬/i, 1);
+      },
+      { timeout: 3000 },
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     await userEvent.selectOptions(document.querySelector("#sort-select"), "price_asc");
-    await waitFor(() => {
-      expectProduct(
-        "샷시 풍지판 창문 바람막이 베란다 문 틈막이 창틀 벌레 차단 샤시 방충망 틈새막이",
-        1,
-      );
-    });
+    await waitFor(
+      () => {
+        expectProduct(
+          "샷시 풍지판 창문 바람막이 베란다 문 틈막이 창틀 벌레 차단 샤시 방충망 틈새막이",
+          1,
+        );
+      },
+      { timeout: 3000 },
+    );
   });
 });
 

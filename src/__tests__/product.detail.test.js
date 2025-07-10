@@ -1,6 +1,7 @@
 import { screen, waitFor } from "@testing-library/dom";
 import { userEvent } from "@testing-library/user-event";
 import { afterEach, beforeAll, describe, expect, test } from "vitest";
+import { resetHomeStore } from "../store/homeStore.js";
 
 const goTo = (path) => {
   window.history.pushState({}, "", path);
@@ -17,6 +18,7 @@ afterEach(() => {
   goTo("/");
   document.getElementById("root").innerHTML = "";
   localStorage.clear();
+  resetHomeStore();
 });
 
 const 상품_상세페이지_접속 = async () => {

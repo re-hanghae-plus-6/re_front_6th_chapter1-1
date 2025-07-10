@@ -32,3 +32,7 @@ const homeState = {
 
 // 싱글톤 인스턴스를 생성해서 export
 export const homeStore = new Store(homeState);
+
+export const resetHomeStore = () => {
+  homeStore.reset(homeState);
+};

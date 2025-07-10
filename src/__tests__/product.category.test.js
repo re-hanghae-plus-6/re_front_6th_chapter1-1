@@ -1,6 +1,7 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, test } from "vitest";
 import { screen } from "@testing-library/dom";
 import { userEvent } from "@testing-library/user-event";
+import { resetHomeStore } from "../store/homeStore.js";
 
 const goTo = (path) => {
   window.history.pushState({}, "", path);
@@ -18,6 +19,7 @@ afterEach(() => {
   // 각 테스트 후 상태 초기화
   document.getElementById("root").innerHTML = "";
   localStorage.clear();
+  resetHomeStore();
 });
 
 describe("7. 카테고리 선택", async () => {
@@ -40,23 +42,18 @@ describe("7. 카테고리 선택", async () => {
   });
 
   test("브레드크럼 클릭으로 상위 카테고리로 이동할 수 있다", async () => {
-    try {
-      // 1depth 카테고리 브레드크럼 클릭
-      await screen.findByText(/총 의 상품/i);
-      const category1 = await screen.findByText("생활/건강");
-      await userEvent.click(category1);
-      const category2 = await screen.findByText("자동차용품");
-      await userEvent.click(category2);
+    // 1depth 카테고리 브레드크럼 클릭
+    await screen.findByText(/총 의 상품/i);
 
-      expect(await screen.findByText("11개")).toBeInTheDocument();
+    const category1 = await screen.findByText("생활/건강");
+    await userEvent.click(category1);
+    const category2 = await screen.findByText("자동차용품");
+    await userEvent.click(category2);
 
-      await userEvent.click(await screen.findByText("전체"));
+    expect(await screen.findByText("11개")).toBeInTheDocument();
 
-      expect(await screen.findByText("340개")).toBeInTheDocument();
-    } catch (error) {
-      console.error(error);
-      screen.logTestingPlaygroundURL();
-      throw error;
-    }
+    await userEvent.click(await screen.findByText("전체"));
+
+    expect(await screen.findByText("340개")).toBeInTheDocument();
   });
 });

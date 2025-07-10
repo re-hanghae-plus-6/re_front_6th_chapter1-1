@@ -57,4 +57,13 @@ export default class Store {
   #notify() {
     this.#observers.forEach((observer) => observer(this.getState()));
   }
+
+  reset(initialState) {
+    this.#state = { ...initialState };
+    this.#notify();
+  }
+
+  static resetInstance() {
+    Store.#instance = null;
+  }
 }
