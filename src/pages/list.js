@@ -1,14 +1,15 @@
-import Header from "../components/header.js";
 import ProductCard from "../components/product-card.js";
-import Footer from "../components/footer.js";
 import Filter, { changeLimitEvent, changeSortEvent, changeSearchEvent } from "../components/filter.js";
 import { getProducts } from "../api/productApi.js";
-import { Store } from "../store.js";
+import { ListStore } from "../store.js";
+import { ListHeader } from "../components/header.js";
+import Footer from "../components/footer.js";
+import { renderRoute } from "../route.js";
 
 function ListPage({ isLoading = true, fetchData, limit, sort } = {}) {
   return /* HTML */ `
     <div class="min-h-screen bg-gray-50">
-      ${Header()}
+      ${ListHeader()}
       <main class="max-w-md mx-auto px-4 py-4">
         ${Filter({ limit, sort })}
         <div class="mb-6" id="product-list">${ProductCard({ isLoading, fetchData })}</div>
@@ -20,7 +21,7 @@ function ListPage({ isLoading = true, fetchData, limit, sort } = {}) {
 
 // mount 함수 추가
 ListPage.mount = function () {
-  const store = new Store();
+  const store = new ListStore();
   const storeState = store.getState();
   const root = document.getElementById("root");
 
@@ -41,20 +42,28 @@ ListPage.mount = function () {
 
   fetchAndRender();
 
-  window.addEventListener("changeLimit", (e) => {
+  document.addEventListener("changeLimit", (e) => {
     store.setLimit(e.detail.limit);
     fetchAndRender();
   });
 
-  window.addEventListener("changeSort", (e) => {
+  document.addEventListener("changeSort", (e) => {
     store.setSort(e.detail.sort);
     fetchAndRender();
   });
 
-  window.addEventListener("changeSearch", (e) => {
-    console.log("changeSearch", e.detail.search);
+  document.addEventListener("changeSearch", (e) => {
     store.setSearch(e.detail.search);
     fetchAndRender();
+  });
+
+  document.addEventListener("click", (event) => {
+    const productCard = event.target.closest(".product-card");
+    if (productCard) {
+      const productId = productCard.dataset.productId;
+      window.history.pushState({ productId }, "상품 상세", `/detail?productId=${productId}`);
+      renderRoute();
+    }
   });
 };
 

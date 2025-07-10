@@ -1,4 +1,4 @@
-export class Store {
+export class ListStore {
   constructor() {
     this.state = {
       limit: 20,
@@ -36,5 +36,17 @@ export class Store {
 
   setCategory2 = (category2) => {
     return (this.state.category2 = category2);
+  };
+}
+
+export class DetailStore {
+  constructor() {
+    this.state = {
+      productId: "",
+    };
+  }
+
+  getState = () => {
+    return this.state;
   };
 }
