@@ -119,6 +119,48 @@ export const homePage: PageModule = {
         updateProducts();
       };
 
+      const handleCategoryClick = (e: Event) => {
+        const target = e.target as HTMLElement;
+
+        if (target.dataset.breadcrumb === "reset") {
+          setState({ category1: null, category2: null, page: 1 });
+          updateProducts();
+          return;
+        }
+
+        if (target.dataset.breadcrumb === "category1") {
+          const cat1 = target.dataset.category1 ?? "";
+          setState({ category1: cat1, category2: null, page: 1 });
+          updateProducts();
+          return;
+        }
+
+        if (target.dataset.category1 && !target.dataset.category2) {
+          const cat1 = target.dataset.category1;
+          if (cat1 !== state.category1) {
+            setState({ category1: cat1, category2: null, page: 1 });
+            updateProducts();
+          }
+          return;
+        }
+
+        if (target.dataset.category2) {
+          const cat1 = target.dataset.category1 ?? state.category1 ?? "";
+          const cat2 = target.dataset.category2;
+          setState({ category1: cat1, category2: cat2, page: 1 });
+          updateProducts();
+        }
+      };
+
+      const handleProductClick = (e: Event) => {
+        const targetEl = (e.target as HTMLElement).closest(".product-card") as HTMLElement | null;
+        if (!targetEl) return;
+        const productId = targetEl.dataset.productId;
+        if (productId) {
+          navigate(`/product/${productId}`);
+        }
+      };
+
       const handleAddToCart = (e: Event) => {
         e.stopPropagation();
         const btn = e.currentTarget as HTMLElement;
@@ -245,48 +287,6 @@ export const homePage: PageModule = {
         // 다음 페이지 로드
         setState({ isLoadingNextPage: true, page: state.page + 1 });
         updateProducts({ isAppend: true });
-      }
-    };
-
-    const handleCategoryClick = (e: Event) => {
-      const target = e.target as HTMLElement;
-
-      if (target.dataset.breadcrumb === "reset") {
-        setState({ category1: null, category2: null, page: 1 });
-        updateProducts();
-        return;
-      }
-
-      if (target.dataset.breadcrumb === "category1") {
-        const cat1 = target.dataset.category1 ?? "";
-        setState({ category1: cat1, category2: null, page: 1 });
-        updateProducts();
-        return;
-      }
-
-      if (target.dataset.category1 && !target.dataset.category2) {
-        const cat1 = target.dataset.category1;
-        if (cat1 !== state.category1) {
-          setState({ category1: cat1, category2: null, page: 1 });
-          updateProducts();
-        }
-        return;
-      }
-
-      if (target.dataset.category2) {
-        const cat1 = target.dataset.category1 ?? state.category1 ?? "";
-        const cat2 = target.dataset.category2;
-        setState({ category1: cat1, category2: cat2, page: 1 });
-        updateProducts();
-      }
-    };
-
-    const handleProductClick = (e: Event) => {
-      const targetEl = (e.target as HTMLElement).closest(".product-card") as HTMLElement | null;
-      if (!targetEl) return;
-      const productId = targetEl.dataset.productId;
-      if (productId) {
-        navigate(`/product/${productId}`);
       }
     };
 
