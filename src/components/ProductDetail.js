@@ -112,9 +112,16 @@ export class ProductDetail extends Component {
       } else if ($quantityIncrease) {
         $quantityInput.value = this.#clamp(quantity + 1, $quantityInput.max);
       } else if ($addToCartBtn) {
-        const productId = $addToCartBtn.dataset.productId;
-        const product = productDetailStore.relatedProducts.find((item) => item.productId === productId);
-        cartStore.addItem({ ...product, quantity });
+        const { image, title, lprice, productId } = productDetailStore;
+
+        cartStore.addItem({
+          productId,
+          lprice,
+          image,
+          title,
+          quantity,
+          selected: true,
+        });
       }
     });
 

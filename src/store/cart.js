@@ -57,7 +57,7 @@ export const cartStore = observable({
     toast.success("장바구니에 추가되었습니다");
 
     if (cartStore.hasItem(product.productId)) {
-      cartStore.addItemQuantity(product.productId, 1);
+      cartStore.addItemQuantity(product.productId, product.quantity ?? 1);
     } else {
       const { productId, lprice, image, title, quantity = 1, selected = true } = product;
       const item = {
