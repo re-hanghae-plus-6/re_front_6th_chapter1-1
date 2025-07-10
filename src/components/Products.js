@@ -47,7 +47,7 @@ export class Products extends Component {
         if (!item) {
           throw new Error(`${productId} is not in products`);
         }
-
+        console.log(item);
         cartStore.addItem(item);
         return;
       }
