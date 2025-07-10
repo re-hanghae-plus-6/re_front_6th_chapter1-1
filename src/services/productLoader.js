@@ -5,8 +5,40 @@ import ProductFilter from "../components/product/ProductFilter";
 import ProductItem from "../components/product/ProductItem";
 import { InfiniteScrollSpinner } from "../components/product/ProductLoading";
 import { CartStorage } from "../utils/CartStorage";
+import { router } from "../utils/router";
 
 import { createCategoryCache, initializeFilterEventListeners } from "../utils/productFilterUtils";
+
+/**
+ * 상품 카드 클릭 이벤트 리스너 연결
+ */
+function initializeProductCardEventListeners() {
+  // 기존 이벤트 리스너 제거 (중복 방지)
+  document.removeEventListener("click", handleProductCardClick);
+  // 새 이벤트 리스너 추가 (이벤트 위임)
+  document.addEventListener("click", handleProductCardClick);
+}
+
+/**
+ * 상품 카드 클릭 핸들러
+ */
+function handleProductCardClick(event) {
+  // 상품 카드 자체나 상품 이미지, 상품 정보 영역 클릭 시에만 처리
+  const productCard = event.target.closest(".product-card");
+  if (!productCard) return;
+
+  // 장바구니 버튼 클릭은 무시 (기존 로직 유지)
+  if (event.target.classList.contains("add-to-cart-btn") || event.target.closest(".add-to-cart-btn")) {
+    return;
+  }
+
+  // 상품 ID 추출
+  const productId = productCard.getAttribute("data-product-id");
+  if (productId) {
+    // 상품 상세 페이지로 이동
+    router.navigate(`/product/${productId}`);
+  }
+}
 
 /**
  * 장바구니 버튼 이벤트 리스너 연결
@@ -163,6 +195,9 @@ export const loadProductList = async (query) => {
         <div class="grid grid-cols-2 gap-4 mb-6">${productListHTML}</div>
       </div>
     `;
+
+    // 상품 카드 클릭 이벤트 리스너 연결
+    initializeProductCardEventListeners();
 
     // 장바구니 버튼 이벤트 리스너 연결
     initializeCartEventListeners();
