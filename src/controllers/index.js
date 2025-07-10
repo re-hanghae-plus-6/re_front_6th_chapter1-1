@@ -12,6 +12,7 @@ class Controller {
       productDetail: null,
       cartModal: null,
     };
+    this.globalEventListeners = [];
   }
 
   async initialize() {
@@ -19,7 +20,9 @@ class Controller {
   }
 
   setupGlobalEventListeners() {
-    document.addEventListener("click", (event) => {
+    this.cleanupGlobalEventListeners();
+
+    const clickHandler = (event) => {
       const link = event.target.closest("a[data-link]");
       if (link) {
         event.preventDefault();
@@ -34,15 +37,35 @@ class Controller {
         event.preventDefault();
         store.dispatch(actions.hideToast());
       }
+    };
+
+    const popstateHandler = () => {
+      store.dispatch(actions.navigate(location.pathname));
+    };
+
+    document.addEventListener("click", clickHandler);
+    window.addEventListener("popstate", popstateHandler);
+
+    this.globalEventListeners.push(
+      { element: document, type: "click", handler: clickHandler },
+      { element: window, type: "popstate", handler: popstateHandler },
+    );
+  }
+
+  cleanupGlobalEventListeners() {
+    this.globalEventListeners.forEach(({ element, type, handler }) => {
+      element.removeEventListener(type, handler);
     });
+    this.globalEventListeners = [];
   }
 
   async handleRouteChange(currentRoute) {
     if (currentRoute === "/" || !currentRoute) {
-      if (!this.controllers.productList) {
-        this.controllers.productList = new ProductListController();
-        this.controllers.productList.setupEventListeners();
+      if (this.controllers.productList) {
+        this.controllers.productList.cleanup();
       }
+      this.controllers.productList = new ProductListController();
+      this.controllers.productList.setupEventListeners();
       await this.controllers.productList.loadInitialData();
     } else if (currentRoute.startsWith("/product/")) {
       const productId = getProductId(currentRoute);
@@ -55,13 +78,15 @@ class Controller {
       }
     }
 
+    // 카트 모달은 항상 유지
     if (!this.controllers.cartModal) {
       this.controllers.cartModal = new CartModalController();
       this.controllers.cartModal.setupEventListeners();
     }
   }
 
-  cleanup() {
+  cleanupCurrentControllers() {
+    // productList와 productDetail만 cleanup (페이지별 컨트롤러)
     if (this.controllers.productList) {
       this.controllers.productList.cleanup();
       this.controllers.productList = null;
@@ -70,6 +95,12 @@ class Controller {
       this.controllers.productDetail.cleanup();
       this.controllers.productDetail = null;
     }
+  }
+
+  cleanup() {
+    this.cleanupCurrentControllers();
+    this.cleanupGlobalEventListeners();
+
     if (this.controllers.cartModal) {
       this.controllers.cartModal.cleanup();
       this.controllers.cartModal = null;

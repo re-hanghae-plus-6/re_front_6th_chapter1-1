@@ -15,10 +15,6 @@ export class ProductListController {
   }
 
   setupEventListeners() {
-    this.storeSubscription = store.subscribe(() => {
-      this.syncUIState();
-    });
-    // 기존 이벤트 리스너 제거
     this.#eventListeners.forEach(({ element, type, handler }) => {
       element.removeEventListener(type, handler);
     });
@@ -269,21 +265,7 @@ export class ProductListController {
     store.dispatch(actions.showCartModal());
   }
 
-  syncUIState() {
-    const { filters, pagination } = this.state;
-
-    // select 요소들 상태 동기화
-    const limitSelect = document.querySelector("#limit-select");
-    const sortSelect = document.querySelector("#sort-select");
-    const searchInput = document.querySelector("#search-input");
-
-    if (limitSelect) limitSelect.value = pagination.limit.toString();
-    if (sortSelect) sortSelect.value = filters.sort || "price_asc";
-    if (searchInput) searchInput.value = filters.search || "";
-  }
-
   cleanup() {
-    // store 구독 해제
     if (this.storeSubscription) {
       this.storeSubscription();
       this.storeSubscription = null;

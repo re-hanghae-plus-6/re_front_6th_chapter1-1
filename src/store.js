@@ -25,6 +25,10 @@ class Store {
   }
 
   dispatch(action) {
+    if (typeof action === "function") {
+      return action(this.dispatch.bind(this));
+    }
+
     this.#lastAction = action;
     const oldState = this.#state;
     this.#state = reducer(oldState, action);

@@ -20,20 +20,19 @@ function render() {
 async function main() {
   await controller.initialize();
 
-  store.subscribe(() => {
-    render();
-  });
+  let lastRoute = null;
 
-  window.addEventListener("popstate", async () => {
-    const pathname = location.pathname;
-    store.dispatch(actions.navigate(pathname));
-    await controller.handleRouteChange(pathname);
+  store.subscribe(async (state) => {
+    if (state.currentRoute !== lastRoute) {
+      lastRoute = state.currentRoute;
+      await controller.handleRouteChange(state.currentRoute);
+    }
+
+    render();
   });
 
   const initialPath = location.pathname;
   store.dispatch(actions.navigate(initialPath));
-  await controller.handleRouteChange(initialPath);
-  render();
 }
 
 // 애플리케이션 시작
