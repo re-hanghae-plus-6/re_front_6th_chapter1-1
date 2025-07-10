@@ -76,11 +76,11 @@ export default class HomePage extends Component {
       filterInstance.render();
     }
 
-    if (!this.child.get(CHILD_COMPONENT.FILTER.PRODUCT_LIST)) {
+    if (!this.child.get(CHILD_COMPONENT.PRODUCT_LIST)) {
       const productListInstance = new ProductList($productListContainer);
-      this.addChild(productListInstance, CHILD_COMPONENT.FILTER.PRODUCT_LIST);
+      this.addChild(productListInstance, CHILD_COMPONENT.PRODUCT_LIST);
     } else {
-      const productListInstance = this.child.get(CHILD_COMPONENT.FILTER.PRODUCT_LIST);
+      const productListInstance = this.child.get(CHILD_COMPONENT.PRODUCT_LIST);
       productListInstance.$target = $productListContainer;
       productListInstance.render();
     }

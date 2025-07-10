@@ -29,11 +29,6 @@ export class Router {
   render() {
     const route = this.getCurrentRoute();
 
-    if (!route) {
-      this.rootElement.innerHTML = `<h1>404 Not Found</h1>`;
-      return;
-    }
-
     // 기존 인스턴스가 있으면 unmount
     if (this.currentInstance?.unmount) {
       this.currentInstance.unmount();
