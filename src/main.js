@@ -288,9 +288,20 @@ function setupModalEvents() {
       return;
     }
 
+    /** 삭제 이벤트 */
+    // NOTE 개별 아이템 삭제
     if (event.target.matches(".cart-item-remove-btn")) {
       const productId = event.target.dataset.productId;
       removeFromCart(productId);
+      return;
+    }
+
+    // NOTE 선택 아이템 삭제
+    if (event.target.matches("#cart-modal-remove-selected-btn")) {
+      const selectedProductIds = state.selectedCartItems;
+      selectedProductIds.forEach((productId) => {
+        removeFromCart(productId);
+      });
       return;
     }
 
