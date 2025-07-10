@@ -1,4 +1,11 @@
-export const ProductDetailPage = ({ product = null, relatedProducts = [], loading = false }) => {
+import { Layout } from "../components/layout.js";
+
+export const ProductDetailPage = ({
+  productDetail: { product = null, relatedProducts = [], loading = false, loadingRelatedProducts = false },
+  toast = { isVisible: false, message: "" },
+  cartComputed = { totalCount: 0 },
+  cart = { items: [], isModalOpen: false },
+}) => {
   const renderMainContent = () => {
     if (loading) {
       return `
@@ -83,7 +90,7 @@ export const ProductDetailPage = ({ product = null, relatedProducts = [], loadin
                   </svg>`,
                 ).join("")}
               </div>
-              <span class="ml-2 text-sm text-gray-600">${product.rating || 4.0} (${product.reviewCount || 749}개 리뷰)</span>
+              <span class="ml-2 text-sm text-gray-600">${product.rating || 4.0} (${product.reviewCount || 0}개 리뷰)</span>
             </div>
             <!-- 가격 -->
             <div class="mb-4">
@@ -91,7 +98,7 @@ export const ProductDetailPage = ({ product = null, relatedProducts = [], loadin
             </div>
             <!-- 재고 -->
             <div class="text-sm text-gray-600 mb-4">
-              재고 ${product.stock || 107}개
+              재고 ${product.stock || 0}개
             </div>
             <!-- 설명 -->
             <div class="text-sm text-gray-700 leading-relaxed mb-6">
@@ -110,7 +117,7 @@ export const ProductDetailPage = ({ product = null, relatedProducts = [], loadin
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
                 </svg>
               </button>
-              <input type="number" id="quantity-input" value="1" min="1" max="${product.stock || 107}" class="w-16 h-8 text-center text-sm border-t border-b border-gray-300 
+              <input type="number" id="quantity-input" value="1" min="1" max="${product.stock || 999}" class="w-16 h-8 text-center text-sm border-t border-b border-gray-300 
                 focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
               <button id="quantity-increase" class="w-8 h-8 flex items-center justify-center border border-gray-300 
                  rounded-r-md bg-gray-50 hover:bg-gray-100">
@@ -137,7 +144,7 @@ export const ProductDetailPage = ({ product = null, relatedProducts = [], loadin
       </div>
       
       ${
-        relatedProducts.length > 0
+        relatedProducts.length > 0 && !loading && !loadingRelatedProducts
           ? `
               <!-- 관련 상품 -->
               <div class="bg-white rounded-lg shadow-sm">
@@ -157,32 +164,15 @@ export const ProductDetailPage = ({ product = null, relatedProducts = [], loadin
     `;
   };
 
-  return `
-    <div class="min-h-screen bg-gray-50">
-      <header class="bg-white shadow-sm sticky top-0 z-40">
-        <div class="max-w-md mx-auto px-4 py-4">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-              <button onclick="window.history.back()" class="p-2 text-gray-700 hover:text-gray-900 transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                </svg>
-              </button>
-              <h1 class="text-lg font-bold text-gray-900">상품 상세</h1>
-            </div>
-          </div>
-        </div>
-      </header>
-      
+  return Layout({
+    headerType: "detail",
+    cartComputed,
+    cart,
+    toast,
+    children: `
       <main class="max-w-md mx-auto px-4 py-4">
         ${renderMainContent()}
       </main>
-      
-      <footer class="bg-white shadow-sm sticky top-0 z-40">
-        <div class="max-w-md mx-auto py-8 text-center text-gray-500">
-          <p>© 2025 항해플러스 프론트엔드 쇼핑몰</p>
-        </div>
-      </footer>
-    </div>
-  `;
+    `,
+  });
 };
