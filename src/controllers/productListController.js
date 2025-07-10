@@ -1,14 +1,14 @@
 import { store } from "../store.js";
 import { actions } from "../actions/index.js";
 import { getProducts, getCategories } from "../api/productApi.js";
-import { CartController } from "./cartController.js";
+import { CartModalController } from "./cartModalController.js";
 
 export class ProductListController {
   #eventListeners = [];
-  #cartController = null;
+  #cartModalController = null;
 
   constructor() {
-    this.#cartController = new CartController();
+    this.#cartModalController = new CartModalController();
     this.#setupEventListeners();
   }
 
@@ -267,9 +267,9 @@ export class ProductListController {
     });
     this.#eventListeners = [];
 
-    if (this.#cartController) {
-      this.#cartController.cleanup();
-      this.#cartController = null;
+    if (this.#cartModalController) {
+      this.#cartModalController.cleanup();
+      this.#cartModalController = null;
     }
   }
 }

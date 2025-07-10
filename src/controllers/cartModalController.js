@@ -1,7 +1,7 @@
 import { store } from "../store.js";
 import { actions } from "../actions/index.js";
 
-export class CartController {
+export class CartModalController {
   #eventListeners = [];
 
   constructor() {
