@@ -174,18 +174,44 @@ function addToCart(productId) {
 function removeFromCart(productId) {
   // 해당 상품의 첫 번째 인스턴스만 제거
   const index = state.cart.findIndex((item) => item.productId === productId);
+
   if (index !== -1) {
     state.cart.splice(index, 1);
 
-    // 모달 내용만 업데이트
-    const modalContent = document.querySelector(".cart-modal .flex.flex-col");
-    if (modalContent) {
-      const newModalHTML = CartModal({ cart: state.cart });
-      // 내용 부분만 교체
-      modalContent.innerHTML = newModalHTML;
+    // 모달이 열려있다면 모달만 다시 렌더링
+    if (document.querySelector(".cart-modal")) {
+      renderCartModal();
     }
+
     showToast({ type: "delete" });
   }
+}
+
+function renderCartModal() {
+  // 기존 이벤트 리스너 정리
+  if (modalClickHandler) {
+    document.removeEventListener("click", modalClickHandler);
+    modalClickHandler = null;
+  }
+  if (modalKeydownHandler) {
+    document.removeEventListener("keydown", modalKeydownHandler);
+    modalKeydownHandler = null;
+  }
+
+  // 기존 모달 제거
+  const existingModal = document.querySelector(".cart-modal");
+  if (existingModal) {
+    existingModal.remove();
+  }
+
+  // 새 모달 생성
+  const modalHTML = CartModal({
+    cart: state.cart,
+    products: state.products,
+  });
+
+  document.querySelector("#modal-root").insertAdjacentHTML("beforeend", modalHTML);
+  setupModalEvents();
 }
 
 function showCartModal() {
@@ -223,7 +249,7 @@ function setupModalEvents() {
   // 새로운 이벤트 리스너 생성
   modalClickHandler = (event) => {
     // 상품 삭제 버튼 클릭
-    if (event.target.matches(".remove-item-btn")) {
+    if (event.target.matches(".cart-item-remove-btn")) {
       const productId = event.target.dataset.productId;
       removeFromCart(productId);
       return;
