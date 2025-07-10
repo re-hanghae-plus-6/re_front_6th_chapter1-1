@@ -46,7 +46,7 @@ class Router {
         foundComponent = route.component;
         isDetailPage = route.isDetail || false;
 
-        const paramNames = (route.path.match(/:\w+/g) || []).map(name => name.substring(1));
+        const paramNames = (route.path.match(/:\w+/g) || []).map((name) => name.substring(1));
         paramNames.forEach((name, index) => {
           extractedParams[name] = match[index + 1];
         });
@@ -57,7 +57,7 @@ class Router {
     return {
       component: foundComponent,
       params: extractedParams,
-      isDetail: isDetailPage
+      isDetail: isDetailPage,
     };
   }
 
@@ -67,8 +67,7 @@ class Router {
 
     if (window.location.pathname === "/") {
       addScrollListener();
-    }
-    else {
+    } else {
       removeScrollListener();
     }
   }

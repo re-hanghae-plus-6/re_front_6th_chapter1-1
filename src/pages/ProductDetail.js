@@ -8,12 +8,12 @@ export const ProductDetail = (props) => {
   const { urlParams } = props;
   const productId = urlParams.id;
 
-  // 1. productId가 없는 경우 NotFound 컴포넌트를 반환
+  // productId가 없는 경우 NotFound 컴포넌트를 반환
   if (!productId) {
     return NotFound();
   }
 
-  // 2. 로딩 UI를 먼저 담을 div를 생성하고, 비동기로 상품 정보를 채워넣음
+  // 로딩 UI를 먼저 담을 div를 생성하고, 비동기로 상품 정보를 채워넣음
   const appRoot = document.querySelector("#root");
 
   // 로딩 UI 템플릿
