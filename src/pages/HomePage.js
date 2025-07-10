@@ -20,14 +20,12 @@ export const HomePage = createComponent({
       panel?.addEventListener("click", (e) => {
         const t = e.target;
         if (t.classList.contains("category1-filter-btn")) {
-          productFilterStore.setState({ filters: { page: 1 }, category1: t.dataset.category1, category2: "" });
+          productFilterStore.setState({ filters: { page: 1, category1: t.dataset.category1, category2: "" } });
           loadProducts();
         }
         if (t.classList.contains("category2-filter-btn")) {
           productFilterStore.setState({
-            filters: { page: 1 },
-            category1: t.dataset.category1,
-            category2: t.dataset.category2,
+            filters: { page: 1, category1: t.dataset.category1, category2: t.dataset.category2 },
           });
           loadProducts();
         }
