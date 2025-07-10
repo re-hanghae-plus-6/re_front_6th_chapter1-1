@@ -12,7 +12,7 @@ import { saveToStorage } from "../../../utils/localStorage.js";
 import { navigate } from "../../../router.js";
 import { addEvent } from "../../../utils/eventManager.js";
 import { updateElement } from "../../../utils/domUtils.js";
-import { showSuccessToast } from "../../../utils/toastManager.js";
+import { showInfoToast, showSuccessToast } from "../../../utils/toastManager.js";
 
 const renderHeader = (totalItems = 0) => `
   <div class="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
@@ -256,10 +256,8 @@ CartModal.onMount = () => {
   });
 
   addEvent("click", "#cart-modal-clear-cart-btn", () => {
-    if (confirm("장바구니를 모두 비우시겠습니까?")) {
-      clearCart();
-      showSuccessToast("장바구니가 비워졌습니다.");
-    }
+    clearCart();
+    showInfoToast("장바구니가 비워졌습니다.");
   });
 
   addEvent("click", "#cart-modal-checkout-btn", () => {
