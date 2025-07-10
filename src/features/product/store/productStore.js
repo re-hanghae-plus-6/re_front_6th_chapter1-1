@@ -5,6 +5,7 @@ export const productStore = createState({
   categories: {},
   isLoading: false,
   isLoadingMore: false,
+  error: null,
   pagination: {
     page: 1,
     limit: 20,

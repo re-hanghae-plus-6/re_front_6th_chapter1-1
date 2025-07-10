@@ -7,7 +7,7 @@ import { useParams, router } from "../router.js";
 import { addEvent } from "../utils/eventManager.js";
 import { updateElement } from "../utils/domUtils.js";
 import { addToCart } from "../features/cart/services/cartService.js";
-import { showSuccessToast } from "../utils/toastManager.js";
+import { showSuccessToast, showErrorToast } from "../utils/toastManager.js";
 
 const renderLoadingContent = () => {
   return `
@@ -15,6 +15,25 @@ const renderLoadingContent = () => {
       <div class="text-center">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
         <p class="text-gray-600">상품 정보를 불러오는 중...</p>
+      </div>
+    </div>
+  `;
+};
+
+const renderErrorContent = (errorMessage) => {
+  return `
+    <div class="py-20 bg-gray-50 flex items-center justify-center">
+      <div class="text-center max-w-sm mx-auto">
+        <div class="text-red-500 mb-4">
+          <svg class="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">상품을 불러올 수 없습니다</h3>
+        <p class="text-gray-600 mb-4">${errorMessage}</p>
+        <button id="retry-product-detail-button" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">
+          다시 시도
+        </button>
       </div>
     </div>
   `;
@@ -218,9 +237,10 @@ const loadProductDetail = async (productId) => {
     loadRelatedProducts(product);
   } catch (error) {
     console.error("상품 상세 정보 로딩 실패:", error);
+    showErrorToast("상품 정보를 불러오는데 실패했습니다. 다시 시도해주세요.");
     productDetailStore.setState({
       isLoading: false,
-      error: error.message,
+      error: error.message || "상품 정보 로딩에 실패했습니다.",
     });
   }
 };
@@ -301,17 +321,27 @@ const setupEventHandlers = () => {
       showSuccessToast("장바구니에 추가되었습니다");
     }
   });
+
+  addEvent("click", "#retry-product-detail-button", () => {
+    const params = useParams();
+    const productId = params.id;
+    if (productId) {
+      loadProductDetail(productId);
+    }
+  });
 };
 
 let storeUnsubscribe = null;
 
 const setupStateSubscriptions = () => {
   return productDetailStore.subscribe((newState, prevState) => {
-    if (!prevState || newState.isLoading !== prevState.isLoading) {
+    if (!prevState || newState.isLoading !== prevState.isLoading || newState.error !== prevState.error) {
       const $main = document.querySelector("main");
       if ($main) {
         if (newState.isLoading) {
           updateElement("main", renderLoadingContent());
+        } else if (newState.error) {
+          updateElement("main", renderErrorContent(newState.error));
         } else if (newState.product) {
           updateElement("main", renderProductContent(newState.product, newState.relatedProducts, newState.quantity));
         }
@@ -355,7 +385,7 @@ export const ProductDetailPage = () => {
     <div class="min-h-screen bg-gray-50">
       ${Header({ title: "상품 상세", showBackButton: true })}
       <main class="max-w-md mx-auto px-4 py-4">
-        ${state.isLoading ? renderLoadingContent() : renderProductContent(state.product, state.relatedProducts, state.quantity)}
+        ${state.isLoading ? renderLoadingContent() : state.error ? renderErrorContent(state.error) : renderProductContent(state.product, state.relatedProducts, state.quantity)}
       </main>
       ${Footer()}
     </div>

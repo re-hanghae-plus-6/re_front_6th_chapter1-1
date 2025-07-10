@@ -10,7 +10,7 @@ import { router } from "../router.js";
 import { updateElement } from "../utils/domUtils.js";
 import { setupInfiniteScroll } from "../utils/infiniteScroll.js";
 import { addToCart } from "../features/cart/services/cartService.js";
-import { showSuccessToast } from "../utils/toastManager.js";
+import { showSuccessToast, showErrorToast } from "../utils/toastManager.js";
 
 const defaultParams = {
   limit: 20,
@@ -22,7 +22,7 @@ const defaultParams = {
 };
 
 export const loadProducts = async (params = {}) => {
-  productStore.setState({ isLoading: true });
+  productStore.setState({ isLoading: true, error: null });
 
   try {
     const response = await getProducts(params);
@@ -38,12 +38,15 @@ export const loadProducts = async (params = {}) => {
         hasPrev: false,
       },
       isLoading: false,
+      error: null,
     });
   } catch (error) {
     console.error("상품 불러오기 실패:", error);
+    showErrorToast("상품을 불러오는데 실패했습니다. 다시 시도해주세요.");
     productStore.setState({
       products: [],
       isLoading: false,
+      error: error.message || "상품 로딩에 실패했습니다.",
     });
   }
 };
@@ -67,6 +70,7 @@ export const loadMoreProducts = async (params = {}) => {
     });
   } catch (error) {
     console.error("추가 상품 불러오기 실패:", error);
+    showErrorToast("추가 상품을 불러오는데 실패했습니다.");
     productStore.setState({
       isLoadingMore: false,
     });
@@ -150,6 +154,21 @@ const renderLoadingMessage = () => `
             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
     </svg>
     <span class="text-sm text-gray-600">상품을 불러오는 중...</span>
+  </div>
+`;
+
+const renderErrorContent = (errorMessage) => `
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+    <div class="text-red-500 mb-4">
+      <svg class="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+    </div>
+    <h3 class="text-lg font-medium text-gray-900 mb-2">데이터를 불러올 수 없습니다</h3>
+    <p class="text-gray-600 mb-4">${errorMessage}</p>
+    <button id="retry-button" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">
+      다시 시도
+    </button>
   </div>
 `;
 
@@ -240,8 +259,8 @@ export const ProductListPage = () => {
           }
           
           <!-- 상품 그리드 -->
-          <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
-            ${state.isLoading ? ProductListSkeleton() : renderProducts(state.products)}
+          <div class="mb-6" id="products-grid">
+            ${state.isLoading ? `<div class="grid grid-cols-2 gap-4">${ProductListSkeleton()}</div>` : state.error ? renderErrorContent(state.error) : `<div class="grid grid-cols-2 gap-4">${renderProducts(state.products)}</div>`}
           </div>
           
           <!-- 하단 메시지 -->
@@ -271,8 +290,20 @@ const setupStateSubscription = () => {
       updateElement("#category-breadcrumb", renderCategoryBreadcrumb(currentParams.category1, currentParams.category2));
     }
 
-    if (!prevState || newState.products !== prevState.products || newState.isLoading !== prevState.isLoading) {
-      updateElement("#products-grid", newState.isLoading ? ProductListSkeleton() : renderProducts(newState.products));
+    if (
+      !prevState ||
+      newState.products !== prevState.products ||
+      newState.isLoading !== prevState.isLoading ||
+      newState.error !== prevState.error
+    ) {
+      updateElement(
+        "#products-grid",
+        newState.isLoading
+          ? `<div class="grid grid-cols-2 gap-4">${ProductListSkeleton()}</div>`
+          : newState.error
+            ? renderErrorContent(newState.error)
+            : `<div class="grid grid-cols-2 gap-4">${renderProducts(newState.products)}</div>`,
+      );
     }
 
     if (!prevState || newState.pagination !== prevState.pagination || newState.isLoading !== prevState.isLoading) {
@@ -393,6 +424,11 @@ const setupEventHandlers = () => {
       router.get().push(`/product/${productId}`);
     }
   });
+
+  addEvent("click", "#retry-button", () => {
+    const currentParams = getURLParams(defaultParams);
+    loadProducts(currentParams);
+  });
 };
 
 const setupProductInfiniteScroll = () => {
@@ -430,10 +466,12 @@ const loadProductListPageInitialData = async (params) => {
     });
   } catch (error) {
     console.error("데이터 로딩 실패:", error);
+    showErrorToast("데이터를 불러오는데 실패했습니다. 다시 시도해주세요.");
     productStore.setState({
       categories: {},
       products: [],
       isLoading: false,
+      error: error.message || "데이터 로딩에 실패했습니다.",
     });
   }
 };
