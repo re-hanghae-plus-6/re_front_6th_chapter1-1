@@ -1,7 +1,7 @@
 import { getProduct, getProducts } from "../api/productApi";
 import Footer from "../components/common/Footer";
-import Header from "../components/common/Header";
 import Loading from "../components/common/Loading";
+import ProductDetailHeader from "../components/common/ProductDetailHeader";
 import MinusIcon from "../components/icon/MinusIcon";
 import PlusIcon from "../components/icon/PlusIcon";
 import StarEmpty from "../components/icon/StarEmpty";
@@ -125,7 +125,7 @@ export default class ProductDetailPage extends Component {
     }
 
     return /* HTML */ `<div class="min-h-screen bg-gray-50">
-      ${Header()}
+      ${ProductDetailHeader()}
       <main class="max-w-md mx-auto px-4 py-4">
         <!-- 브레드크럼 -->
 
