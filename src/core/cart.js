@@ -256,11 +256,11 @@ function handleModalClick(e) {
 
   // 전체 비우기
   if (e.target.closest("#cart-modal-clear-cart-btn")) {
-    // 클릭 요소가 안정적으로 처리된 뒤 비우기를 실행하여 테스트 환경에서의 element-detached 오류 방지
+    // 버튼 클릭 처리가 완전히 끝난 뒤 DOM 을 갱신하기 위해 약간의 지연을 둔다 (Playwright element-detached 회피)
     setTimeout(() => {
       clearCart();
       updateCartBadge();
-    }, 0);
+    }, 50);
     return;
   }
 }
