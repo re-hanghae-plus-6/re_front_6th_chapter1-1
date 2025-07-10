@@ -9,7 +9,7 @@ const enableMocking = () =>
 
 function main() {
   const currentUrl = window.location.pathname;
-  document.getElementById("root").innerHTML = renderRoute(currentUrl);
+  renderRoute(currentUrl);
 }
 
 // 애플리케이션 시작

@@ -2,14 +2,15 @@ import { _404_ } from "./pages/404.js";
 import { HomePage } from "./pages/HomePage";
 import { ProductDetailPage } from "./pages/ProductDetailPage.js";
 
+let currentComponent = null;
 const routes = defineRoutes([
-  { path: "/", component: () => HomePage() },
+  { path: "/", component: () => HomePage },
   { path: "/products/detail/:id", component: (id) => ProductDetailPage(id) },
 ]);
 
 export function navigate(url) {
   history.pushState(null, "", url);
-  document.getElementById("root").innerHTML = renderRoute(url);
+  renderRoute(url);
 }
 
 export function defineRoutes(routeList) {
@@ -31,6 +32,10 @@ function pathToRegex(path) {
 }
 
 export function renderRoute(pathname) {
+  if (currentComponent?.unmount) {
+    currentComponent.unmount(); // 이전 페이지 언마운트
+  }
+
   for (const route of routes) {
     const match = pathname.match(route.regex);
     if (match) {
@@ -38,15 +43,25 @@ export function renderRoute(pathname) {
       route.paramNames.forEach((key, index) => {
         params[key] = match[index + 1];
       });
-      return route.component(...Object.values(params));
+
+      const component = route.component(...Object.values(params)); // ex. HomePage
+      currentComponent = component;
+
+      const root = document.getElementById("root");
+      component.mount(root); // mount 내부에서 render 실행됨
+      return;
     }
   }
-  return _404_();
+
+  // 404 fallback
+  const root = document.getElementById("root");
+  root.innerHTML = _404_();
+  currentComponent = null;
 }
 
 window.addEventListener("popstate", () => {
   const currentUrl = window.location.pathname;
-  document.getElementById("root").innerHTML = renderRoute(currentUrl, routes);
+  renderRoute(currentUrl);
 });
 
 document.addEventListener("click", (e) => {
