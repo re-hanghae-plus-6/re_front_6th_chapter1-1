@@ -28,6 +28,16 @@ export default class Component {
     return "";
   }
 
+  unmount() {
+    // 🔷 컴포넌트가 언마운트될 때 실행할 로직
+    // 하위 컴포넌트 정리 등
+
+    this.cleanup();
+    this.child.forEach((child) => child.cleanup?.());
+    this.child.clear();
+    this.$target.innerHTML = "";
+  }
+
   cleanup() {
     // 🔷 기존 이벤트/자원을 정리하는 훅
     // 하위 클래스에서 오버라이드

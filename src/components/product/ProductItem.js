@@ -21,13 +21,6 @@
 export default function ProductItem(product) {
   const { productId, image, title, lprice } = product;
 
-  // const { navigate } = useNavigate();
-  // const param = useParams();
-
-  // const handleClick = () => {
-  //   navigate(`/product/${param}`, true);
-  // };
-
   return /* HTML */ `<div
     class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
     data-product-id=${productId}
@@ -35,8 +28,8 @@ export default function ProductItem(product) {
     <!-- 상품 이미지 -->
     <div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image">
       <img
-        src=${image}
-        alt=${title}
+        src="${image}"
+        alt="${title}"
         class="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
         loading="lazy"
       />
