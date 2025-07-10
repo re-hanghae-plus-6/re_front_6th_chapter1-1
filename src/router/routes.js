@@ -1,6 +1,7 @@
 import { ProductDetailPage } from "../pages/ProductDetailPage.js";
 import { ProductDetailWaitPage } from "../pages/ProductDetailWaitPage.js";
 import { NotFoundPage } from "../pages/NotFoundPage.js";
+import { Header } from "../pages/Header.js";
 import { Footer } from "../pages/Footer.js";
 
 export const routes = [
@@ -29,6 +30,7 @@ export const routes = [
     action: () => {
       const root = document.getElementById("root");
       root.innerHTML = `
+        ${Header()}
         ${NotFoundPage()}
         ${Footer()}
       `;

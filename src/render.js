@@ -1,5 +1,6 @@
 import { MainPage } from "./pages/MainPage.js";
 import { Footer } from "./pages/Footer.js";
+import { Header } from "./pages/Header.js";
 import { router } from "./router/index.js";
 import { showToast } from "./components/Toast.js";
 import { ProductItem } from "./components/ProductItem.js";
@@ -60,6 +61,7 @@ export function render() {
   // 페이지별 렌더링
   if (path === "/") {
     root.innerHTML = `
+      ${Header()}
       ${MainPage(appState)}
       ${Footer()}
     `;
@@ -251,6 +253,7 @@ function bindCategoryEvents() {
  */
 function bindInfiniteScrollEvent() {
   // 무한 스크롤 이벤트 리스너 (메인 페이지에서만, 한 번만 등록)
+  console.log("무한 스크롤 이벤트 바인딩");
   if (!window.scrollHandlerAdded) {
     window.addEventListener("scroll", () => {
       // 메인 페이지가 아니면 무한 스크롤 비활성화
@@ -310,9 +313,26 @@ export function appendNewProducts() {
 
   productsGrid.insertAdjacentHTML("beforeend", newProductsHTML);
 
+  // 상품 개수 정보 업데이트
+  updateProductCount();
+
   // 새로 추가된 상품들에 이벤트 바인딩
   bindProductEvents();
   bindNavigationEvents();
+}
+
+/**
+ * 상품 개수 정보 업데이트 함수
+ */
+function updateProductCount() {
+  const productState = productStore.getState();
+  const productCountElement = document.getElementById("product-count");
+
+  if (productCountElement) {
+    productCountElement.innerHTML = `
+      총 <span class="font-medium text-gray-900">${productState.total}개</span>의 상품
+    `;
+  }
 }
 
 /**

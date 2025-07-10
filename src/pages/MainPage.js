@@ -1,6 +1,6 @@
-import { LimitSelect } from "../components/LimitSelect.js";
-import { ProductItem } from "../components/ProductItem.js";
-import { LoadingList } from "../components/Loading.js";
+import { LimitSelect } from "../components/LimitSelect";
+import { ProductItem } from "../components/ProductItem";
+import { LoadingList } from "../components/Loading";
 
 export const MainPage = (appState) => {
   // store 기반 상태 구조에 맞게 데이터 추출
@@ -21,24 +21,6 @@ export const MainPage = (appState) => {
   const categorylist = Object.entries(categories);
   return `
     <div class="min-h-screen bg-gray-50">
-      <header class="bg-white shadow-sm sticky top-0 z-40">
-        <div class="max-w-md mx-auto px-4 py-4">
-          <div class="flex items-center justify-between">
-            <h1 class="text-xl font-bold text-gray-900">
-              <a href="/" data-link="">쇼핑몰</a>
-            </h1>
-            <div class="flex items-center space-x-2">
-              <!-- 장바구니 아이콘 -->
-              <button id="cart-icon-btn" class="relative p-2 text-gray-700 hover:text-gray-900 transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M3 3h2l.4 2M7 13h10l4-8H5.4m2.6 8L6 2H3m4 11v6a1 1 0 001 1h1a1 1 0 001-1v-6M13 13v6a1 1 0 001 1h1a1 1 0 001-1v-6"></path>
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
       <main class="max-w-md mx-auto px-4 py-4">
         <!-- 검색 및 필터 -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
@@ -150,12 +132,12 @@ export const MainPage = (appState) => {
                 ? ""
                 : loading
                   ? `
-              <div class="mb-4 text-sm text-gray-600">
+              <div id="product-count" class="mb-4 text-sm text-gray-600">
                 총 <span class="font-medium text-gray-900">0개</span>의 상품
               </div>
               `
                   : `
-              <div class="mb-4 text-sm text-gray-600">
+              <div id="product-count" class="mb-4 text-sm text-gray-600">
                 총 <span class="font-medium text-gray-900">${total}개</span>의 상품
               </div>
               `
