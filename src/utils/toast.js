@@ -79,16 +79,14 @@ export function toast(type, message, delay = 3_000) {
 function removeToast(toastId, timer, abortController) {
   const toastContainer = document.querySelector(TOAST_CONTAINER_SELECTOR);
   const toast = document.getElementById(toastId);
-  toast.remove();
+  toast?.remove();
 
-  if (toastContainer.childElementCount === 0) {
-    toastContainer.remove();
-    abortController.abort();
+  if (toastContainer?.childElementCount === 0) {
+    toastContainer?.remove();
+    abortController?.abort();
   }
 
-  if (timer) {
-    clearTimeout(timer);
-  }
+  clearTimeout?.(timer);
 }
 
 function insertAfter(newElement, targetSelector = "main") {
