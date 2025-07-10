@@ -1,5 +1,7 @@
-const NotFound = {
-  el: null,
+class NotFound {
+  constructor() {
+    this.el = null;
+  }
 
   template() {
     return `
@@ -31,7 +33,7 @@ const NotFound = {
         </div>
       </main>
     `;
-  },
+  }
 
   render() {
     const template = document.createElement("template");
@@ -39,16 +41,23 @@ const NotFound = {
     this.el = template.content.firstElementChild;
     this.addEvent();
     return this.el;
-  },
+  }
 
   addEvent() {
-    // 특별한 이벤트 없지만 추후를 위해 구조 유지
-  },
+    // 홈으로 돌아가기 링크 처리
+    const homeLink = this.el.querySelector('a[href="/"]');
+    if (homeLink) {
+      homeLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        history.pushState({}, "", "/");
+        window.dispatchEvent(new Event("popstate"));
+      });
+    }
+  }
 
-  init() {
-    const el = this.render();
-    return el;
-  },
-};
+  async init() {
+    return this.render();
+  }
+}
 
 export default NotFound;

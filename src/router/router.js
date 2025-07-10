@@ -14,6 +14,7 @@ export async function router() {
     component = new Home();
   } else if (path.startsWith("/product/")) {
     const productId = path.split("/")[2];
+    // 매번 새로운 Detail 인스턴스 생성
     component = new Detail({ productId });
   } else if (path === "/ex") {
     component = new ExampleLayout();
@@ -27,4 +28,5 @@ export async function router() {
 
   $app.innerHTML = "";
   $app.appendChild(component.render());
+  // window.scrollTo 제거 - JSDOM에서 지원하지 않음
 }

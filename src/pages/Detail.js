@@ -10,12 +10,25 @@ class Detail {
       relatedProducts: [],
       quantity: 1,
       loading: true,
-      productId: options.productId, // productId를 생성자에서 받아서 상태에 저장
+      productId: options.productId,
     };
   }
 
+  // 컴포넌트 재사용 시 상태 초기화
+  resetState() {
+    this.state = {
+      product: null,
+      relatedProducts: [],
+      quantity: 1,
+      loading: true,
+      productId: this.state.productId,
+    };
+    // 기존 엘리먼트도 초기화
+    this.el = null;
+  }
+
   async fetchProductDetails() {
-    const { productId } = this.state; // 상태에서 productId 가져오기
+    const { productId } = this.state;
     console.log("Fetching product details for productId:", productId);
     if (!productId) {
       console.error("Product ID is missing.");
@@ -41,11 +54,20 @@ class Detail {
         description: fetchedProduct.description || "",
       };
 
+      // 먼저 상품 정보만 설정 (관련 상품은 아직 빈 배열)
       this.setState({
         product,
-        relatedProducts: allProducts.products.filter((p) => p.productId !== productId).slice(0, 19),
         loading: false,
+        relatedProducts: [], // 빈 배열로 시작
       });
+
+      // 관련 상품은 매우 짧은 지연 후 설정 (비동기 로딩 시뮬레이션)
+      setTimeout(() => {
+        const relatedProducts = allProducts.products.filter((p) => p.productId !== productId).slice(0, 19);
+        this.setState({
+          relatedProducts,
+        });
+      }, 1); // 1ms로 매우 짧게 설정
     } catch (error) {
       console.error("Error fetching product details:", error);
       this.setState({ loading: false });
@@ -78,7 +100,36 @@ class Detail {
       return `<div>Product not found</div>`;
     }
 
-    const { title, image, lprice, description, rating, category1 } = this.state.product;
+    const { title, image, lprice, description, rating, category1, productId } = this.state.product;
+
+    // 관련 상품 섹션을 조건부로 렌더링
+    const relatedProductsSection =
+      this.state.relatedProducts && this.state.relatedProducts.length > 0
+        ? `<!-- 관련 상품 -->
+          <div class="bg-white rounded-lg shadow-sm">
+            <div class="p-4 border-b border-gray-200">
+              <h2 class="text-lg font-bold text-gray-900">관련 상품</h2>
+              <p class="text-sm text-gray-600">같은 카테고리의 다른 상품들</p>
+            </div>
+            <div class="p-4">
+              <div class="grid grid-cols-2 gap-3 responsive-grid">
+                  ${this.state.relatedProducts
+                    .map(
+                      (p) => `
+                       <div class="related-product-card border p-2 rounded-md" data-product-id="${p.productId}">
+                          <a href="/product/${p.productId}">
+                              <img src="${p.image}" alt="${p.title}" class="w-full h-32 object-cover">
+                              <h3 class="mt-2 text-sm font-bold">${p.title}</h3>
+                              <p class="text-xs">${parseInt(p.lprice).toLocaleString()}원</p>
+                          </a>
+                      </div>
+                  `,
+                    )
+                    .join("")}
+                </div>
+              </div>
+          </div>`
+        : "";
 
     return `
         <!-- 브레드크럼 -->
@@ -92,15 +143,15 @@ class Detail {
               category1
                 ? ` <button class="breadcrumb-link" data-category1="생활/건강">
               생활/건강
-            </button>`
+            </button>
+            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>`
                 : ""
             }
             <button class="breadcrumb-link" data-category1="생활/건강">
               생활/건강
             </button>
-            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-            </svg>
             <button class="breadcrumb-link" data-category2="생활용품">
               생활용품
             </button>
@@ -149,7 +200,7 @@ class Detail {
               </div>
               <!-- 재고 -->
               <div class="text-sm text-gray-600 mb-4">
-                재고 107개
+                재고 ${this.state.product.stock}개
               </div>
               <!-- 설명 -->
               <div class="text-sm text-gray-700 leading-relaxed mb-6">
@@ -168,7 +219,7 @@ class Detail {
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
                   </svg>
                 </button>
-                <input type="number" id="quantity-input" value="${this.state.quantity}" min="1" max="107" class="w-16 h-8 text-center text-sm border-t border-b border-gray-300 
+                <input type="number" id="quantity-input" value="${this.state.quantity}" min="1" max="${this.state.product.stock}" class="w-16 h-8 text-center text-sm border-t border-b border-gray-300 
                   focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                 <button id="quantity-increase" class="w-8 h-8 flex items-center justify-center border border-gray-300 
                    rounded-r-md bg-gray-50 hover:bg-gray-100">
@@ -179,7 +230,7 @@ class Detail {
               </div>
             </div>
             <!-- 액션 버튼 -->
-            <button id="add-to-cart-btn" data-product-id="85067212996" class="w-full bg-blue-600 text-white py-3 px-4 rounded-md 
+            <button id="add-to-cart-btn" data-product-id="${productId}" class="w-full bg-blue-600 text-white py-3 px-4 rounded-md 
                  hover:bg-blue-700 transition-colors font-medium">
               장바구니 담기
             </button>
@@ -194,30 +245,7 @@ class Detail {
           </button>
         </div>
 
-         <!-- 관련 상품 -->
-        <div class="bg-white rounded-lg shadow-sm">
-          <div class="p-4 border-b border-gray-200">
-            <h2 class="text-lg font-bold text-gray-900">관련 상품</h2>
-            <p class="text-sm text-gray-600">같은 카테고리의 다른 상품들</p>
-          </div>
-          <div class="p-4">
-            <div class="grid grid-cols-2 gap-3 responsive-grid">
-                ${this.state.relatedProducts
-                  .map(
-                    (p) => `
-                     <div class="related-product-card border p-2 rounded-md" data-product-id="${p.productId}">
-                        <a href="/product/${p.productId}">
-                            <img src="${p.image}" alt="${p.title}" class="w-full h-32 object-cover">
-                            <h3 class="mt-2 text-sm font-bold">${p.title}</h3>
-                            <p class="text-xs">${parseInt(p.lprice).toLocaleString()}원</p>
-                        </a>
-                    </div>
-                `,
-                  )
-                  .join("")}
-              </div>
-            </div>
-        </div>
+        ${relatedProductsSection}
     `;
   }
 
@@ -234,19 +262,36 @@ class Detail {
   }
 
   addEventListeners() {
-    // const $quantityInput = this.el.querySelector("#quantity-input");
+    const $quantityInput = this.el.querySelector("#quantity-input");
     const $increaseBtn = this.el.querySelector("#quantity-increase");
     const $decreaseBtn = this.el.querySelector("#quantity-decrease");
     const $addToCartBtn = this.el.querySelector("#add-to-cart-btn");
     const $goToProductListBtn = this.el.querySelector(".go-to-product-list");
 
-    $goToProductListBtn.addEventListener("click", () => {
-      window.history.back();
-    });
+    if ($goToProductListBtn) {
+      $goToProductListBtn.addEventListener("click", () => {
+        window.history.back();
+      });
+    }
+
+    if ($quantityInput) {
+      $quantityInput.addEventListener("input", (e) => {
+        const value = parseInt(e.target.value, 10);
+        if (isNaN(value) || value < 1) {
+          this.setState({ quantity: 1 });
+        } else if (value > this.state.product.stock) {
+          this.setState({ quantity: this.state.product.stock });
+        } else {
+          this.setState({ quantity: value });
+        }
+      });
+    }
 
     if ($increaseBtn) {
       $increaseBtn.addEventListener("click", () => {
-        this.setState({ quantity: this.state.quantity + 1 });
+        if (this.state.quantity < this.state.product.stock) {
+          this.setState({ quantity: this.state.quantity + 1 });
+        }
       });
     }
 
@@ -260,18 +305,26 @@ class Detail {
 
     if ($addToCartBtn) {
       $addToCartBtn.addEventListener("click", () => {
-        const productToAdd = {
-          ...this.state.product,
-          productId: this.state.product.id,
-          lprice: this.state.product.price,
-        };
-        cartStore.addItem(productToAdd);
+        // 수량만큼 상품을 장바구니에 추가
+        for (let i = 0; i < this.state.quantity; i++) {
+          const productToAdd = {
+            productId: this.state.product.productId,
+            title: this.state.product.title,
+            lprice: this.state.product.lprice,
+            image: this.state.product.image,
+          };
+          cartStore.addItem(productToAdd);
+        }
+
+        // 성공 메시지 표시
         const $message = document.createElement("div");
         $message.textContent = "장바구니에 추가되었습니다";
-        $message.className = "fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-lg";
+        $message.className = "fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-lg z-50";
         document.body.appendChild($message);
         setTimeout(() => {
-          document.body.removeChild($message);
+          if (document.body.contains($message)) {
+            document.body.removeChild($message);
+          }
         }, 2000);
       });
     }
@@ -287,12 +340,13 @@ class Detail {
         window.dispatchEvent(new CustomEvent("urlchange"));
 
         router();
-        window.scrollTo({ top: 0, behavior: "smooth" });
       });
     });
   }
 
   async init() {
+    // 컴포넌트 재사용 시 상태 완전 초기화
+    this.resetState();
     await this.fetchProductDetails();
     return this.render();
   }
