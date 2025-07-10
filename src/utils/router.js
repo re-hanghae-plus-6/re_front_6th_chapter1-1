@@ -87,6 +87,15 @@ class Router {
       this.navigate(location.pathname, false);
     });
 
+    // a 태그 클릭 이벤트 처리
+    document.addEventListener("click", (e) => {
+      const link = e.target.closest("a");
+      if (link && this.shouldHandleLink(link)) {
+        e.preventDefault();
+        this.navigate(link.getAttribute("href"));
+      }
+    });
+
     // 초기 경로 처리
     this.navigate(location.pathname, false);
     return this;
