@@ -21,7 +21,9 @@ export class ProductListPage extends Component {
       pagination: {
         limit: parseInt(params.get("limit")) || 20,
       },
-      filters: {},
+      filters: {
+        search: params.get("search") || "",
+      },
       categories: {},
       isOpenCartModal: false,
     };
@@ -41,6 +43,7 @@ export class ProductListPage extends Component {
     });
 
     this.on(Component.EVENTS.UPDATE, () => {
+      console.log("### STATE", this.state);
       // 더 이상 불러올 컨텐츠 없음, InfiniteScroll 인스턴스 정리
       if (!this.state.pagination.hasNext) {
         infinite.destroy();
@@ -198,7 +201,7 @@ export class ProductListPage extends Component {
                   type="text"
                   id="search-input"
                   placeholder="상품명을 검색해보세요..."
-                  value=""
+                  value="${this.state.filters.search}"
                   class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">${SearchIcon()}</div>
