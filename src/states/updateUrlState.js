@@ -8,6 +8,8 @@ export function updateUrlState(state) {
   if (state.category2) params.set("category2", state.category2);
   if (state.page && state.page !== 1) params.set("page", state.page);
 
-  const newUrl = `${location.pathname}?${params.toString()}`;
+  const queryString = params.toString();
+  const newUrl = queryString ? `${location.pathname}?${queryString}` : `${location.pathname}`;
+
   history.replaceState(null, "", newUrl);
 }

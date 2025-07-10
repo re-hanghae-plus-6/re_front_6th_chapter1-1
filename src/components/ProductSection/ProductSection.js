@@ -13,7 +13,7 @@ export const ProductSection = ({ products = [], isLoading = false, total = 0, ha
   }
 
   function renderEndMessage(hasNext) {
-    if (hasNext) return "";
+    if (hasNext) return `<div class="text-center py-4 text-sm text-gray-500">상품을 불러오는 중...</div>`;
 
     return `<div class="text-center py-4 text-sm text-gray-500">모든 상품을 확인했습니다</div>`;
   }
