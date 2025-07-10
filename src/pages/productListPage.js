@@ -1,5 +1,6 @@
 import { ProductCard } from "../components/productCard.js";
 import { Layout } from "../components/layout.js";
+import { store } from "../store.js";
 
 const LIMIT_OPTIONS = [
   { value: 10, label: "10개" },
@@ -15,19 +16,18 @@ const SORT_OPTIONS = [
   { value: "name_desc", label: "이름 역순" },
 ];
 
-export const ProductListPage = ({
-  products = [],
-  loading = false,
-  error = null,
-  pagination = { total: 0, limit: 20 },
-  filters = { sort: "price_asc" },
-  categories = [],
-  loadingCategories = false,
-  categoriesError = null,
-  cart = { items: [], isModalOpen: false },
-  cartComputed = { totalCount: 0 },
-  toast = { isVisible: false, message: "" },
-}) => {
+export const ProductListPage = () => {
+  const state = store.getState();
+  const {
+    products = [],
+    loading = false,
+    error = null,
+    pagination = { total: 0, limit: 20 },
+    filters = { sort: "price_asc" },
+    categories = [],
+    loadingCategories = false,
+    categoriesError = null,
+  } = state;
   const renderProductCards = () => {
     if (error) {
       console.log(error);
@@ -201,9 +201,6 @@ export const ProductListPage = ({
 
   return Layout({
     headerType: "main",
-    cartComputed,
-    cart,
-    toast,
     children: `
       <main class="max-w-md mx-auto px-4 py-4">
         ${renderMainContent()}

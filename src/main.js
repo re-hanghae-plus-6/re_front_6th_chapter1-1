@@ -15,18 +15,16 @@ const enableMocking = () =>
 
 let currentController = null;
 let cartModalController = null;
+let subscriptions = [];
 
 function render() {
   if (router.currentRoute === "/" || !router.currentRoute) {
-    const state = store.getState();
     const rootElement = document.body.querySelector("#root");
     if (rootElement) {
-      rootElement.innerHTML = ProductListPage({
-        ...state,
-        cartComputed: store.computed.cart,
-      });
+      rootElement.innerHTML = ProductListPage();
     }
 
+    const state = store.getState();
     if (state.toast.isVisible) {
       setTimeout(() => {
         store.dispatch(actions.hideToast());
@@ -35,7 +33,7 @@ function render() {
   }
 }
 
-store.subscribe(render);
+subscriptions.push(store.subscribe(render));
 
 document.addEventListener("click", (event) => {
   const link = event.target.closest("a[data-link]");
@@ -88,99 +86,80 @@ if (import.meta.env.MODE === "test") {
   }
 }
 
+function cleanupSubscriptions() {
+  subscriptions.forEach((unsubscribe) => unsubscribe());
+  subscriptions = [];
+}
+
 async function handleHome() {
-  if (currentController && currentController.constructor.name !== "ProductListController") {
-    if (typeof currentController.cleanup === "function") {
-      currentController.cleanup();
-    }
-    currentController = null;
+  cleanupSubscriptions();
+
+  if (currentController?.cleanup) {
+    currentController.cleanup();
   }
 
-  if (!currentController) {
-    currentController = new ProductListController();
-    await currentController.initialize();
+  currentController = new ProductListController();
+  await currentController.initialize();
 
-    currentController.setupEventListeners();
-  }
+  render(); // 초기 렌더링 추가
+  subscriptions.push(store.subscribe(render));
+  currentController.setupEventListeners();
 
-  if (!cartModalController) {
-    cartModalController = new CartModalController();
-  }
+  cartModalController = cartModalController || new CartModalController();
 }
 
 async function handleProductDetail(params) {
-  if (currentController && typeof currentController.cleanup === "function") {
+  cleanupSubscriptions();
+
+  if (currentController?.cleanup) {
     currentController.cleanup();
   }
-  currentController = null;
 
   currentController = new ProductDetailController(params.id);
   await currentController.initialize();
 
-  if (!cartModalController) {
-    cartModalController = new CartModalController();
-  }
+  cartModalController = cartModalController || new CartModalController();
+
+  const { ProductDetailPage } = await import("./pages/productDetailPage.js");
 
   const renderProductDetail = async () => {
-    const state = store.getState();
-    const { ProductDetailPage } = await import("./pages/productDetailPage.js");
-
     const container = document.getElementById("root");
+    const quantityInput = document.getElementById("quantity-input");
+    const currentQuantity = quantityInput?.value || "1";
+
     if (container) {
-      container.innerHTML = ProductDetailPage({
-        productDetail: state.productDetail,
-        toast: state.toast,
-        cartComputed: store.computed.cart,
-        cart: state.cart,
-      });
+      container.innerHTML = ProductDetailPage();
+
+      const newQuantityInput = document.getElementById("quantity-input");
+      if (newQuantityInput) {
+        newQuantityInput.value = currentQuantity;
+      }
+
+      currentController.setupEventListeners();
+      cartModalController.setupEventListeners();
     }
   };
 
   await renderProductDetail();
-
-  currentController.setupEventListeners();
-  if (cartModalController) {
-    cartModalController.setupEventListeners();
-  }
-
-  const unsubscribe = store.subscribe(async () => {
-    const quantityInput = document.getElementById("quantity-input");
-    const currentQuantity = quantityInput ? quantityInput.value : "1";
-
-    await renderProductDetail();
-
-    const newQuantityInput = document.getElementById("quantity-input");
-    if (newQuantityInput && currentQuantity) {
-      newQuantityInput.value = currentQuantity;
-    }
-
-    currentController.setupEventListeners();
-    if (cartModalController) {
-      cartModalController.setupEventListeners();
-    }
-  });
-
-  const originalCleanup = currentController.cleanup.bind(currentController);
-  currentController.cleanup = () => {
-    unsubscribe();
-    originalCleanup();
-  };
+  subscriptions.push(store.subscribe(renderProductDetail));
 }
 
 async function handleNotFound() {
-  if (currentController && typeof currentController.cleanup === "function") {
+  cleanupSubscriptions();
+
+  if (currentController?.cleanup) {
     currentController.cleanup();
   }
   currentController = null;
 
-  if (cartModalController && typeof cartModalController.cleanup === "function") {
+  if (cartModalController?.cleanup) {
     cartModalController.cleanup();
     cartModalController = null;
   }
 
   const { NotFoundPage } = await import("./pages/notFoundPage.js");
-
   const container = document.getElementById("root");
+
   if (container) {
     container.innerHTML = NotFoundPage();
   }

@@ -1,13 +1,11 @@
 import { cartModal } from "./cartModal.js";
 import { Toast } from "./toast.js";
+import { store } from "../store.js";
 
-export const Layout = ({
-  children,
-  headerType = "main",
-  cartComputed = { totalCount: 0 },
-  cart = { items: [], isModalOpen: false },
-  toast = { isVisible: false, message: "" },
-}) => {
+export const Layout = ({ children, headerType = "main" }) => {
+  const state = store.getState();
+  const { cart, toast } = state;
+  const cartComputed = store.computed.cart;
   const renderHeader = () => {
     if (headerType === "detail") {
       return `

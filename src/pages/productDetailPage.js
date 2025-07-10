@@ -1,11 +1,11 @@
 import { Layout } from "../components/layout.js";
+import { store } from "../store.js";
 
-export const ProductDetailPage = ({
-  productDetail: { product = null, relatedProducts = [], loading = false, loadingRelatedProducts = false },
-  toast = { isVisible: false, message: "" },
-  cartComputed = { totalCount: 0 },
-  cart = { items: [], isModalOpen: false },
-}) => {
+export const ProductDetailPage = () => {
+  const state = store.getState();
+  const {
+    productDetail: { product = null, relatedProducts = [], loading = false, loadingRelatedProducts = false },
+  } = state;
   const renderMainContent = () => {
     if (loading) {
       return `
@@ -166,9 +166,6 @@ export const ProductDetailPage = ({
 
   return Layout({
     headerType: "detail",
-    cartComputed,
-    cart,
-    toast,
     children: `
       <main class="max-w-md mx-auto px-4 py-4">
         ${renderMainContent()}
