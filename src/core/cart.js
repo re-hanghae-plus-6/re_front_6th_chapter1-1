@@ -275,7 +275,16 @@ function renderModalContent() {
 }
 
 function ensureOverlay() {
+  // 1) cartContainer 참조가 있으나 이미 DOM 에서 분리된 경우 → 정리
+  if (cartContainer && !document.contains(cartContainer)) {
+    cartContainer.removeEventListener("click", handleModalClick);
+    cartContainer = null;
+  }
+
+  // 2) DOM 에 정상적으로 연결돼 있는 경우 그대로 사용
   if (cartContainer) return;
+
+  // 3) 새 오버레이 생성
   cartContainer = document.createElement("div");
   cartContainer.className =
     "cart-modal-overlay fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center";
@@ -283,15 +292,12 @@ function ensureOverlay() {
 
   // 외부(오버레이) 클릭 - 모달 닫기
   cartContainer.addEventListener("click", (e) => {
-    if (e.target === cartContainer) {
-      closeCartModal();
-    }
+    if (e.target === cartContainer) closeCartModal();
   });
 
   cartContainer.addEventListener("click", handleModalClick);
-  // 테스트 스냅샷이 #root 영역을 대상으로 하기 때문에, 모달 오버레이를
-  // #root 안에 삽입해야 접근성 트리에 포함된다. #root 가 없을 경우(테스트 외 환경)
-  //에는 기존대로 body에 삽입하도록 하여 유연성을 유지한다.
+
+  // 테스트(jsdom)에서는 #root 내부, 실제 브라우저에서는 body 하위에도 문제없도록 처리
   const rootElement = document.querySelector("#root");
   (rootElement || document.body).appendChild(cartContainer);
 }
@@ -301,6 +307,9 @@ export function openCartModal() {
   ensureOverlay();
   renderModalContent();
   cartContainer.style.display = "flex";
+
+  // 중복 등록 방지를 위해 먼저 제거 후 등록
+  document.removeEventListener("keydown", handleEsc);
   document.addEventListener("keydown", handleEsc);
 }
 
