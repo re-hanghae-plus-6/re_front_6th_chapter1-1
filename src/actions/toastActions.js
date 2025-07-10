@@ -4,10 +4,20 @@ export const TOAST_ACTIONS = {
 };
 
 export const toastActions = {
-  showToast: (message, toastType = "success") => ({
-    type: TOAST_ACTIONS.SHOW_TOAST,
-    payload: { toastType, message },
-  }),
+  showToast:
+    (message, toastType = "success") =>
+    (dispatch) => {
+      dispatch({
+        type: TOAST_ACTIONS.SHOW_TOAST,
+        payload: { toastType, message },
+      });
+
+      setTimeout(() => {
+        dispatch({
+          type: TOAST_ACTIONS.HIDE_TOAST,
+        });
+      }, 3000);
+    },
   hideToast: () => ({
     type: TOAST_ACTIONS.HIDE_TOAST,
   }),

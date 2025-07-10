@@ -28,6 +28,12 @@ class Controller {
           store.dispatch(actions.navigate(href));
         }
       }
+
+      const toastCloseBtn = event.target.closest("#toast-close-btn");
+      if (toastCloseBtn) {
+        event.preventDefault();
+        store.dispatch(actions.hideToast());
+      }
     });
   }
 
