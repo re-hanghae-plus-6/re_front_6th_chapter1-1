@@ -1,4 +1,5 @@
-const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
+// const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
+const BASE_PATH = "/front_6th_chapter1-1";
 
 class Router {
   #pagesMap = new Map();
@@ -7,7 +8,7 @@ class Router {
   #root = "#root";
 
   addPage(pathname, page) {
-    this.#pagesMap.set(BASE_PATH + pathname, page);
+    this.#pagesMap.set(this.#ensureBasePath(pathname), page);
     return this;
   }
 
@@ -34,6 +35,12 @@ class Router {
 
   getParams() {
     return this.#currentParams;
+  }
+
+  #ensureBasePath(pathname) {
+    const originPathname = pathname.startsWith(BASE_PATH) ? pathname.replace(BASE_PATH, "") : pathname;
+    if (originPathname === "/") return BASE_PATH;
+    return BASE_PATH + originPathname;
   }
 
   #setEvents() {
@@ -63,6 +70,8 @@ class Router {
   }
 
   #matchPage({ pathname = location.pathname, params = {} } = {}) {
+    pathname = this.#ensureBasePath(pathname);
+
     if (this.#pagesMap.has(pathname)) {
       return this.#pagesMap.get(pathname);
     }
@@ -97,7 +106,8 @@ class Router {
     return null;
   }
 
-  #updateUrl({ type = "pushState", pathname = location.pathname, params = {} } = {}) {
+  #updateUrl({ type = "pushState", pathname = location.pathname.replace(BASE_PATH, ""), params = {} } = {}) {
+    pathname = this.#ensureBasePath(pathname);
     const url = new URL(pathname, location.origin);
     Object.entries(params).forEach(([key, value]) => {
       url.searchParams.set(key, value);
