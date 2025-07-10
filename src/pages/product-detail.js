@@ -8,7 +8,8 @@ import { html } from "../utils/html";
 
 export function ProductDetailPage($root) {
   productDetailStore.initSearchParams();
-  productDetailStore.loadProduct().then(() => {
+  productDetailStore.loadProduct().then(async () => {
+    await new Promise((r) => setTimeout(r, 2_000));
     productDetailStore.loadRelatedProducts();
   });
 

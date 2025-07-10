@@ -1,14 +1,10 @@
 import { router } from "./core/router.js";
+import { workerOptions } from "./mocks/browser.js";
 import { ProductDetailPage } from "./pages/product-detail.js";
 import { ProductsPage } from "./pages/products.js";
 import { cartStore } from "./store/cart.js";
 
-const enableMocking = () =>
-  import("./mocks/browser.js").then(({ worker }) =>
-    worker.start({
-      onUnhandledRequest: "bypass",
-    }),
-  );
+const enableMocking = () => import("./mocks/browser.js").then(({ worker }) => worker.start(workerOptions));
 
 function main() {
   console.log("main");

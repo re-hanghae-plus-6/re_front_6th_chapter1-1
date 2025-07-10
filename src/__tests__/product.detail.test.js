@@ -14,8 +14,8 @@ beforeAll(async () => {
 
 afterEach(() => {
   // 각 테스트 후 상태 초기화
-  goTo("/");
   document.getElementById("root").innerHTML = "";
+  goTo("/");
   localStorage.clear();
 });
 

@@ -1,3 +1,5 @@
+const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
+
 class Router {
   #pagesMap = new Map();
   #pageDispose;
@@ -5,7 +7,7 @@ class Router {
   #root = "#root";
 
   addPage(pathname, page) {
-    this.#pagesMap.set(pathname, page);
+    this.#pagesMap.set(BASE_PATH + pathname, page);
     return this;
   }
 
