@@ -2,6 +2,7 @@ import { getCategories, getProducts } from "./api/productApi.js";
 import { InfiniteScroll } from "./utils.js";
 import HomPage from "./pages/HomePage/index";
 import { toast } from "./pages/HomePage/components/Toast.js";
+import { CartModal } from "./pages/HomePage/components/CartModal.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -66,6 +67,8 @@ const setAppState = (newState) => {
 };
 
 const getFullState = () => appState;
+
+const cartModal = new CartModal({ getState: getFullState, setState: setAppState });
 
 function render() {
   const state = getFullState();
@@ -232,12 +235,32 @@ function initEventListeners() {
     }
   });
 
+  window.addEventListener("click", async (event) => {
+    const { target } = event;
+
+    if (target.id === "cart-icon-btn") {
+      cartModal.open();
+      return;
+    }
+
+    if (target.id === "cart-modal-close-btn" || target.classList.contains("cart-modal-overlay")) {
+      cartModal.close();
+      return;
+    }
+  });
+
   root.addEventListener("click", async (event) => {
     if (event.target.classList.contains("add-to-cart-btn") && event.target.dataset.productId) {
       const productId = event.target.dataset.productId;
       const selectedProducts = appState.products.find((product) => product.productId === productId);
+      const existingItem = appState.cart.find((product) => product.productId === selectedProducts.productId);
+
       if (selectedProducts) {
-        setAppState({ cart: [...appState.cart, selectedProducts] });
+        if (existingItem && "quantity" in existingItem) {
+          existingItem.quantity += 1;
+        } else {
+          setAppState({ cart: [...appState.cart, { ...selectedProducts, quantity: 1 }] });
+        }
         toast.open("CREATE");
       }
       return;
@@ -267,6 +290,14 @@ function initEventListeners() {
       event.preventDefault();
       const search = event.target.value.trim();
       await applyFilter({ search });
+    }
+
+    if (event.key === "Escape") {
+      event.preventDefault();
+      const cartModalElement = document.querySelector(".cart-modal");
+      if (cartModalElement) {
+        cartModal.close();
+      }
     }
   });
 }
