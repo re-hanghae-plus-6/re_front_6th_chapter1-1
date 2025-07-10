@@ -7,6 +7,7 @@ class SearchFilter {
     this.state = {
       categories: {},
       isLoading: true,
+      selectedCategories: [],
     };
 
     // Debounce a la gestion des recherches
@@ -34,11 +35,85 @@ class SearchFilter {
   }
 
   updateContent() {
-    const categoryListHtml = this.state.isLoading
+    const { categories, isLoading, selectedCategories } = this.state;
+
+    // 브레드크럼 렌더링
+    const breadcrumbContainer = this.el.querySelector(".space-y-2 > div.flex.items-center.gap-2");
+    if (breadcrumbContainer) {
+      // 1. 브레드크럼 초기화: label + 전체 버튼만 고정
+      breadcrumbContainer.innerHTML = `
+    <label class="text-sm text-gray-600">카테고리:</label>
+    <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
+  `;
+
+      // 2. '전체' 버튼 이벤트 연결 (한 번만 바인딩)
+      const resetButton = breadcrumbContainer.querySelector('[data-breadcrumb="reset"]');
+      resetButton?.addEventListener("click", () => {
+        this.setState({ selectedCategories: [] });
+        if (this.onFilterChange) this.onFilterChange({ category1: undefined, category2: undefined });
+      });
+
+      // 3. 선택된 카테고리 렌더링
+      const { selectedCategories } = this.state;
+
+      selectedCategories.forEach((cat, index) => {
+        const isLast = index === selectedCategories.length - 1;
+
+        // 구분자 추가: >
+        const separator = document.createElement("span");
+        separator.className = "text-xs text-gray-500";
+        separator.textContent = ">";
+        breadcrumbContainer.appendChild(separator);
+
+        if (isLast) {
+          // 마지막: span
+          const span = document.createElement("span");
+          span.className = "text-xs text-gray-600 cursor-default";
+          span.textContent = cat;
+          breadcrumbContainer.appendChild(span);
+        } else {
+          // 중간 카테고리: 버튼
+          const btn = document.createElement("button");
+          btn.className = "text-xs hover:text-blue-800 hover:underline";
+          btn.setAttribute("data-breadcrumb", `category${index + 1}`);
+          btn.setAttribute("data-category1", selectedCategories[0]); // 필요시 확장
+          btn.textContent = cat;
+          breadcrumbContainer.appendChild(btn);
+        }
+      });
+    }
+
+    // 하위 카테고리 렌더링
+    let currentCategories = categories;
+    selectedCategories.forEach((cat) => {
+      currentCategories = currentCategories?.[cat] || {};
+    });
+    // ✅ updateContent 메서드의 하위 카테고리 렌더링 부분만 교체
+    const categoryListHtml = isLoading
       ? `<div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>`
-      : Object.keys(this.state.categories)
-          .map((cat) => `<button class="text-sm border px-2 py-1 rounded hover:bg-gray-100">${cat}</button>`)
-          .join("");
+      : (() => {
+          const [category1, category2] = selectedCategories;
+
+          const targetCategoryLevel = category1 ? categories?.[category1] || {} : categories;
+
+          const buttons = Object.keys(targetCategoryLevel).map((cat) => {
+            const isSelected = cat === category2 || (!category2 && cat === category1);
+
+            return category1
+              ? `<button data-category1="${category1}" data-category2="${cat}" 
+              class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
+              ${isSelected ? "bg-blue-100 border-blue-300 text-blue-800" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
+              ${cat}
+            </button>`
+              : `<button data-category1="${cat}" 
+              class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
+              ${isSelected ? "bg-blue-100 border-blue-300 text-blue-800" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
+              ${cat}
+            </button>`;
+          });
+
+          return buttons.join("");
+        })();
 
     const categoryContainer = this.el.querySelector(".flex.flex-wrap.gap-2");
     if (categoryContainer) {
@@ -68,8 +143,6 @@ class SearchFilter {
              <!-- 카테고리 필터 -->
              <div class="space-y-2">
                <div class="flex items-center gap-2">
-                 <label class="text-sm text-gray-600">카테고리:</label>
-                 <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
                </div>
                <!-- 1depth 카테고리 (여기에 동적 콘텐츠가 들어갑니다) -->
                <div class="flex flex-wrap gap-2"></div>
@@ -117,6 +190,8 @@ class SearchFilter {
     const searchInput = this.el.querySelector("#search-input");
     const limitSelect = this.el.querySelector("#limit-select");
     const sortSelect = this.el.querySelector("#sort-select");
+    const categoryContainer = this.el.querySelector(".flex.flex-wrap.gap-2");
+    const breadcrumbContainer = this.el.querySelector(".space-y-2 > div.flex.items-center.gap-2");
 
     searchInput?.addEventListener("input", this.handleSearch);
 
@@ -126,6 +201,44 @@ class SearchFilter {
 
     sortSelect?.addEventListener("change", (e) => {
       if (this.onFilterChange) this.onFilterChange({ sort: e.target.value });
+    });
+    // ✅ addEvent() 메서드 내 categoryContainer 클릭 이벤트를 이처럼 교체
+    categoryContainer?.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-category1]");
+      if (!btn) return;
+
+      const category1 = btn.dataset.category1;
+      const category2 = btn.dataset.category2;
+
+      let newSelected;
+
+      // 1뎁스 선택 시: [category1]
+      if (!category2) {
+        newSelected = [category1];
+      } else {
+        // 2뎁스 선택 시: [category1, category2]
+        newSelected = [category1, category2];
+      }
+
+      this.setState({ selectedCategories: newSelected });
+
+      if (this.onFilterChange) {
+        this.onFilterChange({ category1, category2 });
+      }
+    });
+
+    breadcrumbContainer?.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-breadcrumb-index]");
+      if (!btn) return;
+
+      const index = Number(btn.dataset.breadcrumbIndex);
+      const newSelected = this.state.selectedCategories.slice(0, index + 1);
+      this.setState({ selectedCategories: newSelected });
+
+      const [category1, category2] = newSelected;
+      if (this.onFilterChange) {
+        this.onFilterChange({ category1, category2 });
+      }
     });
   }
 }
