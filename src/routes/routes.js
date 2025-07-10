@@ -1,14 +1,10 @@
-import { createProductListPage } from "../pages/index.js";
-import { productListService } from "../services/index.js";
+import { createProductListPage, createProductDetailPage } from "../pages/index.js";
+import { productListService, productDetailService } from "../services/index.js";
 
 /**
  * 상품 목록 페이지 컴포넌트
  */
 const ProductListPageComponent = () => {
-  // 자동으로 loadProducts를 호출하지 않음 (main.js에서 관리)
-  // productListService.loadProducts(true); // 제거
-
-  // 현재 상태 가져오기
   const state = productListService.getState();
 
   return createProductListPage(state.products, state);
@@ -18,7 +14,6 @@ const ProductListPageComponent = () => {
  * 상품 상세 페이지 컴포넌트
  */
 const ProductDetailPageComponent = () => {
-  // URL에서 상품 ID 추출
   const pathParts = window.location.pathname.split("/");
   const productId = pathParts[2];
 
@@ -31,25 +26,14 @@ const ProductDetailPageComponent = () => {
     `;
   }
 
-  // TODO: 상품 상세 페이지 구현
-  return `
-    <div style="text-align: center; padding: 50px;">
-      <h1>상품 상세 페이지</h1>
-      <p>상품 ID: ${productId}</p>
-      <button onclick="router.navigate('/')">상품 목록으로 돌아가기</button>
-    </div>
-  `;
+  const state = productDetailService.getState();
+  return createProductDetailPage(state.product, state.relatedProducts);
 };
 
 /**
  * 홈 페이지 (상품 목록으로 리다이렉트)
  */
 const HomePageComponent = () => {
-  // 홈 페이지 접근 시 상품 목록 페이지로 리다이렉트하지 않음
-  // setTimeout(() => {
-  //   window.router.navigate('/', { replace: true });
-  // }, 0);
-
   return ProductListPageComponent();
 };
 
@@ -65,7 +49,7 @@ export const routes = [
   {
     path: "/product",
     component: ProductDetailPageComponent,
-    options: { exact: false }, // /product/123 형태도 매칭
+    options: { exact: false },
   },
 ];
 

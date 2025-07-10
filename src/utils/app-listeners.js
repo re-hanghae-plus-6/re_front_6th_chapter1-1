@@ -1,6 +1,6 @@
 import { router } from "../routes/index.js";
-import { productListService } from "../services/index.js";
-import { createProductListPage } from "../pages/index.js";
+import { productListService, productDetailService } from "../services/index.js";
+import { createProductListPage, createProductDetailPage } from "../pages/index.js";
 
 /**
  * 상품 목록 서비스 상태 변경 리스너
@@ -16,12 +16,34 @@ const handleProductListStateChange = (state) => {
 };
 
 /**
+ * 상품 상세 서비스 상태 변경 리스너
+ */
+const handleProductDetailStateChange = (state) => {
+  // 현재 경로가 상품 상세 페이지인 경우에만 렌더링
+  if (router.getCurrentPath().startsWith("/product/")) {
+    const root = document.getElementById("root");
+    if (root) {
+      root.innerHTML = createProductDetailPage(state.product, state.relatedProducts);
+    }
+  }
+};
+
+/**
  * 라우터 변경 리스너
  */
 const handleRouteChange = (route) => {
   if (route && route.path === "/" && router.getCurrentPath() === "/") {
     // 홈 페이지로 이동했을 때만 상품 목록 로드
     productListService.loadProducts(true);
+  }
+
+  // 상품 상세 페이지로 이동했을 때
+  if (route && route.path === "/product" && router.getCurrentPath().startsWith("/product/")) {
+    const pathParts = router.getCurrentPath().split("/");
+    const productId = pathParts[2];
+    if (productId) {
+      productDetailService.loadProduct(productId);
+    }
   }
 };
 
@@ -31,6 +53,9 @@ const handleRouteChange = (route) => {
 export const setupAppListeners = () => {
   // 상품 목록 서비스 렌더링 리스너 등록
   productListService.addListener(handleProductListStateChange);
+
+  // 상품 상세 서비스 렌더링 리스너 등록
+  productDetailService.addListener(handleProductDetailStateChange);
 
   // 라우터 변경 리스너 등록 (URL 변경 시 상품 목록 로드)
   router.addListener(handleRouteChange);
@@ -42,6 +67,9 @@ export const setupAppListeners = () => {
 export const removeAppListeners = () => {
   // 상품 목록 서비스 리스너 해제
   productListService.removeListener(handleProductListStateChange);
+
+  // 상품 상세 서비스 리스너 해제
+  productDetailService.removeListener(handleProductDetailStateChange);
 
   // 라우터 리스너 해제
   router.removeListener(handleRouteChange);

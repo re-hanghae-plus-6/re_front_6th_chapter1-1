@@ -2,6 +2,8 @@ import {
   handleSearchKeydown,
   handleOptionChange,
   handleCategoryClick,
+  handleProductClick,
+  handleProductDetailEvents,
   handleInfiniteScroll,
 } from "./event-handlers.js";
 
@@ -29,8 +31,19 @@ export const setupProductListEventListeners = () => {
   // 정렬 변경 이벤트
   root.addEventListener("change", handleOptionChange);
 
-  // 카테고리 필터 이벤트
-  root.addEventListener("click", handleCategoryClick);
+  // 카테고리 필터 이벤트, 상품 클릭 이벤트, 상품 상세 이벤트
+  root.addEventListener("click", (e) => {
+    handleCategoryClick(e);
+    handleProductClick(e);
+    handleProductDetailEvents(e);
+  });
+
+  // 상품 상세 페이지 수량 입력 이벤트
+  root.addEventListener("input", handleProductDetailEvents);
+  root.addEventListener("change", (e) => {
+    handleOptionChange(e);
+    handleProductDetailEvents(e);
+  });
 };
 
 /**
