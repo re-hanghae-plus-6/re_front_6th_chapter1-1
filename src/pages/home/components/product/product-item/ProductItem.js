@@ -1,32 +1,45 @@
 import Component from '../../../../../core/Component.js';
 import { numberUtils } from '../../../../../utils/numberUtils.js';
 import cartLocalStorage from '../../../../../store/cartLocalStorage.js';
+import toastStore from '../../../../../store/toastStore.js';
 
 class ProductItem extends Component {
   constructor(element, props) {
     super(element, props);
   }
 
+  addCartItem() {
+    const { productId, title, image, lprice } = this.props;
+    const cartItems = cartLocalStorage.get('cartProducts') || [];
+    const idx = cartItems.findIndex((i) => i.productId === productId);
+
+    if (idx > -1) {
+      cartItems[idx].quantity += 1;
+    } else {
+      cartItems.push({
+        productId,
+        title,
+        image,
+        lprice,
+        quantity: 1,
+      });
+    }
+    cartLocalStorage.set('cartProducts', cartItems);
+  }
+
+  openToast() {
+    toastStore.setState({
+      isOpen: true,
+      type: 'success',
+      message: '장바구니에 추가되었습니다',
+    });
+  }
+
   attachEventListeners() {
     this.addEventListener(this.element, 'click', (event) => {
       if (event.target.id === 'cart-add-button') {
-        const { productId, title, image, lprice } = this.props;
-        const cartItems = cartLocalStorage.get('cartProducts') || [];
-        const idx = cartItems.findIndex((i) => i.productId === productId);
-
-        if (idx > -1) {
-          cartItems[idx].quantity += 1;
-        } else {
-          cartItems.push({
-            productId,
-            title,
-            image,
-            lprice,
-            quantity: 1,
-          });
-        }
-
-        cartLocalStorage.set('cartProducts', cartItems);
+        this.addCartItem();
+        this.openToast();
       }
     });
   }
