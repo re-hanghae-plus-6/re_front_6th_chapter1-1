@@ -20,6 +20,7 @@ let state = {
   hasPrev: false,
   sort: "price_asc",
   cart: [],
+  selectedCartItems: [], // 선택된 장바구니 아이템 ID들
   search: "",
   selectedCategory1: null,
   selectedCategory2: null,
@@ -53,10 +54,6 @@ async function main() {
   state.page = page;
   state.hasNext = hasNext;
   state.hasPrev = hasPrev;
-  state.cart = [];
-  state.search = "";
-  state.selectedCategory1 = null;
-  state.selectedCategory2 = null;
 
   // 값 가져왔으니 로딩 상태 해제
   state.loading = false;
@@ -177,6 +174,8 @@ function removeFromCart(productId) {
 
   if (index !== -1) {
     state.cart.splice(index, 1);
+    // 선택된 아이템에서도 제거
+    state.selectedCartItems = state.selectedCartItems.filter((id) => id !== productId);
 
     // 모달이 열려있다면 모달만 다시 렌더링
     if (document.querySelector(".cart-modal")) {
@@ -184,6 +183,23 @@ function removeFromCart(productId) {
     }
 
     showToast({ type: "delete" });
+  }
+}
+
+function toggleCartItemSelection(productId) {
+  const index = state.selectedCartItems.indexOf(productId);
+
+  if (index === -1) {
+    // 선택되지 않았다면 추가
+    state.selectedCartItems.push(productId);
+  } else {
+    // 이미 선택되었다면 제거
+    state.selectedCartItems.splice(index, 1);
+  }
+
+  // 모달만 다시 렌더링
+  if (document.querySelector(".cart-modal")) {
+    renderCartModal();
   }
 }
 
@@ -207,7 +223,7 @@ function renderCartModal() {
   // 새 모달 생성
   const modalHTML = CartModal({
     cart: state.cart,
-    products: state.products,
+    selectedCartItems: state.selectedCartItems,
   });
 
   document.querySelector("#modal-root").insertAdjacentHTML("beforeend", modalHTML);
@@ -223,7 +239,7 @@ function showCartModal() {
   // 컴포넌트를 사용해서 모달 HTML 생성
   const modalHTML = CartModal({
     cart: state.cart,
-    products: state.products,
+    selectedCartItems: state.selectedCartItems,
   });
 
   // DOM에 추가
@@ -248,6 +264,13 @@ function setupModalEvents() {
 
   // 새로운 이벤트 리스너 생성
   modalClickHandler = (event) => {
+    // 체크박스 클릭
+    if (event.target.matches(".cart-item-checkbox")) {
+      const productId = event.target.dataset.productId;
+      toggleCartItemSelection(productId);
+      return;
+    }
+
     // 상품 삭제 버튼 클릭
     if (event.target.matches(".cart-item-remove-btn")) {
       const productId = event.target.dataset.productId;
