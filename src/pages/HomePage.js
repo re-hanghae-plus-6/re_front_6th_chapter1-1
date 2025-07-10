@@ -62,6 +62,9 @@ export const HomePage = createComponent({
     }
 
     async function loadProducts(page = 1) {
+      const loadingEl = document.getElementById("loading-indicator");
+      if (loadingEl) loadingEl.style.display = "block";
+
       const filters = productFilterState.filters;
       const qs = new URLSearchParams({
         page,
@@ -78,6 +81,8 @@ export const HomePage = createComponent({
         products: data.products,
         total: data.pagination.total,
       });
+
+      if (loadingEl) loadingEl.style.display = "none";
     }
 
     function renderProducts() {
@@ -115,7 +120,9 @@ export const HomePage = createComponent({
                 .map(() => ProductSkeletonCard())
                 .join("")}
             </div>
-            ${LoadingIndicator("상품을 불러오는 중...")}
+            <div id="loading-indicator" style="display:none">
+              ${LoadingIndicator("상품을 불러오는 중...")}
+            </div>
           </div>
         </main>
         ${Footer()}
