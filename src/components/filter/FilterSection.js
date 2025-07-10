@@ -145,14 +145,14 @@ export default class Filter extends Component {
   }
 
   mounted() {
-    const categoryBreadcrumbContainer = document.getElementById("category-breadcrumb-container");
+    const $categoryBreadcrumbContainer = document.getElementById("category-breadcrumb-container");
 
     if (!this.child.get("categoryBreadcrumb")) {
-      const categoryBreadcrumbInstance = new Breadcrumb(categoryBreadcrumbContainer);
+      const categoryBreadcrumbInstance = new Breadcrumb($categoryBreadcrumbContainer);
       this.addChild(categoryBreadcrumbInstance, "categoryBreadcrumb");
     } else {
       const categoryBreadcrumbInstance = this.child.get("categoryBreadcrumb");
-      categoryBreadcrumbInstance.$target = categoryBreadcrumbContainer;
+      categoryBreadcrumbInstance.$target = $categoryBreadcrumbContainer;
       categoryBreadcrumbInstance.render();
     }
   }

@@ -1,19 +1,15 @@
+import Component from "../../lib/Component";
 import CartEmptyContents from "./CartEmptyContents";
 import CartItem from "./CartItem";
 
-export default function CartModal({
-  cartItems = [],
-  selectedItems = [],
-  totalPrice = 0,
-  selectedPrice = 0,
-}) {
-  const cartCount = cartItems.length;
-  const selectedCount = selectedItems.length;
-
-  const isEmpty = cartCount === 0;
-
-  const renderContents = () => {
+export default class CartModal extends Component {
+  renderContents() {
     if (isEmpty) return CartEmptyContents();
+
+    const cartItems = [];
+    const cartCount = 0;
+    const selectedCount = 0;
+    const isEmpty = cartCount === 0;
 
     return /* HTML */ `
       <div class="flex flex-col max-h-[calc(90vh-120px)]">
@@ -25,7 +21,7 @@ export default function CartModal({
               id="cart-modal-select-all-checkbox"
               class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-2"
             />
-            전체선택 (${selectedItems.length}개)
+            전체선택 (${selectedCount}개)
           </label>
         </div>
         <!-- 아이템 목록 -->
@@ -34,9 +30,11 @@ export default function CartModal({
         </div>
       </div>
     `;
-  };
+  }
 
-  const renderHeader = () => {
+  renderHeader() {
+    const cartCount = 0;
+
     return /* HTML */ `<div
       class="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between"
     >
@@ -63,9 +61,13 @@ export default function CartModal({
         </svg>
       </button>
     </div>`;
-  };
+  }
 
-  const renderFooter = () => {
+  renderFooter() {
+    const selectedCount = 0;
+    const selectedPrice = 0;
+    const totalPrice = 0;
+
     return /* HTML */ `<div class="sticky bottom-0 bg-white border-t border-gray-200 p-4">
       <!-- 선택된 아이템 정보 -->
       <div class="flex justify-between items-center mb-3 text-sm">
@@ -97,22 +99,24 @@ export default function CartModal({
         </div>
       </div>
     </div>`;
-  };
+  }
 
-  return /* HTML */ `<div
-    class="flex min-h-full items-end justify-center p-0 sm:items-center sm:p-4"
-  >
-    <div
-      class="relative bg-white rounded-t-lg sm:rounded-lg shadow-xl w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-hidden"
+  template() {
+    return /* HTML */ `<div
+      class="flex min-h-full items-end justify-center p-0 sm:items-center sm:p-4"
     >
-      <!-- 헤더 -->
-      ${renderHeader()}
+      <div
+        class="relative bg-white rounded-t-lg sm:rounded-lg shadow-xl w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-hidden"
+      >
+        <!-- 헤더 -->
+        ${this.renderHeader()}
 
-      <!-- 컨텐츠 -->
-      ${renderContents()}
+        <!-- 컨텐츠 -->
+        ${this.renderContents()}
 
-      <!-- 하단 액션 -->
-      ${renderFooter()}
-    </div>
-  </div>`;
+        <!-- 하단 액션 -->
+        ${this.renderFooter()}
+      </div>
+    </div>`;
+  }
 }

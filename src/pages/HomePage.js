@@ -7,6 +7,12 @@ import Component from "../lib/Component";
 
 import { homeStore } from "../store/homeStore";
 
+const CHILD_COMPONENT = {
+  HEADER: "header",
+  FILTER: "filter",
+  PRODUCT_LIST: "productList",
+};
+
 export default class HomePage extends Component {
   setup() {
     this.unsubscribe = homeStore.subscribe(() => {
@@ -48,24 +54,34 @@ export default class HomePage extends Component {
   }
 
   mounted() {
-    const filterContainer = document.querySelector("#filter-container");
-    const productListContainer = document.querySelector("#product-list-container");
+    const $filterContainer = document.querySelector("#filter-container");
+    const $productListContainer = document.querySelector("#product-list-container");
+    const $headerContainer = document.querySelector("#header-container");
 
-    if (!this.child.get("filter")) {
-      const filterInstance = new Filter(filterContainer);
-      this.addChild(filterInstance, "filter");
+    if (!this.child.get(CHILD_COMPONENT.HEADER)) {
+      const headerInstance = new Header($headerContainer);
+      this.addChild(headerInstance, CHILD_COMPONENT.HEADER);
     } else {
-      const filterInstance = this.child.get("filter");
-      filterInstance.$target = filterContainer;
+      const headerInstance = this.child.get(CHILD_COMPONENT.HEADER);
+      headerInstance.$target = $headerContainer;
+      headerInstance.render();
+    }
+
+    if (!this.child.get(CHILD_COMPONENT.FILTER)) {
+      const filterInstance = new Filter($filterContainer);
+      this.addChild(filterInstance, CHILD_COMPONENT.FILTER);
+    } else {
+      const filterInstance = this.child.get(CHILD_COMPONENT.FILTER);
+      filterInstance.$target = $filterContainer;
       filterInstance.render();
     }
 
-    if (!this.child.get("productList")) {
-      const productListInstance = new ProductList(productListContainer);
-      this.addChild(productListInstance, "productList");
+    if (!this.child.get(CHILD_COMPONENT.FILTER.PRODUCT_LIST)) {
+      const productListInstance = new ProductList($productListContainer);
+      this.addChild(productListInstance, CHILD_COMPONENT.FILTER.PRODUCT_LIST);
     } else {
-      const productListInstance = this.child.get("productList");
-      productListInstance.$target = productListContainer;
+      const productListInstance = this.child.get(CHILD_COMPONENT.FILTER.PRODUCT_LIST);
+      productListInstance.$target = $productListContainer;
       productListInstance.render();
     }
   }
@@ -73,7 +89,8 @@ export default class HomePage extends Component {
   template() {
     return /* HTML */ `
       <div class="bg-gray-50">
-        ${Header()}
+        <div id="header-container"></div>
+
         <main class="maxProductList-w-md mx-auto px-4 py-4">
           <!-- 검색 및 필터 -->
           <div id="filter-container"></div>
