@@ -10,7 +10,7 @@ export function Header(props) {
         <div class="flex items-center space-x-2">
           <!-- 장바구니 아이콘 -->
           <button id="cart-icon-btn" class="relative p-2 text-gray-700 hover:text-gray-900 transition-colors">
-            ${CartIcon()}
+            ${CartIcon({ className: "w-6 h-6 pointer-events-none" })}
           </button>
         </div>
       </div>

@@ -1,5 +1,7 @@
-export function CartIcon() {
-  return /* HTML */ `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+export function CartIcon(props) {
+  const { className } = props;
+
+  return /* HTML */ `<svg class="${className}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path
       stroke-linecap="round"
       stroke-linejoin="round"
