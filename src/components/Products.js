@@ -1,6 +1,7 @@
 import { Component } from "../core/Component";
 import { router } from "../core/router";
-import { productsStore } from "../store/products";
+import { cartStore } from "../store/cart";
+import { productsStore, productsStore2 } from "../store/products";
 import { html } from "../utils/html";
 
 export class Products extends Component {
@@ -8,9 +9,10 @@ export class Products extends Component {
   #moreStatusId = "more-status";
   #intersectionObserver = null;
   #producrCardSkeletonRepeatCount = 4;
+  #firstPageData = {};
 
   renderContainer() {
-    const { isLoading, hasNext } = productsStore;
+    const { isLoading, hasNext } = productsStore2;
     return html`<div ${this.dataAttribute.attribute} class="mb-6">
       <!-- 상품 그리드 -->
       <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
@@ -21,9 +23,26 @@ export class Products extends Component {
   }
 
   render() {
-    const { limit, page, total, products, currentPageProducts, isLoading, hasNext, isFetching } = productsStore;
-    if (page === 1) {
+    // const { limit, page, total, products, currentPageProducts, isLoading, hasNext, isFetching } = productsStore;
+    const { params, data } = productsStore2;
+    const { page, total, products, currentPageProducts, isLoading, hasNext, isFetching } = data;
+    const { limit } = params;
+    console.log("Products render", page);
+    if (isLoading) {
+      return;
+    } else if (page === 1) {
+      if (
+        this.#firstPageData.total === total &&
+        this.#firstPageData.limit === limit &&
+        this.#firstPageData.page === page &&
+        JSON.stringify(this.#firstPageData.products) === JSON.stringify(products)
+      ) {
+        return;
+      }
+
+      this.#firstPageData = { total, limit, page, products };
       const filledProducts = this.#ensureProductsCount({ total, limit, page, products });
+
       this.#renderFirstPage({ total, currentPageProducts: filledProducts, isLoading, hasNext });
     } else {
       this.#appendProducts({ currentPageProducts });
@@ -36,16 +55,26 @@ export class Products extends Component {
   setEvent() {
     super.setEvent();
     this.addEvent("click", ({ target }) => {
+      console.log(target);
+      const $addCartBtn = target.closest("button[data-product-id]");
+      if ($addCartBtn) {
+        const { productId } = $addCartBtn.dataset;
+        const item = productsStore.products.find((p) => p.productId === productId);
+
+        if (!item) {
+          throw new Error(`${productId} is not in products`);
+        }
+
+        cartStore.addItem(item);
+        return;
+      }
+
       const $productCard = target.closest("div[data-product-id]");
       if ($productCard) {
         const { productId } = $productCard.dataset;
         router.push({
           pathname: `/product/${productId}`,
         });
-      } else {
-        // const $addCartBtn = target.closest("button[data-product-id]");
-        // const { productId } = $addCartBtn.dataset;
-        // productsStore.setCategory1(productId);
       }
     });
   }
@@ -69,8 +98,9 @@ export class Products extends Component {
       총 <span class="font-medium text-gray-900">${total}개</span>의 상품
     </div>`;
   }
+
   #renderFirstPage({ total, currentPageProducts, isLoading, hasNext }) {
-    this.$el.innerHTML = html`<div ${this.dataAttribute.attribute} class="mb-6">
+    const newHtml = html`<div ${this.dataAttribute.attribute} class="mb-6">
       <div ${this.dataAttribute.attribute}>
         <!-- 상품 개수 정보 -->
         ${this.#total({ total })}
@@ -83,6 +113,13 @@ export class Products extends Component {
         ${this.#moreStatus({ isLoading, hasNext })}
       </div>
     </div>`;
+
+    console.log("this.$el.innerHTML", this.$el.innerHTML === newHtml);
+    if (this.$el.innerHTML === newHtml) {
+      return;
+    }
+
+    this.$el.innerHTML = newHtml;
   }
 
   #appendProducts({ currentPageProducts }) {

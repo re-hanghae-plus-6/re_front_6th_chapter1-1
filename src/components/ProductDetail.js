@@ -1,5 +1,6 @@
 import { Component } from "../core/Component";
 import { router } from "../core/router";
+import { cartStore } from "../store/cart";
 import { productDetailStore } from "../store/product-detail";
 import { html } from "../utils/html";
 
@@ -112,8 +113,8 @@ export class ProductDetail extends Component {
         $quantityInput.value = this.#clamp(quantity + 1, $quantityInput.max);
       } else if ($addToCartBtn) {
         const productId = $addToCartBtn.dataset.productId;
-        console.log(quantity, productId);
-        // TODO: 장바구니 담기
+        const product = productDetailStore.relatedProducts.find((item) => item.productId === productId);
+        cartStore.addItem({ ...product, quantity });
       }
     });
 

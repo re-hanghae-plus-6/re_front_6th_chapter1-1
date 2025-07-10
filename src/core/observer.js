@@ -1,20 +1,20 @@
 let currentObserver = null;
 const observerToObservableMap = new Map();
 
-const debounceFrame = (callback) => {
-  let currentCallback = -1;
-  const debounced = () => {
-    // 예약된 함수가 있다면 취소
-    cancelAnimationFrame(currentCallback);
-    // 다음 프레임에 실행
-    currentCallback = requestAnimationFrame(callback);
-  };
-  debounced.cancel = () => cancelAnimationFrame(currentCallback);
-  return debounced;
-};
+// const debounceFrame = (callback) => {
+//   let currentCallback = -1;
+//   const debounced = () => {
+//     // 예약된 함수가 있다면 취소
+//     cancelAnimationFrame(currentCallback);
+//     // 다음 프레임에 실행
+//     currentCallback = requestAnimationFrame(callback);
+//   };
+//   debounced.cancel = () => cancelAnimationFrame(currentCallback);
+//   return debounced;
+// };
 
 export const observe = (componentId, fn) => {
-  currentObserver = { componentId, fn: debounceFrame(fn) };
+  currentObserver = { componentId, fn: fn };
   try {
     fn();
   } finally {

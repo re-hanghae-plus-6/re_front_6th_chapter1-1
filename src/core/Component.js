@@ -51,7 +51,7 @@ export class Component {
   mounted() {
     this.$el = document.querySelector(this.dataAttribute.selector);
     if (!this.$el) {
-      throw new Error(`${this.dataAttribute.selector} not found`);
+      // throw new Error(`${this.dataAttribute.selector} not found`);
     }
   }
 

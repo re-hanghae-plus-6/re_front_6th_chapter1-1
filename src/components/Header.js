@@ -1,12 +1,8 @@
 import { Component } from "../core/Component";
+import { cartStore } from "../store/cart";
 import { html } from "../utils/html";
 
 export class Header extends Component {
-  setup() {
-    super.setup();
-    this.cartCount = 0;
-  }
-
   renderContainer() {
     return html` <header ${this.dataAttribute.attribute} class="bg-white shadow-sm sticky top-0 z-40">
       <div class="max-w-md mx-auto px-4 py-4">
@@ -23,7 +19,7 @@ export class Header extends Component {
                   d="M3 3h2l.4 2M7 13h10l4-8H5.4m2.6 8L6 2H3m4 11v6a1 1 0 001 1h1a1 1 0 001-1v-6M13 13v6a1 1 0 001 1h1a1 1 0 001-1v-6"
                 ></path>
               </svg>
-              <span data-id="cart-count"> ${this.#renderCartCount()} </span>
+              <span data-id="cart-count">${this.#CartCount()}</span>
             </button>
           </div>
         </div>
@@ -32,15 +28,26 @@ export class Header extends Component {
   }
 
   render() {
-    this.$el.querySelector(`[data-id="cart-count"]`).innerHTML = this.#renderCartCount();
+    this.$el.querySelector(`[data-id="cart-count"]`).innerHTML = this.#CartCount();
   }
 
-  #renderCartCount() {
-    return this.cartCount > 0
+  setEvent() {
+    super.setEvent();
+    this.addEvent("click", (e) => {
+      const { target } = e;
+      if (target.closest("#cart-icon-btn")) {
+        cartStore.openModal();
+      }
+    });
+  }
+
+  #CartCount() {
+    const { count } = cartStore;
+    return count > 0
       ? html`<span
           class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"
         >
-          ${this.cartCount}
+          ${count}
         </span>`
       : "";
   }
