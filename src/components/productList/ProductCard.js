@@ -1,20 +1,5 @@
 export function ProductCard(props) {
-  const {
-    title,
-    // link,
-    image,
-    lprice,
-    // hprice,
-    // mallName,
-    productId,
-    // productType,
-    // brand,
-    // maker,
-    // category1,
-    // category2,
-    // category3,
-    // category4,
-  } = props;
+  const { title, image, lprice, productId } = props;
 
   return /* HTML */ `
     <div
@@ -24,6 +9,7 @@ export function ProductCard(props) {
       <!-- 상품 이미지 -->
       <div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image">
         <img
+          data-route=${`/product/${productId}`}
           src=${image}
           alt=${title}
           class="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
