@@ -30,8 +30,6 @@ class Cart extends Component {
 
   handleSelectAllItems(items) {
     const updatedCartItems = items.map((item) => {
-      console.log('handleSelectAllItems', item);
-
       return { ...item, isSelected: !item.isSelected };
     });
 
@@ -80,6 +78,14 @@ class Cart extends Component {
   handleClearAllItems() {
     cartLocalStorage.set('cartProducts', []);
     cartLocalStorage.remove('cartProducts');
+  }
+
+  handleSelectedRemoveItem(items) {
+    const updatedCartItems = items.filter((item) => {
+      return !item.isSelected;
+    });
+
+    cartLocalStorage.set('cartProducts', updatedCartItems);
   }
 
   attachEventListeners() {
@@ -131,6 +137,11 @@ class Cart extends Component {
       const cartAllItemsRemoveBtn = event.target.closest('#cart-modal-clear-cart-btn');
       if (cartAllItemsRemoveBtn) {
         this.handleClearAllItems();
+      }
+
+      const cartSelectedItemRemoveBtn = event.target.closest('#cart-modal-remove-selected-btn');
+      if (cartSelectedItemRemoveBtn) {
+        this.handleSelectedRemoveItem(products);
       }
     });
 
@@ -280,17 +291,36 @@ class Cart extends Component {
     `;
   }
 
-  renderCartBottomBar() {
+  renderCartBottomBar(selectedItemLength, selectedItemAmount, totalAmount) {
     return /* HTML */ `
       <div class="sticky bottom-0 bg-white border-t border-gray-200 p-4">
         <!-- 선택된 아이템 정보 -->
+        ${selectedItemLength
+          ? /* HTML */ `
+              <div class="flex justify-between items-center mb-3 text-sm">
+                <span class="text-gray-600">선택한 상품 (${selectedItemLength}개)</span>
+                <span class="font-medium">${numberUtils.comma(selectedItemAmount)}원</span>
+              </div>
+            `
+          : ''}
+
         <!-- 총 금액 -->
         <div class="flex justify-between items-center mb-4">
           <span class="text-lg font-bold text-gray-900">총 금액</span>
-          <span class="text-xl font-bold text-blue-600">670원</span>
+          <span class="text-xl font-bold text-blue-600">${numberUtils.comma(totalAmount)}원</span>
         </div>
         <!-- 액션 버튼들 -->
         <div class="space-y-2">
+          ${selectedItemLength
+            ? /* HTML */ `<button
+                id="cart-modal-remove-selected-btn"
+                class="w-full bg-red-600 text-white py-2 px-4 rounded-md 
+                       hover:bg-red-700 transition-colors text-sm"
+              >
+                선택한 상품 삭제 (${selectedItemLength}개)
+              </button>`
+            : ''}
+
           <div class="flex gap-2">
             <button
               id="cart-modal-clear-cart-btn"
@@ -315,9 +345,19 @@ class Cart extends Component {
   render() {
     const cartItems = cartLocalStorage.get('cartProducts') || [];
     const isAllSelected = cartItems.length > 0 && cartItems.every((item) => item.isSelected);
+    const selectedItems = cartItems.filter((item) => item.isSelected);
+    const selectedItemLength = selectedItems.length || 0;
+    const selectedItemAmount = selectedItems.reduce((acc, cur) => {
+      return acc + cur.lprice * cur.quantity;
+    }, 0);
+    const totalAmount = cartItems.reduce((acc, cur) => {
+      return acc + cur.lprice * cur.quantity;
+    }, 0);
 
     this.element.innerHTML = /* HTML */ `
-      <div class="cart-modal-overlay fixed top-0 left-0 w-full h-full bg-[#000]/30 z-[100]">
+      <div
+        class="cart-modal cart-modal-overlay fixed top-0 left-0 w-full h-full bg-[#000]/30 z-[100]"
+      >
         <div class="flex min-h-full items-end justify-center p-0 sm:items-center sm:p-4">
           <div
             id="cart-content"
@@ -359,7 +399,8 @@ class Cart extends Component {
               ${cartItems.length
                 ? /* HTML */ `
                     ${this.renderCartSelectAllBar(cartItems.length, isAllSelected)}
-                    ${this.renderCartItems(cartItems)} ${this.renderCartBottomBar()}
+                    ${this.renderCartItems(cartItems)}
+                    ${this.renderCartBottomBar(selectedItemLength, selectedItemAmount, totalAmount)}
                   `
                 : this.renderCartEmpty()}
             </div>
