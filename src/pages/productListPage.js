@@ -101,6 +101,13 @@ ProductListPage.registerEvent = () => {
   const limitSelect = document.getElementById("limit-select");
   const sortSelect = document.getElementById("sort-select");
   const searchInput = document.getElementById("search-input");
+  const productCards = document.querySelectorAll(".product-card");
+
+  productCards.forEach((productCard) => {
+    productCard.addEventListener("click", () => {
+      router.push(`/product/${productCard.dataset.productId}`);
+    });
+  });
 
   limitSelect.addEventListener("change", (event) => {
     const url = new URL(window.location.href);

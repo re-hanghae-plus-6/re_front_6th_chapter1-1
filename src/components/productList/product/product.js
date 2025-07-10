@@ -14,7 +14,7 @@ export const Product = ({
   productId,
   title,
 }) => `
- <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
+ <div id="product-card" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
         data-product-id="${productId}">
     <!-- 상품 이미지 -->
     <div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image">
