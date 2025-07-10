@@ -5,10 +5,10 @@ import { getProduct, getProducts } from "../api/productApi.js";
 export class ProductDetailController {
   #productId;
   #eventListeners = [];
+  #quantity = 1;
 
   constructor(productId) {
     this.#productId = productId;
-    this.#setupEventListeners();
   }
 
   get state() {
@@ -19,12 +19,27 @@ export class ProductDetailController {
     await this.loadProductDetail();
   }
 
+  setupEventListeners() {
+    // 기존 이벤트 리스너 제거
+    this.#removeEventListeners();
+    // 새로 등록
+    this.#setupEventListeners();
+  }
+
+  #removeEventListeners() {
+    this.#eventListeners.forEach(({ element, type, handler }) => {
+      element.removeEventListener(type, handler);
+    });
+    this.#eventListeners = [];
+  }
+
   async loadProductDetail() {
     store.dispatch(actions.loadProductDetail());
 
     try {
       const product = await getProduct(this.#productId);
       store.dispatch(actions.productDetailLoaded(product));
+      this.#quantity = 1;
 
       await this.#loadRelatedProducts(product);
     } catch (error) {
@@ -76,6 +91,10 @@ export class ProductDetailController {
         this.#handleGoToProductList();
       }
 
+      if (event.target.closest("#cart-icon-btn")) {
+        this.#handleCartIconClick();
+      }
+
       const relatedProductCard = event.target.closest(".related-product-card");
       if (relatedProductCard) {
         this.#handleRelatedProductClick(relatedProductCard);
@@ -98,46 +117,49 @@ export class ProductDetailController {
   }
 
   #handleQuantityDecrease() {
-    const { productDetail } = this.state;
-    const newQuantity = Math.max(1, productDetail.quantity - 1);
-    store.dispatch(actions.updateQuantity(newQuantity));
+    this.#quantity = Math.max(1, this.#quantity - 1);
 
     const quantityInput = document.getElementById("quantity-input");
     if (quantityInput) {
-      quantityInput.value = newQuantity;
+      quantityInput.value = this.#quantity;
     }
   }
 
   #handleQuantityIncrease() {
     const { productDetail } = this.state;
     const product = productDetail.product;
-    const maxStock = product?.stock;
-    const newQuantity = Math.min(maxStock, productDetail.quantity + 1);
-    store.dispatch(actions.updateQuantity(newQuantity));
+    const maxStock = product?.stock || 999;
+    this.#quantity = Math.min(maxStock, this.#quantity + 1);
 
     const quantityInput = document.getElementById("quantity-input");
     if (quantityInput) {
-      quantityInput.value = newQuantity;
+      quantityInput.value = this.#quantity;
     }
   }
 
   #handleQuantityInput(event) {
     const { productDetail } = this.state;
     const product = productDetail.product;
-    const maxStock = product?.stock || 107;
-    const newQuantity = Math.max(1, Math.min(maxStock, parseInt(event.target.value) || 1));
+    const maxStock = product?.stock || 999;
+    const inputValue = parseInt(event.target.value) || 1;
+    this.#quantity = Math.max(1, Math.min(maxStock, inputValue));
 
-    store.dispatch(actions.updateQuantity(newQuantity));
-    event.target.value = newQuantity;
+    if (event.target.value !== this.#quantity.toString()) {
+      const quantityInput = document.getElementById("quantity-input");
+      if (quantityInput) {
+        quantityInput.value = this.#quantity;
+      }
+    }
   }
 
   #handleAddToCart() {
     const { productDetail } = this.state;
-    const { product, quantity } = productDetail;
+    const { product } = productDetail;
 
     if (!product) return;
 
-    store.dispatch(actions.addToCart(product.id, quantity));
+    store.dispatch(actions.addToCart(product.productId, this.#quantity));
+    store.dispatch(actions.showToast("장바구니에 추가되었습니다"));
   }
 
   #handleBreadcrumbClick(event) {
@@ -157,6 +179,10 @@ export class ProductDetailController {
   #handleGoToProductList() {
     window.history.pushState(null, "", "/");
     window.dispatchEvent(new PopStateEvent("popstate"));
+  }
+
+  #handleCartIconClick() {
+    store.dispatch(actions.openCartModal());
   }
 
   #handleRelatedProductClick(card) {

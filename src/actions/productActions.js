@@ -17,7 +17,6 @@ export const PRODUCT_ACTIONS = {
   LOAD_PRODUCT_DETAIL_ERROR: "LOAD_PRODUCT_DETAIL_ERROR",
   LOAD_RELATED_PRODUCTS: "LOAD_RELATED_PRODUCTS",
   RELATED_PRODUCTS_LOADED: "RELATED_PRODUCTS_LOADED",
-  UPDATE_QUANTITY: "UPDATE_QUANTITY",
 };
 
 export const productActions = {
@@ -42,5 +41,4 @@ export const productActions = {
   loadProductDetailError: (error) => ({ type: PRODUCT_ACTIONS.LOAD_PRODUCT_DETAIL_ERROR, payload: error }),
   loadRelatedProducts: () => ({ type: PRODUCT_ACTIONS.LOAD_RELATED_PRODUCTS }),
   relatedProductsLoaded: (products) => ({ type: PRODUCT_ACTIONS.RELATED_PRODUCTS_LOADED, payload: products }),
-  updateQuantity: (quantity) => ({ type: PRODUCT_ACTIONS.UPDATE_QUANTITY, payload: quantity }),
 };

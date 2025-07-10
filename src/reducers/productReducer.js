@@ -132,6 +132,7 @@ export function productReducer(state, action) {
         productDetail: {
           ...state.productDetail,
           relatedProducts: [],
+          loadingRelatedProducts: true,
         },
       };
 
@@ -141,15 +142,7 @@ export function productReducer(state, action) {
         productDetail: {
           ...state.productDetail,
           relatedProducts: action.payload,
-        },
-      };
-
-    case PRODUCT_ACTIONS.UPDATE_QUANTITY:
-      return {
-        ...state,
-        productDetail: {
-          ...state.productDetail,
-          quantity: action.payload,
+          loadingRelatedProducts: false,
         },
       };
 
