@@ -113,7 +113,16 @@ Home.mount = async () => {
     navigate.push({}, url.toString());
 
     await fetchProducts(newValue);
-    render.draw("main", Home({ products: state.products, pagination: state.pagination, isLoading: state.isLoading }));
+    await fetchCategories();
+    render.draw(
+      "main",
+      Home({
+        products: state.products,
+        pagination: state.pagination,
+        isLoading: state.isLoading,
+        categories: state.categories,
+      }),
+    );
     Search.mount();
     ProductCard.mount();
   }, "params");
