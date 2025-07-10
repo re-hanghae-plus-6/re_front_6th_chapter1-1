@@ -1,6 +1,6 @@
-import { getCategories, getProducts } from "../../../api/productApi";
-import { observable } from "../../../core/observer";
-import { router } from "../../../core/router";
+import { getCategories, getProducts } from "../api/productApi";
+import { observable } from "../core/observer";
+import { router } from "../core/router";
 
 const LOAD_DEFAULT_PAGE = 1;
 const defaultParams = {

@@ -1,7 +1,7 @@
-import { Component } from "../../../core/Component";
-import { router } from "../../../core/router";
-import { html } from "../../../shared/utils/html";
+import { Component } from "../core/Component";
+import { router } from "../core/router";
 import { productsStore } from "../store/products";
+import { html } from "../utils/html";
 
 export class Products extends Component {
   #productsGridId = "products-grid";

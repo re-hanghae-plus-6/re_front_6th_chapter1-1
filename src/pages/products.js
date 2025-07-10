@@ -1,11 +1,11 @@
-import { Component } from "../../core/Component";
-import { Footer } from "../../shared/components/Footer";
-import { Layouy } from "../../shared/components/Layout";
-import { html } from "../../shared/utils/html";
-import { Filters } from "./components/Filters";
-import { Header } from "./components/Header";
-import { Products } from "./components/Products";
-import { productsStore } from "./store/products";
+import { Filters } from "../components/Filters";
+import { Footer } from "../components/Footer";
+import { Header } from "../components/Header";
+import { Layouy } from "../components/Layout";
+import { Products } from "../components/Products";
+import { Component } from "../core/Component";
+import { productsStore } from "../store/products";
+import { html } from "../utils/html";
 
 export function ProductsPage($root) {
   productsStore.initSearchParams();
@@ -14,7 +14,7 @@ export function ProductsPage($root) {
   });
 
   const layout = new Layouy({
-    header: new Header(),
+    header: new Header({ nav: new Nav() }),
     main: new Main({
       filters: new Filters(),
       products: new Products(),
@@ -27,6 +27,14 @@ export function ProductsPage($root) {
   return () => {
     layout.dispose();
   };
+}
+
+class Nav extends Component {
+  renderContainer() {
+    return html`<h1 ${this.dataAttribute.attribute} class="text-xl font-bold text-gray-900">
+      <a href="/" data-link="">쇼핑몰</a>
+    </h1>`;
+  }
 }
 
 class Main extends Component {
