@@ -6,22 +6,37 @@ const events = [
     el: window,
     action: "keyup",
     fn: (event) => {
-      if (event.key === "Enter") {
-        const searchInput = document.querySelector("#search-input");
-        const keyword = searchInput.value;
-        store.set("params.search", keyword);
-      }
+      if (event.key !== "Enter") return;
+      const searchInput = document.querySelector("#search-input");
+      store.set("params", {
+        ...store.get("params"),
+        search: searchInput.value,
+        page: 1,
+      });
+      return;
     },
   },
   {
     el: "#limit-select",
     action: "change",
-    fn: (event) => store.set("params.limit", event.target.value),
+    fn: (event) => {
+      store.set("params", {
+        ...store.get("params"),
+        limit: event.target.value,
+        page: 1,
+      });
+    },
   },
   {
     el: "#sort-select",
     action: "change",
-    fn: (event) => store.set("params.sort", event.target.value),
+    fn: (event) => {
+      store.set("params", {
+        ...store.get("params"),
+        sort: event.target.value,
+        page: 1,
+      });
+    },
   },
   {},
 ];
