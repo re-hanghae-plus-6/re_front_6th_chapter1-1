@@ -3,6 +3,7 @@ import { getProducts, getCategories } from "../api/productApi.js";
 import type { Categories } from "../components/category/index.ts";
 import type { PageModule } from "../router.ts";
 import { navigate } from "../router.ts";
+import { createQueryParams } from "../utils/queryParams.ts";
 import { 토스트 } from "../components/toast/index.ts";
 import { addToCart, getCartCount } from "../utils/cart.ts";
 import { 장바구니 } from "../components/cart/index.ts";
@@ -12,6 +13,7 @@ interface Product {
   lprice: string;
   image: string;
   productId: string;
+  brand?: string;
 }
 
 interface State {
@@ -38,25 +40,47 @@ export const homePage: PageModule = {
   mount: function (root) {
     if (!root) return;
 
+    // 쿼리 파라미터 스키마 선언 및 매니저 생성
+    const queryParams = createQueryParams({
+      search: { default: "" },
+      category1: { default: null as string | null },
+      category2: { default: null as string | null },
+      sort: { default: "price_asc" },
+      limit: { default: 20, parse: Number, serialize: String },
+    });
+
+    const initialParams = queryParams.read();
+
     // 컴포넌트 상태
     let state: State = {
       products: [],
       total: 0,
       loading: true,
       error: false,
-      limit: 20,
-      sort: "price_asc",
+      limit: initialParams.limit,
+      sort: initialParams.sort,
       page: 1,
       isLoadingNextPage: false,
-      search: "",
-      category1: null,
-      category2: null,
+      search: initialParams.search,
+      category1: initialParams.category1,
+      category2: initialParams.category2,
       categories: null,
     };
 
     const setState = (newState: Partial<State>) => {
       state = { ...state, ...newState };
       rerender();
+    };
+
+    // URL 동기화 함수 (중앙집중 util 활용)
+    const syncURL = () => {
+      queryParams.append({
+        search: state.search || undefined,
+        category1: state.category1,
+        category2: state.category2,
+        sort: state.sort,
+        limit: state.limit,
+      });
     };
 
     const rerender = () => {
@@ -70,6 +94,7 @@ export const homePage: PageModule = {
           title: product.title,
           price: Number(product.lprice),
           imageUrl: product.image,
+          brand: product.brand,
         })),
         cartCount,
         isLoadingNextPage: state.isLoadingNextPage,
@@ -118,6 +143,7 @@ export const homePage: PageModule = {
       const newLimit = Number(select.value);
       if (newLimit !== state.limit) {
         setState({ limit: newLimit, page: 1 });
+        syncURL();
         updateProducts();
       }
     };
@@ -127,6 +153,7 @@ export const homePage: PageModule = {
       const newSort = select.value;
       if (newSort !== state.sort) {
         setState({ sort: newSort, page: 1 });
+        syncURL();
         updateProducts();
       }
     };
@@ -137,6 +164,7 @@ export const homePage: PageModule = {
       const keyword = input.value.trim();
       if (keyword === state.search) return;
       setState({ search: keyword, page: 1 });
+      syncURL();
       updateProducts();
     };
 
@@ -145,6 +173,7 @@ export const homePage: PageModule = {
 
       if (target.dataset.breadcrumb === "reset") {
         setState({ category1: null, category2: null, page: 1 });
+        syncURL();
         updateProducts();
         return;
       }
@@ -152,6 +181,7 @@ export const homePage: PageModule = {
       if (target.dataset.breadcrumb === "category1") {
         const cat1 = target.dataset.category1 ?? "";
         setState({ category1: cat1, category2: null, page: 1 });
+        syncURL();
         updateProducts();
         return;
       }
@@ -160,6 +190,7 @@ export const homePage: PageModule = {
         const cat1 = target.dataset.category1;
         if (cat1 !== state.category1) {
           setState({ category1: cat1, category2: null, page: 1 });
+          syncURL();
           updateProducts();
         }
         return;
@@ -169,6 +200,7 @@ export const homePage: PageModule = {
         const cat1 = target.dataset.category1 ?? state.category1 ?? "";
         const cat2 = target.dataset.category2;
         setState({ category1: cat1, category2: cat2, page: 1 });
+        syncURL();
         updateProducts();
       }
     };
@@ -271,6 +303,8 @@ export const homePage: PageModule = {
             page: state.page,
             sort: state.sort,
             search: state.search,
+            category1: state.category1 ?? "",
+            category2: state.category2 ?? "",
           }),
         ]);
 
