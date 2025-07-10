@@ -1,5 +1,7 @@
 // 라우터 import 추가
 import { createRouter } from "./router/Router.js";
+import { Header } from "./components/Header.js";
+import { Footer } from "./components/Footer.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -8,32 +10,13 @@ const enableMocking = () =>
     }),
   );
 
-// HomePage 컴포넌트 - templates.js의 상품목록_레이아웃_로딩완료 기반 + 동적 상태 반영
+// HomePage 컴포넌트 - 분리된 Header, Footer 사용
 function HomePage(query = {}) {
   const { search = "", sort = "price_asc", limit = "20" } = query;
 
   return `
     <div class="bg-gray-50">
-      <header class="bg-white shadow-sm sticky top-0 z-40">
-        <div class="max-w-md mx-auto px-4 py-4">
-          <div class="flex items-center justify-between">
-            <h1 class="text-xl font-bold text-gray-900">
-              <a href="/" data-link="">쇼핑몰</a>
-            </h1>
-            <div class="flex items-center space-x-2">
-              <!-- 장바구니 아이콘 -->
-              <button id="cart-icon-btn" class="relative p-2 text-gray-700 hover:text-gray-900 transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M3 3h2l.4 2M7 13h10l4-8H5.4m2.6 8L6 2H3m4 11v6a1 1 0 001 1h1a1 1 0 001-1v-6M13 13v6a1 1 0 001 1h1a1 1 0 001-1v-6"></path>
-                </svg>
-                <span
-                  class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">4</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      ${Header({ title: "쇼핑몰", cartCount: 4 })}
       <main class="max-w-md mx-auto px-4 py-4">
         <!-- 검색 및 필터 -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
@@ -177,11 +160,7 @@ function HomePage(query = {}) {
           </div>
         </div>
       </main>
-      <footer class="bg-white shadow-sm sticky top-0 z-40">
-        <div class="max-w-md mx-auto py-8 text-center text-gray-500">
-          <p>© 2025 항해플러스 프론트엔드 쇼핑몰</p>
-        </div>
-      </footer>
+      ${Footer()}
     </div>
   `;
 }
@@ -189,16 +168,28 @@ function HomePage(query = {}) {
 function ProductDetailPage(params = {}) {
   const { id } = params;
   return `
-    <h1>상품 상세 페이지</h1>
-    <p>상품 ID: ${id || "없음"}</p>
-    <p>현재 경로: ${window.location.pathname}</p>
+    <div class="bg-gray-50">
+      ${Header({ title: "상품 상세", showBackButton: true, cartCount: 1 })}
+      <main class="max-w-md mx-auto px-4 py-4">
+        <h1>상품 상세 페이지</h1>
+        <p>상품 ID: ${id || "없음"}</p>
+        <p>현재 경로: ${window.location.pathname}</p>
+      </main>
+      ${Footer()}
+    </div>
   `;
 }
 
 function NotFoundPage() {
   return `
-    <h1>404 페이지</h1>
-    <p>404 경로: ${window.location.pathname}</p>
+    <div class="bg-gray-50">
+      ${Header({ title: "404 페이지" })}
+      <main class="max-w-md mx-auto px-4 py-4">
+        <h1>404 페이지</h1>
+        <p>404 경로: ${window.location.pathname}</p>
+      </main>
+      ${Footer()}
+    </div>
   `;
 }
 
