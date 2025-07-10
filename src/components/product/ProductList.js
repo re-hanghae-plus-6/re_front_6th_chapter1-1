@@ -10,6 +10,7 @@ export default class ProductList extends Component {
 
     // ! 이벤트 핸들러를 미리 바인딩해서 보관
     // ! this.handleClick이 항상 같은 함수 객체가 되도록
+    // * bind : 클래스 메서드는 this가 동적으로 결정, handleProductClick는 함수이고 호출 시 객체 인스턴스와 연결되어있지 않음
     this.handleProductClick = this.handleProductClick.bind(this);
 
     this.unsubscribe = homeStore.subscribe(() => {
