@@ -1,9 +1,19 @@
 import { createObserver } from "./utils/createObserver.js";
 
+const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
+
+const getAppPath = (fullPath = window.location.pathname) => {
+  return fullPath.startsWith(BASE_PATH) ? fullPath.slice(BASE_PATH.length) || "/" : fullPath;
+};
+
+const getFullPath = (appPath) => {
+  return BASE_PATH + appPath;
+};
+
 export const createRouter = (routes) => {
   const { subscribe, notify } = createObserver();
 
-  const getPath = () => window.location.pathname;
+  const getPath = () => getAppPath();
 
   const getTarget = () => {
     const currentPath = getPath();
@@ -30,7 +40,7 @@ export const createRouter = (routes) => {
   };
 
   const push = (path) => {
-    window.history.pushState(null, null, path);
+    window.history.pushState(null, null, getFullPath(path));
     notify();
   };
 
@@ -62,10 +72,10 @@ export const navigate = (path) => {
 };
 
 export const useParams = () => {
-  const currentPath = window.location.pathname;
   const routerInstance = router.get();
-
   if (!routerInstance || !routerInstance.routes) return {};
+
+  const currentPath = getAppPath();
 
   for (const [routePath] of Object.entries(routerInstance.routes)) {
     if (routePath.includes(":")) {
@@ -94,7 +104,7 @@ export const useParams = () => {
 
 export const useLocation = () => {
   return {
-    pathname: window.location.pathname,
+    pathname: getAppPath(),
     state: window.history.state,
   };
 };
