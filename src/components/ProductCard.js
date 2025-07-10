@@ -1,4 +1,3 @@
-// src/components/ProductCard.js
 export const ProductCard = (product) => {
   return /*html*/ `
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card" data-product-id="${product.productId}">

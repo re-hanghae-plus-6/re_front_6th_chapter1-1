@@ -13,10 +13,9 @@ export const ProductList = (props) => {
   const productCardsHtml = products.map(ProductCard).join("");
 
   // 스켈레톤은 '초기 로딩' 상태일 때만 표시
-  // productLoadingSkeleton 함수를 호출하여 HTML 문자열을 얻고, repeat() 메서드를 사용합니다.
   const skeletonHtml = isInitialLoading ? productLoadingSkeleton(limit) : "";
 
-  // 총 상품 개수는 '초기 로딩'이 아닐 때만 표시합니다.
+  // 총 상품 개수는 '초기 로딩'이 아닐 때만 표시
   const totalCountHtml = !isInitialLoading
     ? /*html*/ `
        <div class="mb-4 text-sm text-gray-600">
@@ -24,7 +23,7 @@ export const ProductList = (props) => {
        </div>`
     : "";
 
-  // 로딩 스피너는 'loading' 중이면서 '초기 로딩'이 아닐 때 (즉, 추가 로딩 중일 때)만 표시합니다.
+  // 로딩 스피너는 'loading' 중이면서 '초기 로딩'이 아닐 때 (즉, 추가 로딩 중일 때)만 표시
   const loadingSpinnerHtml =
     loading && !isInitialLoading
       ? /*html*/ `

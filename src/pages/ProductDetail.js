@@ -2,18 +2,20 @@ import { getProduct } from "../api/productApi.js";
 import { header } from "../components/header.js";
 import { footer } from "../components/footer.js";
 import { NotFound } from "./NotFound.js";
+import { addCart, updateHeaderCartCount } from "../utils/cart.js";
+import { showToast } from "../template/toast.js";
 
 // 상품 상세 정보를 렌더링하는 함수
 export const ProductDetail = (props) => {
   const { urlParams } = props;
   const productId = urlParams.id;
 
-  // 1. productId가 없는 경우 NotFound 컴포넌트를 반환
+  // productId가 없는 경우 NotFound 컴포넌트를 반환
   if (!productId) {
     return NotFound();
   }
 
-  // 2. 로딩 UI를 먼저 담을 div를 생성하고, 비동기로 상품 정보를 채워넣음
+  // 로딩 UI를 먼저 담을 div를 생성하고, 비동기로 상품 정보를 채워넣음
   const appRoot = document.querySelector("#root");
 
   // 로딩 UI 템플릿
@@ -31,12 +33,11 @@ export const ProductDetail = (props) => {
   `;
 
   appRoot.innerHTML = loadingHTML;
-
+  addEventListeners();
   // 비동기 함수로 상품 정보를 가져와서 실제 UI로 교체
   (async () => {
     try {
       const product = await getProduct(productId);
-
       const productHTML = /*html*/ `
         ${header(props)}
         <main class="max-w-md mx-auto px-4 py-4">
@@ -47,14 +48,14 @@ export const ProductDetail = (props) => {
               <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
               </svg>
-              <button class="breadcrumb-link" data-category1="생활/건강">
-                생활/건강
+              <button class="breadcrumb-link" data-category1="${product.category1}">
+                ${product.category1}
               </button>
               <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
               </svg>
-              <button class="breadcrumb-link" data-category2="생활용품">
-                생활용품
+              <button class="breadcrumb-link" data-category2="${product.category2}">
+                ${product.category2}
               </button>
             </div>
           </nav>
@@ -63,12 +64,12 @@ export const ProductDetail = (props) => {
             <!-- 상품 이미지 -->
             <div class="p-4">
               <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4">
-                <img src="https://shopping-phinf.pstatic.net/main_8506721/85067212996.1.jpg" alt="PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장" class="w-full h-full object-cover product-detail-image">
+                <img src="${product.image}" alt="${product.title}" class="w-full h-full object-cover product-detail-image">
               </div>
               <!-- 상품 정보 -->
               <div>
                 <p class="text-sm text-gray-600 mb-1"></p>
-                <h1 class="text-xl font-bold text-gray-900 mb-3">PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장</h1>
+                <h1 class="text-xl font-bold text-gray-900 mb-3">${product.title}</h1>
                 <!-- 평점 및 리뷰 -->
                 <div class="flex items-center mb-3">
                   <div class="flex items-center">
@@ -88,19 +89,19 @@ export const ProductDetail = (props) => {
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                     </svg>
                   </div>
-                  <span class="ml-2 text-sm text-gray-600">4.0 (749개 리뷰)</span>
+                  <span class="ml-2 text-sm text-gray-600">4.0 (${product.reviewCount}개 리뷰)</span>
                 </div>
                 <!-- 가격 -->
                 <div class="mb-4">
-                  <span class="text-2xl font-bold text-blue-600">220원</span>
+                  <span class="text-2xl font-bold text-blue-600">${product.lprice}원</span>
                 </div>
                 <!-- 재고 -->
                 <div class="text-sm text-gray-600 mb-4">
-                  재고 107개
+                  재고 ${product.stock}개
                 </div>
                 <!-- 설명 -->
                 <div class="text-sm text-gray-700 leading-relaxed mb-6">
-                  PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장에 대한 상세 설명입니다. 브랜드의 우수한 품질을 자랑하는 상품으로, 고객 만족도가 높은 제품입니다.
+                  ${product.description}
                 </div>
               </div>
             </div>
@@ -126,7 +127,7 @@ export const ProductDetail = (props) => {
                 </div>
               </div>
               <!-- 액션 버튼 -->
-              <button id="add-to-cart-btn" data-product-id="85067212996" class="w-full bg-blue-600 text-white py-3 px-4 rounded-md 
+              <button id="add-to-cart-btn" data-product-id="${productId}" class="w-full bg-blue-600 text-white py-3 px-4 rounded-md 
                   hover:bg-blue-700 transition-colors font-medium">
                 장바구니 담기
               </button>
@@ -134,10 +135,10 @@ export const ProductDetail = (props) => {
           </div>
           <!-- 상품 목록으로 이동 -->
           <div class="mb-6">
-            <button class="block w-full text-center bg-gray-100 text-gray-700 py-3 px-4 rounded-md 
-              hover:bg-gray-200 transition-colors go-to-product-list">
+            <a href="/" data-link class="block w-full text-center bg-gray-100 text-gray-700 py-3 px-4 rounded-md 
+              hover:bg-gray-200 transition-colors go-to-product-list cursor-pointer">
               상품 목록으로 돌아가기
-            </button>
+            </a>
           </div>
           <!-- 관련 상품 -->
           <div class="bg-white rounded-lg shadow-sm">
@@ -184,3 +185,58 @@ export const ProductDetail = (props) => {
   // 라우터의 innerHTML 호출을 만족시키기 위함
   return "";
 };
+
+function addEventListeners(product) {
+  let quantity = 1; // 수량 상태 초기화
+
+  const quantityInput = document.querySelector("#quantity-input");
+  const decreaseBtn = document.querySelector("#quantity-decrease");
+  const increaseBtn = document.querySelector("#quantity-increase");
+  const addToCartBtn = document.querySelector("#add-to-cart-btn");
+  const backBtn = document.querySelector(".go-to-product-list");
+
+  // 수량 업데이트 함수
+  const updateQuantity = (newQuantity) => {
+    quantity = Math.max(1, Math.min(newQuantity, product.stock));
+    if (quantityInput) {
+      quantityInput.value = quantity;
+    }
+  };
+
+  // 수량 조절 버튼 이벤트
+  if (decreaseBtn) {
+    decreaseBtn.addEventListener("click", () => updateQuantity(quantity - 1));
+  }
+  if (increaseBtn) {
+    increaseBtn.addEventListener("click", () => updateQuantity(quantity + 1));
+  }
+  if (quantityInput) {
+    quantityInput.addEventListener("change", (e) => {
+      const value = parseInt(e.target.value, 10);
+      if (!isNaN(value)) {
+        updateQuantity(value);
+      }
+    });
+  }
+
+  // 장바구니 담기 버튼 이벤트
+  if (addToCartBtn) {
+    addToCartBtn.addEventListener("click", () => {
+      addCart(product, quantity);
+      showToast("장바구니에 추가되었습니다.");
+      updateHeaderCartCount(); // 리렌더링 없이 헤더 카운트만 업데이트
+    });
+  }
+
+  // (선택) 관련 상품 클릭 이벤트 추가
+  // const relatedProductCards = document.querySelectorAll(".related-product-card");
+  // relatedProductCards.forEach(card => {
+  //   card.addEventListener("click", () => {
+  //     const newProductId = card.dataset.productId;
+  //     // 라우터의 navigate 함수를 호출하여 페이지 이동
+  //     window.history.pushState({}, "", `/product/${newProductId}`);
+  //     // ProductDetail 함수를 다시 실행하여 페이지를 새로 그림
+  //     ProductDetail({ urlParams: { id: newProductId } });
+  //   });
+  // });
+}
