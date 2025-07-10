@@ -17,49 +17,26 @@ const URL_MAP = {
   [ROUTES.ERROR]: notFoundPage,
 };
 
-export function navigate(pathname, replace = false) {
-  console.log(pathname);
+export async function navigate(pathname, replace = false) {
   history[replace ? "replaceState" : "pushState"](null, "", pathname);
-  render(); // 라우팅 후 화면 다시 그리기
+  await render();
 }
 
-export function render() {
+export async function render() {
   const root = document.querySelector("#root");
-  console.log(root);
-  let { pathname } = location;
-  // if (pathname === ROUTES.MAIN) {
-  //   // navigate(ROUTES.PRODUCT);
-  // } else if (pathname === ROUTES.PRODUCT) {
-  //   // navigate(ROUTES.PRODUCT, true);
-  // }
+  const { pathname } = location;
 
-  const page = URL_MAP[pathname] || notFoundPage;
-  console.log("page:", page);
-  root.innerHTML = page();
+  // 경로만 사용하도록 쿼리스트링 제거
+  const cleanPath = pathname.split("?")[0];
+  const pageFn = URL_MAP[cleanPath] || notFoundPage;
+  // 페이지를 그냥 async로 만들어서 사용
+  const content = await pageFn();
+  root.innerHTML = content;
+
+  if (typeof pageFn.afterRender === "function") {
+    pageFn.afterRender();
+  }
 }
-
-function getPathWithParams() {
-  const pathname = location.pathname;
-  const params = new URLSearchParams(location.search);
-  return { pathname, params };
-}
-
-function setEventListener() {
-  const root = document.querySelector("#root");
-  root.addEventListener("input", (e) => {
-    if (e.target && e.target.id === "limit-select") {
-      const { params, pathname } = getPathWithParams();
-      if (e.target.value) {
-        params.set("limit", e.target.value);
-      } else {
-        params.delete("limit");
-      }
-      navigate(`${pathname}?${params.toString()}`);
-    }
-  });
-}
-
-setEventListener();
 
 window.addEventListener("popstate", () => {
   render(); // 뒤로/앞으로 이동 시 렌더링
