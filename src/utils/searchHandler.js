@@ -1,4 +1,5 @@
 import { getProducts } from "../api/productApi";
+import { updateQueryParams } from "./queryStringHandler.js";
 
 // 검색 실행 함수
 export const performSearch = async (state, searchTerm, renderCallback) => {
@@ -8,6 +9,9 @@ export const performSearch = async (state, searchTerm, renderCallback) => {
     state.search = searchTerm;
     state.hasMore = true;
     state.products = [];
+
+    // URL 쿼리 파라미터 업데이트
+    updateQueryParams({ search: searchTerm, page: 1 });
 
     // 검색 결과 가져오기
     const { products, pagination } = await getProducts({

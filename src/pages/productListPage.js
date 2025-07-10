@@ -4,6 +4,7 @@ import { productListLoading } from "../components/productListLoading";
 import { setupSearchEventListeners } from "../utils/searchHandler";
 import { setupCartEventListeners, updateCartCount, resetCartEventListeners } from "../utils/cartHandler.js";
 import { navigateToProduct } from "../utils/router.js";
+import { updateQueryParams, syncStateFromQuery } from "../utils/queryStringHandler.js";
 
 const root = document.getElementById("root");
 
@@ -21,6 +22,9 @@ let state = {
   selectedCategories: {},
   totalProducts: 0,
 };
+
+// URL 쿼리 파라미터로 초기 state 동기화
+state = syncStateFromQuery(state);
 
 const renderLoading = () => {
   root.innerHTML = productListLoading;
@@ -111,6 +115,9 @@ const loadMoreProducts = async () => {
   state.isLoading = true;
   state.page += 1;
 
+  // 페이지 변경 시 쿼리 스트링 업데이트 (무한 스크롤에서는 히스토리 추가하지 않음)
+  updateQueryParams({ page: state.page }, false);
+
   renderLoading();
   try {
     const { products: nextProducts, pagination } = await getProducts({
@@ -149,11 +156,13 @@ const setupCategoryEventListeners = () => {
         state.selectedCategories = {};
         state.category1 = "";
         state.category2 = "";
+        updateQueryParams({ category1: "", category2: "" });
       } else {
         // 새로운 카테고리 선택
         state.selectedCategories = { category1 };
         state.category1 = category1;
         state.category2 = "";
+        updateQueryParams({ category1, category2: "" });
       }
 
       await renderInitialContent();
@@ -170,6 +179,7 @@ const setupCategoryEventListeners = () => {
       if (state.selectedCategories.category2 === category2) {
         state.selectedCategories = { category1: state.selectedCategories.category1 };
         state.category2 = "";
+        updateQueryParams({ category2: "" });
       } else {
         // 새로운 카테고리 선택
         state.selectedCategories = {
@@ -177,6 +187,7 @@ const setupCategoryEventListeners = () => {
           category2,
         };
         state.category2 = category2;
+        updateQueryParams({ category2 });
       }
 
       await renderInitialContent();
@@ -194,6 +205,7 @@ const setupCategoryEventListeners = () => {
         state.selectedCategories = {};
         state.category1 = "";
         state.category2 = "";
+        updateQueryParams({ category1: "", category2: "" });
       } else {
         // 해당 단계까지만 유지
         const index = parseInt(breadcrumbIndex);
@@ -202,6 +214,7 @@ const setupCategoryEventListeners = () => {
           // 1단계까지만 유지 (2단계 선택 해제)
           state.selectedCategories = { category1: state.selectedCategories.category1 };
           state.category2 = "";
+          updateQueryParams({ category2: "" });
         }
       }
 
@@ -220,6 +233,7 @@ const setupSortControl = () => {
     const newSort = e.target.value;
     if (newSort !== state.sort) {
       state.sort = newSort;
+      updateQueryParams({ sort: newSort });
       await renderInitialContent();
     }
   });
@@ -235,6 +249,7 @@ const setupProductLimitControl = () => {
     const newLimit = parseInt(e.target.value, 10);
     if (!isNaN(newLimit) && newLimit !== state.limit) {
       state.limit = newLimit;
+      updateQueryParams({ limit: newLimit });
       await renderInitialContent();
     }
   });
