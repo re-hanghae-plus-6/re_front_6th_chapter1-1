@@ -305,6 +305,14 @@ function setupModalEvents() {
       return;
     }
 
+    // NOTE 전체 삭제
+    if (event.target.matches("#cart-modal-clear-cart-btn")) {
+      state.cart = [];
+      state.selectedCartItems = [];
+      renderCartModal();
+      return;
+    }
+
     // 닫기 버튼 클릭 (모든 닫기 버튼 확인)
     const closeButtons = document.querySelectorAll(".modal-close-btn");
     for (const closeBtn of closeButtons) {
