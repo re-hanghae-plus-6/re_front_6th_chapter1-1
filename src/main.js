@@ -51,8 +51,6 @@ function renderProductDetail(productId) {
     cart: state.cart,
     relatedProducts,
   });
-
-  setupProductDetailEventListeners();
 }
 
 async function main() {
@@ -159,6 +157,13 @@ function setupProductDetailEventListeners() {
   document.addEventListener("click", (event) => {
     // 장바구니 버튼 클릭은 무시
     if (event.target.matches(".add-to-cart-btn") || event.target.closest(".add-to-cart-btn")) {
+      return;
+    }
+
+    if (event.target.matches("#add-to-cart-btn")) {
+      const productId = event.target.dataset.productId;
+      addToCart(productId);
+      showToast({ type: "add" });
       return;
     }
 
