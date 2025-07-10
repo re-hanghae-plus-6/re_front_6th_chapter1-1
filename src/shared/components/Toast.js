@@ -31,7 +31,7 @@ const getToastContainer = () => {
   if (!container) {
     container = document.createElement("div");
     container.id = "toast-container";
-    container.className = "fixed top-4 right-4 z-50 space-y-2";
+    container.className = "fixed bottom-4 left-1/2 transform -translate-x-1/2 z-[100]";
     document.body.appendChild(container);
 
     Toast.onMount();
@@ -40,7 +40,7 @@ const getToastContainer = () => {
 };
 
 const createToastHTML = ({ message, type = "info" }) => `
-  <div class="${getToastColor(type)} text-white px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2 max-w-sm">
+  <div class="${getToastColor(type)} text-white px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2 max-w-sm animate-slide-up">
     <div class="flex-shrink-0">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         ${getToastIcon(type)}
