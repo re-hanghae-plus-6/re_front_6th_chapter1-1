@@ -1,14 +1,6 @@
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-  resolve: {
-    extensions: [".js", ".ts", ".jsx", ".tsx", ".json"],
-  },
-  server: {
-    fs: {
-      strict: false,
-    },
-  },
   test: {
     globals: true,
     environment: "jsdom",
