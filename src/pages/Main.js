@@ -27,7 +27,7 @@ const MainPage = () => {
 
     root.innerHTML = `
       <div class="min-h-screen bg-gray-50">
-        ${Header()}
+        <div data-component='header' style='display: contents;'></div>
         <main class="max-w-md mx-auto px-4 py-4">
         ${Filter({ isLoading, categoriesData })}
         ${ProductList({ isLoading, productsData })}
@@ -35,6 +35,8 @@ const MainPage = () => {
         ${Footer()}
       </div>
     `;
+
+    Header("header");
 
     document.querySelector("#limit-select").addEventListener("change", (e) => {
       const value = e.target.value;
