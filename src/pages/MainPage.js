@@ -1,6 +1,6 @@
-import { LimitSelect } from "../components/LimitSelect";
-import { ProductItem } from "../components/ProductItem";
-import { LoadingList } from "../components/Loading";
+import { LimitSelect } from "../components/LimitSelect.js";
+import { ProductItem } from "../components/ProductItem.js";
+import { LoadingList } from "../components/Loading.js";
 
 export const MainPage = (appState) => {
   // store 기반 상태 구조에 맞게 데이터 추출
