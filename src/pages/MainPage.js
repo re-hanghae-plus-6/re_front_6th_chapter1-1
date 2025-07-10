@@ -9,6 +9,7 @@ import { productsStore } from "../store.js";
 
 let isScrollEventBound = false;
 
+// 메인페이지에만 있는 기능
 function handleScroll() {
   const { pagination } = productsStore.state;
   if (!pagination.hasNext) {
@@ -26,7 +27,6 @@ function handleScroll() {
       page: pagination.page + 1,
     });
   }
-  console.log("전체", productsStore.state.products);
 }
 
 export const MainPage = async () => {
@@ -35,5 +35,5 @@ export const MainPage = async () => {
     isScrollEventBound = true;
   }
 
-  return Layout(Header() + Body(SearchFilter(), ProductList()) + Footer());
+  return Layout(Header("MainPage") + Body(SearchFilter(), ProductList()) + Footer());
 };
