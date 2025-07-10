@@ -38,7 +38,8 @@ export default class Component {
     // 부모 DOM에 렌더링하고, mounted()를 호출
 
     // 🔷 기존 자원 정리
-    this.cleanup();
+    // !
+    // this.cleanup();
 
     // 🔷 새로운 렌더링 시작
     this.$target.innerHTML = this.template();
