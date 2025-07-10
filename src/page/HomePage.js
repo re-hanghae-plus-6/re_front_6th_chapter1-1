@@ -78,7 +78,7 @@ function cleanup() {
 
 // 렌더링 함수
 function render(state, cartCount) {
-  // cartCount 매 렌더마다 로컬스토리지와 동기화하여 최신 값 사용
+  // cartCount 매 렌더링마다 로컬스토리지와 동기화하여 최신 값 사용
   cartCount = getCartCount();
   const $root = document.getElementById("root");
   if (!$root) return "";
@@ -264,6 +264,20 @@ function attachEventListeners() {
         e.preventDefault();
         store.setState({ searchValue: e.target.value, currentPage: 1 });
       }
+    };
+
+    // onKeyup 이벤트로 검색 입력 처리
+    searchInput.onkeyup = (e) => {
+      if (e.key === "Enter") {
+        // 기본 제출 동작 방지
+        e.preventDefault();
+        store.setState({ searchValue: e.target.value, currentPage: 1 });
+      }
+    };
+
+    // onChange 이벤트로 검색 입력 처리 (Enter 누르지 않아도 검색 동작)
+    searchInput.onchange = (e) => {
+      store.setState({ searchValue: e.target.value, currentPage: 1 });
     };
   }
 
