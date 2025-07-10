@@ -3,25 +3,13 @@ import { ProductListSkeleton } from "./components/Loader";
 import { ProductItem } from "./components/ProductItem";
 import { LIMIT_OPTIONS, SORT_OPTIONS } from "./constants";
 import SearchInput from "./components/SearchInput";
-import CartButton from "./components/CartButton";
 import CategoryFilter from "./components/CategoryFilter";
+import Header from "./components/Header";
 
 export default function HomPage(state) {
   return /*html */ `
     <div class="bg-gray-50">
-      <header class="bg-white shadow-sm sticky top-0 z-40">
-        <div class="max-w-md mx-auto px-4 py-4">
-          <div class="flex items-center justify-between">
-            <h1 class="text-xl font-bold text-gray-900">
-              <a href="/" data-link="">쇼핑몰</a>
-            </h1>
-            <div class="flex items-center space-x-2">
-              <!-- 장바구니 아이콘 -->
-              ${CartButton({ cartCount: state.cart.length })}
-            </div>
-          </div>
-        </div>
-      </header>
+       ${Header({ state })}
       <main class="max-w-md mx-auto px-4 py-4">
         <!-- 검색 및 필터 -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
