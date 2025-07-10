@@ -22,6 +22,7 @@ class ProductItem extends Component {
         image,
         lprice,
         quantity: 1,
+        isSelected: false,
       });
     }
     cartLocalStorage.set('cartProducts', cartItems);

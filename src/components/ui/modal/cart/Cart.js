@@ -28,9 +28,27 @@ class Cart extends Component {
     this.unmount();
   }
 
-  handleSelectAllItems() {}
+  handleSelectAllItems(items) {
+    const updatedCartItems = items.map((item) => {
+      console.log('handleSelectAllItems', item);
 
-  handleSelectItem() {}
+      return { ...item, isSelected: !item.isSelected };
+    });
+
+    cartLocalStorage.set('cartProducts', updatedCartItems);
+  }
+
+  handleSelectItem(items, productId) {
+    const updatedCartItems = items.map((item) => {
+      if (item.productId !== productId) {
+        return item;
+      }
+
+      return { ...item, isSelected: !item.isSelected };
+    });
+
+    cartLocalStorage.set('cartProducts', updatedCartItems);
+  }
 
   handleChangeQuantity(items, productId, action) {
     const updatedCartItems = items.map((item) => {
@@ -82,6 +100,18 @@ class Cart extends Component {
         this.handleChangeQuantity(products, productId, 'increase');
         return;
       }
+
+      const checkbox = event.target.closest('.cart-item-checkbox');
+      if (checkbox) {
+        const productId = checkbox.dataset.productId;
+        this.handleSelectItem(products, productId);
+        return;
+      }
+
+      const allCheckbox = event.target.closest('#cart-modal-select-all-checkbox');
+      if (allCheckbox) {
+        this.handleSelectAllItems(products);
+      }
     });
 
     document.addEventListener('keydown', (event) => {
@@ -113,13 +143,14 @@ class Cart extends Component {
     `;
   }
 
-  renderCartSelectAllBar(cartItemsLength) {
+  renderCartSelectAllBar(cartItemsLength, isAllSelected) {
     return /* HTML */ `
       <div class="p-4 border-b border-gray-200 bg-gray-50">
         <label class="flex items-center text-sm text-gray-700">
           <input
             type="checkbox"
             id="cart-modal-select-all-checkbox"
+            ${isAllSelected ? 'checked' : ''}
             class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-2"
           />
           전체선택 (${cartItemsLength}개)
@@ -143,6 +174,7 @@ class Cart extends Component {
                   <label class="flex items-center mr-3">
                     <input
                       type="checkbox"
+                      ${item.isSelected ? 'checked' : ''}
                       class="cart-item-checkbox w-4 h-4 text-blue-600 border-gray-300 rounded
                 focus:ring-blue-500"
                       data-product-id="${item.productId}"
@@ -262,6 +294,7 @@ class Cart extends Component {
 
   render() {
     const cartItems = cartLocalStorage.get('cartProducts') || [];
+    const isAllSelected = cartItems.length > 0 && cartItems.every((item) => item.isSelected);
 
     this.element.innerHTML = /* HTML */ `
       <div class="cart-modal-overlay fixed top-0 left-0 w-full h-full bg-[#000]/30 z-[100]">
@@ -305,7 +338,7 @@ class Cart extends Component {
             <div class="flex flex-col max-h-[calc(90vh-120px)]">
               ${cartItems.length
                 ? /* HTML */ `
-                    ${this.renderCartSelectAllBar(cartItems.length)}
+                    ${this.renderCartSelectAllBar(cartItems.length, isAllSelected)}
                     ${this.renderCartItems(cartItems)} ${this.renderCartBottomBar()}
                   `
                 : this.renderCartEmpty()}
