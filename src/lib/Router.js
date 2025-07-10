@@ -41,7 +41,6 @@ export class Router {
 
     // 새 컴포넌트 인스턴스 생성
     const ComponentClass = route.component;
-    console.log("새 컴포넌트 생성:", ComponentClass.name);
 
     this.currentInstance = new ComponentClass(this.rootElement, {
       params: this.params,
@@ -80,14 +79,18 @@ export class Router {
     return window.location.pathname;
   }
 
-  /**
-   * URL 쿼리 파라미터 파싱
-   */
   parseQueryParams() {
+    const oldQueryParams = { ...this.queryParams };
     this.queryParams = {};
     const urlParams = new URLSearchParams(window.location.search);
     for (const [key, value] of urlParams) {
       this.queryParams[key] = value;
+    }
+
+    // 쿼리 파라미터가 변경되었는지 확인하고 이벤트 발생
+    const hasChanged = JSON.stringify(oldQueryParams) !== JSON.stringify(this.queryParams);
+    if (hasChanged) {
+      this.dispatchQueryParamsChange();
     }
   }
 
@@ -169,8 +172,6 @@ export class Router {
   }
 
   setQueryParam(key, value) {
-    console.log("setQueryParam", key, value);
-
     // 값이 없거나 빈 문자열이면 파라미터 제거
     if (value === undefined || value === null || value === "") {
       delete this.queryParams[key];
@@ -212,7 +213,15 @@ export class Router {
 
     // URL 업데이트 (히스토리 스택에 추가하지 않음)
     window.history.replaceState(null, "", url.toString());
-    console.log("URL 업데이트됨:", url.toString());
+
+    this.dispatchQueryParamsChange();
+  }
+
+  dispatchQueryParamsChange() {
+    const event = new CustomEvent("queryParamsChange", {
+      detail: { queryParams: { ...this.queryParams } },
+    });
+    window.dispatchEvent(event);
   }
 
   static getInstance() {

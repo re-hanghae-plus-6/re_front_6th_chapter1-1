@@ -71,7 +71,6 @@ export default class ProductDetailPage extends Component {
     const relatedProductCard = e.target.closest(".related-product-card");
     if (relatedProductCard) {
       const productId = relatedProductCard.dataset["productId"];
-      console.log(relatedProductCard.dataset);
       navigate(`/product/${productId}`);
     }
   }

@@ -111,7 +111,6 @@ export default class Filter extends Component {
         const breadcrumb = findBreadcrumb(categoryList, selectedCategory);
         const newCategory1 = breadcrumb[0] || "";
         const newCategory2 = breadcrumb[1] || "";
-        console.log(breadcrumb);
 
         homeStore.setState({
           categories: {
