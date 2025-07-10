@@ -11,15 +11,13 @@ export const getQueryParams = () => {
 
 export const updateQueryParams = (newParams) => {
   const params = new URLSearchParams(window.location.search);
-
   Object.entries(newParams).forEach(([key, value]) => {
-    if (value === undefined || value === null || value === "") {
+    if (!value) {
       params.delete(key);
     } else {
       params.set(key, value);
     }
   });
-
   const newUrl = `${window.location.pathname}?${params.toString()}`;
   window.history.pushState({}, "", newUrl);
 };
