@@ -18,7 +18,7 @@ const getAddBtnAndPid = (e) => {
   return { addBtn, pid };
 };
 
-// 상품 카드에서 상품 데이터 추출
+// 상품 카드에서 상품 데이터 추출.
 const getProductData = (productCard) => {
   if (!productCard) return null;
   const title = productCard.querySelector("h3")?.textContent.trim() || "";
