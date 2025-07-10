@@ -23,6 +23,11 @@ export class CartController {
         this.#handleDecreaseQuantity(event);
         return;
       }
+
+      if (event.target.closest(".cart-item-remove-btn")) {
+        this.#handleRemoveItem(event);
+        return;
+      }
     };
 
     document.addEventListener("click", clickHandler);
@@ -130,6 +135,16 @@ export class CartController {
         store.dispatch(actions.showToast("아이템 제거에 실패했습니다.", "error"));
       }
     }
+  }
+
+  #handleRemoveItem(event) {
+    const removeButton = event.target.closest(".cart-item-remove-btn");
+    if (!removeButton) return;
+
+    const productId = removeButton.getAttribute("data-product-id");
+    if (!productId) return;
+
+    store.dispatch(actions.removeFromCart(productId));
   }
 
   cleanup() {
