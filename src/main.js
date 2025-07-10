@@ -1,4 +1,5 @@
 import { ProductListPage } from "./pages/productListPage.js";
+import { ProductDetailPage } from "./pages/productDetailPage.js";
 import { render } from "./render.js";
 import { router } from "./router.js";
 import { store } from "./store.js";
@@ -17,7 +18,14 @@ function main() {
     },
   });
 
-  router.addRoute("/", { page: ProductListPage });
+  router.addRoute("/", {
+    regex: /^\/$/,
+    page: ProductListPage,
+  });
+  router.addRoute("/product/:id", {
+    regex: /^\/product\/\d+/,
+    page: ProductDetailPage,
+  });
 
   store.notify();
 }
