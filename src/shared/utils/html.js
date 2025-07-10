@@ -1,4 +1,4 @@
-import { Component } from "../core/Component";
+import { Component } from "../../core/Component";
 
 export function html(strings, ...expressions) {
   const result = [];

@@ -1,4 +1,4 @@
-import { createDataAttribute } from "../utils/data-attributes.js";
+import { createDataAttribute } from "../shared/utils/data-attributes.js";
 import { observable, observe } from "./observer.js";
 
 export class Component {

@@ -1,5 +1,5 @@
 import { Component } from "../../../core/Component";
-import { html } from "../../../utils/html";
+import { html } from "../../../shared/utils/html";
 import { Breadcrumb } from "./Breadcrumb";
 import { Search } from "./Search";
 import { LimitSelect, SortSelect } from "./Select";

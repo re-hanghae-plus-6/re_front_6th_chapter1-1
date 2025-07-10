@@ -1,10 +1,10 @@
-import { Component } from "../core/Component";
-import { Footer } from "../footer/Footer";
-import { Header } from "../header/Header";
-import { Layouy } from "../layout/Layout";
-import { html } from "../utils/html";
-import { Filters } from "./components/filters/Filters";
-import { Products } from "./components/products/Products";
+import { Component } from "../../core/Component";
+import { Footer } from "../../shared/components/Footer";
+import { Layouy } from "../../shared/components/Layout";
+import { html } from "../../shared/utils/html";
+import { Filters } from "./components/Filters";
+import { Header } from "./components/Header";
+import { Products } from "./components/Products";
 import { productsStore } from "./store/products";
 
 export function ProductsPage($root) {

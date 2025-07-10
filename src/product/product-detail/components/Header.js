@@ -1,5 +1,5 @@
-import { Component } from "../core/Component";
-import { html } from "../utils/html";
+import { Component } from "../../../core/Component";
+import { html } from "../../../shared/utils/html";
 
 export class Header extends Component {
   setup() {

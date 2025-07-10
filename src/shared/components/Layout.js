@@ -1,4 +1,4 @@
-import { Component } from "../core/Component";
+import { Component } from "../../core/Component";
 import { html } from "../utils/html";
 
 export class Layouy extends Component {

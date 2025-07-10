@@ -1,6 +1,7 @@
 import { Component } from "../../../core/Component";
-import { html } from "../../../utils/html";
-import { productsStore } from "../../store/products";
+import { router } from "../../../core/router";
+import { html } from "../../../shared/utils/html";
+import { productsStore } from "../store/products";
 
 export class Products extends Component {
   #productsGridId = "products-grid";
@@ -30,6 +31,23 @@ export class Products extends Component {
     }
 
     this.#setIntersectionObserver({ isLoading, hasNext, isFetching });
+  }
+
+  setEvent() {
+    super.setEvent();
+    this.addEvent("click", ({ target }) => {
+      const $productCard = target.closest("div[data-product-id]");
+      if ($productCard) {
+        const { productId } = $productCard.dataset;
+        router.push({
+          pathname: `/product/${productId}`,
+        });
+      } else {
+        // const $addCartBtn = target.closest("button[data-product-id]");
+        // const { productId } = $addCartBtn.dataset;
+        // productsStore.setCategory1(productId);
+      }
+    });
   }
 
   #ensureProductsCount({ total, limit, page, products }) {
@@ -131,10 +149,10 @@ export class Products extends Component {
     return hasNext ? this.#hasMoreStatus() : this.#noMoreStatus();
   }
 
-  #productCard({ productid, image, lprice, title }) {
+  #productCard({ productId, image, lprice, title }) {
     return html`<div
       class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
-      data-product-id="${productid}"
+      data-product-id="${productId}"
     >
       <!-- 상품 이미지 -->
       <div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image">
@@ -156,7 +174,7 @@ export class Products extends Component {
         <button
           class="w-full bg-blue-600 text-white text-sm py-2 px-3 rounded-md
                          hover:bg-blue-700 transition-colors add-to-cart-btn"
-          data-product-id="${productid}"
+          data-product-id="${productId}"
         >
           장바구니 담기
         </button>

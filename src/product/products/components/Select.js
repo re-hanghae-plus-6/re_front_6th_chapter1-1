@@ -1,6 +1,6 @@
 import { Component } from "../../../core/Component";
-import { html } from "../../../utils/html";
-import { productsStore } from "../../store/products";
+import { html } from "../../../shared/utils/html";
+import { productsStore } from "../store/products";
 
 class SelectFilter extends Component {
   renderContainer() {
