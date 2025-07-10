@@ -6,6 +6,16 @@ import initializeHandlers from "../handlers/index.js";
 import { state } from "../@store/store.js";
 
 export const Home = () => {
+  // ✅ 새로고침해도 유지되게 URL 쿼리에서 상태 초기화
+  const params = new URLSearchParams(window.location.search);
+
+  state.selectedLimit = params.get("limit") || "10";
+  state.selectedSort = params.get("sort") || "price_asc";
+  state.search = params.get("search") || "";
+  state.selectedCategory1 = params.get("category1") || null;
+  state.selectedCategory2 = params.get("category2") || null;
+  state.isLoading = true;
+
   async function init() {
     render();
 
@@ -19,6 +29,7 @@ export const Home = () => {
         sort: state.selectedSort,
       }),
     ]);
+
     state.products = productData.products;
     state.total = productData.pagination.total;
     state.categories = categoryData;
