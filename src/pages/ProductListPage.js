@@ -120,6 +120,10 @@ export class ProductListPage extends Component {
     await this.#reloadProducts({ sort });
   }
 
+  async #handleSearchChange(search) {
+    await this.#reloadProducts({ search });
+  }
+
   bindEvents(element) {
     element.addEventListener("click", (e) => {
       const route = e.target.dataset.route;
@@ -135,6 +139,17 @@ export class ProductListPage extends Component {
           break;
         case "sort-select":
           this.#handleSortChange(e.target.value);
+          break;
+      }
+    });
+
+    element.addEventListener("keypress", (e) => {
+      switch (e.target.id) {
+        case "search-input":
+          if (e.key === "Enter") {
+            const searchTerm = e.target.value.trim();
+            this.#handleSearchChange(searchTerm);
+          }
           break;
       }
     });
@@ -170,12 +185,14 @@ export class ProductListPage extends Component {
                   <label class="text-sm text-gray-600">카테고리:</label>
                   <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
                 </div>
+
                 <!-- 1depth 카테고리 -->
                 <div class="flex flex-wrap gap-2">
                   <div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>
                 </div>
                 <!-- 2depth 카테고리 -->
               </div>
+
               <!-- 기존 필터들 -->
               <div class="flex gap-2 items-center justify-between">
                 <!-- 페이지당 상품 수 -->
@@ -191,6 +208,7 @@ export class ProductListPage extends Component {
                     <option value="100" ${this.state.pagination.limit === 100 ? "selected" : ""}>100개</option>
                   </select>
                 </div>
+
                 <!-- 정렬 -->
                 <div class="flex items-center gap-2">
                   <label class="text-sm text-gray-600">정렬:</label>
