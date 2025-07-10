@@ -1,5 +1,5 @@
 import { fetchProducts } from "../entities/products";
-import { productsStore } from "../store";
+import { cartStore, productsStore } from "../store";
 import { navigate } from "./navigate";
 
 export const bindAllEvents = () => {
@@ -45,6 +45,24 @@ export const bindAllEvents = () => {
       element.addEventListener("click", () => {
         const productId = element.dataset.productId;
         navigate(`/product/${productId}`);
+      });
+    });
+  }
+
+  // 상품 리스트에서 장바구니 담기 버튼 클릭 이벤트
+  const addToCartBtnElements = document.querySelectorAll(".add-to-cart-btn");
+  if (addToCartBtnElements) {
+    addToCartBtnElements.forEach((element) => {
+      element.addEventListener("click", (event) => {
+        event.stopPropagation();
+
+        const productId = element.dataset.productId;
+        const productTitle = element.dataset.productTitle;
+        const productImage = element.dataset.productImage;
+        const productPrice = element.dataset.productPrice;
+        cartStore.setState({
+          cartItems: [...cartStore.state.cartItems, { productId, productTitle, productImage, productPrice }],
+        });
       });
     });
   }

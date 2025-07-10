@@ -1,4 +1,4 @@
-import { categoriesStore, productsStore } from "./store.js";
+import { cartStore, categoriesStore, productDetailStore, productsStore } from "./store.js";
 import { fetchProducts } from "./entities/products.js";
 import { fetchCategories } from "./entities/categories.js";
 
@@ -22,8 +22,11 @@ async function main() {
 
   productsStore.subscribe(renderHtml);
   categoriesStore.subscribe(renderHtml);
+  productDetailStore.subscribe(renderHtml);
+  cartStore.subscribe(renderHtml);
   renderHtml();
 }
+console.log("cartStore.state.cartItems", cartStore.state.cartItems);
 
 // 애플리케이션 시작
 if (import.meta.env.MODE !== "test") {

@@ -39,3 +39,29 @@ export const categoriesStore = createStore({
   isLoading: false,
   error: null,
 });
+
+export const productDetailStore = createStore({
+  brand: "",
+  category1: "",
+  category2: "",
+  category3: "",
+  category4: "",
+  description: "",
+  hprice: "",
+  image: "",
+  images: [],
+  link: "",
+  lprice: "",
+  maker: "",
+  mallName: "",
+  productId: "",
+  productType: "",
+  rating: 0,
+  reviewCount: 0,
+  stock: 0,
+  title: "",
+});
+
+export const cartStore = createStore({
+  cartItems: [],
+});
