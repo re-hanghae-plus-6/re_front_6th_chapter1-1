@@ -1,4 +1,4 @@
-export const ProductLoadingSkeleton = () => {
+export const productLoadingSkeleton = () => {
   return /*html*/ `
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
       <div class="aspect-square bg-gray-200"></div>

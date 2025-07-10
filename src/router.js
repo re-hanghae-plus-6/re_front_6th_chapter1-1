@@ -1,18 +1,16 @@
-// router.js (structuredClone 적용 최종 버전)
-
 import { home } from "./pages/home.js";
 import { ProductDetail } from "./pages/ProductDetail.js";
 import { NotFound } from "./pages/NotFound.js";
+import { addScrollListener, removeScrollListener } from "./main.js";
 
 const routes = [
-  { path: "/", component: home },
-  { path: "/product/:id", component: ProductDetail },
+  { path: "/", component: home, isDetail: false },
+  { path: "/product/:id", component: ProductDetail, isDetail: true },
 ];
 
 class Router {
   constructor(initialMainStatus) {
     this.routes = routes;
-    // structuredClone을 사용하여 상태를 깊은 복사
     this.mainStatus = structuredClone(initialMainStatus);
     this.appRoot = document.querySelector("#root");
     this.initEventListeners();
@@ -36,32 +34,43 @@ class Router {
 
   _matchRoute() {
     const path = window.location.pathname;
-    const matchedRoute = this.routes.find((route) => {
+    let foundComponent = NotFound; // 기본값은 NotFound
+    let extractedParams = {};
+    let isDetailPage = false;
+
+    for (const route of this.routes) {
       const regex = new RegExp(`^${route.path.replace(/:\w+/g, "([^/]+)")}$`);
       const match = path.match(regex);
-      if (match) {
-        const params = {};
-        const paramNames = (route.path.match(/:\w+/g) || []).map((name) => name.substring(1));
-        paramNames.forEach((name, index) => {
-          params[name] = match[index + 1];
-        });
-        route.params = params;
-        return true;
-      }
-      return false;
-    });
 
-    if (matchedRoute) {
-      return { component: matchedRoute.component, params: matchedRoute.params };
+      if (match) {
+        foundComponent = route.component;
+        isDetailPage = route.isDetail || false;
+
+        const paramNames = (route.path.match(/:\w+/g) || []).map(name => name.substring(1));
+        paramNames.forEach((name, index) => {
+          extractedParams[name] = match[index + 1];
+        });
+        break; // 일치하는 라우트를 찾았으므로 반복 중단
+      }
     }
-    return { component: NotFound, params: {} };
+
+    return {
+      component: foundComponent,
+      params: extractedParams,
+      isDetail: isDetailPage
+    };
   }
 
   async render() {
-    const { component, params } = this._matchRoute();
-    component.name === "ProductDetail" && (this.mainStatus.url = "/product/");
-    // URL에서 추출한 파라미터는 urlParams 라는 이름으로 전달합니다.
-    this.appRoot.innerHTML = await component({ ...this.mainStatus, urlParams: params });
+    const { component, params, isDetail } = this._matchRoute();
+    this.appRoot.innerHTML = await component({ ...this.mainStatus, urlParams: params, isDetail: isDetail });
+
+    if (window.location.pathname === "/") {
+      addScrollListener();
+    }
+    else {
+      removeScrollListener();
+    }
   }
 
   navigate(path) {
@@ -72,7 +81,6 @@ class Router {
   }
 
   updateStateAndRender(newMainStatus) {
-    // 상태를 업데이트할 때도 새로운 상태를 깊은 복사
     this.mainStatus = structuredClone(newMainStatus);
     this.render();
   }

@@ -1,13 +1,12 @@
 import { getProduct } from "../api/productApi.js";
-import { Header } from "../components/header.js";
-import { Footer } from "../components/footer.js";
+import { header } from "../components/header.js";
+import { footer } from "../components/footer.js";
 import { NotFound } from "./NotFound.js";
 
 // 상품 상세 정보를 렌더링하는 함수
 export const ProductDetail = (props) => {
   const { urlParams } = props;
   const productId = urlParams.id;
-  props.url += productId;
 
   // 1. productId가 없는 경우 NotFound 컴포넌트를 반환
   if (!productId) {
@@ -19,7 +18,7 @@ export const ProductDetail = (props) => {
 
   // 로딩 UI 템플릿
   const loadingHTML = /*html*/ `
-    ${Header(props)}
+    ${header(props)}
     <main class="max-w-4xl mx-auto px-4 py-8">
       <div class="py-20 bg-gray-50 flex items-center justify-center">
         <div class="text-center">
@@ -28,7 +27,7 @@ export const ProductDetail = (props) => {
         </div>
       </div>
     </main>
-    ${Footer()}
+    ${footer()}
   `;
 
   appRoot.innerHTML = loadingHTML;
@@ -39,7 +38,7 @@ export const ProductDetail = (props) => {
       const product = await getProduct(productId);
 
       const productHTML = /*html*/ `
-        ${Header(props)}
+        ${header(props)}
         <main class="max-w-md mx-auto px-4 py-4">
           <!-- 브레드크럼 -->
           <nav class="mb-4">
@@ -166,7 +165,7 @@ export const ProductDetail = (props) => {
             </div>
           </div>
         </main>
-        ${Footer()}
+        ${footer()}
       `;
       // 현재 페이지가 여전히 해당 상품 상세 페이지일 때만 DOM을 업데이트
       if (window.location.pathname === `/product/${productId}`) {
