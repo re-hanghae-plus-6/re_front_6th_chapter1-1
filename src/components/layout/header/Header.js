@@ -1,6 +1,17 @@
 import Component from '../../../core/Component.js';
+import cartStore from '../../../store/cartStore.js';
 
 class Header extends Component {
+  attachEventListeners() {
+    this.addEventListener(this.element, 'click', (event) => {
+      if (event.target.closest('#cart-icon-btn')) {
+        cartStore.setState({
+          isOpen: true,
+        });
+      }
+    });
+  }
+
   render() {
     this.element.innerHTML = /* HTML */ `
       <header class="bg-white shadow-sm sticky top-0 z-40">
