@@ -482,7 +482,7 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오", () => {
       // 장바구니 비우기
       await page.click("#cart-modal-clear-cart-btn");
 
-      // 장바구니가 비어있는지 확인
+      // 장바구니가 비어있는지 확인.
       await expect(page.locator("text=장바구니가 비어있습니다")).toBeVisible();
 
       // 장바구니 아이콘에서 개수 표시가 사라졌는지 확인
