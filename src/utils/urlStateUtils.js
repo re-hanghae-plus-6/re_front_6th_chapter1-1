@@ -9,6 +9,8 @@ export const stateToQueryParams = (state) => {
   if (state.selectedCategory2) params.category2 = state.selectedCategory2;
   if (state.selectedSort && state.selectedSort !== "price_asc") params.sort = state.selectedSort;
   if (state.selectedLimit && state.selectedLimit !== "20") params.limit = state.selectedLimit;
+
+  if (state.selectedLimit) params.limit = state.selectedLimit;
   if (state.currentPage && state.currentPage !== 1) params.current = state.currentPage;
 
   return params;
