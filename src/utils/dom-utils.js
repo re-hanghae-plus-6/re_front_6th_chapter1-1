@@ -5,6 +5,9 @@ import {
   handleProductClick,
   handleProductDetailEvents,
   handleInfiniteScroll,
+  handleCartEvents,
+  handleCartQuantityInput,
+  handleKeydown,
 } from "./event-handlers.js";
 
 /**
@@ -31,19 +34,28 @@ export const setupProductListEventListeners = () => {
   // 정렬 변경 이벤트
   root.addEventListener("change", handleOptionChange);
 
-  // 카테고리 필터 이벤트, 상품 클릭 이벤트, 상품 상세 이벤트
+  // 카테고리 필터 이벤트, 상품 클릭 이벤트, 상품 상세 이벤트, 장바구니 이벤트
   root.addEventListener("click", (e) => {
     handleCategoryClick(e);
     handleProductClick(e);
     handleProductDetailEvents(e);
+    handleCartEvents(e);
   });
 
-  // 상품 상세 페이지 수량 입력 이벤트
-  root.addEventListener("input", handleProductDetailEvents);
+  // 상품 상세 페이지 수량 입력 이벤트, 장바구니 수량 입력 이벤트
+  root.addEventListener("input", (e) => {
+    handleProductDetailEvents(e);
+    handleCartQuantityInput(e);
+  });
+
   root.addEventListener("change", (e) => {
     handleOptionChange(e);
     handleProductDetailEvents(e);
+    handleCartQuantityInput(e);
   });
+
+  // ESC 키 이벤트 (모달 닫기)
+  document.addEventListener("keydown", handleKeydown);
 };
 
 /**

@@ -1,4 +1,4 @@
-import { productListService, productDetailService } from "../services/index.js";
+import { productListService, productDetailService, cartService } from "../services/index.js";
 import { router } from "../routes/index.js";
 
 /**
@@ -262,5 +262,117 @@ export const handleInfiniteScroll = async () => {
 
   if (isNearBottom) {
     await productListService.loadNextPage();
+  }
+};
+
+/**
+ * 장바구니 이벤트 핸들러
+ */
+export const handleCartEvents = (e) => {
+  // 장바구니 아이콘 클릭
+  if (e.target.id === "cart-icon-btn" || e.target.closest("#cart-icon-btn")) {
+    cartService.openModal();
+    return;
+  }
+
+  // 장바구니 모달 닫기 버튼
+  if (e.target.id === "cart-modal-close-btn" || e.target.closest("#cart-modal-close-btn")) {
+    cartService.closeModal();
+    return;
+  }
+
+  // 장바구니 모달 배경 클릭
+  if (e.target.classList.contains("cart-modal-overlay")) {
+    cartService.closeModal();
+    return;
+  }
+
+  // 전체 선택 체크박스
+  if (e.target.id === "cart-modal-select-all-checkbox") {
+    cartService.toggleSelectAll();
+    return;
+  }
+
+  // 개별 상품 체크박스
+  if (e.target.classList.contains("cart-item-checkbox")) {
+    const productId = e.target.dataset.productId;
+    cartService.toggleItemSelection(productId);
+    return;
+  }
+
+  // 수량 증가 버튼
+  if (e.target.classList.contains("quantity-increase-btn") || e.target.closest(".quantity-increase-btn")) {
+    const productId = e.target.dataset.productId || e.target.closest(".quantity-increase-btn").dataset.productId;
+    const quantityInput = document.querySelector(`.quantity-input[data-product-id="${productId}"]`);
+    if (quantityInput) {
+      const newQuantity = parseInt(quantityInput.value) + 1;
+      cartService.updateQuantity(productId, newQuantity);
+    }
+    return;
+  }
+
+  // 수량 감소 버튼
+  if (e.target.classList.contains("quantity-decrease-btn") || e.target.closest(".quantity-decrease-btn")) {
+    const productId = e.target.dataset.productId || e.target.closest(".quantity-decrease-btn").dataset.productId;
+    const quantityInput = document.querySelector(`.quantity-input[data-product-id="${productId}"]`);
+    if (quantityInput) {
+      const newQuantity = Math.max(1, parseInt(quantityInput.value) - 1);
+      cartService.updateQuantity(productId, newQuantity);
+    }
+    return;
+  }
+
+  // 상품 개별 삭제
+  if (e.target.classList.contains("cart-item-remove-btn")) {
+    const productId = e.target.dataset.productId;
+    cartService.removeFromCart(productId);
+    return;
+  }
+
+  // 선택 상품 삭제
+  if (e.target.id === "cart-modal-remove-selected-btn") {
+    cartService.removeSelectedItems();
+    showToastMessage("선택된 상품들이 삭제되었습니다");
+    return;
+  }
+
+  // 장바구니 전체 비우기
+  if (e.target.id === "cart-modal-clear-cart-btn") {
+    cartService.clearCart();
+    showToastMessage("장바구니가 비워졌습니다");
+    return;
+  }
+
+  // 장바구니 상품 이미지/제목 클릭 (상세페이지 이동)
+  if (e.target.classList.contains("cart-item-image") || e.target.classList.contains("cart-item-title")) {
+    const productId = e.target.dataset.productId;
+    if (productId) {
+      cartService.closeModal();
+      router.navigate(`/product/${productId}`);
+    }
+    return;
+  }
+};
+
+/**
+ * 수량 입력 필드 이벤트 핸들러
+ */
+export const handleCartQuantityInput = (e) => {
+  if (e.target.classList.contains("quantity-input")) {
+    const productId = e.target.dataset.productId;
+    const quantity = parseInt(e.target.value) || 1;
+    cartService.updateQuantity(productId, quantity);
+  }
+};
+
+/**
+ * ESC 키 이벤트 핸들러
+ */
+export const handleKeydown = (e) => {
+  if (e.key === "Escape") {
+    const cartState = cartService.getState();
+    if (cartState.isModalOpen) {
+      cartService.closeModal();
+    }
   }
 };
