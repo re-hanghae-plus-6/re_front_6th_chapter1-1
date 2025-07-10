@@ -57,6 +57,54 @@ export const detailPage: PageModule = {
       if (!state.loading) bindEvents();
     };
 
+    // 이벤트 핸들러들
+    const handleQuantityDecrease = () => {
+      const inputEl = root.querySelector("#quantity-input") as HTMLInputElement | null;
+      if (!inputEl) return;
+      const current = Math.max(1, parseInt(inputEl.value || "1", 10) - 1);
+      inputEl.value = String(current);
+    };
+
+    const handleQuantityIncrease = () => {
+      const inputEl = root.querySelector("#quantity-input") as HTMLInputElement | null;
+      if (!inputEl) return;
+      const current = Math.max(1, parseInt(inputEl.value || "1", 10) + 1);
+      inputEl.value = String(current);
+    };
+
+    const handleAddToCart = () => {
+      const inputEl = root.querySelector("#quantity-input") as HTMLInputElement | null;
+      if (!inputEl || !state.product) return;
+      const qty = Math.max(1, parseInt(inputEl.value || "1", 10));
+      const unitPrice = Number(state.product.lprice ?? 0);
+      addToCart(state.product.productId, qty, unitPrice, state.product.title);
+      토스트("장바구니에 추가되었습니다", "success");
+      rerender();
+    };
+
+    const handleRelatedProductClick = (productId: string) => {
+      navigate(`/product/${productId}`);
+    };
+
+    const bindEvents = () => {
+      const decButtonEl = root.querySelector("#quantity-decrease") as HTMLButtonElement | null;
+      const incButtonEl = root.querySelector("#quantity-increase") as HTMLButtonElement | null;
+      const addButtonEl = root.querySelector("#add-to-cart-btn") as HTMLButtonElement | null;
+      const relatedProductEls = root.querySelectorAll(".related-product-card");
+      const cartIconEl = root.querySelector("#cart-icon-btn") as HTMLButtonElement | null;
+
+      if (decButtonEl) decButtonEl.addEventListener("click", handleQuantityDecrease);
+      if (incButtonEl) incButtonEl.addEventListener("click", handleQuantityIncrease);
+      if (addButtonEl) addButtonEl.addEventListener("click", handleAddToCart);
+      relatedProductEls.forEach((el) =>
+        el.addEventListener("click", () => {
+          const productId = (el as HTMLElement).dataset.productId;
+          if (productId) handleRelatedProductClick(productId);
+        }),
+      );
+      if (cartIconEl) cartIconEl.addEventListener("click", 장바구니);
+    };
+
     const initData = async () => {
       try {
         const productId = location.pathname.split("/").pop() ?? "";
@@ -79,47 +127,6 @@ export const detailPage: PageModule = {
         console.error(err);
         root.textContent = "상품을 불러오는데 실패했습니다.";
       }
-    };
-
-    const bindEvents = () => {
-      const decButtonEl = root.querySelector("#quantity-decrease") as HTMLButtonElement | null;
-      const inputEl = root.querySelector("#quantity-input") as HTMLInputElement | null;
-      const incButtonEl = root.querySelector("#quantity-increase") as HTMLButtonElement | null;
-      const addButtonEl = root.querySelector("#add-to-cart-btn") as HTMLButtonElement | null;
-      const relatedProductEls = root.querySelectorAll(".related-product-card");
-      const cartIconEl = root.querySelector("#cart-icon-btn") as HTMLButtonElement | null;
-
-      const handleDecrease = () => {
-        if (!inputEl) return;
-        const current = Math.max(1, parseInt(inputEl.value || "1", 10) - 1);
-        inputEl.value = String(current);
-      };
-
-      const handleIncrease = () => {
-        if (!inputEl) return;
-        const current = Math.max(1, parseInt(inputEl.value || "1", 10) + 1);
-        inputEl.value = String(current);
-      };
-
-      const handleAddToCart = () => {
-        if (!inputEl || !state.product) return;
-        const qty = Math.max(1, parseInt(inputEl.value || "1", 10));
-        const unitPrice = Number(state.product.lprice ?? 0);
-        addToCart(state.product.productId, qty, unitPrice, state.product.title);
-        토스트("장바구니에 추가되었습니다", "success");
-        rerender();
-      };
-
-      const handleRelatedClick = (e: Event) => {
-        const pid = (e.currentTarget as HTMLElement).dataset.productId;
-        if (pid) navigate(`/product/${pid}`);
-      };
-
-      if (decButtonEl) decButtonEl.addEventListener("click", handleDecrease);
-      if (incButtonEl) incButtonEl.addEventListener("click", handleIncrease);
-      if (addButtonEl) addButtonEl.addEventListener("click", handleAddToCart);
-      relatedProductEls.forEach((el) => el.addEventListener("click", handleRelatedClick));
-      if (cartIconEl) cartIconEl.addEventListener("click", 장바구니);
     };
 
     initData();

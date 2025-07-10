@@ -82,6 +82,146 @@ export const homePage: PageModule = {
       if (!state.loading) bindEvents();
     };
 
+    const updateProducts = async (options = { isAppend: false }) => {
+      const { isAppend } = options;
+      try {
+        const data = await getProducts({
+          limit: state.limit,
+          page: state.page,
+          sort: state.sort,
+          search: state.search,
+          category1: state.category1 ?? "",
+          category2: state.category2 ?? "",
+        });
+
+        if (isAppend)
+          setState({
+            products: [...state.products, ...(data.products as Product[])],
+            total: data.pagination.total ?? data.products.length,
+            isLoadingNextPage: false,
+          });
+        else
+          setState({
+            products: data.products as Product[],
+            total: data.pagination.total ?? data.products.length,
+            loading: false,
+          });
+      } catch (err) {
+        setState({ loading: false, error: true });
+        console.error(err);
+      }
+    };
+
+    // 이벤트 핸들러들
+    const handleLimitChange = (e: Event) => {
+      const select = e.target as HTMLSelectElement;
+      const newLimit = Number(select.value);
+      if (newLimit !== state.limit) {
+        setState({ limit: newLimit, page: 1 });
+        updateProducts();
+      }
+    };
+
+    const handleSortChange = (e: Event) => {
+      const select = e.target as HTMLSelectElement;
+      const newSort = select.value;
+      if (newSort !== state.sort) {
+        setState({ sort: newSort, page: 1 });
+        updateProducts();
+      }
+    };
+
+    const handleSearchKeydown = (e: KeyboardEvent) => {
+      if (e.key !== "Enter") return;
+      const input = e.target as HTMLInputElement;
+      const keyword = input.value.trim();
+      if (keyword === state.search) return;
+      setState({ search: keyword, page: 1 });
+      updateProducts();
+    };
+
+    const handleCategoryClick = (e: Event) => {
+      const target = e.target as HTMLElement;
+
+      if (target.dataset.breadcrumb === "reset") {
+        setState({ category1: null, category2: null, page: 1 });
+        updateProducts();
+        return;
+      }
+
+      if (target.dataset.breadcrumb === "category1") {
+        const cat1 = target.dataset.category1 ?? "";
+        setState({ category1: cat1, category2: null, page: 1 });
+        updateProducts();
+        return;
+      }
+
+      if (target.dataset.category1 && !target.dataset.category2) {
+        const cat1 = target.dataset.category1;
+        if (cat1 !== state.category1) {
+          setState({ category1: cat1, category2: null, page: 1 });
+          updateProducts();
+        }
+        return;
+      }
+
+      if (target.dataset.category2) {
+        const cat1 = target.dataset.category1 ?? state.category1 ?? "";
+        const cat2 = target.dataset.category2;
+        setState({ category1: cat1, category2: cat2, page: 1 });
+        updateProducts();
+      }
+    };
+
+    const handleProductClick = (e: Event) => {
+      const targetEl = (e.target as HTMLElement).closest(".product-card") as HTMLElement | null;
+      if (!targetEl) return;
+      const productId = targetEl.dataset.productId;
+      if (productId) {
+        navigate(`/product/${productId}`);
+      }
+    };
+
+    const handleAddToCart = (e: Event) => {
+      e.stopPropagation();
+      const btn = e.currentTarget as HTMLElement;
+      const productId = btn.dataset.productId;
+      if (!productId) return;
+
+      const productCard = btn.closest(".product-card");
+      const quantityInput = productCard?.querySelector(".quantity-input") as HTMLInputElement;
+      const quantity = Math.max(1, parseInt(quantityInput?.value || "1", 10));
+      const unitPrice = Number(btn.dataset.productPrice ?? "0");
+      const title = btn.dataset.productTitle ?? "";
+      addToCart(productId, quantity, unitPrice, title);
+      토스트("장바구니에 추가되었습니다", "success");
+      rerender();
+    };
+
+    const handleRetry = () => {
+      setState({ error: false, loading: true });
+      initData();
+    };
+
+    const handleScroll = () => {
+      const isLoading = state.isLoadingNextPage || state.loading;
+      const hasAllProducts = state.products.length >= state.total;
+      const shouldSkipScroll = isLoading || hasAllProducts;
+
+      if (shouldSkipScroll) return;
+
+      const scrollTop = window.scrollY;
+      const scrollHeight = document.documentElement.scrollHeight;
+      const clientHeight = document.documentElement.clientHeight;
+      const isBottom = scrollTop + clientHeight >= scrollHeight - 100;
+
+      if (isBottom) {
+        // 다음 페이지 로드
+        setState({ isLoadingNextPage: true, page: state.page + 1 });
+        updateProducts({ isAppend: true });
+      }
+    };
+
     const bindEvents = () => {
       const sortSelectEl = root.querySelector("#sort-select") as HTMLSelectElement | null;
       const limitSelectEl = root.querySelector("#limit-select") as HTMLSelectElement | null;
@@ -91,99 +231,6 @@ export const homePage: PageModule = {
       const addToCartBtnEls = root.querySelectorAll(".add-to-cart-btn");
       const cartIconEl = root.querySelector("#cart-icon-btn") as HTMLButtonElement | null;
       const retryButtonEl = root.querySelector("#retry-button") as HTMLButtonElement | null;
-
-      const handleLimitChange = (e: Event) => {
-        const select = e.target as HTMLSelectElement;
-        const newLimit = Number(select.value);
-        if (newLimit !== state.limit) {
-          setState({ limit: newLimit, page: 1 });
-          updateProducts();
-        }
-      };
-
-      const handleSortChange = (e: Event) => {
-        const select = e.target as HTMLSelectElement;
-        const newSort = select.value;
-        if (newSort !== state.sort) {
-          setState({ sort: newSort, page: 1 });
-          updateProducts();
-        }
-      };
-
-      const handleSearchKeydown = (e: KeyboardEvent) => {
-        if (e.key !== "Enter") return;
-        const input = e.target as HTMLInputElement;
-        const keyword = input.value.trim();
-        if (keyword === state.search) return;
-        setState({ search: keyword, page: 1 });
-        updateProducts();
-      };
-
-      const handleCategoryClick = (e: Event) => {
-        const target = e.target as HTMLElement;
-
-        if (target.dataset.breadcrumb === "reset") {
-          setState({ category1: null, category2: null, page: 1 });
-          updateProducts();
-          return;
-        }
-
-        if (target.dataset.breadcrumb === "category1") {
-          const cat1 = target.dataset.category1 ?? "";
-          setState({ category1: cat1, category2: null, page: 1 });
-          updateProducts();
-          return;
-        }
-
-        if (target.dataset.category1 && !target.dataset.category2) {
-          const cat1 = target.dataset.category1;
-          if (cat1 !== state.category1) {
-            setState({ category1: cat1, category2: null, page: 1 });
-            updateProducts();
-          }
-          return;
-        }
-
-        if (target.dataset.category2) {
-          const cat1 = target.dataset.category1 ?? state.category1 ?? "";
-          const cat2 = target.dataset.category2;
-          setState({ category1: cat1, category2: cat2, page: 1 });
-          updateProducts();
-        }
-      };
-
-      const handleProductClick = (e: Event) => {
-        const targetEl = (e.target as HTMLElement).closest(".product-card") as HTMLElement | null;
-        if (!targetEl) return;
-        const productId = targetEl.dataset.productId;
-        if (productId) {
-          navigate(`/product/${productId}`);
-        }
-      };
-
-      const handleAddToCart = (e: Event) => {
-        e.stopPropagation();
-        const btn = e.currentTarget as HTMLElement;
-        const productId = btn.dataset.productId;
-        if (!productId) return;
-
-        // 해당 상품의 수량 입력 필드에서 값 가져오기
-        const productCard = btn.closest(".product-card");
-        const quantityInput = productCard?.querySelector(".quantity-input") as HTMLInputElement;
-        const quantity = Math.max(1, parseInt(quantityInput?.value || "1", 10));
-        const unitPrice = Number(btn.dataset.productPrice ?? "0");
-        const title = btn.dataset.productTitle ?? "";
-        addToCart(productId, quantity, unitPrice, title);
-        토스트("장바구니에 추가되었습니다", "success");
-        // 이벤트 발생 시 즉시 리렌더될 경우 테스트코드가 html을 초기화하여 토스트를 찾지 못하는 이슈
-        // 테스트코드를 수정대신 딜레이 후 리렌더 실행
-        rerender();
-      };
-
-      const handleRetry = () => {
-        setState({ error: false, loading: true });
-        initData();
-      };
 
       if (limitSelectEl) {
         limitSelectEl.value = String(state.limit);
@@ -215,36 +262,6 @@ export const homePage: PageModule = {
       if (retryButtonEl) retryButtonEl.addEventListener("click", handleRetry);
     };
 
-    const updateProducts = async (options = { isAppend: false }) => {
-      const { isAppend } = options;
-      try {
-        const data = await getProducts({
-          limit: state.limit,
-          page: state.page,
-          sort: state.sort,
-          search: state.search,
-          category1: state.category1 ?? "",
-          category2: state.category2 ?? "",
-        });
-
-        if (isAppend)
-          setState({
-            products: [...state.products, ...(data.products as Product[])],
-            total: data.pagination.total ?? data.products.length,
-            isLoadingNextPage: false,
-          });
-        else
-          setState({
-            products: data.products as Product[],
-            total: data.pagination.total ?? data.products.length,
-            loading: false,
-          });
-      } catch (err) {
-        setState({ loading: false, error: true });
-        console.error(err);
-      }
-    };
-
     const initData = async () => {
       try {
         const [categories, data] = await Promise.all([
@@ -270,31 +287,11 @@ export const homePage: PageModule = {
       }
     };
 
-    // 무한 스크롤 핸들러
-    const handleScroll = () => {
-      const isLoading = state.isLoadingNextPage || state.loading;
-      const hasAllProducts = state.products.length >= state.total;
-      const shouldSkipScroll = isLoading || hasAllProducts;
-
-      if (shouldSkipScroll) return;
-
-      const scrollTop = window.scrollY;
-      const scrollHeight = document.documentElement.scrollHeight;
-      const clientHeight = document.documentElement.clientHeight;
-      const isBottom = scrollTop + clientHeight >= scrollHeight - 100;
-
-      if (isBottom) {
-        // 다음 페이지 로드
-        setState({ isLoadingNextPage: true, page: state.page + 1 });
-        updateProducts({ isAppend: true });
-      }
-    };
-
     initData();
 
     window.addEventListener("scroll", handleScroll);
-    // 언마운트(cleanup)
     return () => {
+      // 언마운트(cleanup)
       window.removeEventListener("scroll", handleScroll);
     };
   },
