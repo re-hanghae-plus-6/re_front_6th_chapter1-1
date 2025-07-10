@@ -1,6 +1,8 @@
 import { getCategories, getProducts } from "./api/productApi.js";
 import { HomePage } from "./pages/HomePage.js";
+import { ProductDetailPage } from "./pages/ProductDetailPage.js";
 import { showCartModal, renderCartModal } from "./handlers/cart.js";
+import { router } from "./router.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -31,6 +33,28 @@ function render() {
   setupInfiniteScroll();
 }
 
+function renderProductDetail(productId) {
+  const product = state.products.find((p) => p.productId === productId);
+
+  if (!product) {
+    // 상품을 찾을 수 없으면 API에서 가져오기 시도
+    console.warn("Product not found in state, redirecting to home");
+    router.navigate("/");
+    return;
+  }
+
+  // 관련 상품 (같은 카테고리의 다른 상품들)
+  const relatedProducts = state.products.filter((p) => p.productId !== productId).slice(0, 4);
+
+  document.body.querySelector("#root").innerHTML = ProductDetailPage({
+    product,
+    cart: state.cart,
+    relatedProducts,
+  });
+
+  setupProductDetailEventListeners();
+}
+
 async function main() {
   // 초기값 - 로딩 상태 렌더링
   state.loading = true;
@@ -58,7 +82,23 @@ async function main() {
   // 값 가져왔으니 로딩 상태 해제
   state.loading = false;
 
-  render();
+  // 라우터 설정
+  setupRouter();
+
+  // 현재 URL에 따라 적절한 페이지 렌더링
+  router.handleRouteChange(location.pathname, false);
+}
+
+function setupRouter() {
+  // 홈 페이지 라우트
+  router.addRoute("/", () => {
+    render();
+  });
+
+  // 상품 상세 페이지 라우트
+  router.addRoute("/product/:productId", (params) => {
+    renderProductDetail(params.productId);
+  });
 }
 
 function setupEventListeners() {
@@ -74,7 +114,12 @@ function setupEventListeners() {
   document.addEventListener("click", (event) => {
     if (event.target.matches(".add-to-cart-btn")) {
       const productId = event.target.dataset.productId;
-      addToCart(productId);
+
+      // 상품 상세 페이지에서는 수량 고려
+      const quantityInput = document.querySelector("#quantity-input");
+      const quantity = quantityInput ? parseInt(quantityInput.value) || 1 : 1;
+
+      addToCart(productId, quantity);
       showToast({ type: "add" });
     }
 
@@ -107,7 +152,7 @@ function setupEventListeners() {
 }
 
 function navigateToProductDetail(productId) {
-  console.log(productId);
+  router.navigate(`/product/${productId}`);
 }
 
 function setupProductDetailEventListeners() {
@@ -117,11 +162,50 @@ function setupProductDetailEventListeners() {
       return;
     }
 
-    // product-card나 그 자식 요소 클릭 시
+    // product-card나 그 자식 요소 클릭 시 (홈페이지에서)
     const productCard = event.target.closest(".product-card");
     if (productCard) {
       const productId = productCard.dataset.productId;
       navigateToProductDetail(productId);
+      return;
+    }
+
+    // 관련 상품 클릭 시 (상품 상세 페이지에서)
+    const relatedProductCard = event.target.closest(".related-product-card");
+    if (relatedProductCard) {
+      const productId = relatedProductCard.dataset.productId;
+      navigateToProductDetail(productId);
+      return;
+    }
+
+    // 홈으로 돌아가기 버튼
+    if (event.target.matches(".breadcrumb-home") || event.target.matches(".go-to-product-list")) {
+      router.navigate("/");
+      return;
+    }
+
+    // 수량 조절 버튼 (상품 상세 페이지)
+    if (event.target.matches("#quantity-decrease") || event.target.closest("#quantity-decrease")) {
+      const quantityInput = document.querySelector("#quantity-input");
+      if (quantityInput) {
+        const currentValue = parseInt(quantityInput.value);
+        if (currentValue > 1) {
+          quantityInput.value = currentValue - 1;
+        }
+      }
+      return;
+    }
+
+    if (event.target.matches("#quantity-increase") || event.target.closest("#quantity-increase")) {
+      const quantityInput = document.querySelector("#quantity-input");
+      if (quantityInput) {
+        const currentValue = parseInt(quantityInput.value);
+        const maxValue = parseInt(quantityInput.max) || 100;
+        if (currentValue < maxValue) {
+          quantityInput.value = currentValue + 1;
+        }
+      }
+      return;
     }
   });
 }
@@ -179,13 +263,23 @@ async function handleSearch(searchValue) {
   render();
 }
 
-function addToCart(productId) {
+function addToCart(productId, quantity = 1) {
   const product = state.products.find((p) => p.productId === productId);
 
   if (product) {
-    state.cart.push(product);
+    // 수량만큼 장바구니에 추가
+    for (let i = 0; i < quantity; i++) {
+      state.cart.push(product);
+    }
   }
-  render();
+
+  // 현재 페이지가 상품 상세 페이지라면 해당 페이지 다시 렌더링
+  const currentPath = router.getCurrentPath();
+  if (currentPath.startsWith("/product/")) {
+    router.handleRouteChange(currentPath, false);
+  } else {
+    render();
+  }
 }
 
 export function showToast({ type = "add" }) {
