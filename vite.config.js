@@ -12,4 +12,5 @@ export default defineConfig({
       },
     },
   },
+  base: "/front_6th_chapter1-1/",
 });
