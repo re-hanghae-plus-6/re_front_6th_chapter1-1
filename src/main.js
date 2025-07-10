@@ -2,6 +2,7 @@
 import { createRouter } from "./router/Router.js";
 import { Header } from "./components/Header.js";
 import { Footer } from "./components/Footer.js";
+import { productStore, productActions } from "./store/productStore.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -13,6 +14,11 @@ const enableMocking = () =>
 // HomePage 컴포넌트 - 분리된 Header, Footer 사용
 function HomePage(query = {}) {
   const { search = "", sort = "price_asc", limit = "20" } = query;
+  console.log(productStore.getState());
+  // URL 쿼리로 상태
+  if (Object.keys(query).length > 0) {
+    productActions.loadFromURL(query);
+  }
 
   return `
     <div class="bg-gray-50">
@@ -89,6 +95,7 @@ function HomePage(query = {}) {
             </div>
           </div>
         </div>
+        
         <!-- 상품 목록 -->
         <div class="mb-6">
           <div>
@@ -219,7 +226,7 @@ function main() {
       let html = "";
       switch (route.component) {
         case "Home":
-          html = HomePage(route.params, queryObj); // 쿼리 전달
+          html = HomePage(queryObj);
           break;
         case "ProductDetail":
           html = ProductDetailPage(route.params, queryObj);
