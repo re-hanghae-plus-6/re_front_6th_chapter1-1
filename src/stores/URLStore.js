@@ -35,7 +35,7 @@ function createURLStore() {
     if (newParams.category2) url.searchParams.set("category2", newParams.category2);
     if (newParams.search) url.searchParams.set("search", newParams.search);
     if (newParams.sort && newParams.sort !== "price_asc") url.searchParams.set("sort", newParams.sort);
-    if (newParams.limit && newParams.limit !== 20) url.searchParams.set("limit", newParams.limit.toString());
+    if (newParams.limit) url.searchParams.set("limit", newParams.limit.toString());
     if (newParams.page && newParams.page !== 1) url.searchParams.set("current", newParams.page.toString());
 
     window.history.pushState({}, "", url);
