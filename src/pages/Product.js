@@ -10,15 +10,11 @@ const state = {
 
 const methods = {
   fetchProduct: async (productId) => {
-    state.isLoading = true;
     state.product = await getProduct(productId);
-    state.isLoading = false;
   },
   fetchRelatedProducts: async (category1, category2) => {
-    state.isLoading = true;
     const products = await getProducts({ category1, category2 });
     state.relatedProducts = products.products.filter((product) => product.productId !== state.product.productId);
-    state.isLoading = false;
   },
 
   goToProductList: () => window.history.pushState.push({}, "", "/"),
@@ -28,21 +24,21 @@ const methods = {
   },
 };
 
-Product.mount = async () => {
+Product.init = () => {
   state.isLoading = true;
+};
+
+Product.mount = async () => {
   const productId = window.location.pathname.match(/\d+/)[0];
   await methods.fetchProduct(productId);
   await methods.fetchRelatedProducts(state.product.category1, state.product.category);
-
+  state.isLoading = false;
   render.draw("main", Product());
-  // // console.log(state.product.category1, "state.product.category1");
-  // // const test = await methods.fetchRelatedProducts(data.category1, data.category2);
-  // // console.log(test, "Test..");
 
-  // const goToProductListBtn = document.querySelector(".go-to-product-list");
-  // goToProductListBtn.addEventListener("click", () => {
-  //   methods.goToProductList();
-  // });
+  const goToProductListBtn = document.querySelector(".go-to-product-list");
+  goToProductListBtn.addEventListener("click", () => {
+    methods.goToProductList();
+  });
 
   // const cartBtn = document.getElementById("add-to-cart-btn");
   // cartBtn.addEventListener("click", () => {

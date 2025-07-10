@@ -3,8 +3,7 @@ import Loading from "../components/Loading";
 import ProductCard from "../components/ProductCard";
 import ProductList from "../components/ProductList";
 import Search from "../components/Search";
-import useRender from "../core/useRender";
-import { store } from "../main";
+import { render, store } from "../main";
 
 const state = {
   isLoading: true,
@@ -14,7 +13,6 @@ const state = {
 };
 
 const fetchProducts = async (params = {}) => {
-  state.isLoading = true;
   const productData = await getProducts(params);
   state.isLoading = false;
 
@@ -31,6 +29,7 @@ const fetchProducts = async (params = {}) => {
 const fetchCategories = async () => {
   const categoriesData = await getCategories();
   state.categories = categoriesData;
+  state.isLoading = false;
 };
 
 // const loadMoreProducts = (trigger, callback) => {
@@ -82,8 +81,11 @@ const fetchCategories = async () => {
 //   });
 // };
 
+Home.init = () => {
+  state.isLoading = true;
+};
+
 Home.mount = async () => {
-  const render = useRender();
   await fetchProducts();
   await fetchCategories();
 
