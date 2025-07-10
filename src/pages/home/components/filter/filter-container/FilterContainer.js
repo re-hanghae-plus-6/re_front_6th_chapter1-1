@@ -50,6 +50,43 @@ class FilterContainer extends Component {
         this.props.onChangeSearch(this.state.search);
       }
     });
+
+    this.addEventListener(this.element, 'click', (event) => {
+      if (event.target.classList.contains('category2-filter-btn')) {
+        const category1 = event.target.dataset.category1;
+        const category2 = event.target.dataset.category2 ? event.target.dataset.category2 : '';
+        this.props.onChangeCategory(category1, category2);
+      }
+
+      if (event.target.dataset.breadcrumb) {
+        const breadcrumb =
+          event.target.dataset.breadcrumb === 'reset' ? '' : event.target.dataset.breadcrumb;
+        this.props.onChangeCategory(breadcrumb, '');
+      }
+    });
+  }
+
+  renderBreadcrumb() {
+    return /* HTML */ `
+      ${this.props.query.category1
+        ? /* HTML */ `
+            <span class="text-xs text-gray-500">&gt;</span
+            ><button
+              data-breadcrumb="${this.props.query.category1}"
+              data-category1="${this.props.query.category1}"
+              class="text-xs hover:text-blue-800 hover:underline"
+            >
+              ${this.props.query.category1}
+            </button>
+          `
+        : ''}
+      ${this.props.query.category2
+        ? /* HTML */ `
+            <span class="text-xs text-gray-500">&gt;</span
+            ><span class="text-xs text-gray-600 cursor-default">${this.props.query.category2}</span>
+          `
+        : ''}
+    `;
   }
 
   renderCategories() {
@@ -57,20 +94,55 @@ class FilterContainer extends Component {
       return '<div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>';
     }
 
-    const categoryList = Object.keys(this.props.categories);
-    return categoryList
-      .map(
-        (category) => `
-      <button 
-        data-category1="${category}" 
-        class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
-               bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-      >
-        ${category}
-      </button>
-    `,
-      )
-      .join('');
+    const category1List = Object.keys(this.props.categories);
+    const category2List =
+      this.props.query.category1 && this.props.categories[this.props.query.category1]
+        ? Object.keys(this.props.categories[this.props.query.category1])
+        : null;
+    const isDefaultClass =
+      'category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50';
+    const isActiveClass =
+      'category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-blue-100 border-blue-300 text-blue-800';
+
+    // 2뎁스가 있으면 2뎁스만 반환, 아니면 1뎁스만 반환
+    if (category2List) {
+      return /* HTML */ `
+        <div class="flex flex-wrap gap-2">
+          ${category2List
+            .map(
+              (subcategory) => /* HTML */ `
+                <button
+                  data-category1="${this.props.query.category1}"
+                  data-category2="${subcategory}"
+                  class="${subcategory === this.props.query.category2
+                    ? isActiveClass
+                    : isDefaultClass} "
+                >
+                  ${subcategory}
+                </button>
+              `,
+            )
+            .join('')}
+        </div>
+      `;
+    } else {
+      return /* HTML */ `
+        <div class="flex flex-wrap gap-2">
+          ${category1List
+            .map(
+              (category) => /* HTML */ `
+                <button
+                  data-category1="${category}"
+                  class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                >
+                  ${category}
+                </button>
+              `,
+            )
+            .join('')}
+        </div>
+      `;
+    }
   }
 
   render() {
@@ -114,6 +186,7 @@ class FilterContainer extends Component {
               <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">
                 전체
               </button>
+              ${this.renderBreadcrumb()}
             </div>
             <!-- 1depth 카테고리 -->
             <div class="flex flex-wrap gap-2">${this.renderCategories()}</div>

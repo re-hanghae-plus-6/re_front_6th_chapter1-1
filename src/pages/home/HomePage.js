@@ -7,6 +7,8 @@ const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
 const DEFAULT_SORT = 'price_asc';
 const DEFAULT_SEARCH = '';
+const DEFAULT_CATEGORY1 = '';
+const DEFAULT_CATEGORY2 = '';
 
 class HomePage extends Component {
   constructor(element, props) {
@@ -20,6 +22,8 @@ class HomePage extends Component {
         limit: DEFAULT_LIMIT,
         sort: DEFAULT_SORT,
         search: DEFAULT_SEARCH,
+        category1: DEFAULT_CATEGORY1,
+        category2: DEFAULT_CATEGORY2,
       },
     };
   }
@@ -39,12 +43,14 @@ class HomePage extends Component {
     });
   }
 
-  fetchProducts({ page, limit, sort, search }) {
+  fetchProducts({ page, limit, sort, search, category1, category2 }) {
     return getProducts({
       page,
       limit,
       sort,
       search,
+      category1,
+      category2,
     });
   }
 
@@ -101,6 +107,25 @@ class HomePage extends Component {
     });
   };
 
+  handleCategoryChange = async (category1 = '', category2 = '') => {
+    const newProducts = await this.fetchProducts({
+      page: DEFAULT_PAGE,
+      category1,
+      category2,
+    });
+    this.setState({
+      ...this.state,
+      loading: false,
+      products: newProducts,
+      query: {
+        ...this.state.query,
+        page: DEFAULT_PAGE,
+        category1,
+        category2,
+      },
+    });
+  };
+
   fetchNextPageProducts = async () => {
     if (this.state.loading || !this.state.products.pagination.hasNext) {
       return;
@@ -144,6 +169,7 @@ class HomePage extends Component {
       onChangeLimit: this.handleLimitChange,
       onChangeSort: this.handleSortChange,
       onChangeSearch: this.handleSearchChange,
+      onChangeCategory: this.handleCategoryChange,
       onFetchNextPageProducts: this.fetchNextPageProducts,
     }).mount();
 
