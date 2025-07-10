@@ -43,7 +43,13 @@ export const productsStore = observable({
   updateParams(key, value) {
     const params = router.getParams();
     params[key] = value;
-    router.updateParams(params);
+    const filteredParams = {};
+    for (const [key, value] of Object.entries(params)) {
+      if (value) {
+        filteredParams[key] = value;
+      }
+    }
+    router.updateParams(filteredParams);
   },
   setLimit(limit) {
     productsStore.limit = limit;
