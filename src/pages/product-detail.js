@@ -9,7 +9,7 @@ import { html } from "../utils/html";
 export function ProductDetailPage($root) {
   productDetailStore.initSearchParams();
   productDetailStore.loadProduct().then(async () => {
-    await new Promise((r) => setTimeout(r, 2_000));
+    await new Promise((r) => setTimeout(r, 800));
     productDetailStore.loadRelatedProducts();
   });
 
