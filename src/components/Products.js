@@ -14,9 +14,7 @@ export class Products extends Component {
     const { isLoading, hasNext } = productsStore;
     return html`<div ${this.dataAttribute.attribute} class="mb-6">
       <!-- 상품 그리드 -->
-      <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
-        ${this.#producrCardSkeleton(this.#producrCardSkeletonRepeatCount)}
-      </div>
+      <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid"></div>
       ${this.#moreStatus({ isLoading, hasNext })}
     </div>`;
   }
