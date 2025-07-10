@@ -1,7 +1,9 @@
-import MainLayout from "./components/layout/MainLayout.js";
 import FilterSection from "./components/filter/FilterSection.js";
+import MainLayout from "./components/layout/MainLayout.js";
 import ProductGrid from "./components/product/ProductGrid.js";
 import { getProducts, getCategories } from "./api/productApi.js";
+import store from "./store/store.js";
+import router from "./utils/router.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -27,7 +29,7 @@ const state = {
   hasMore: true,
 };
 
-function render(state, cartCount) {
+export let render = function(state) {
   const rootDOM = document.body.querySelector("#root");
   rootDOM.innerHTML = MainLayout({
     content: `
@@ -47,14 +49,15 @@ function render(state, cartCount) {
         hasMore: state.hasMore,
       })}
       `,
-    cartCount,
     showBackButton: false,
   });
+
 }
 
-async function main({ cartCount = 0 }) {
+async function main() {
   state.loading = true;
-  render(state, cartCount);
+  state.categoriesLoading = true;
+  render(state);
   const [
     {
       products,
@@ -63,11 +66,15 @@ async function main({ cartCount = 0 }) {
     categories,
   ] = await Promise.all([getProducts({}), getCategories()]);
 
+  store.setState({
+    categories
+  })
   state.products = products;
   state.total = total;
   state.loading = false;
   state.categories = categories;
-  render(state, cartCount);
+  state.categoriesLoading = false;
+  render(state);
 }
 
 // 애플리케이션 시작
@@ -76,3 +83,69 @@ if (import.meta.env.MODE !== "test") {
 } else {
   main();
 }
+
+function attachEventListeners() {
+  // 렌더링 후에도 동작하도록 이벤트 위임 사용
+
+  // 카테고리1
+  document.querySelectorAll("[data-category1]:not([data-category2])").forEach((btn) => {
+    btn.onclick = (e) => {
+      store.setState({
+        selectedCategory1: e.target.getAttribute("data-category1"),
+        selectedCategory2: "",
+        currentPage: 1,
+      });
+      if (e.target.matches("[data-category1]:not([data-category2])")) {
+        const category1 = e.target.getAttribute("data-category1");
+        router.navigateTo(`/category1=${encodeURIComponent(category1)}`);
+      }
+    };
+  });
+
+  // 카테고리2
+  document.querySelectorAll("[data-category2]").forEach((btn) => {
+    btn.onclick = (e) => {
+      store.setState({
+        selectedCategory1: e.target.getAttribute("data-category1"),
+        selectedCategory2: e.target.getAttribute("data-category2"),
+        currentPage: 1,
+      });
+      // 2depth 카테고리
+      if (e.target.matches("[data-category2]")) {
+        const category1 = e.target.getAttribute("data-category1");
+        const category2 = e.target.getAttribute("data-category2");
+        router.navigateTo(
+          `/category1=${encodeURIComponent(category1)}&category2=${encodeURIComponent(category2)}`
+        );
+      }
+    };
+  });
+
+  // 브레드크럼 category1
+  const bcCategory1Btn = document.querySelector("[data-breadcrumb='category1']");
+  if (bcCategory1Btn) {
+    bcCategory1Btn.onclick = (e) => {
+      // getAttribute가 null일 때 부모 노드에서 찾도록 보완
+      let category1 = e.target.getAttribute("data-category1");
+      if (!category1 && e.target.closest("[data-category1]")) {
+        category1 = e.target.closest("[data-category1]").getAttribute("data-category1");
+      }
+      if (category1) {
+        router.navigateTo(`/category1=${encodeURIComponent(category1)}`);
+      }
+      store.setState({
+        selectedCategory1: e.target.getAttribute("data-category1"),
+        selectedCategory2: "",
+        currentPage: 1,
+      });
+    };
+  }
+}
+
+// 렌더 후마다 핸들러 재연결
+const originalRender = render;
+render = function(...args) {
+  const result = originalRender.apply(this, args);
+  attachEventListeners();
+  return result;
+};

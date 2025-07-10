@@ -11,14 +11,24 @@ export default function FilterSection({
   // 1depth, 2depth 카테고리 선택에 따라 동적으로 표시
   const renderBreadcrumb = () => {
     let breadcrumb = "";
+    
+    const pathname = window.location.pathname;
+    if (pathname.includes("category1")) {
+      const match = pathname.match(/category1=([^&/]+)/)[1];
+      selectedCategory1 = decodeURIComponent(match); 
+    }
+    if (pathname.includes("category2")) {
+      const match = pathname.match(/category2=([^&/]+)/)[1];
+      selectedCategory2 = decodeURIComponent(match); 
+    }
     // 항상 '전체'에서 시작
     breadcrumb += `<button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>`;
     if (selectedCategory1) {
-      breadcrumb += `<span class="mx-1 text-gray-400">/</span>`;
+      breadcrumb += `<span class="mx-1 text-gray-400">></span>`;
       breadcrumb += `<button data-breadcrumb="category1" class="text-xs hover:text-blue-800 hover:underline">${selectedCategory1}</button>`;
     }
     if (selectedCategory2) {
-      breadcrumb += `<span class="mx-1 text-gray-400">/</span>`;
+      breadcrumb += `<span class="mx-1 text-gray-400">></span>`;
       breadcrumb += `<button data-breadcrumb="category2" class="text-xs hover:text-blue-800 hover:underline">${selectedCategory2}</button>`;
     }
     return breadcrumb;
@@ -29,21 +39,19 @@ export default function FilterSection({
     if (loading) {
       return `<div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>`;
     }
+    const pathname = window.location.pathname;
 
     if (!selectedCategory1) {
       // 1depth 카테고리 표시
       const categoryList = Array.isArray(categories) ? categories : Object.keys(categories || {});
+      
       return categoryList
         .map(
           (category) => `
             <button
               data-category1="${category}"
               class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
-                ${
-                  selectedCategory1 === category
-                    ? "bg-blue-100 border-blue-300 text-blue-800"
-                    : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-                }"
+                "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
             >
               ${category}
             </button>
@@ -52,7 +60,18 @@ export default function FilterSection({
         .join("");
     } else {
       // 2depth 카테고리 표시
+      if (pathname.includes("category1")) {
+        const cate1 = pathname.match(/category1=([^&/]+)/)[1];
+        selectedCategory1 = decodeURIComponent(cate1);
+      }
+      
+      if (pathname.includes("category2")) {
+        const cate2 = pathname.match(/category2=([^&/]+)/)[1];
+        selectedCategory2 = decodeURIComponent(cate2); 
+      }
+
       const subCategories = categories[selectedCategory1] ? Object.keys(categories[selectedCategory1]) : [];
+
       return subCategories
         .map(
           (category) => `
@@ -68,9 +87,8 @@ export default function FilterSection({
             >
               ${category}
             </button>
-          `,
-        )
-        .join("");
+          `
+        ).join("");      
     }
   };
 
