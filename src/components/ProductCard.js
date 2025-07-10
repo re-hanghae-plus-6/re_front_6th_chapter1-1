@@ -1,12 +1,15 @@
 import { render } from "../main";
+import Header from "./Header";
 
 ProductCard.mount = () => {
   const items = document.querySelectorAll(".product-card");
   items.forEach((item) => {
     const productId = item.getAttribute("data-product-id");
-    item.querySelector("img").addEventListener("click", () => {
+    item.querySelector("img").addEventListener("click", async () => {
       window.history.pushState({}, "", `/product/${productId}`);
-      render.view();
+      Header.init();
+      render.draw("header", Header());
+      await render.view();
     });
 
     item.querySelector(".add-to-cart-btn").addEventListener("click", () => {
