@@ -1,15 +1,14 @@
-import { getProduct } from "../api/productApi.js";
+import { getProduct, getProducts } from "../api/productApi.js";
 import { header } from "../components/header.js";
 import { footer } from "../components/footer.js";
 import { NotFound } from "./NotFound.js";
-import { addCart, updateHeaderCartCount } from "../utils/cart.js";
-import { showToast } from "../template/toast.js";
+import { ProductCard } from "../components/ProductCard.js";
 
 // 상품 상세 정보를 렌더링하는 함수
 export const ProductDetail = (props) => {
   const { urlParams } = props;
   const productId = urlParams.id;
-
+  let quantity = 4;
   // productId가 없는 경우 NotFound 컴포넌트를 반환
   if (!productId) {
     return NotFound();
@@ -33,11 +32,17 @@ export const ProductDetail = (props) => {
   `;
 
   appRoot.innerHTML = loadingHTML;
-  addEventListeners();
   // 비동기 함수로 상품 정보를 가져와서 실제 UI로 교체
   (async () => {
     try {
       const product = await getProduct(productId);
+      props.params.category1 = product.category1;
+      props.params.category2 = product.category2;
+      const related = await getProducts(props.params);
+      const productCardsHtml = related.products
+        .filter((item) => item.productId !== productId)
+        .map(ProductCard)
+        .join("");
       const productHTML = /*html*/ `
         ${header(props)}
         <main class="max-w-md mx-auto px-4 py-4">
@@ -116,7 +121,7 @@ export const ProductDetail = (props) => {
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
                     </svg>
                   </button>
-                  <input type="number" id="quantity-input" value="1" min="1" max="107" class="w-16 h-8 text-center text-sm border-t border-b border-gray-300 
+                  <input type="number" id="quantity-input" value="${quantity}" min="1" max="107" class="w-16 h-8 text-center text-sm border-t border-b border-gray-300 
                     focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                   <button id="quantity-increase" class="w-8 h-8 flex items-center justify-center border border-gray-300 
                     rounded-r-md bg-gray-50 hover:bg-gray-100">
@@ -148,20 +153,7 @@ export const ProductDetail = (props) => {
             </div>
             <div class="p-4">
               <div class="grid grid-cols-2 gap-3 responsive-grid">
-                <div class="bg-gray-50 rounded-lg p-3 related-product-card cursor-pointer" data-product-id="86940857379">
-                  <div class="aspect-square bg-white rounded-md overflow-hidden mb-2">
-                    <img src="https://shopping-phinf.pstatic.net/main_8694085/86940857379.1.jpg" alt="샷시 풍지판 창문 바람막이 베란다 문 틈막이 창틀 벌레 차단 샤시 방충망 틈새막이" class="w-full h-full object-cover" loading="lazy">
-                  </div>
-                  <h3 class="text-sm font-medium text-gray-900 mb-1 line-clamp-2">샷시 풍지판 창문 바람막이 베란다 문 틈막이 창틀 벌레 차단 샤시 방충망 틈새막이</h3>
-                  <p class="text-sm font-bold text-blue-600">230원</p>
-                </div>
-                <div class="bg-gray-50 rounded-lg p-3 related-product-card cursor-pointer" data-product-id="82094468339">
-                  <div class="aspect-square bg-white rounded-md overflow-hidden mb-2">
-                    <img src="https://shopping-phinf.pstatic.net/main_8209446/82094468339.4.jpg" alt="실리카겔 50g 습기제거제 제품 /산업 신발 의류 방습제" class="w-full h-full object-cover" loading="lazy">
-                  </div>
-                  <h3 class="text-sm font-medium text-gray-900 mb-1 line-clamp-2">실리카겔 50g 습기제거제 제품 /산업 신발 의류 방습제</h3>
-                  <p class="text-sm font-bold text-blue-600">280원</p>
-                </div>
+                ${productCardsHtml}
               </div>
             </div>
           </div>
@@ -185,58 +177,3 @@ export const ProductDetail = (props) => {
   // 라우터의 innerHTML 호출을 만족시키기 위함
   return "";
 };
-
-function addEventListeners(product) {
-  let quantity = 1; // 수량 상태 초기화
-
-  const quantityInput = document.querySelector("#quantity-input");
-  const decreaseBtn = document.querySelector("#quantity-decrease");
-  const increaseBtn = document.querySelector("#quantity-increase");
-  const addToCartBtn = document.querySelector("#add-to-cart-btn");
-  const backBtn = document.querySelector(".go-to-product-list");
-
-  // 수량 업데이트 함수
-  const updateQuantity = (newQuantity) => {
-    quantity = Math.max(1, Math.min(newQuantity, product.stock));
-    if (quantityInput) {
-      quantityInput.value = quantity;
-    }
-  };
-
-  // 수량 조절 버튼 이벤트
-  if (decreaseBtn) {
-    decreaseBtn.addEventListener("click", () => updateQuantity(quantity - 1));
-  }
-  if (increaseBtn) {
-    increaseBtn.addEventListener("click", () => updateQuantity(quantity + 1));
-  }
-  if (quantityInput) {
-    quantityInput.addEventListener("change", (e) => {
-      const value = parseInt(e.target.value, 10);
-      if (!isNaN(value)) {
-        updateQuantity(value);
-      }
-    });
-  }
-
-  // 장바구니 담기 버튼 이벤트
-  if (addToCartBtn) {
-    addToCartBtn.addEventListener("click", () => {
-      addCart(product, quantity);
-      showToast("장바구니에 추가되었습니다.");
-      updateHeaderCartCount(); // 리렌더링 없이 헤더 카운트만 업데이트
-    });
-  }
-
-  // (선택) 관련 상품 클릭 이벤트 추가
-  // const relatedProductCards = document.querySelectorAll(".related-product-card");
-  // relatedProductCards.forEach(card => {
-  //   card.addEventListener("click", () => {
-  //     const newProductId = card.dataset.productId;
-  //     // 라우터의 navigate 함수를 호출하여 페이지 이동
-  //     window.history.pushState({}, "", `/product/${newProductId}`);
-  //     // ProductDetail 함수를 다시 실행하여 페이지를 새로 그림
-  //     ProductDetail({ urlParams: { id: newProductId } });
-  //   });
-  // });
-}
