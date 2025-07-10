@@ -1,4 +1,5 @@
 import { getCategories, getProducts } from "../api/productApi";
+import { CartModal } from "../components/cart/CartModal";
 import { SearchIcon } from "../components/icons/SearchIcon";
 import { Footer } from "../components/layouts/Footer";
 import { Header } from "../components/layouts/Header";
@@ -22,6 +23,7 @@ export class ProductListPage extends Component {
       },
       filters: {},
       categories: {},
+      isOpenCartModal: false,
     };
 
     const infinite = new InfiniteScroll({
@@ -130,6 +132,20 @@ export class ProductListPage extends Component {
       if (route) {
         this.props.router.navigate(route);
       }
+
+      if (e.target.classList.contains("cart-modal-overlay")) {
+        this.setState({ isOpenCartModal: false });
+        return;
+      }
+
+      switch (e.target.id) {
+        case "cart-icon-btn":
+          this.setState({ isOpenCartModal: true });
+          break;
+        case "cart-modal-close-btn":
+          this.setState({ isOpenCartModal: false });
+          break;
+      }
     });
 
     element.addEventListener("change", (e) => {
@@ -153,6 +169,14 @@ export class ProductListPage extends Component {
           break;
       }
     });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        if (this.state.isOpenCartModal) {
+          this.setState({ isOpenCartModal: false });
+        }
+      }
+    });
   }
 
   render() {
@@ -163,6 +187,7 @@ export class ProductListPage extends Component {
             <a href="/" data-link="">쇼핑몰</a>
           </h1>`,
         })}
+
         <main class="max-w-md mx-auto px-4 py-4">
           <!-- 검색 및 필터 -->
           <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
@@ -256,6 +281,10 @@ export class ProductListPage extends Component {
           </div>
         </main>
 
+        <!-- 장바구니 모달 -->
+        ${this.state.isOpenCartModal ? CartModal() : ""}
+
+        <!-- 하단 푸터 -->
         ${Footer()}
       </div>`;
   }

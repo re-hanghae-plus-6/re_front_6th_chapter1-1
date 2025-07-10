@@ -16,6 +16,7 @@ export class ProductPage extends Component {
     this.state = {
       loading: true,
       product: {},
+      isOpenCartModal: false,
     };
 
     this.on(Component.EVENTS.MOUNT, () => {
@@ -41,6 +42,28 @@ export class ProductPage extends Component {
       const route = e.target.dataset.route;
       if (route) {
         this.props.router.navigate(route);
+      }
+
+      if (e.target.classList.contains("cart-modal-overlay")) {
+        this.setState({ isOpenCartModal: false });
+        return;
+      }
+
+      switch (e.target.id) {
+        case "cart-icon-btn":
+          this.setState({ isOpenCartModal: true });
+          break;
+        case "cart-modal-close-btn":
+          this.setState({ isOpenCartModal: false });
+          break;
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        if (this.state.isOpenCartModal) {
+          this.setState({ isOpenCartModal: false });
+        }
       }
     });
   }
