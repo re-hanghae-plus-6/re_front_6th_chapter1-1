@@ -6,19 +6,58 @@ class Header {
     this.state = {
       cartCount: 0, // 초기값. 스토어 구독 후 업데이트됨
     };
+
+    // URL 변경 감지를 위한 바인딩
+    this.handlePopstate = this.handlePopstate.bind(this);
+    this.handleUrlChange = this.handleUrlChange.bind(this);
+  }
+
+  handlePopstate() {
+    this.updateHeader();
+  }
+
+  handleUrlChange() {
+    this.updateHeader();
+  }
+
+  updateHeader() {
+    if (this.el) {
+      const oldEl = this.el;
+      const newEl = this.render();
+      if (oldEl.parentNode) {
+        oldEl.parentNode.replaceChild(newEl, oldEl);
+      }
+      this.el = newEl;
+    }
   }
 
   template() {
-    // cartCount가 0일 때는 뱃지를 숨김
     const badgeHiddenClass = this.state.cartCount === 0 ? "hidden" : "";
+    const isDetailPage = window.location.pathname.startsWith("/product/");
+    console.log("isDetailPage:", isDetailPage);
 
     return `
       <header class="bg-white shadow-sm sticky top-0 z-40">
         <div class="max-w-md mx-auto px-4 py-4">
           <div class="flex items-center justify-between">
-            <h1 class="text-xl font-bold text-gray-900">
-              <a href="/" data-link>쇼핑몰</a>
-            </h1>
+            ${
+              isDetailPage
+                ? `
+              <div class="flex items-center space-x-3">
+                <button onclick="window.history.back()" class="p-2 text-gray-700 hover:text-gray-900 transition-colors">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                  </svg>
+                </button>
+                <h1 class="text-lg font-bold text-gray-900">상품 상세</h1>
+              </div>
+            `
+                : `
+              <h1 class="text-xl font-bold text-gray-900">
+                <a href="/" data-link>쇼핑몰</a>
+              </h1>
+            `
+            }
             <div class="flex items-center space-x-2">
               <button id="cart-icon-btn" class="relative p-2 text-gray-700 hover:text-gray-900 transition-colors">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -40,13 +79,12 @@ class Header {
 
   setState(nextState) {
     this.state = { ...this.state, ...nextState };
-    this.update(); // 상태 변경 시 전체 렌더링 대신 업데이트만 수행
+    this.update();
   }
 
   update() {
     if (!this.el) return;
 
-    // 뱃지 부분만 찾아서 업데이트
     const cartCountBadge = this.el.querySelector("#cart-count-badge");
     if (cartCountBadge) {
       cartCountBadge.textContent = this.state.cartCount;
@@ -61,20 +99,31 @@ class Header {
   render() {
     const template = document.createElement("template");
     template.innerHTML = this.template().trim();
-    this.el = template.content.firstElementChild;
+    const newEl = template.content.firstElementChild;
+
+    // 기존 엘리먼트가 있다면 교체
+    if (this.el && this.el.parentNode) {
+      this.el.parentNode.replaceChild(newEl, this.el);
+    }
+    this.el = newEl;
 
     const btn = this.el.querySelector("#cart-icon-btn");
     btn.addEventListener("click", () => {
       cartStore.setState({ isOpen: true });
     });
 
-    // cartStore를 구독하여 cartCount 상태를 동기화
-    // 참고: store에 items가 추가되어야 완벽하게 동작합니다.
     cartStore.subscribe((storeState) => {
-      // store에 items가 있다는 가정 하에 cartCount 업데이트
       const newCount = storeState.items ? storeState.items.length : 0;
       this.setState({ cartCount: newCount });
     });
+
+    // popstate 이벤트 리스너 추가 (한 번만 추가되도록)
+    window.removeEventListener("popstate", this.handlePopstate);
+    window.addEventListener("popstate", this.handlePopstate);
+
+    // URL 변경 감지를 위한 커스텀 이벤트 리스너 추가
+    window.removeEventListener("urlchange", this.handleUrlChange);
+    window.addEventListener("urlchange", this.handleUrlChange);
 
     return this.el;
   }

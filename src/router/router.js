@@ -3,12 +3,6 @@ import Detail from "../pages/Detail.js";
 import NotFound from "../pages/NotFound.js";
 import ExampleLayout from "../pages/ExampleLayout.js"; // 레이아웃 확인용(제출전에 삭제하자)
 
-// const routes = {
-//   "/": Home,
-//   "/detail": Detail,
-//   "/ex": ExampleLayout,
-// };
-
 export async function router() {
   const $app = document.querySelector("#app");
   if (!$app) return;
@@ -34,5 +28,3 @@ export async function router() {
   $app.innerHTML = "";
   $app.appendChild(component.render());
 }
-
-window.addEventListener("popstate", router);

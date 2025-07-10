@@ -157,6 +157,10 @@ class Home {
         e.preventDefault();
         const productId = e.currentTarget.closest(".product-card").dataset.productId;
         history.pushState({}, "", `/product/${productId}`);
+
+        // URL 변경 이벤트 발생
+        window.dispatchEvent(new CustomEvent("urlchange"));
+
         router(); // 라우터 함수 호출
       });
     });

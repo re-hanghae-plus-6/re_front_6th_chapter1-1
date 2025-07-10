@@ -56,7 +56,7 @@ export default function Header() {
   cartButton.addEventListener("click", () => {
     // 장바구니 로직 (예: 모달을 열거나, 장바구니 페이지로 이동)
     // 현재 코드에서는 /about 으로 이동하네요.
-    location.hash = "#/about";
+    location.hash = "/about";
   });
 
   // 4. 모든 설정이 완료된 DOM 요소를 반환합니다.

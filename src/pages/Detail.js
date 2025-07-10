@@ -1,6 +1,6 @@
 import { getProduct, getProducts } from "../api/productApi";
-import { formatPrice } from "../utils/formatPrice";
 import { cartStore } from "../store/store.js";
+import { router } from "../router/router.js";
 
 class Detail {
   constructor(options = {}) {
@@ -78,7 +78,7 @@ class Detail {
       return `<div>Product not found</div>`;
     }
 
-    const { title, image, lprice, description, rating } = this.state.product;
+    const { title, image, lprice, description, rating, category1 } = this.state.product;
 
     return `
         <!-- 브레드크럼 -->
@@ -88,6 +88,13 @@ class Detail {
             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
             </svg>
+            ${
+              category1
+                ? ` <button class="breadcrumb-link" data-category1="생활/건강">
+              생활/건강
+            </button>`
+                : ""
+            }
             <button class="breadcrumb-link" data-category1="생활/건강">
               생활/건강
             </button>
@@ -198,12 +205,12 @@ class Detail {
                 ${this.state.relatedProducts
                   .map(
                     (p) => `
-                     <div class="bg-gray-50 rounded-lg p-3 related-product-card cursor-pointer" data-product-id="p.id">
-                      <div class="aspect-square bg-white rounded-md overflow-hidden mb-2">
-                        <img src="${p.imageUrl}" alt="${p.name}" class="w-full h-32 object-cover">
-                        <h3 class="text-sm font-medium text-gray-900 mb-1 line-clamp-2">${p.name}</h3>
-                        <p class="text-sm font-bold text-blue-600">${formatPrice(p.price)}원</p>
-                      </div>
+                     <div class="related-product-card border p-2 rounded-md" data-product-id="${p.productId}">
+                        <a href="/product/${p.productId}">
+                            <img src="${p.image}" alt="${p.title}" class="w-full h-32 object-cover">
+                            <h3 class="mt-2 text-sm font-bold">${p.title}</h3>
+                            <p class="text-xs">${parseInt(p.lprice).toLocaleString()}원</p>
+                        </a>
                     </div>
                 `,
                   )
@@ -268,6 +275,21 @@ class Detail {
         }, 2000);
       });
     }
+
+    // 관련 상품 클릭 이벤트
+    this.el.querySelectorAll(".related-product-card").forEach((card) => {
+      card.addEventListener("click", (e) => {
+        e.preventDefault();
+        const productId = card.dataset.productId;
+        history.pushState({}, "", `/product/${productId}`);
+
+        // URL 변경 이벤트 발생
+        window.dispatchEvent(new CustomEvent("urlchange"));
+
+        router();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    });
   }
 
   async init() {
