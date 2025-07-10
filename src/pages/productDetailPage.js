@@ -1,6 +1,50 @@
-export function productDetailPage(isLoading) {
-  return isLoading ? productDetailLoadingContent() : productDetailContent;
+import { navigate, ROUTES } from "../routes/router";
+
+let state = {
+  isLoading: false,
+  product: null,
+};
+
+async function getProductDetail() {
+  const params = new URLSearchParams(location.search);
+  const productId = params.get("productId");
+  if (!productId) navigate(ROUTES.PRODUCT);
+  try {
+    const response = await fetch(`/api/products/${productId}`);
+    if (!response.ok) throw new Error("네트워크 오류");
+    const data = await response.json();
+    state.product = data;
+    console.log(JSON.stringify(data, null, 2));
+  } catch (error) {
+    console.log(error);
+  } finally {
+    state.isLoading = false;
+  }
 }
+
+export async function productDetailPage() {
+  if (!state.isLoading) {
+    state.isLoading = true;
+    state.product = null;
+    await getProductDetail();
+  }
+  return state.isLoading ? productDetailLoadingContent() : productDetailContent();
+}
+
+productDetailPage.afterRender = () => {
+  const backButton = document.querySelector("#back-btn");
+  if (backButton) {
+    backButton.addEventListener("click", () => navigate(ROUTES.PRODUCT));
+  }
+  // 개별 상품 순회하며 이벤트
+  document.querySelectorAll(".related-product-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      const id = card.dataset.productId;
+      navigate(`/product/detail?productId=${id}`);
+    });
+  });
+};
+
 function productDetailLoadingContent() {
   return `
     <div class="min-h-screen bg-gray-50">
@@ -42,7 +86,9 @@ function productDetailLoadingContent() {
     </div>
   `;
 }
+
 function productDetailContent() {
+  const { product } = state;
   return `
     <div class="min-h-screen bg-gray-50">
       <header class="bg-white shadow-sm sticky top-0 z-40">
@@ -94,12 +140,12 @@ function productDetailContent() {
           <!-- 상품 이미지 -->
           <div class="p-4">
             <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4">
-              <img src="https://shopping-phinf.pstatic.net/main_8506721/85067212996.1.jpg" alt="PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장" class="w-full h-full object-cover product-detail-image">
+              <img src="${product.image}" alt="${product.title}" class="w-full h-full object-cover product-detail-image">
             </div>
             <!-- 상품 정보 -->
             <div>
               <p class="text-sm text-gray-600 mb-1"></p>
-              <h1 class="text-xl font-bold text-gray-900 mb-3">PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장</h1>
+              <h1 class="text-xl font-bold text-gray-900 mb-3">${product.title}</h1>
               <!-- 평점 및 리뷰 -->
               <div class="flex items-center mb-3">
                 <div class="flex items-center">
@@ -119,19 +165,19 @@ function productDetailContent() {
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                   </svg>
                 </div>
-                <span class="ml-2 text-sm text-gray-600">4.0 (749개 리뷰)</span>
+                <span class="ml-2 text-sm text-gray-600">${product.rating} (${product.reviewCount || 0}개 리뷰)</span>
               </div>
               <!-- 가격 -->
               <div class="mb-4">
-                <span class="text-2xl font-bold text-blue-600">220원</span>
+                <span class="text-2xl font-bold text-blue-600">${product.lprice}원</span>
               </div>
               <!-- 재고 -->
               <div class="text-sm text-gray-600 mb-4">
-                재고 107개
+                재고 ${product.stock}개
               </div>
               <!-- 설명 -->
               <div class="text-sm text-gray-700 leading-relaxed mb-6">
-                PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장에 대한 상세 설명입니다. 브랜드의 우수한 품질을 자랑하는 상품으로, 고객 만족도가 높은 제품입니다.
+                ${product.description}
               </div>
             </div>
           </div>
@@ -165,7 +211,7 @@ function productDetailContent() {
         </div>
         <!-- 상품 목록으로 이동 -->
         <div class="mb-6">
-          <button class="block w-full text-center bg-gray-100 text-gray-700 py-3 px-4 rounded-md
+          <button id="back-btn" class="block w-full text-center bg-gray-100 text-gray-700 py-3 px-4 rounded-md
             hover:bg-gray-200 transition-colors go-to-product-list">
             상품 목록으로 돌아가기
           </button>

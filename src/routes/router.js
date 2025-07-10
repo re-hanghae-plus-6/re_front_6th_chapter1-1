@@ -2,7 +2,7 @@ import { cartPage } from "../pages/cartPage";
 import { notFoundPage } from "../pages/notFoundPage";
 import { productDetailPage } from "../pages/productDetailPage";
 import { productPage } from "../pages/productPage";
-const ROUTES = {
+export const ROUTES = {
   MAIN: "/",
   PRODUCT: "/product",
   PRODUCT_DETAIL: "/product/detail",
