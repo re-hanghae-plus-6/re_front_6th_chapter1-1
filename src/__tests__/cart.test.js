@@ -123,16 +123,14 @@ describe.sequential("2. 장바구니 수량 조절", () => {
   test("각 장바구니 상품의 수량을 감소할 수 있다", async () => {
     await screen.findByText(/총 의 상품/i);
     await addProductToCart("pvc 투명 젤리 쇼핑백");
-    // 장바구니 모달이 열리기 전까지는 DOM에 존재할 수 없는 클래스이므로 엘리먼트를 찾을 수 없음
-    // test 마다 로컬스토리지를 초기화 하기 때문에 초기 수량은 toBe("1")일것으로 예상함
 
     // 모달이 열리는 타이밍
     const cartIcon = document.querySelector("#cart-icon-btn");
     await userEvent.click(cartIcon);
 
-    expect(document.querySelector(".quantity-input").value).toBe("3");
+    expect(document.querySelector(".quantity-input").value).toBe("1");
 
-    // 수량 증가 1회 실행
+    // 수량을 먼저 2개로 증가
     const increaseButton = document.querySelector(".quantity-increase-btn");
     await userEvent.click(increaseButton);
 
@@ -141,13 +139,13 @@ describe.sequential("2. 장바구니 수량 조절", () => {
 
     // 테스트 진행에 따른다면 toBe("2")일 것으로 예상
     const quantityInput = document.querySelector(".quantity-input");
-    expect(quantityInput.value).toBe("4");
+    expect(quantityInput.value).toBe("2");
 
     // 수량 감소 1회 실행
     await userEvent.click(decreaseButton);
 
-    // 테스트 진행에 따른다면 toBe("1")일 것으로 예상
-    expect(quantityInput.value).toBe("3");
+    // 수량이 감소했는지 확인
+    expect(quantityInput.value).toBe("1");
   });
 
   test("수량 변경 시 총 금액이 실시간으로 업데이트된다", async () => {
@@ -161,9 +159,7 @@ describe.sequential("2. 장바구니 수량 조절", () => {
     // 초기 총 금액 확인
     const getTotalAmountElement = () => screen.getByText("총 금액").parentNode.querySelector("span:last-child");
     const initialAmount = getTotalAmountElement().textContent;
-    console.log(initialAmount);
-
-    expect(initialAmount).toBe("880원");
+    expect(initialAmount).toBe("220원");
 
     // 수량 증가
     const increaseButton = document.querySelector(".quantity-increase-btn");
@@ -171,7 +167,7 @@ describe.sequential("2. 장바구니 수량 조절", () => {
 
     // 총 금액이 업데이트되었는지 확인
     const updatedAmount = getTotalAmountElement().textContent;
-    expect(updatedAmount).toBe("1,100원");
+    expect(updatedAmount).toBe("440원");
   });
 });
 
@@ -292,17 +288,12 @@ describe.sequential("5. 장바구니 전체 선택", () => {
     const cartIcon = document.querySelector("#cart-icon-btn");
     await userEvent.click(cartIcon);
 
-    const selectAllCheckbox = document.querySelector("#cart-modal-select-all-checkbox");
-
     // 전체 선택 후 전체 해제
-    await userEvent.click(selectAllCheckbox);
-    await userEvent.click(selectAllCheckbox);
+    await userEvent.click(document.querySelector("#cart-modal-select-all-checkbox"));
+    expect([...document.querySelectorAll(".cart-item-checkbox")].map((v) => v.checked)).toEqual([true, true]);
 
-    // 모든 상품의 체크박스가 해제되었는지 확인
-    const itemCheckboxes = document.querySelectorAll(".cart-item-checkbox");
-    itemCheckboxes.forEach((checkbox) => {
-      expect(checkbox.checked).toBe(false);
-    });
+    await userEvent.click(document.querySelector("#cart-modal-select-all-checkbox"));
+    expect([...document.querySelectorAll(".cart-item-checkbox")].map((v) => v.checked)).toEqual([false, false]);
   });
 });
 
