@@ -1,8 +1,10 @@
 import { getProducts } from "../../api/productApi";
+import { DEFAULT_PAGE } from "../../constants.js";
+import useFilter from "../../hook/useFilter.js";
+import { useNavigate } from "../../hook/useRouter.js";
 import Component from "../../lib/Component";
 import { homeStore } from "../../store/homeStore";
 import ProductItem from "./ProductItem";
-import { useNavigate } from "../../hook/useRouter.js";
 
 export default class ProductList extends Component {
   setup() {
@@ -12,16 +14,22 @@ export default class ProductList extends Component {
     // ! this.handleClick이 항상 같은 함수 객체가 되도록
     // * bind : 클래스 메서드는 this가 동적으로 결정, handleProductClick는 함수이고 호출 시 객체 인스턴스와 연결되어있지 않음
     this.handleProductClick = this.handleProductClick.bind(this);
+    this.handleQueryParamsChange = this.handleQueryParamsChange.bind(this);
+
+    // 쿼리 파라미터 변경 이벤트 리스너 추가
+    window.addEventListener("queryParamsChange", this.handleQueryParamsChange);
 
     this.unsubscribe = homeStore.subscribe(() => {
+      const { limit, sort, search, category1, category2 } = useFilter();
+
       const currentState = homeStore.getState();
       const currentParams = {
         page: currentState.products.pagination.page,
-        limit: currentState.filter.limit,
-        search: currentState.filter.search,
-        category1: currentState.filter.category1,
-        category2: currentState.filter.category2,
-        sort: currentState.filter.sort,
+        limit,
+        search,
+        category1,
+        category2,
+        sort,
       };
 
       if (this.shouldFetchProducts(currentParams)) {
@@ -36,12 +44,32 @@ export default class ProductList extends Component {
     });
   }
 
+  // 쿼리 파라미터 변경 이벤트 핸들러
+  handleQueryParamsChange() {
+    // 페이지를 1로 리셋하고 상품 목록 재조회
+    homeStore.setState({
+      products: {
+        ...homeStore.getState().products,
+        pagination: {
+          ...homeStore.getState().products.pagination,
+          page: DEFAULT_PAGE,
+        },
+      },
+    });
+
+    // 상품 목록 재조회
+    this.fetchProducts();
+  }
+
   setEvent() {
     this.$target.addEventListener("click", this.handleProductClick);
   }
 
   cleanup() {
     this.$target.removeEventListener("click", this.handleProductClick);
+
+    // 쿼리 파라미터 변경 이벤트 리스너 제거
+    window.removeEventListener("queryParamsChange", this.handleQueryParamsChange);
 
     // 상태 구독 해제
     if (this.unsubscribe) this.unsubscribe();
@@ -74,7 +102,7 @@ export default class ProductList extends Component {
       isProductsLoading,
       pagination: { page },
     } = homeState.products;
-    const { category1, category2, search, sort, limit } = homeState.filter;
+    const { limit, sort, search, category1, category2 } = useFilter();
 
     if (isProductsLoading) return;
 

@@ -14,8 +14,10 @@ export default class ProductDetailPage extends Component {
   setup() {
     this.handleProductClick = this.handleProductClick.bind(this);
 
+    const [param] = useParam("id");
+
     this.state = {
-      productId: useParam("id"),
+      productId: param,
       product: {},
       relatedProducts: [],
       isLoading: false,
@@ -69,7 +71,6 @@ export default class ProductDetailPage extends Component {
     const relatedProductCard = e.target.closest(".related-product-card");
     if (relatedProductCard) {
       const productId = relatedProductCard.dataset["productId"];
-      console.log(relatedProductCard.dataset);
       navigate(`/product/${productId}`);
     }
   }
