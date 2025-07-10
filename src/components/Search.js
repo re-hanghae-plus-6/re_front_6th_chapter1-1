@@ -13,7 +13,6 @@ const events = [
         search: searchInput.value,
         page: 1,
       });
-      return;
     },
   },
   {
