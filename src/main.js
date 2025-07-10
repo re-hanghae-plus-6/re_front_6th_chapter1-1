@@ -2,6 +2,7 @@ import { ProductListPage } from "./pages/productListPage.js";
 import { store } from "./store.js";
 import { ProductListController } from "./controllers/productListController.js";
 import { ProductDetailController } from "./controllers/productDetailController.js";
+import { CartModalController } from "./controllers/cartModalController.js";
 import { router } from "./router.js";
 import { actions } from "./actions/index.js";
 
@@ -13,6 +14,7 @@ const enableMocking = () =>
   );
 
 let currentController = null;
+let cartModalController = null;
 
 function render() {
   if (router.currentRoute === "/" || !router.currentRoute) {
@@ -61,6 +63,7 @@ if (import.meta.env.MODE === "test") {
               currentController.cleanup();
             }
             currentController = null;
+
             store.reset();
 
             currentController = new ProductListController();
@@ -96,6 +99,12 @@ async function handleHome() {
   if (!currentController) {
     currentController = new ProductListController();
     await currentController.initialize();
+
+    currentController.setupEventListeners();
+  }
+
+  if (!cartModalController) {
+    cartModalController = new CartModalController();
   }
 }
 
@@ -108,6 +117,10 @@ async function handleProductDetail(params) {
   currentController = new ProductDetailController(params.id);
   await currentController.initialize();
 
+  if (!cartModalController) {
+    cartModalController = new CartModalController();
+  }
+
   const renderProductDetail = async () => {
     const state = store.getState();
     const { ProductDetailPage } = await import("./pages/productDetailPage.js");
@@ -115,17 +128,36 @@ async function handleProductDetail(params) {
     const container = document.getElementById("root");
     if (container) {
       container.innerHTML = ProductDetailPage({
-        product: state.productDetail.product,
-        relatedProducts: state.productDetail.relatedProducts,
-        loading: state.productDetail.loading,
+        productDetail: state.productDetail,
+        toast: state.toast,
+        cartComputed: store.computed.cart,
+        cart: state.cart,
       });
     }
   };
 
   await renderProductDetail();
 
-  const unsubscribe = store.subscribe(() => {
-    renderProductDetail();
+  currentController.setupEventListeners();
+  if (cartModalController) {
+    cartModalController.setupEventListeners();
+  }
+
+  const unsubscribe = store.subscribe(async () => {
+    const quantityInput = document.getElementById("quantity-input");
+    const currentQuantity = quantityInput ? quantityInput.value : "1";
+
+    await renderProductDetail();
+
+    const newQuantityInput = document.getElementById("quantity-input");
+    if (newQuantityInput && currentQuantity) {
+      newQuantityInput.value = currentQuantity;
+    }
+
+    currentController.setupEventListeners();
+    if (cartModalController) {
+      cartModalController.setupEventListeners();
+    }
   });
 
   const originalCleanup = currentController.cleanup.bind(currentController);
@@ -140,6 +172,11 @@ async function handleNotFound() {
     currentController.cleanup();
   }
   currentController = null;
+
+  if (cartModalController && typeof cartModalController.cleanup === "function") {
+    cartModalController.cleanup();
+    cartModalController = null;
+  }
 
   const { NotFoundPage } = await import("./pages/notFoundPage.js");
 

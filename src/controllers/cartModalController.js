@@ -14,6 +14,11 @@ export class CartModalController {
 
   #setupEventListeners() {
     const clickHandler = (event) => {
+      // 카트 모달 내부 이벤트만 처리
+      if (!event.target.closest(".cart-modal")) {
+        return;
+      }
+
       if (event.target.closest(".quantity-increase-btn")) {
         this.#handleIncreaseQuantity(event);
         return;
@@ -50,8 +55,24 @@ export class CartModalController {
       }
     };
 
+    // 카트 모달 닫기 전용 핸들러 (모달 외부 클릭 포함)
+    const modalCloseHandler = (event) => {
+      if (
+        event.target.id === "cart-modal-close-btn" ||
+        event.target.closest("#cart-modal-close-btn") ||
+        event.target.classList.contains("cart-modal-overlay")
+      ) {
+        this.#handleCloseCartModal();
+        return;
+      }
+    };
+
     document.addEventListener("click", clickHandler);
-    this.#eventListeners.push({ element: document, type: "click", handler: clickHandler });
+    document.addEventListener("click", modalCloseHandler);
+    this.#eventListeners.push(
+      { element: document, type: "click", handler: clickHandler },
+      { element: document, type: "click", handler: modalCloseHandler },
+    );
   }
 
   #handleIncreaseQuantity(event) {
@@ -187,10 +208,23 @@ export class CartModalController {
     store.dispatch(actions.clearCart());
   }
 
-  cleanup() {
+  #handleCloseCartModal() {
+    store.dispatch(actions.hideCartModal());
+  }
+
+  setupEventListeners() {
+    this.#removeEventListeners();
+    this.#setupEventListeners();
+  }
+
+  #removeEventListeners() {
     this.#eventListeners.forEach(({ element, type, handler }) => {
       element.removeEventListener(type, handler);
     });
     this.#eventListeners = [];
+  }
+
+  cleanup() {
+    this.#removeEventListeners();
   }
 }

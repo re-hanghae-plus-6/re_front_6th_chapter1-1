@@ -20,9 +20,7 @@ export class ProductDetailController {
   }
 
   setupEventListeners() {
-    // 기존 이벤트 리스너 제거
     this.#removeEventListeners();
-    // 새로 등록
     this.#setupEventListeners();
   }
 
@@ -71,33 +69,44 @@ export class ProductDetailController {
 
   #setupEventListeners() {
     const clickHandler = (event) => {
+      if (event.target.closest(".cart-modal")) {
+        return;
+      }
+
       if (event.target.id === "quantity-decrease") {
         this.#handleQuantityDecrease();
+        return;
       }
 
       if (event.target.id === "quantity-increase") {
         this.#handleQuantityIncrease();
+        return;
       }
 
       if (event.target.id === "add-to-cart-btn") {
         this.#handleAddToCart();
+        return;
       }
 
       if (event.target.classList.contains("breadcrumb-link")) {
         this.#handleBreadcrumbClick(event);
+        return;
       }
 
       if (event.target.classList.contains("go-to-product-list")) {
         this.#handleGoToProductList();
+        return;
       }
 
       if (event.target.closest("#cart-icon-btn")) {
         this.#handleCartIconClick();
+        return;
       }
 
       const relatedProductCard = event.target.closest(".related-product-card");
       if (relatedProductCard) {
         this.#handleRelatedProductClick(relatedProductCard);
+        return;
       }
     };
 
@@ -117,11 +126,12 @@ export class ProductDetailController {
   }
 
   #handleQuantityDecrease() {
-    this.#quantity = Math.max(1, this.#quantity - 1);
-
     const quantityInput = document.getElementById("quantity-input");
     if (quantityInput) {
-      quantityInput.value = this.#quantity;
+      const currentQuantity = parseInt(quantityInput.value) || 1;
+      const newQuantity = Math.max(1, currentQuantity - 1);
+      quantityInput.value = newQuantity;
+      this.#quantity = newQuantity;
     }
   }
 
@@ -129,11 +139,13 @@ export class ProductDetailController {
     const { productDetail } = this.state;
     const product = productDetail.product;
     const maxStock = product?.stock || 999;
-    this.#quantity = Math.min(maxStock, this.#quantity + 1);
 
     const quantityInput = document.getElementById("quantity-input");
     if (quantityInput) {
-      quantityInput.value = this.#quantity;
+      const currentQuantity = parseInt(quantityInput.value) || 1;
+      const newQuantity = Math.min(maxStock, currentQuantity + 1);
+      quantityInput.value = newQuantity;
+      this.#quantity = newQuantity;
     }
   }
 
@@ -158,7 +170,10 @@ export class ProductDetailController {
 
     if (!product) return;
 
-    store.dispatch(actions.addToCart(product.productId, this.#quantity));
+    const quantityInput = document.getElementById("quantity-input");
+    const currentQuantity = quantityInput ? parseInt(quantityInput.value) || 1 : 1;
+
+    store.dispatch(actions.addToCart(product.productId, currentQuantity));
     store.dispatch(actions.showToast("장바구니에 추가되었습니다"));
   }
 
@@ -182,7 +197,7 @@ export class ProductDetailController {
   }
 
   #handleCartIconClick() {
-    store.dispatch(actions.openCartModal());
+    store.dispatch(actions.showCartModal());
   }
 
   #handleRelatedProductClick(card) {

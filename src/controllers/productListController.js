@@ -1,14 +1,11 @@
 import { store } from "../store.js";
 import { actions } from "../actions/index.js";
 import { getProducts, getCategories } from "../api/productApi.js";
-import { CartModalController } from "./cartModalController.js";
 
 export class ProductListController {
   #eventListeners = [];
-  #cartModalController = null;
 
   constructor() {
-    this.#cartModalController = new CartModalController();
     this.#setupEventListeners();
   }
 
@@ -18,6 +15,17 @@ export class ProductListController {
 
   async initialize() {
     await this.loadInitialData();
+  }
+
+  setupEventListeners() {
+    // 기존 이벤트 리스너 제거
+    this.#eventListeners.forEach(({ element, type, handler }) => {
+      element.removeEventListener(type, handler);
+    });
+    this.#eventListeners = [];
+
+    // 새로 등록
+    this.#setupEventListeners();
   }
 
   async loadInitialData() {
@@ -66,7 +74,7 @@ export class ProductListController {
       if (event.key === "Escape") {
         const isModalOpen = this.state.cart.isModalOpen;
         if (isModalOpen) {
-          this.#handleCloseCartModal();
+          store.dispatch(actions.hideCartModal());
         }
       }
     };
@@ -90,12 +98,8 @@ export class ProductListController {
         return;
       }
 
-      if (
-        event.target.id === "cart-modal-close-btn" ||
-        event.target.closest("#cart-modal-close-btn") ||
-        event.target.classList.contains("cart-modal-overlay")
-      ) {
-        this.#handleCloseCartModal();
+      // 카트 모달 내부 이벤트는 CartModalController에서 처리하도록 제외
+      if (event.target.closest(".cart-modal")) {
         return;
       }
 
@@ -257,19 +261,10 @@ export class ProductListController {
     store.dispatch(actions.showCartModal());
   }
 
-  #handleCloseCartModal() {
-    store.dispatch(actions.hideCartModal());
-  }
-
   cleanup() {
     this.#eventListeners.forEach(({ element, type, handler }) => {
       element.removeEventListener(type, handler);
     });
     this.#eventListeners = [];
-
-    if (this.#cartModalController) {
-      this.#cartModalController.cleanup();
-      this.#cartModalController = null;
-    }
   }
 }

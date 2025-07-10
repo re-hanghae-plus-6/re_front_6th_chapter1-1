@@ -33,6 +33,7 @@ export const initialState = {
     loading: false,
     error: null,
     relatedProducts: [],
+    loadingRelatedProducts: false,
   },
 
   toast: {

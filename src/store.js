@@ -5,6 +5,7 @@ import { CartComputed } from "./computed/cartComputed.js";
 class Store {
   #state = initialState;
   #listeners = [];
+  #lastAction = null;
   #computed = {
     cart: new CartComputed(this),
   };
@@ -19,7 +20,12 @@ class Store {
     return this.#computed;
   }
 
+  getLastAction() {
+    return this.#lastAction;
+  }
+
   dispatch(action) {
+    this.#lastAction = action;
     const oldState = this.#state;
     this.#state = reducer(oldState, action);
     this.#computed.cart.clearCache();
