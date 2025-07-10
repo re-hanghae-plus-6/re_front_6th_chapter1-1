@@ -13,7 +13,16 @@ export function router() {
   const $app = document.querySelector("#app");
   if (!$app) return;
 
-  const path = location.hash.replace("#", "") || "/";
+  let hashPath = location.hash.replace("#", "");
+  const queryStartIndex = hashPath.indexOf("?");
+  let path = "/"; // Default path
+
+  if (queryStartIndex !== -1) {
+    path = hashPath.substring(0, queryStartIndex) || "/";
+  } else {
+    path = hashPath || "/";
+  }
+
   const Route = routes[path] || NotFound;
 
   // Route가 생성자 함수(클래스)인지 확인하여 인스턴스화

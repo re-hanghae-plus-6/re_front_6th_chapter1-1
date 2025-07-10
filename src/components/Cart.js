@@ -16,15 +16,28 @@ class Cart {
   }
 
   setState(nextState) {
+    const prevStateIsOpen = this.state.isOpen;
     this.state = { ...this.state, ...nextState };
+    const currentIs = this.state.isOpen;
 
-    if (this.state.isOpen) {
-      this.show();
-    } else {
-      this.hide();
+    if (currentIs && !prevStateIsOpen) {
+      // Cart is opening
+      if (this.el) {
+        // If element already exists (e.g., from previous render, though it shouldn't be in DOM)
+        this.el.remove(); // Ensure it's removed from DOM if somehow present
+        this.el = null;
+      }
+      this.render(); // Create the element and attach events
+      document.body.appendChild(this.el); // Add to DOM
+      this.show(); // Ensure visibility (flex class)
+    } else if (!currentIs && prevStateIsOpen) {
+      // Cart is closing
+      this.hide(); // Now hide() handles both hiding and DOM removal
+    } else if (currentIs && prevStateIsOpen) {
+      // Cart is open, but content updated
+      this.update();
     }
-    // UI 업데이트
-    this.update();
+    // If !currentIs && !prevStateIsOpen, do nothing (cart is already closed)
   }
 
   // 전체를 다시 그리는 대신 변경된 부분만 업데이트합니다.
@@ -46,12 +59,17 @@ class Cart {
   hide() {
     this.el?.classList.remove("flex");
     this.el?.classList.add("hidden");
+    if (this.el && this.el.parentNode) {
+      this.el.parentNode.removeChild(this.el);
+    }
+    this.el = null;
   }
 
   // 장바구니 아이템 템플릿
   templateCartItem(item) {
     return `
       <div class="flex items-center py-3 border-b border-gray-100 cart-item" data-product-id="${item.id}">
+        <input type="checkbox" class="cart-item-checkbox mr-3" data-product-id="${item.id}" ${item.isSelected ? "checked" : ""}>
         <div class="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden mr-3 flex-shrink-0">
           <img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover">
         </div>
@@ -91,6 +109,8 @@ class Cart {
     }
 
     const total = this.state.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const selectedItemCount = this.state.items.filter((item) => item.isSelected).length;
+    const allItemsSelected = this.state.items.length > 0 && selectedItemCount === this.state.items.length;
 
     return `
       <div class="flex-1 overflow-y-auto">
@@ -99,6 +119,16 @@ class Cart {
         </div>
       </div>
       <div class="sticky bottom-0 bg-white border-t border-gray-200 p-4">
+        <div class="flex justify-between items-center mb-4">
+          <div class="flex items-center">
+            <input type="checkbox" id="cart-modal-select-all-checkbox" class="mr-2" ${allItemsSelected ? "checked" : ""}>
+            <label for="cart-modal-select-all-checkbox" class="text-sm text-gray-700">전체선택 (${selectedItemCount}개)</label>
+          </div>
+          <div class="flex gap-2">
+            <button id="cart-modal-remove-selected-btn" class="text-sm text-red-600 hover:text-red-800">선택 삭제</button>
+            <button id="cart-modal-clear-cart-btn" class="text-sm text-red-600 hover:text-red-800">전체 비우기</button>
+          </div>
+        </div>
         <div class="flex justify-between items-center mb-4">
           <span class="text-lg font-bold text-gray-900">총 금액</span>
           <span class="text-xl font-bold text-blue-600">${total.toLocaleString()}원</span>
@@ -157,6 +187,26 @@ class Cart {
         cartStore.decreaseQuantity(productId);
       });
     });
+
+    // 새로 추가된 이벤트 리스너
+    this.el.querySelectorAll(".cart-item-checkbox").forEach((checkbox) => {
+      checkbox.addEventListener("change", (e) => {
+        const productId = e.currentTarget.dataset.productId;
+        cartStore.toggleItemSelection(productId);
+      });
+    });
+
+    this.el.querySelector("#cart-modal-select-all-checkbox")?.addEventListener("change", (e) => {
+      cartStore.toggleAllSelection(e.currentTarget.checked);
+    });
+
+    this.el.querySelector("#cart-modal-remove-selected-btn")?.addEventListener("click", () => {
+      cartStore.removeSelectedItems();
+    });
+
+    this.el.querySelector("#cart-modal-clear-cart-btn")?.addEventListener("click", () => {
+      cartStore.clearCart();
+    });
   }
 
   render() {
@@ -164,7 +214,7 @@ class Cart {
     template.innerHTML = this.templateShell().trim();
     this.el = template.content.firstElementChild;
     this.addEvent();
-    return this.el;
+    return this.el; // 이 줄을 제거합니다.
   }
 }
 

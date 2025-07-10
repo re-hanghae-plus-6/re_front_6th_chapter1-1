@@ -48,6 +48,7 @@ export const cartStore = {
           price: parseInt(product.lprice),
           image: product.image,
           quantity: 1,
+          isSelected: true,
         },
       ];
     }
@@ -57,6 +58,27 @@ export const cartStore = {
   removeItem(productId) {
     const newItems = this.state.items.filter((item) => item.id !== productId);
     this.setState({ items: newItems });
+  },
+
+  toggleItemSelection(productId) {
+    const newItems = this.state.items.map((item) =>
+      item.id === productId ? { ...item, isSelected: !item.isSelected } : item,
+    );
+    this.setState({ items: newItems });
+  },
+
+  toggleAllSelection(checked) {
+    const newItems = this.state.items.map((item) => ({ ...item, isSelected: checked }));
+    this.setState({ items: newItems });
+  },
+
+  removeSelectedItems() {
+    const newItems = this.state.items.filter((item) => !item.isSelected);
+    this.setState({ items: newItems });
+  },
+
+  clearCart() {
+    this.setState({ items: [] });
   },
 
   increaseQuantity(productId) {
@@ -69,7 +91,7 @@ export const cartStore = {
   decreaseQuantity(productId) {
     const newItems = this.state.items
       .map((item) => (item.id === productId && item.quantity > 1 ? { ...item, quantity: item.quantity - 1 } : item))
-      .filter(Boolean); // 수량이 0이 되면 제거될 수 있으므로 filter(Boolean)은 안전장치
+      .filter(Boolean);
     this.setState({ items: newItems });
   },
 
