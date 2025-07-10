@@ -3,14 +3,6 @@ import { afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest
 import { server } from './mockServerHandler.js';
 import { userEvent } from '@testing-library/user-event';
 
-// jsdom 환경에서 IntersectionObserver 없어 테스트용 mock을 전역에 정의
-global.IntersectionObserver = class {
-  constructor() {}
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-};
-
 const goTo = (path) => {
   window.history.pushState({}, '', path);
   window.dispatchEvent(new Event('popstate'));
