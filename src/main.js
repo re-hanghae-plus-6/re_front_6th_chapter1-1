@@ -106,6 +106,26 @@ function setupEventListeners() {
   });
 }
 
+function navigateToProductDetail(productId) {
+  console.log(productId);
+}
+
+function setupProductDetailEventListeners() {
+  document.addEventListener("click", (event) => {
+    // 장바구니 버튼 클릭은 무시
+    if (event.target.matches(".add-to-cart-btn") || event.target.closest(".add-to-cart-btn")) {
+      return;
+    }
+
+    // product-card나 그 자식 요소 클릭 시
+    const productCard = event.target.closest(".product-card");
+    if (productCard) {
+      const productId = productCard.dataset.productId;
+      navigateToProductDetail(productId);
+    }
+  });
+}
+
 async function handleCategory1Filter(category1) {
   state.selectedCategory1 = category1;
   const categoryDetail = state.categories[category1];
@@ -306,8 +326,10 @@ if (import.meta.env.MODE !== "test") {
   enableMocking().then(() => {
     main();
     setupEventListeners();
+    setupProductDetailEventListeners();
   });
 } else {
   main();
   setupEventListeners();
+  setupProductDetailEventListeners();
 }
