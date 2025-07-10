@@ -25,8 +25,6 @@ const homeState = {
   cart: {
     items: [],
     selectedItems: [],
-    totalPrice: 0,
-    selectedPrice: 0,
   },
 };
 

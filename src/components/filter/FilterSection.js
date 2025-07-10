@@ -38,8 +38,8 @@ export default class Filter extends Component {
     const setQueryParam = useQueryParam();
     const { limit } = getFilter();
 
-    const limitOptions = document.querySelectorAll("#limit-select option");
-    limitOptions.forEach((option) => {
+    const $limitOptions = document.querySelectorAll("#limit-select option");
+    $limitOptions.forEach((option) => {
       if (option.value === limit) {
         option.selected = true;
       }
@@ -60,8 +60,8 @@ export default class Filter extends Component {
     const setQueryParam = useQueryParam();
     const { sort } = getFilter();
 
-    const sortOptions = document.querySelectorAll("#sort-select option");
-    sortOptions.forEach((option) => {
+    const $sortOptions = document.querySelectorAll("#sort-select option");
+    $sortOptions.forEach((option) => {
       if (option.value === sort) {
         option.selected = true;
       }
@@ -82,12 +82,12 @@ export default class Filter extends Component {
     const setQueryParam = useQueryParam();
     const { search } = getFilter();
 
-    const searchInput = document.getElementById("search-input");
-    if (!searchInput) return;
+    const $searchInput = document.getElementById("search-input");
+    if (!$searchInput) return;
 
-    searchInput.value = search;
+    $searchInput.value = search;
 
-    searchInput.addEventListener("keydown", (e) => {
+    $searchInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         e.preventDefault();
         const search = e.target.value;
@@ -102,10 +102,10 @@ export default class Filter extends Component {
     const setQueryParam = useQueryParam();
     const { categoryList } = homeStore.getState().categories;
 
-    const categoryFilterBtns = document.querySelectorAll(".category-filter-btn");
-    if (!categoryFilterBtns.length) return;
+    const $categoryFilterBtns = document.querySelectorAll(".category-filter-btn");
+    if (!$categoryFilterBtns.length) return;
 
-    categoryFilterBtns.forEach((btn) => {
+    $categoryFilterBtns.forEach((btn) => {
       btn.addEventListener("click", (e) => {
         const selectedCategory = e.target.dataset.category;
 

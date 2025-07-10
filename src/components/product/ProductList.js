@@ -59,6 +59,7 @@ export default class ProductList extends Component {
 
   setEvent() {
     this.$target.addEventListener("click", this.handleProductClick);
+    this.selectProduct();
   }
 
   cleanup() {
@@ -127,6 +128,27 @@ export default class ProductList extends Component {
         total: pagination.total,
         pagination,
       },
+    });
+  }
+
+  selectProduct() {
+    const { cart, products } = homeStore.getState();
+
+    const $cartButton = document.querySelectorAll(".add-to-cart-btn");
+    if (!$cartButton.length) return;
+
+    $cartButton.forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const productId = e.target.dataset.productId;
+        const product = products.list.find((product) => product.productId === productId);
+
+        homeStore.setState({
+          cart: {
+            items: [...cart.items, product],
+          },
+        });
+      });
     });
   }
 

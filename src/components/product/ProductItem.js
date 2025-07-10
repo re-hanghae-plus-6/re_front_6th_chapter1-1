@@ -1,4 +1,3 @@
-// 상품 상세 조회
 /**
  * @type {
  *    brand: string
@@ -17,7 +16,6 @@
  *    title: string
  * }
  */
-
 export default function ProductItem(product) {
   const { productId, image, title, lprice } = product;
 
