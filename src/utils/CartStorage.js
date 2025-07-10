@@ -62,7 +62,7 @@ export const CartStorage = (() => {
 
   // 카운트 업데이트
   function updateCount() {
-    const newCount = getTotalCount();
+    const newCount = getUniqueItemCount();
     if (newCount !== currentCount) {
       currentCount = newCount;
       updateAllCounters();
@@ -168,6 +168,12 @@ export const CartStorage = (() => {
     return items.reduce((total, item) => total + (item.quantity || 1), 0);
   }
 
+  /* 장바구니 상품 종류 개수 반환 */
+  function getUniqueItemCount() {
+    const items = load();
+    return items.length;
+  }
+
   /* 장바구니 총 금액 반환 */
   function getTotalPrice() {
     const items = load();
@@ -192,6 +198,7 @@ export const CartStorage = (() => {
     updateQuantity, // 장바구니 수량 업데이트
     removeItem, // 장바구니 삭제
     getTotalCount, // 장바구니 총 개수
+    getUniqueItemCount, // 장바구니 상품 종류 개수
     getTotalPrice, // 장바구니 총 금액
     getItemQuantity, // 장바구니 특정 상품 수량
     addEventListener, // 이벤트 리스너 등록

@@ -73,7 +73,7 @@ const Header = ({ isDetail = false }) => {
                   d="M3 3h2l.4 2M7 13h10l4-8H5.4m2.6 8L6 2H3m4 11v6a1 1 0 001 1h1a1 1 0 001-1v-6M13 13v6a1 1 0 001 1h1a1 1 0 001-1v-6"
                 ></path>
               </svg>
-              ${cartIcon(CartStorage.getTotalCount())}
+              ${cartIcon(CartStorage.getUniqueItemCount())}
             </button>
           </div>
         </div>
