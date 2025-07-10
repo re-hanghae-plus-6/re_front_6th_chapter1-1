@@ -291,7 +291,6 @@ describe.sequential("5. 장바구니 전체 선택", () => {
     await userEvent.click(document.querySelector("#cart-modal-select-all-checkbox"));
     expect([...document.querySelectorAll(".cart-item-checkbox")].map((v) => v.checked)).toEqual([true, true]);
 
-    // 모든 상품의 체크박스가 해제되었는지 확인
     await userEvent.click(document.querySelector("#cart-modal-select-all-checkbox"));
     expect([...document.querySelectorAll(".cart-item-checkbox")].map((v) => v.checked)).toEqual([false, false]);
   });
