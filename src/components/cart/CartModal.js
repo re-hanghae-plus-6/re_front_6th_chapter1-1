@@ -17,7 +17,9 @@ export function CartModal() {
             <h2 class="text-lg font-bold text-gray-900 flex items-center">
               ${CartIcon({ className: "w-5 h-5 mr-2" })} 장바구니
             </h2>
-            <button id="cart-modal-close-btn" class="text-gray-400 hover:text-gray-600 p-1">${CloseIcon()}</button>
+            <button id="cart-modal-close-btn" class="text-gray-400 hover:text-gray-600 p-1">
+              ${CloseIcon({ className: "w-6 h-6 pointer-events-none" })}
+            </button>
           </div>
 
           <!-- 컨텐츠 -->
