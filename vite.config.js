@@ -1,12 +1,12 @@
 import { defineConfig } from "vitest/config";
-import path from "path";
 
 export default defineConfig({
   resolve: {
-    alias: {
-      "@components": path.resolve(__dirname, "./src/components"),
-      "@pages": path.resolve(__dirname, "./src/pages"),
-      "@utils": path.resolve(__dirname, "./src/utils"),
+    extensions: [".js", ".ts", ".jsx", ".tsx", ".json"],
+  },
+  server: {
+    fs: {
+      strict: false,
     },
   },
   test: {
