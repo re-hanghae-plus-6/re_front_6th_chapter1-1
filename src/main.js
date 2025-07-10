@@ -1,3 +1,6 @@
+import Footer from "./shared/ui/footer/index.js";
+import Header from "./components/Header";
+
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
     worker.start({
@@ -7,7 +10,10 @@ const enableMocking = () =>
 
 function main() {
   document.body.innerHTML = `
-
+  <div class="bg-gray-50">
+    ${Header}
+    ${Footer}
+  </div>
   `;
 }
 
