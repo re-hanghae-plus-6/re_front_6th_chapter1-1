@@ -10,6 +10,8 @@ export class Router {
   #routes = new Map();
   #currentRoute = null;
   #container = null;
+  #currentRouteParams = {};
+  #currentQueryParams = {};
   #popstateListener = this.#handleRouteChange.bind(this);
 
   constructor(containerQuerySelector) {
@@ -20,6 +22,14 @@ export class Router {
 
     // popstate 이벤트 리스너를 등록하여 브라우저 뒤로가기/앞으로가기 처리
     window.addEventListener("popstate", this.#popstateListener);
+  }
+
+  get routeParams() {
+    return { ...this.#currentRouteParams };
+  }
+
+  get queryParams() {
+    return { ...this.#currentQueryParams };
   }
 
   /**
@@ -205,13 +215,12 @@ export class Router {
       this.#currentRoute = currentPath;
     }
 
+    // 현재 라우트 파라미터와 쿼리 파라미터를 업데이트
+    this.#currentRouteParams = matchResult.params;
+    this.#currentQueryParams = queryParams;
+
     const component = this.#createComponent(matchResult.componentConstructor);
     component.mount(this.#container);
-
-    if (typeof component.setRouteParams === "function") {
-      // 페이지 컴포넌트에서 params를 사용하기 위해 메소드 실행
-      component.setRouteParams(matchResult.params, queryParams);
-    }
 
     // 해당 라우터에 대한 컴포넌트 그리기
     component.render();
