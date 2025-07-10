@@ -8,10 +8,10 @@ export default function initializeHandlers(state, render) {
   cartHandlers.viewCartHandler(state);
   cartHandlers.closeCartModal();
   cartHandlers.addToCartHandler(state);
-  cartHandlers.setupCartItemRemoveHandler(state, render);
-  cartHandlers.setupCartCheckboxHandlers(state, render);
-  cartHandlers.setupRemoveSelectedHandler(state, render);
-  cartHandlers.setupClearCartHandler(state, render);
+  cartHandlers.removeSelectedHandler(state);
+  cartHandlers.removeAllHandler(state);
+  cartHandlers.handleRemoveSelectedItems(state, render);
+  cartHandlers.handleSelectAllCheckbox(state, render);
 
   // 상품 리스트 관련
   productHandlers.setupScrollInfinityHandler(state, render);
