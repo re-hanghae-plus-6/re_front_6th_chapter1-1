@@ -7,16 +7,6 @@ import { cartStore } from "./store/cart.js";
 const enableMocking = () => import("./mocks/browser.js").then(({ worker }) => worker.start(workerOptions));
 
 function main() {
-  console.log("main");
-  document.addEventListener("click", ({ target }) => {
-    console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    console.log(target);
-    console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-  });
-  console.log("added event listener");
-
   cartStore.init();
   router
     .addPage("/", ProductsPage)
