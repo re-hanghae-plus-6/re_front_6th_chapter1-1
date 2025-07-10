@@ -1,5 +1,5 @@
 export default function NotFoundPage() {
-  return /* HTML */ `
+  const html = /* HTML */ `
     <main class="max-w-md mx-auto px-4 py-4">
       <div class="text-center my-4 py-20 shadow-md p-6 bg-white rounded-lg">
         <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
@@ -58,4 +58,9 @@ export default function NotFoundPage() {
       </div>
     </main>
   `;
+
+  return {
+    html,
+    cleanup() {},
+  };
 }
