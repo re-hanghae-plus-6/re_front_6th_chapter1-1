@@ -1,5 +1,6 @@
 import { pathMatcher } from "./pathMatcher";
 import { parameterExtractor } from "./parameterExtractor";
+import { searchParamsManager } from "../SearchParamsManager";
 
 const ROOT_PATH = "/";
 
@@ -10,6 +11,9 @@ class Router {
     // 기본값으로 기본 구현체 사용, 필요시 주입 가능
     this.pathMatcher = options.pathMatcher || pathMatcher;
     this.parameterExtractor = options.parameterExtractor || parameterExtractor;
+
+    // SearchParamsManager 인스턴스 참조
+    this.searchParams = searchParamsManager;
 
     this.addRoute(routes);
 
@@ -67,12 +71,23 @@ class Router {
       return;
     }
 
-    const { replace = false } = options;
+    const { replace = false, searchParams } = options;
+
+    let fullURL = path;
+    if (searchParams) {
+      const params = new URLSearchParams();
+      Object.entries(searchParams).forEach(([key, value]) => {
+        if (value != null) {
+          params.set(key, value);
+        }
+      });
+      fullURL = params.toString() ? `${path}?${params.toString()}` : path;
+    }
 
     if (replace) {
-      window.history.replaceState(null, "", path);
+      window.history.replaceState(null, "", fullURL);
     } else {
-      window.history.pushState(null, "", path);
+      window.history.pushState(null, "", fullURL);
     }
 
     this.handlePopState();
@@ -100,6 +115,26 @@ class Router {
       return this.currentParams;
     }
     return {};
+  }
+
+  // 현재 search parameter 조회 (SearchParamsManager 위임)
+  getSearchParams() {
+    return this.searchParams.getParams();
+  }
+
+  // search parameter만 업데이트 (SearchParamsManager 위임)
+  updateSearchParams(params, options = {}) {
+    this.searchParams.updateParams(params, options);
+  }
+
+  // search parameter 변경 구독 (SearchParamsManager 위임)
+  subscribeSearchParams(key, callback) {
+    return this.searchParams.subscribe(key, callback);
+  }
+
+  // search parameter 구독 해제 (SearchParamsManager 위임)
+  unsubscribeSearchParams(key, callback) {
+    this.searchParams.unsubscribe(key, callback);
   }
 
   isRootPath(path) {
