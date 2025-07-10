@@ -77,7 +77,10 @@ class Cart extends Component {
     cartLocalStorage.set('cartProducts', updatedCartItems);
   }
 
-  handleClearAllItems() {}
+  handleClearAllItems() {
+    cartLocalStorage.set('cartProducts', []);
+    cartLocalStorage.remove('cartProducts');
+  }
 
   attachEventListeners() {
     this.addEventListener(this.element, 'click', (event) => {
@@ -123,6 +126,11 @@ class Cart extends Component {
       if (cartItemRemoveBtn) {
         const productId = cartItemRemoveBtn.dataset.productId;
         this.handleRemoveItem(products, productId);
+      }
+
+      const cartAllItemsRemoveBtn = event.target.closest('#cart-modal-clear-cart-btn');
+      if (cartAllItemsRemoveBtn) {
+        this.handleClearAllItems();
       }
     });
 
