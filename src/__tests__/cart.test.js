@@ -1,4 +1,4 @@
-import { findByText, getByText, queryByText, screen } from '@testing-library/dom';
+import { findByText, getByText, queryByText, screen, waitFor } from '@testing-library/dom';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
 
@@ -118,8 +118,12 @@ describe.sequential('2. 장바구니 수량 조절', () => {
 
     await userEvent.click(increaseButton);
 
-    // 수량이 증가했는지 확인
-    expect(quantityInput.value).toBe('2');
+    // 수량이 증가했는지
+    // 렌더 타이밍 이슈로 즉시 검증이 실패할 수 있기 때문에 waitFor로 비동기 처리
+    await waitFor(() => {
+      expect(document.querySelector('.quantity-input').value).toBe('2');
+    });
+    // expect(quantityInput.value).toBe('2');
   });
 
   test('각 장바구니 상품의 수량을 감소할 수 있다', async () => {
@@ -147,7 +151,11 @@ describe.sequential('2. 장바구니 수량 조절', () => {
     await userEvent.click(decreaseButton);
 
     // 수량이 감소했는지 확인
-    expect(quantityInput.value).toBe('1');
+    // 렌더 타이밍 이슈로 즉시 검증이 실패할 수 있기 때문에 waitFor로 비동기 처리
+    await waitFor(() => {
+      expect(document.querySelector('.quantity-input').value).toBe('1');
+    });
+    //expect(quantityInput.value).toBe('1');
   });
 
   test('수량 변경 시 총 금액이 실시간으로 업데이트된다', async () => {
