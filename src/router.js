@@ -1,66 +1,87 @@
-// 페이지 컴포넌트 임포트
-// 컴포넌트 추가 부분
+// router.js (structuredClone 적용 최종 버전)
+
 import { home } from "./pages/home.js";
 import { ProductDetail } from "./pages/ProductDetail.js";
 import { NotFound } from "./pages/NotFound.js";
 
-const routes = {
-  "/": home,
-  "/product/:id": ProductDetail,
-};
+const routes = [
+  { path: "/", component: home },
+  { path: "/product/:id", component: ProductDetail },
+];
 
-// 라우터 인스턴스 생성 및 관리 함수
-export const createRouter = (initialmainStatus) => {
-  let currentmainStatus = JSON.parse(JSON.stringify(initialmainStatus)); // main.js에서 전달받은 mainStatus 객체
-  const appRoot = document.querySelector("#root"); // 콘텐츠가 렌더링될 DOM 요소
+class Router {
+  constructor(initialMainStatus) {
+    this.routes = routes;
+    // structuredClone을 사용하여 상태를 깊은 복사
+    this.mainStatus = structuredClone(initialMainStatus);
+    this.appRoot = document.querySelector("#root");
+    this.initEventListeners();
+  }
 
-  // 현재 URL 경로에 맵핑된 컴포넌트 렌더링 함수
-  const render = () => {
+  initEventListeners() {
+    window.addEventListener("popstate", () => this.render());
+    document.addEventListener("DOMContentLoaded", () => {
+      document.body.addEventListener("click", (e) => this.handleLinkClick(e));
+      this.render();
+    });
+  }
+
+  handleLinkClick(event) {
+    const target = event.target.closest("[data-link]");
+    if (target) {
+      event.preventDefault();
+      this.navigate(target.getAttribute("href"));
+    }
+  }
+
+  _matchRoute() {
     const path = window.location.pathname;
-    let ComponentToRender = routes[path] || NotFound(); // 매칭되는 라우트가 없으면 404 페이지
+    const matchedRoute = this.routes.find((route) => {
+      const regex = new RegExp(`^${route.path.replace(/:\w+/g, "([^/]+)")}$`);
+      const match = path.match(regex);
+      if (match) {
+        const params = {};
+        const paramNames = (route.path.match(/:\w+/g) || []).map((name) => name.substring(1));
+        paramNames.forEach((name, index) => {
+          params[name] = match[index + 1];
+        });
+        route.params = params;
+        return true;
+      }
+      return false;
+    });
 
-    // 매칭된 컴포넌트를 현재 mainStatus 객체와 함께 렌더링
-    appRoot.innerHTML = ComponentToRender(currentmainStatus);
-  };
+    if (matchedRoute) {
+      return { component: matchedRoute.component, params: matchedRoute.params };
+    }
+    return { component: NotFound, params: {} };
+  }
 
-  // URL 변경을 트리거하고 렌더링을 재 수행 함수
-  const navigate = (path) => {
+  async render() {
+    const { component, params } = this._matchRoute();
+    component.name === "ProductDetail" && (this.mainStatus.url = "/product/");
+    // URL에서 추출한 파라미터는 urlParams 라는 이름으로 전달합니다.
+    this.appRoot.innerHTML = await component({ ...this.mainStatus, urlParams: params });
+  }
+
+  navigate(path) {
     if (window.location.pathname !== path) {
-      // 현재 경로와 다를 때만 pushState
-      window.history.pushState(null, "", path);
+      window.history.pushState({}, "", path);
     }
-    render(); // URL 변경 후 렌더링
-  };
+    this.render();
+  }
 
-  // 외부에서 mainStatus을 업데이트하고 렌더링을 트리거할 수 있는 함수
-  const updateStateAndRender = (newmainStatus) => {
-    currentmainStatus = JSON.parse(JSON.stringify(newmainStatus)); // 상태 업데이트
-    render(); // 업데이트된 상태로 다시 렌더링
-  };
+  updateStateAndRender(newMainStatus) {
+    // 상태를 업데이트할 때도 새로운 상태를 깊은 복사
+    this.mainStatus = structuredClone(newMainStatus);
+    this.render();
+  }
 
-  // 링크 클릭 이벤트 핸들러
-  const handleLinkClick = (event) => {
-    // data-link 속성이 있는 링크만 처리
-    if (event.target.matches("[data-link]")) {
-      event.preventDefault(); // 기본 링크 동작(페이지 새로고침) 방지
-      navigate(event.target.href); // 라우터의 navigate 함수 호출
-    }
-  };
+  getCurrentState() {
+    return this.mainStatus;
+  }
+}
 
-  // 브라우저 뒤로/앞으로 버튼 클릭 시
-  window.addEventListener("popstate", render);
-
-  // 초기 페이지 로드 시 라우팅 실행 및 링크 이벤트 리스너 등록
-  document.addEventListener("DOMContentLoaded", () => {
-    document.body.addEventListener("click", handleLinkClick);
-    render(); // 초기 렌더링
-  });
-
-  // 외부에서 사용할 수 있는 라우터 API 반환
-  return {
-    navigate,
-    updateStateAndRender,
-    // 필요하다면 현재 상태를 반환하는 getter 등 추가 가능
-    getCurrentState: () => currentmainStatus,
-  };
+export const createRouter = (initialMainStatus) => {
+  return new Router(initialMainStatus);
 };
