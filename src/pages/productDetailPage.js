@@ -1,4 +1,3 @@
-import { Layout } from "../components/layout.js";
 import { store } from "../store.js";
 
 export const ProductDetailPage = () => {
@@ -164,12 +163,9 @@ export const ProductDetailPage = () => {
     `;
   };
 
-  return Layout({
-    headerType: "detail",
-    children: `
-      <main class="max-w-md mx-auto px-4 py-4">
-        ${renderMainContent()}
-      </main>
-    `,
-  });
+  return `
+    <main class="max-w-md mx-auto px-4 py-4">
+      ${renderMainContent()}
+    </main>
+  `;
 };

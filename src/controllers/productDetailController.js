@@ -31,6 +31,11 @@ export class ProductDetailController {
     this.#eventListeners = [];
   }
 
+  async loadProduct(productId) {
+    this.#productId = productId;
+    await this.loadProductDetail();
+  }
+
   async loadProductDetail() {
     store.dispatch(actions.loadProductDetail());
 

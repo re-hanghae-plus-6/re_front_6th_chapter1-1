@@ -241,13 +241,7 @@ export class ProductListController {
     const productId = productCard.dataset.productId;
     if (!productId) return;
 
-    import("../router.js")
-      .then(({ router }) => {
-        router.navigate(`/product/${productId}`);
-      })
-      .catch((error) => {
-        console.error("라우터 로드 실패:", error);
-      });
+    store.dispatch(actions.navigate(`/product/${productId}`));
   }
 
   #handleAddToCart(productCard) {

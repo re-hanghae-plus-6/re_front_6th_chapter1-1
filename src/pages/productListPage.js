@@ -1,5 +1,4 @@
 import { ProductCard } from "../components/productCard.js";
-import { Layout } from "../components/layout.js";
 import { store } from "../store.js";
 
 const LIMIT_OPTIONS = [
@@ -199,12 +198,9 @@ export const ProductListPage = () => {
     `;
   };
 
-  return Layout({
-    headerType: "main",
-    children: `
-      <main class="max-w-md mx-auto px-4 py-4">
-        ${renderMainContent()}
-      </main>
-    `,
-  });
+  return `
+    <main class="max-w-md mx-auto px-4 py-4">
+      ${renderMainContent()}
+    </main>
+  `;
 };

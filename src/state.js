@@ -42,5 +42,5 @@ export const initialState = {
     type: "success",
   },
 
-  currentPage: "list",
+  currentRoute: "/",
 };
