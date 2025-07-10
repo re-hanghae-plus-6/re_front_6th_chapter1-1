@@ -1,8 +1,8 @@
-import { getProduct } from "../api/productApi";
+import { getProduct, getProducts } from "../api/productApi";
 import { observable } from "../core/observer";
 import { router } from "../core/router";
 
-export const productDetailStore = observable({
+const defaultData = {
   isLoading: true,
   title: "",
   image: "",
@@ -15,10 +15,21 @@ export const productDetailStore = observable({
   rating: 0,
   reviewCount: 0,
   stock: 0,
+  relatedProducts: [],
+};
+
+export const productDetailStore = observable({
+  ...defaultData,
 
   initSearchParams() {
+    productDetailStore.clear();
     const params = { ...router.getParams() };
     for (const [key, value] of Object.entries(params)) {
+      productDetailStore[key] = value;
+    }
+  },
+  clear() {
+    for (const [key, value] of Object.entries(defaultData)) {
       productDetailStore[key] = value;
     }
   },
@@ -36,5 +47,19 @@ export const productDetailStore = observable({
     productDetailStore.reviewCount = data.reviewCount;
     productDetailStore.stock = data.stock;
     productDetailStore.isLoading = false;
+  },
+  async loadRelatedProducts() {
+    const defaultParams = {
+      page: 1,
+      limit: 20,
+      search: "",
+      sort: "price_asc",
+    };
+    const data = await getProducts({
+      ...defaultParams,
+      category1: productDetailStore.category1,
+      category2: productDetailStore.category2,
+    });
+    productDetailStore.relatedProducts = data.products;
   },
 });

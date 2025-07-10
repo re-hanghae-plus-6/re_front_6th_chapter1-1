@@ -1,6 +1,7 @@
-import { Component } from "../../core/Component";
-import { productDetailStore } from "../../store/product-detail";
-import { html } from "../../utils/html";
+import { Component } from "../core/Component";
+import { router } from "../core/router";
+import { productDetailStore } from "../store/product-detail";
+import { html } from "../utils/html";
 
 export class ProductDetail extends Component {
   renderContainer() {
@@ -15,8 +16,19 @@ export class ProductDetail extends Component {
   }
 
   render() {
-    const { category1, category2, image, title, description, rating, reviewCount, lprice, stock, productId } =
-      productDetailStore;
+    const {
+      category1,
+      category2,
+      image,
+      title,
+      description,
+      rating,
+      reviewCount,
+      lprice,
+      stock,
+      productId,
+      relatedProducts,
+    } = productDetailStore;
 
     this.$el.innerHTML = html`${this.#Breadcrumb({ category1, category2 })}
       <div class="bg-white rounded-lg shadow-sm mb-6">
@@ -27,27 +39,89 @@ export class ProductDetail extends Component {
           <!-- 액션 버튼 -->
           ${this.#AddToCartButton({ productId })}
         </div>
-      </div>`;
+      </div>
+      <div class="mb-6">
+        <button
+          class="block w-full text-center bg-gray-100 text-gray-700 py-3 px-4 rounded-md 
+            hover:bg-gray-200 transition-colors go-to-product-list"
+        >
+          상품 목록으로 돌아가기
+        </button>
+      </div>
+      ${relatedProducts.length > 0
+        ? html` <div class="bg-white rounded-lg shadow-sm">
+            <div class="p-4 border-b border-gray-200">
+              <h2 class="text-lg font-bold text-gray-900">관련 상품</h2>
+              <p class="text-sm text-gray-600">같은 카테고리의 다른 상품들</p>
+            </div>
+            <div class="p-4">
+              <div class="grid grid-cols-2 gap-3 responsive-grid">
+                ${relatedProducts
+                  .filter((item) => item.productId !== productId)
+                  .map(this.#ProductCard)
+                  .join("")}
+              </div>
+            </div>
+          </div>`
+        : ""}`;
   }
 
   setEvent() {
     super.setEvent();
     this.addEvent("click", (e) => {
       const { target } = e;
-      const quantityDecrease = target.closest("#quantity-decrease");
-      const quantityIncrease = target.closest("#quantity-increase");
-      const addToCartBtn = target.closest("#add-to-cart-btn");
-      const quantityInput = this.$el.querySelector("#quantity-input");
-      const quantity = quantityInput.valueAsNumber;
+      const goToProductsBtn = target.closest(".go-to-product-list");
+      if (goToProductsBtn) {
+        router.push({ pathname: "/" });
+        return;
+      }
 
-      if (quantityDecrease) {
-        quantityInput.value = this.#clamp(quantity - 1, quantityInput.max);
-      } else if (quantityIncrease) {
-        quantityInput.value = this.#clamp(quantity + 1, quantityInput.max);
-      } else if (addToCartBtn) {
-        const productId = addToCartBtn.dataset.productId;
+      const $relatedProductCard = target.closest(".related-product-card");
+      if ($relatedProductCard) {
+        router.push({ pathname: `/product/${$relatedProductCard.dataset.productId}` });
+        return;
+      }
+
+      const $category1 = target.closest("[data-category1]");
+      if ($category1) {
+        router.push({
+          pathname: "/",
+          params: { category1: productDetailStore.category1, category2: "" },
+        });
+        return;
+      }
+
+      const $category2 = target.closest("[data-category2]");
+      if ($category2) {
+        router.push({
+          pathname: "/",
+          params: { category1: productDetailStore.category1, category2: productDetailStore.category2 },
+        });
+        return;
+      }
+
+      const $quantityDecrease = target.closest("#quantity-decrease");
+      const $quantityIncrease = target.closest("#quantity-increase");
+      const $addToCartBtn = target.closest("#add-to-cart-btn");
+      const $quantityInput = this.$el.querySelector("#quantity-input");
+      const quantity = $quantityInput.valueAsNumber;
+
+      if ($quantityDecrease) {
+        $quantityInput.value = this.#clamp(quantity - 1, $quantityInput.max);
+      } else if ($quantityIncrease) {
+        $quantityInput.value = this.#clamp(quantity + 1, $quantityInput.max);
+      } else if ($addToCartBtn) {
+        const productId = $addToCartBtn.dataset.productId;
         console.log(quantity, productId);
         // TODO: 장바구니 담기
+      }
+    });
+
+    this.addEvent("change", (e) => {
+      const $quantityInput = e.target.closest("#quantity-input");
+      if ($quantityInput) {
+        const quantity = $quantityInput.valueAsNumber;
+        $quantityInput.value = this.#clamp(quantity, $quantityInput.max);
       }
     });
   }
@@ -55,6 +129,18 @@ export class ProductDetail extends Component {
   #clamp(value, max) {
     const MIN = 1;
     return Math.max(MIN, Math.min(value, max));
+  }
+
+  #ProductCard({ productId, image, title, lprice }) {
+    return html`
+      <div class="bg-gray-50 rounded-lg p-3 related-product-card cursor-pointer" data-product-id="${productId}">
+        <div class="aspect-square bg-white rounded-md overflow-hidden mb-2">
+          <img src="${image}" alt="${title}" class="w-full h-full object-cover" loading="lazy" />
+        </div>
+        <h3 class="text-sm font-medium text-gray-900 mb-1 line-clamp-2">${title}</h3>
+        <p class="text-sm font-bold text-blue-600">${(+lprice).toLocaleString()}원</p>
+      </div>
+    `;
   }
 
   #Breadcrumb({ category1, category2 }) {

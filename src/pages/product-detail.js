@@ -1,14 +1,16 @@
 import { Footer } from "../components/Footer";
 import { Header } from "../components/Header";
 import { Layouy } from "../components/Layout";
-import { ProductDetail } from "../components/product-detail/ProductDetail";
+import { ProductDetail } from "../components/ProductDetail";
 import { Component } from "../core/Component";
 import { productDetailStore } from "../store/product-detail";
 import { html } from "../utils/html";
 
 export function ProductDetailPage($root) {
   productDetailStore.initSearchParams();
-  productDetailStore.loadProduct();
+  productDetailStore.loadProduct().then(() => {
+    productDetailStore.loadRelatedProducts();
+  });
 
   const layout = new Layouy({
     header: new Header({ nav: new Nav() }),
