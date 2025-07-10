@@ -26,21 +26,10 @@ class E2EHelpers {
     await this.page.waitForSelector("text=장바구니에 추가되었습니다", { timeout: 5000 });
   }
 
-  // 토스트 메시지가 사라질 때까지 대기
-  async waitForToastToDisappear() {
-    await this.page.waitForSelector("text=장바구니에 추가되었습니다", { state: "hidden", timeout: 5000 });
-  }
-
   // 장바구니 모달 열기
   async openCartModal() {
     await this.page.click("#cart-icon-btn");
     await this.page.waitForSelector(".cart-modal-overlay", { timeout: 5000 });
-  }
-
-  // 현재 상품 개수 가져오기
-  async getCurrentProductCount() {
-    const countText = await this.page.textContent('[data-testid="product-count"]');
-    return countText ? parseInt(countText.replace(/[^\d]/g, "")) : 0;
   }
 }
 
