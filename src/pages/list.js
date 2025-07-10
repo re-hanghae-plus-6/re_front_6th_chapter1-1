@@ -4,7 +4,6 @@ import { getProducts } from "../api/productApi.js";
 import { ListStore } from "../store.js";
 import { ListHeader } from "../components/header.js";
 import Footer from "../components/footer.js";
-import { renderRoute } from "../route.js";
 
 function ListPage({ isLoading = true, fetchData, limit, sort } = {}) {
   return /* HTML */ `
@@ -55,15 +54,6 @@ ListPage.mount = function () {
   document.addEventListener("changeSearch", (e) => {
     store.setSearch(e.detail.search);
     fetchAndRender();
-  });
-
-  document.addEventListener("click", (event) => {
-    const productCard = event.target.closest(".product-card");
-    if (productCard) {
-      const productId = productCard.dataset.productId;
-      window.history.pushState({ productId }, "상품 상세", `/detail?productId=${productId}`);
-      renderRoute();
-    }
   });
 };
 
