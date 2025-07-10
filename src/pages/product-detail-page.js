@@ -1,7 +1,7 @@
 /**
  * 상품 상세 페이지 컴포넌트
  */
-export const createProductDetailPage = (product, relatedProducts = []) => {
+export const createProductDetailPage = (product, relatedProducts = [], state = {}) => {
   if (!product) {
     return `
       <div class="min-h-screen bg-gray-50">
@@ -151,7 +151,7 @@ export const createProductDetailPage = (product, relatedProducts = []) => {
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
                   </svg>
                 </button>
-                <input type="number" id="quantity-input" value="1" min="1" max="${product.stock || 107}" 
+                <input type="number" id="quantity-input" value="${state.quantity || 1}" min="1" max="${product.stock || 107}" 
                   class="w-16 h-8 text-center text-sm border-t border-b border-gray-300 
                   focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                 <button id="quantity-increase" class="w-8 h-8 flex items-center justify-center border border-gray-300 

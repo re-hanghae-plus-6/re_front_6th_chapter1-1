@@ -156,6 +156,35 @@ export const handleCategoryClick = async (e) => {
  * 상품 클릭 이벤트 핸들러 (상세페이지 이동)
  */
 export const handleProductClick = (e) => {
+  // 장바구니 버튼 클릭
+  if (e.target.classList.contains("add-to-cart-btn")) {
+    const productCard = e.target.closest(".product-card");
+    if (productCard) {
+      const productId = productCard.dataset.productId;
+      if (productId) {
+        // 상품 정보 가져오기
+        const productTitle = productCard.querySelector("h3")?.textContent?.trim();
+        const productBrand = productCard.querySelector("p")?.textContent?.trim();
+        const productPrice = productCard.querySelector(".text-lg")?.textContent?.replace("원", "").replace(/,/g, "");
+        const productImage = productCard.querySelector("img")?.src;
+
+        if (productId && productTitle && productPrice) {
+          const product = {
+            productId,
+            title: productTitle,
+            brand: productBrand || "",
+            lprice: productPrice,
+            image: productImage || "",
+          };
+
+          cartService.addToCart(product);
+          showToastMessage("장바구니에 추가되었습니다");
+        }
+      }
+    }
+    return;
+  }
+
   // 상품 이미지 클릭
   if (e.target.classList.contains("product-image") || e.target.closest(".product-image")) {
     const productCard = e.target.closest(".product-card");
@@ -187,21 +216,13 @@ export const handleProductClick = (e) => {
 export const handleProductDetailEvents = (e) => {
   // 수량 증가 버튼
   if (e.target.id === "quantity-increase") {
-    const newQuantity = productDetailService.increaseQuantity();
-    const quantityInput = document.getElementById("quantity-input");
-    if (quantityInput) {
-      quantityInput.value = newQuantity;
-    }
+    productDetailService.increaseQuantity();
     return;
   }
 
   // 수량 감소 버튼
   if (e.target.id === "quantity-decrease") {
-    const newQuantity = productDetailService.decreaseQuantity();
-    const quantityInput = document.getElementById("quantity-input");
-    if (quantityInput) {
-      quantityInput.value = newQuantity;
-    }
+    productDetailService.decreaseQuantity();
     return;
   }
 

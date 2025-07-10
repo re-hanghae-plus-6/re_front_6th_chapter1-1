@@ -27,7 +27,8 @@ const handleProductDetailStateChange = (state) => {
     const root = document.getElementById("root");
     if (root) {
       const cartState = cartService.getState();
-      root.innerHTML = createProductDetailPage(state.product, state.relatedProducts) + createCartModal(cartState);
+      root.innerHTML =
+        createProductDetailPage(state.product, state.relatedProducts, state) + createCartModal(cartState);
       updateCartIcon();
     }
   }
