@@ -275,7 +275,15 @@ function renderModalContent() {
 }
 
 function ensureOverlay() {
-  if (cartContainer) return;
+  // 이미 존재하고, 여전히 DOM 에 연결되어 있다면 그대로 사용
+  if (cartContainer && document.contains(cartContainer)) return;
+
+  // 참조는 있지만 DOM 에서 분리된 경우 → 정리 후 새로 생성
+  if (cartContainer && !document.contains(cartContainer)) {
+    cartContainer.removeEventListener("click", handleModalClick);
+    cartContainer = null;
+  }
+
   cartContainer = document.createElement("div");
   cartContainer.className =
     "cart-modal-overlay fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center";
@@ -289,9 +297,8 @@ function ensureOverlay() {
   });
 
   cartContainer.addEventListener("click", handleModalClick);
-  // 테스트 스냅샷이 #root 영역을 대상으로 하기 때문에, 모달 오버레이를
-  // #root 안에 삽입해야 접근성 트리에 포함된다. #root 가 없을 경우(테스트 외 환경)
-  //에는 기존대로 body에 삽입하도록 하여 유연성을 유지한다.
+
+  // 테스트 환경에서는 접근성 트리 캡처를 위해 #root 내부에, 실제 앱에서는 body 아래에 삽입
   const rootElement = document.querySelector("#root");
   (rootElement || document.body).appendChild(cartContainer);
 }
