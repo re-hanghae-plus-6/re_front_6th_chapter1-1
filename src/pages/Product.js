@@ -1,4 +1,4 @@
-import { getProduct } from "../api/productApi";
+import { getProduct, getProducts } from "../api/productApi";
 import Loading from "../components/Loading";
 import useNavigate from "../core/useNavigate";
 import useRender from "../core/useRender";
@@ -7,46 +7,76 @@ const navigate = useNavigate();
 
 const state = {
   isLoading: true,
+  product: {},
+  relatedProducts: [],
 };
 
-const fetchProduct = async (productId) => {
-  state.isLoading = true;
-  const data = await getProduct(productId);
-  state.isLoading = false;
-  return data;
+const methods = {
+  fetchProduct: async (productId) => {
+    state.isLoading = true;
+    state.product = await getProduct(productId);
+    state.isLoading = false;
+  },
+  fetchRelatedProducts: async (category1, category2) => {
+    const products = await getProducts({ category1, category2 });
+    console.log(products);
+    state.relatedProducts = products.products.filter((product) => product.productId !== state.product.productId);
+  },
+
+  goToProductList: () => navigate.push({}, "/"),
+
+  handleAddCard: (productId) => {
+    console.log("test", productId);
+  },
 };
 
 Product.mount = async () => {
   const render = useRender();
   const productId = navigate.getCurrentUrl().match(/\d+/)[0];
-  const data = await fetchProduct(productId);
-  console.log(data, "data..");
-  render.draw("main", Product({ data }));
+  await methods.fetchProduct(productId);
+  // console.log(state.product.category1, "state.product.category1");
+  await methods.fetchRelatedProducts(state.product.category1, state.product.category);
+  // const test = await methods.fetchRelatedProducts(data.category1, data.category2);
+  // console.log(test, "Test..");
+  render.draw("main", Product());
+
+  const goToProductListBtn = document.querySelector(".go-to-product-list");
+  goToProductListBtn.addEventListener("click", () => {
+    methods.goToProductList();
+  });
+
+  const cartBtn = document.getElementById("add-to-cart-btn");
+  cartBtn.addEventListener("click", () => {
+    methods.handleAddCard(productId);
+  });
+
+  // .go-to-product-list ->상품 목록 돌아가기
+  // #add-to-cart-btn -> 장바구니 담기
+  // .related-product-card 관련 상품
 };
 
-export default function Product({ data }) {
+export default function Product() {
   return /* html */ `
     ${
-      state.isLoading
+      state.isLoading && state.product
         ? Loading({ type: "product" })
         : /* html */
           `
         <!-- 브레드크럼 -->
-        ${data}
         <nav class="mb-4">
           <div class="flex items-center space-x-2 text-sm text-gray-600">
             <a href="/" data-link="" class="hover:text-blue-600 transition-colors">홈</a>
             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
             </svg>
-            <button class="breadcrumb-link" data-category1="생활/건강">
-              생활/건강
+            <button class="breadcrumb-link" data-category1="${state.product.category1}">
+              ${state.product.category1}
             </button>
             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
             </svg>
-            <button class="breadcrumb-link" data-category2="생활용품">
-              생활용품
+            <button class="breadcrumb-link" data-category2="${state.product.category2}">
+              ${state.product.category2}
             </button>
           </div>
         </nav>
@@ -55,44 +85,38 @@ export default function Product({ data }) {
           <!-- 상품 이미지 -->
           <div class="p-4">
             <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4">
-              <img src="https://shopping-phinf.pstatic.net/main_8506721/85067212996.1.jpg" alt="PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장" class="w-full h-full object-cover product-detail-image">
+              <img src="${state.product.image}" alt="${state.product.title}" class="w-full h-full object-cover product-detail-image">
             </div>
             <!-- 상품 정보 -->
             <div>
               <p class="text-sm text-gray-600 mb-1"></p>
-              <h1 class="text-xl font-bold text-gray-900 mb-3">PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장</h1>
+              <h1 class="text-xl font-bold text-gray-900 mb-3">${state.product.title}</h1>
               <!-- 평점 및 리뷰 -->
               <div class="flex items-center mb-3">
                 <div class="flex items-center">
-                  <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                  </svg>
-                  <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                  </svg>
-                  <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                  </svg>
-                  <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                  </svg>
-                  <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                  </svg>
+                ${Array.from({ length: 5 }, (_, star) => {
+                  const activeClass = star < state.product.rating ? "text-yellow-400" : "text-gray-300";
+                  return /* html */ `
+                    <svg class="w-4 h-4 ${activeClass}" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                    </svg>
+                  `;
+                }).join("")}
+                
                 </div>
-                <span class="ml-2 text-sm text-gray-600">4.0 (749개 리뷰)</span>
+                <span class="ml-2 text-sm text-gray-600">${state.product.rating}.0 (${state.product.reviewCount}개 리뷰)</span>
               </div>
               <!-- 가격 -->
               <div class="mb-4">
-                <span class="text-2xl font-bold text-blue-600">220원</span>
+                <span class="text-2xl font-bold text-blue-600">${state.product.lprice}원</span>
               </div>
               <!-- 재고 -->
               <div class="text-sm text-gray-600 mb-4">
-                재고 107개
+              재고 ${state.product.stock}개
               </div>
               <!-- 설명 -->
               <div class="text-sm text-gray-700 leading-relaxed mb-6">
-                PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장에 대한 상세 설명입니다. 브랜드의 우수한 품질을 자랑하는 상품으로, 고객 만족도가 높은 제품입니다.
+                ${state.product.description}
               </div>
             </div>
           </div>
@@ -139,20 +163,20 @@ export default function Product({ data }) {
           </div>
           <div class="p-4">
             <div class="grid grid-cols-2 gap-3 responsive-grid">
-              <div class="bg-gray-50 rounded-lg p-3 related-product-card cursor-pointer" data-product-id="86940857379">
+              ${state.relatedProducts
+                .map(
+                  (product) => /* html */ `
+              <div class="bg-gray-50 rounded-lg p-3 related-product-card cursor-pointer" data-product-id="${product.productId}">
                 <div class="aspect-square bg-white rounded-md overflow-hidden mb-2">
-                  <img src="https://shopping-phinf.pstatic.net/main_8694085/86940857379.1.jpg" alt="샷시 풍지판 창문 바람막이 베란다 문 틈막이 창틀 벌레 차단 샤시 방충망 틈새막이" class="w-full h-full object-cover" loading="lazy">
+                  <img src="${product.image}" alt="${product.title}" class="w-full h-full object-cover" loading="lazy">
                 </div>
-                <h3 class="text-sm font-medium text-gray-900 mb-1 line-clamp-2">샷시 풍지판 창문 바람막이 베란다 문 틈막이 창틀 벌레 차단 샤시 방충망 틈새막이</h3>
-                <p class="text-sm font-bold text-blue-600">230원</p>
+                <h3 class="text-sm font-medium text-gray-900 mb-1 line-clamp-2">${product.title}</h3>
+                <p class="text-sm font-bold text-blue-600">${product.lprice}원</p>
               </div>
-              <div class="bg-gray-50 rounded-lg p-3 related-product-card cursor-pointer" data-product-id="82094468339">
-                <div class="aspect-square bg-white rounded-md overflow-hidden mb-2">
-                  <img src="https://shopping-phinf.pstatic.net/main_8209446/82094468339.4.jpg" alt="실리카겔 50g 습기제거제 제품 /산업 신발 의류 방습제" class="w-full h-full object-cover" loading="lazy">
-                </div>
-                <h3 class="text-sm font-medium text-gray-900 mb-1 line-clamp-2">실리카겔 50g 습기제거제 제품 /산업 신발 의류 방습제</h3>
-                <p class="text-sm font-bold text-blue-600">280원</p>
-              </div>
+                `,
+                )
+                .join("")}
+
             </div>
           </div>
         </div>
