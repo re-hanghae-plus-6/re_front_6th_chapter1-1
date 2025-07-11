@@ -162,30 +162,6 @@ function createApplication() {
   let router = null;
   let renderer = null;
   let routerUnsubscribe = null;
-  let rootObserver = null;
-
-  // 테스트코드를 위한 옵저버 함수인데 필요성이 없음..
-  // 아직까지 afterEach 테스트코드에서 popstate 이벤트가 발생하면 왜 화면이 렌더링 안되는지 모르겠음..
-  function observeRootContainer() {
-    const targetNode = document.getElementById("root");
-    if (!targetNode || rootObserver) return;
-
-    rootObserver = new MutationObserver(() => {
-      // 외부에서 #root가 비워진 경우 현재 라우트 다시 렌더링
-      if (targetNode.innerHTML === "" && router) {
-        router.navigate(window.location.pathname + window.location.search, { replace: true });
-      }
-    });
-
-    rootObserver.observe(targetNode, { childList: true });
-  }
-
-  function disconnectRootObserver() {
-    if (rootObserver) {
-      rootObserver.disconnect();
-      rootObserver = null;
-    }
-  }
 
   function setupGlobalEventListeners() {
     document.addEventListener("click", globalClickHandler);
@@ -229,7 +205,6 @@ function createApplication() {
       configureRouter();
       await router.init();
 
-      observeRootContainer();
       console.log("App initialized successfully");
     } catch (err) {
       console.error("App initialization failed:", err);
@@ -238,7 +213,6 @@ function createApplication() {
 
   function destroy() {
     removeGlobalEventListeners();
-    disconnectRootObserver();
     if (routerUnsubscribe) {
       routerUnsubscribe();
       routerUnsubscribe = null;
