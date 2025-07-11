@@ -58,7 +58,7 @@ export async function addToCartById(productId, quantity = 1) {
   if (existing) {
     existing.quantity += quantity;
     persist();
-    renderModalContent();
+    renderModalContent(); // 비동기 처리하지만 대기하지 않음
     updateCartBadge();
     return;
   }
@@ -82,7 +82,7 @@ export function addToCart(product, quantity = 1) {
     cart.push({ product, quantity, selected: false });
   }
   persist();
-  renderModalContent();
+  renderModalContent(); // 비동기 처리하지만 대기하지 않음 (성능상 이유)
   showToast("장바구니에 추가되었습니다");
   updateCartBadge();
 }
@@ -99,14 +99,14 @@ export function removeItem(productId) {
   syncFromStorage();
   cart = cart.filter((i) => i.product.productId !== productId);
   persist();
-  renderModalContent();
+  renderModalContent(); // 비동기 처리하지만 대기하지 않음
 }
 
-export function clearCart() {
+export async function clearCart() {
   syncFromStorage();
   cart = [];
   persist();
-  renderModalContent();
+  await renderModalContent();
 }
 
 export function toggleSelect(productId) {
@@ -115,7 +115,7 @@ export function toggleSelect(productId) {
   if (!item) return;
   item.selected = !item.selected;
   persist();
-  renderModalContent();
+  renderModalContent(); // 비동기 처리하지만 대기하지 않음
 }
 
 export function selectAll(selected) {
@@ -124,7 +124,7 @@ export function selectAll(selected) {
     i.selected = selected;
   });
   persist();
-  renderModalContent();
+  renderModalContent(); // 비동기 처리하지만 대기하지 않음
 }
 
 // Helper to keep in-memory cart in sync with localStorage (important for test isolation)
@@ -201,7 +201,7 @@ function handleModalClick(e) {
       const inputEl = incBtn.parentNode.querySelector(".quantity-input");
       if (inputEl) inputEl.value = newQty.toString();
       updateCartBadge();
-      renderModalContent();
+      renderModalContent(); // 비동기 처리하지만 대기하지 않음
     }
     return;
   }
@@ -217,7 +217,7 @@ function handleModalClick(e) {
       const inputEl = decBtn.parentNode.querySelector(".quantity-input");
       if (inputEl) inputEl.value = newQty.toString();
       updateCartBadge();
-      renderModalContent();
+      renderModalContent(); // 비동기 처리하지만 대기하지 않음
     }
     return;
   }
@@ -254,10 +254,11 @@ function handleModalClick(e) {
     return;
   }
 
-  // 전체 비우기 - setTimeout 제거하여 동기 처리
+  // 전체 비우기 - 비동기 처리로 DOM 업데이트 완료 보장
   if (e.target.closest("#cart-modal-clear-cart-btn")) {
-    clearCart();
-    updateCartBadge();
+    clearCart().then(() => {
+      updateCartBadge();
+    });
     return;
   }
 }
@@ -273,7 +274,15 @@ function renderModalContent() {
     totalPrice: getTotalPrice(),
     selectedPrice: getSelectedPrice(),
   });
-  cartContainer.innerHTML = html;
+
+  // DOM 업데이트를 비동기로 처리하여 CI 환경에서의 타이밍 이슈 해결
+  return new Promise((resolve) => {
+    cartContainer.innerHTML = html;
+    // 다음 이벤트 루프에서 DOM 업데이트 완료 보장
+    setTimeout(() => {
+      resolve();
+    }, 0);
+  });
 }
 
 function ensureOverlay() {
@@ -307,7 +316,7 @@ function ensureOverlay() {
 // 모달 open
 export function openCartModal() {
   ensureOverlay();
-  renderModalContent();
+  renderModalContent(); // 비동기 처리하지만 대기하지 않음
   cartContainer.style.display = "flex";
 
   // 중복 등록 방지를 위해 먼저 제거 후 등록
