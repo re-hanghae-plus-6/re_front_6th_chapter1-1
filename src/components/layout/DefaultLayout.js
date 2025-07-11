@@ -9,6 +9,8 @@ import Toast from '../feedback/toast/Toast.js';
 class DefaultLayout extends Component {
   constructor(element, props) {
     super(element, props);
+    this.cartInstance = null;
+    this.toastInstance = null;
     this.unsubscribeCart = null;
     this.unsubscribeToast = null;
   }
@@ -49,19 +51,31 @@ class DefaultLayout extends Component {
   updateCart(cartState) {
     const cartContainer = this.element.querySelector('#cart');
     if (!cartContainer) return;
-    cartContainer.innerHTML = ''; // 리렌더시 중복 방지
-    if (cartState.isOpen) {
-      new Cart(cartContainer).mount();
+
+    // 기존 Cart 인스턴스가 있으면 정리 (unmount)
+    if (this.cartInstance) {
+      this.cartInstance.unmount();
+      this.cartInstance = null;
     }
-    // isOpen이 false면 아무것도 표시 X
+    cartContainer.innerHTML = '';
+    if (cartState.isOpen) {
+      this.cartInstance = new Cart(cartContainer);
+      this.cartInstance.mount();
+    }
   }
 
   updateToast(toastState) {
     const toastContainer = this.element.querySelector('#toast');
     if (!toastContainer) return;
-    toastContainer.innerHTML = ''; // 리렌더시 중복 방지
+    // Toast 인스턴스 정리
+    if (this.toastInstance) {
+      this.toastInstance.unmount();
+      this.toastInstance = null;
+    }
+    toastContainer.innerHTML = '';
     if (toastState.isOpen) {
-      new Toast(toastContainer).mount();
+      this.toastInstance = new Toast(toastContainer);
+      this.toastInstance.mount();
     }
   }
 
@@ -69,6 +83,9 @@ class DefaultLayout extends Component {
     // 구독 해제 (필수!)
     if (this.unsubscribeCart) this.unsubscribeCart();
     if (this.unsubscribeToast) this.unsubscribeToast();
+    // 혹시 layout 해제할 때 남아있을 인스턴스 cleanup
+    if (this.cartInstance) this.cartInstance.unmount();
+    if (this.toastInstance) this.toastInstance.unmount();
   }
 }
 export default DefaultLayout;
