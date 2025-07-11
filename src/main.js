@@ -1,8 +1,13 @@
 import router from "./router.js";
+import Toast from "./components/Toast.js";
 
 // 앱 초기화 함수
 function initializeApp() {
   router.init();
+
+  // Toast 컴포넌트 초기화
+  const toast = new Toast();
+  toast.mounted();
 }
 
 const enableMocking = () =>
