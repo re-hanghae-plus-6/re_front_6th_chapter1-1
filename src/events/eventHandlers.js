@@ -87,10 +87,21 @@ export function setupCommonEventListeners(mainStatus, appRouter) {
     // 장바구니 담기
     if (addToCartBtn) {
       const productId = addToCartBtn.dataset.productId;
-      const product = mainStatus.products.find((p) => p.productId === productId);
+      let productToAdd = null;
 
-      if (product) {
-        addCart(product, quantity); // 수량을 함께 전달
+      if (window.location.pathname.startsWith('/product/')) {
+        // 상품 상세 페이지인 경우, 라우터의 현재 상태에서 상품 정보를 가져옵니다.
+        const currentState = appRouter.getCurrentState();
+        if (currentState.product && currentState.product.productId === productId) {
+          productToAdd = currentState.product;
+        }
+      } else {
+        // 상품 목록 페이지인 경우, mainStatus.products에서 상품을 찾습니다.
+        productToAdd = mainStatus.products.find((p) => p.productId === productId);
+      }
+
+      if (productToAdd) {
+        addCart(productToAdd, quantity); // 수량을 함께 전달
         showToast("장바구니에 추가되었습니다");
         updateHeaderCartCount();
       }
