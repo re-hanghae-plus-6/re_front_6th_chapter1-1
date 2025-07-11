@@ -7,6 +7,7 @@ export const initialState = {
   loading: false,
   categories: {},
   isLoadingMore: false,
+  isInitialLoad: true,
   pagination: {
     currentPage: 1,
     hasNext: true,
@@ -29,6 +30,7 @@ export const appReducer = (state = initialState, action) => {
         products: action.payload.products,
         total: action.payload.total,
         loading: false,
+        isInitialLoad: false,
         pagination: {
           ...state.pagination,
           currentPage: 1,
