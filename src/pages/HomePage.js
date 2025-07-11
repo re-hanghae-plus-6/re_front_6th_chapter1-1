@@ -15,6 +15,7 @@ export const HomePage = ({
   cart = [],
   selectedCategory1 = null,
   selectedCategory2 = null,
+  search = "",
 }) => {
   const categoryList = Object.keys(categories);
 
@@ -26,7 +27,7 @@ export const HomePage = ({
     <!-- 검색 및 필터 -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
       <!-- 검색창 -->
-      ${SearchBar()}
+      ${SearchBar({ search })}
 
       <!-- 필터 옵션 -->
       <div class="space-y-3">
