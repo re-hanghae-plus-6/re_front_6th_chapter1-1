@@ -4,8 +4,12 @@ import { afterAll, beforeAll } from "vitest";
 import { server } from "./__tests__/mockServerHandler.js";
 
 configure({
-  asyncUtilTimeout: 5000,
+  asyncUtilTimeout: 1000,
 });
+
+// beforeEach(() => {
+//   document.body.innerHTML = '<div id="root"></div>';
+// });
 
 beforeAll(() => {
   server.listen({ onUnhandledRequest: "error" });
