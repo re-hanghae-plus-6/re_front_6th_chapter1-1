@@ -35,9 +35,17 @@ export const bindAllEvents = () => {
   // 상품 리스트 검색 이벤트
   const searchInputElement = document.getElementById("search-input");
   if (searchInputElement) {
+    const params = new URLSearchParams(window.location.search);
+    const searchValue = params.get("search") || "";
+    searchInputElement.value = searchValue;
+
     searchInputElement.onkeydown = (e) => {
       if (e.key === "Enter") {
         const search = e.target.value;
+
+        params.set("search", search);
+        window.history.replaceState({}, "", `${window.location.pathname}?${params.toString()}`);
+
         fetchProducts({ search, page: 1 }); // 보통 검색 시 첫 페이지로 초기화
       }
     };
