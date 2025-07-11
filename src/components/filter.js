@@ -74,35 +74,7 @@ export default function Filter({ limit = 20, sort = "price_asc" }) {
   `;
 }
 
-export function changeLimitEvent() {
-  const select = document.getElementById("limit-select");
-  select.addEventListener("change", (e) => {
-    const limit = e.target.value;
-    window.dispatchEvent(new CustomEvent("changeLimit", { detail: { limit } }));
-    setLimitValue(limit); // 추가: select.value만 바꿔줌
-  });
-}
-
-export function changeSortEvent() {
-  const select = document.getElementById("sort-select");
-  select.addEventListener("change", (e) => {
-    const sort = e.target.value;
-    window.dispatchEvent(new CustomEvent("changeSort", { detail: { sort } }));
-    setSortValue(sort);
-  });
-}
-
-export function changeSearchEvent() {
-  const input = document.getElementById("search-input");
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      const search = e.target.value;
-      window.dispatchEvent(new CustomEvent("changeSearch", { detail: { search } }));
-      setSearchValue(search);
-    }
-  });
-}
-
+// 이벤트 등록 함수들 제거하고 값 설정 함수들만 유지
 export function setLimitValue(limit) {
   const select = document.getElementById("limit-select");
   if (select) select.value = limit;

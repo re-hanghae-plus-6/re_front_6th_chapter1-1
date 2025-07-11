@@ -1,5 +1,5 @@
 import ProductList from "../components/product-list.js";
-import Filter, { changeLimitEvent, changeSortEvent, changeSearchEvent } from "../components/filter.js";
+import Filter from "../components/filter.js";
 import { getProducts } from "../api/productApi.js";
 import { ListStore } from "../store.js";
 import { ListHeader } from "../components/header.js";
@@ -18,7 +18,7 @@ function ListPage({ isLoading = true, fetchData, limit, sort } = {}) {
   `;
 }
 
-// mount 함수 추가
+// mount 함수 수정
 ListPage.mount = function () {
   const store = new ListStore();
   const storeState = store.getState();
@@ -33,28 +33,44 @@ ListPage.mount = function () {
         limit: data.pagination.limit,
         sort: data.filters.sort,
       });
-      changeLimitEvent();
-      changeSortEvent();
-      changeSearchEvent();
+      // 이벤트 등록 함수 호출 제거
     });
   }
 
   fetchAndRender();
 
-  window.addEventListener("changeLimit", (e) => {
+  // 이벤트 리스너들
+  function handleChangeLimit(e) {
     store.setLimit(e.detail.limit);
     fetchAndRender();
-  });
+  }
 
-  window.addEventListener("changeSort", (e) => {
+  function handleChangeSort(e) {
     store.setSort(e.detail.sort);
     fetchAndRender();
-  });
+  }
 
-  window.addEventListener("changeSearch", (e) => {
+  function handleChangeSearch(e) {
     store.setSearch(e.detail.search);
     fetchAndRender();
-  });
+  }
+
+  // 이벤트 리스너 등록
+  window.addEventListener("changeLimit", handleChangeLimit);
+  window.addEventListener("changeSort", handleChangeSort);
+  window.addEventListener("changeSearch", handleChangeSearch);
+
+  // cleanup 함수 반환
+  return function cleanup() {
+    // 이벤트 리스너 제거
+    window.removeEventListener("changeLimit", handleChangeLimit);
+    window.removeEventListener("changeSort", handleChangeSort);
+    window.removeEventListener("changeSearch", handleChangeSearch);
+
+    // 진행 중인 API 요청이 있다면 취소 (AbortController 사용)
+    // store 정리 등 추가 정리 작업
+    console.log("ListPage cleanup 완료");
+  };
 };
 
 export default ListPage;

@@ -33,6 +33,12 @@ DetailPage.mount = function () {
   }
 
   fetchAndRender();
+
+  // cleanup 함수 반환
+  return function cleanup() {
+    // 상세 페이지 관련 정리 작업
+    console.log("DetailPage cleanup 완료");
+  };
 };
 
 export default DetailPage;
