@@ -7,7 +7,7 @@ export const createRouter = (store, services) => {
   const routes = {
     "/": "ProductList",
     "/products": "ProductList",
-    "/products/:id": "ProductDetail",
+    "/product/:id": "ProductDetail",
     "/cart": "Cart",
   };
 
