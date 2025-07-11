@@ -14,6 +14,10 @@ import { queryStringToObject, objectToQueryString } from "../utils/qs.js";
 import { addToCart } from "../entity/cart.js";
 import { openToast } from "../utils/toast.js";
 import { SuccessToast } from "../components/toast/successToast.js";
+import { CartModal } from "../components/cart/modal/cartModal.js";
+import { ModalContents } from "../components/cart/modalContents/modalContents.js";
+import { findParentByTag } from "../utils/dom.js";
+import { localeStringToNumber } from "../utils/number.js";
 
 const state = {
   products: [],
@@ -91,6 +95,7 @@ export const ProductListPage = () => {
       ${Footer}
 </div>
 ${SuccessToast({ message: "장바구니에 추가되었습니다" })}
+${store.getState("isCartModalOpen") ? CartModal({ children: ModalContents({ cartItems: store.getState("cartItems") }) }) : ""}
   `;
 };
 
@@ -102,6 +107,111 @@ ProductListPage.registerEvent = () => {
   const searchInput = document.getElementById("search-input");
   const productCards = document.querySelectorAll(".product-card");
   const addToCartButtons = document.querySelectorAll("#add-to-cart-btn");
+  const cartIconBtn = document.getElementById("cart-icon-btn");
+  const cartModalCloseBtn = document.getElementById("cart-modal-close-btn");
+  const cartModalOverlay = document.getElementById("cart-modal-overlay");
+  const cartQuantityDecreaseBtn = document.querySelectorAll(".quantity-decrease-btn");
+  const cartQuantityIncreaseBtn = document.querySelectorAll(".quantity-increase-btn");
+  const cartQuantityInputs = document.querySelectorAll(".quantity-input");
+  const cartModalTotalPrice = document.getElementById("cart-modal-total-price");
+  const cartItemPrices = document.querySelectorAll(".cart-item-price");
+  const cartItemLprices = document.querySelectorAll(".cart-item-lprice");
+
+  cartItemPrices.forEach((cartItemPrice) => {
+    cartItemPrice.addEventListener("change", () => {
+      // const productId = cartItemPrice.dataset.productId;
+      // const currentInput = Array.from(cartQuantityInputs).find((input) => input.dataset.productId === productId);
+      // cartModalTotalPrice.textContent = Number(cartModalTotalPrice.textContent) + Number(cartItemPrice.textContent);
+    });
+  });
+
+  cartQuantityDecreaseBtn.forEach((cartQuantityDecreaseBtn) => {
+    cartQuantityDecreaseBtn.addEventListener("click", (event) => {
+      const button = findParentByTag(event.target, "BUTTON");
+      const productId = button.dataset.productId;
+      const currentInput = Array.from(cartQuantityInputs).find((input) => input.dataset.productId === productId);
+
+      if (Number(currentInput.value) > 1) {
+        const quantity = Number(currentInput.value) - 1;
+        currentInput.value = quantity;
+
+        let cartItems = store.getState("cartItems");
+        cartItems = cartItems.map((cartItem) => {
+          if (cartItem.productId === productId) {
+            return { ...cartItem, quantity: quantity };
+          }
+          return cartItem;
+        });
+        store.setState("cartItems", cartItems, { persist: true });
+
+        const currentItemPriceTag = Array.from(cartItemPrices).find((price) => price.dataset.productId === productId);
+        const currentItemLprice = localeStringToNumber(
+          Array.from(cartItemLprices).find((price) => price.dataset.productId === productId).textContent,
+        );
+
+        const currentItemTotalPrice = currentItemLprice * quantity;
+        currentItemPriceTag.innerHTML = currentItemTotalPrice.toLocaleString("ko-KR") + "원";
+        cartModalTotalPrice.textContent =
+          (Number(localeStringToNumber(cartModalTotalPrice.textContent)) - currentItemLprice).toLocaleString("ko-KR") +
+          "원";
+      }
+    });
+  });
+
+  cartQuantityIncreaseBtn.forEach((cartQuantityIncreaseBtn) => {
+    cartQuantityIncreaseBtn.addEventListener("click", (event) => {
+      const button = findParentByTag(event.target, "BUTTON");
+      const productId = button.dataset.productId;
+      const currentInput = Array.from(cartQuantityInputs).find((input) => input.dataset.productId === productId);
+
+      if (Number(currentInput.value)) {
+        const quantity = Number(currentInput.value) + 1;
+        currentInput.value = quantity;
+
+        let cartItems = store.getState("cartItems");
+        cartItems = cartItems.map((cartItem) => {
+          if (cartItem.productId === productId) {
+            return { ...cartItem, quantity: quantity };
+          }
+          return cartItem;
+        });
+        store.setState("cartItems", cartItems, { persist: true });
+
+        const currentItemPriceTag = Array.from(cartItemPrices).find((price) => price.dataset.productId === productId);
+        const currentItemLprice = localeStringToNumber(
+          Array.from(cartItemLprices).find((price) => price.dataset.productId === productId).textContent,
+        );
+
+        const currentItemTotalPrice = currentItemLprice * quantity;
+        currentItemPriceTag.innerHTML = currentItemTotalPrice.toLocaleString("ko-KR") + "원";
+        cartModalTotalPrice.textContent =
+          (Number(localeStringToNumber(cartModalTotalPrice.textContent)) + currentItemLprice).toLocaleString("ko-KR") +
+          "원";
+      }
+    });
+  });
+
+  cartIconBtn.addEventListener("click", () => {
+    store.setState("isCartModalOpen", true);
+    render();
+  });
+
+  cartModalCloseBtn.addEventListener("click", () => {
+    store.setState("isCartModalOpen", false);
+    render();
+  });
+
+  cartModalOverlay.addEventListener("click", () => {
+    store.setState("isCartModalOpen", false);
+    render();
+  });
+
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      store.setState("isCartModalOpen", false);
+      render();
+    }
+  });
 
   productCards.forEach((productCard) => {
     productCard.addEventListener("click", () => {
