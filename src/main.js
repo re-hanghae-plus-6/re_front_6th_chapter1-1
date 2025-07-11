@@ -5,14 +5,6 @@ import { getProduct, getProducts, getCategories } from "./api/productApi.js";
 import store from "./store/store.js";
 import router from "./utils/router.js";
 import ProductDetail from "./components/detail/ProductDetail.js";
-
-const enableMocking = () =>
-  import("./mocks/browser.js").then(({ worker }) =>
-    worker.start({
-      onUnhandledRequest: "bypass",
-    }),
-  );
-
 // const , let 차이점
 // const -> 값을 변경(재할당) 할 수 없음 , let -> 값을 변경(재할당) 할 수 있음.
 const state = {
@@ -109,6 +101,11 @@ async function main() {
 }
 
 // 애플리케이션 시작
+const enableMocking = () =>
+  import("./mocks/browser.js").then(({ worker, workerOptions }) => 
+    worker.start(workerOptions)
+  );
+  
 if (import.meta.env.MODE !== "test") {
   enableMocking().then(main);
 } else {
