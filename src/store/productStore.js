@@ -32,9 +32,10 @@ export const productActions = {
   updateFilters: (newFilters) => {
     productStore.setState((state) => ({
       ...state,
+      products: [], // 필터 변경 시 기존 상품 목록 클리어
+      total: 0,
       filters: { ...state.filters, ...newFilters },
       pagination: { ...state.pagination, currentPage: 1 }, // 필터 변경 시 페이지 리셋
-      // products는 클리어하지 않음 - setLoading에서 로딩 상태로 처리
     }));
   },
 
@@ -67,6 +68,14 @@ export const productActions = {
       ...state,
       error,
       isLoading: false,
+    }));
+  },
+
+  // 페이지네이션 상태 업데이트
+  updatePagination: (paginationData) => {
+    productStore.setState((state) => ({
+      ...state,
+      pagination: { ...state.pagination, ...paginationData },
     }));
   },
 

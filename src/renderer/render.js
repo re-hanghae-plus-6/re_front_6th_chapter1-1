@@ -64,14 +64,24 @@ export function render(pageType = "home", params = {}) {
 }
 
 // 홈 페이지 콘텐츠 렌더링
-function renderHomeContent(params) {
-  console.log("홈 페이지 렌더링", params);
+function renderHomeContent() {
   // 상품 자동 로드 체크
   const state = productStore.getState();
 
-  // 상품이 없고, 에러가 없고, 로딩 중이 아니고, 이미 로드 시도 중이 아닐 때만 자동 로드
-  if (state.products.length === 0 && !state.error && !state.isLoading && !renderHomeContent.isLoading) {
+  // 자동 로드 조건: 상품이 없고, 에러가 없고, 로딩 중이 아니고, 이미 로드 시도 중이 아니고,
+  // 페이지가 1페이지이고, 한 번도 로드한 적이 없고, 무한 스크롤 중이 아닐 때만
+  const shouldAutoLoad =
+    state.products.length === 0 &&
+    !state.error &&
+    !state.isLoading &&
+    !renderHomeContent.isLoading &&
+    state.pagination.currentPage === 1 &&
+    !renderHomeContent.hasInitiallyLoaded &&
+    !window.isInfiniteScrolling;
+
+  if (shouldAutoLoad) {
     renderHomeContent.isLoading = true;
+    renderHomeContent.hasInitiallyLoaded = true;
     loadProducts().finally(() => {
       renderHomeContent.isLoading = false;
     });
@@ -124,8 +134,7 @@ function renderProductDetailContent(params) {
 }
 
 // 404 페이지 콘텐츠 렌더링
-function render404Content(params) {
-  console.log("404 페이지 렌더링", params);
+function render404Content() {
   return `
     <div class="text-center py-12">
       <div class="mb-8">
@@ -231,7 +240,11 @@ export function subscribeToStore() {
       newState.filters !== prevState.filters ||
       newState.total !== prevState.total;
 
-    if (shouldRender) {
+    // 무한 스크롤 로딩 중에만 렌더링 스킵
+    const isInfiniteScrollLoading =
+      newState.isLoading && newState.pagination.currentPage > 1 && prevState.products.length > 0;
+
+    if (shouldRender && !isInfiniteScrollLoading) {
       // 현재 페이지 다시 렌더링
       render(currentPageType, currentParams);
     }

@@ -21,7 +21,7 @@ export function Home() {
         <!-- 검색창 -->
         <div class="mb-4">
           <div class="relative">
-            <input type="text" id="search-input" placeholder="상품명을 검색해보세요..." value="" 
+            <input type="text" id="search-input" placeholder="상품명을 검색해보세요..." value="${safeFilters.search}" 
                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,10 +93,63 @@ export function loadProducts() {
     .then((response) => {
       // 상태 업데이트 - Mock API 응답 구조에 맞춤
       productActions.setProducts(response.products, response.pagination.total);
+
+      // 페이지네이션 상태 업데이트
+      productActions.updatePagination({
+        currentPage: 1,
+        hasNextPage: response.products.length < response.pagination.total,
+      });
     })
     .catch((error) => {
       console.error("상품 데이터 로딩 실패:", error);
       productActions.setError(error.message);
+    });
+}
+
+/**
+ * 무한 스크롤용 추가 상품 로드 함수
+ */
+export function loadMoreProducts() {
+  const currentState = productStore.getState();
+  const { filters, pagination, products, isLoading } = currentState;
+
+  // 이미 로딩 중이거나 더 이상 로드할 데이터가 없으면 중단
+  if (isLoading || !pagination.hasNextPage) {
+    return Promise.resolve();
+  }
+
+  // 다음 페이지 번호 계산
+  const nextPage = pagination.currentPage + 1;
+  const nextFilters = { ...filters, page: nextPage };
+
+  // 로딩 상태 설정
+  productActions.setLoading(true);
+
+  // 무한 스크롤 상태 설정
+  window.isInfiniteScrolling = true;
+
+  // API 호출 - 다음 페이지 데이터 요청
+  return getProducts(nextFilters)
+    .then((response) => {
+      // 페이지네이션 상태 먼저 업데이트
+      productActions.updatePagination({
+        currentPage: nextPage,
+        hasNextPage:
+          response.products.length > 0 && products.length + response.products.length < response.pagination.total,
+      });
+
+      // 기존 상품에 추가 (append: true)
+      productActions.setProducts(response.products, response.pagination.total, true);
+    })
+    .catch((error) => {
+      console.error("추가 상품 로딩 실패:", error);
+      productActions.setError(error.message);
+    })
+    .finally(() => {
+      // 무한 스크롤 상태 해제
+      setTimeout(() => {
+        window.isInfiniteScrolling = false;
+      }, 100);
     });
 }
 
@@ -190,8 +243,8 @@ function renderProductSection(products, total, isLoading, error) {
     <div class="mb-6">
       <div>
         <!-- 상품 개수 정보 -->
-        <div class="mb-4 text-sm text-gray-600">
-          총 <span class="font-medium text-gray-900">340개</span>의 상품</span>
+        <div class="mb-4 text-sm text-gray-600" data-testid="product-count">
+          총 <span class="font-medium text-gray-900" data-testid="product-total">${total.toLocaleString()}개</span>의 상품
         </div>
         
         <!-- 상품 그리드 -->
@@ -199,9 +252,7 @@ function renderProductSection(products, total, isLoading, error) {
           ${products.map((product) => renderProductCard(product)).join("")}
         </div>
         
-        <div class="text-center py-4 text-sm text-gray-500">
-          모든 상품을 확인했습니다
-        </div>
+        ${renderLoadMoreSection(isLoading, products.length, total)}
       </div>
     </div>
   `;
@@ -241,6 +292,42 @@ function renderProductCard(product) {
           장바구니 담기
         </button>
       </div>
+    </div>
+  `;
+}
+
+/**
+ * 무한 스크롤 로딩 섹션 렌더링
+ */
+function renderLoadMoreSection(isLoading, currentCount, total) {
+  // 로딩 중일 때
+  if (isLoading && currentCount > 0) {
+    return `
+      <div class="text-center py-4">
+        <div class="inline-flex items-center">
+          <svg class="animate-spin h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span class="text-sm text-gray-600">상품을 불러오는 중...</span>
+        </div>
+      </div>
+    `;
+  }
+
+  // 모든 상품을 로드했을 때
+  if (currentCount >= total) {
+    return `
+      <div class="text-center py-4 text-sm text-gray-500">
+        모든 상품을 확인했습니다
+      </div>
+    `;
+  }
+
+  // 더 로드할 상품이 있을 때
+  return `
+    <div class="text-center py-4 text-sm text-gray-500">
+      스크롤하여 더 많은 상품을 확인하세요
     </div>
   `;
 }

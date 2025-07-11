@@ -2,6 +2,7 @@
 import { createRouter } from "./router/Router.js";
 import { render, subscribeToStore } from "./renderer/render.js";
 import { setupGlobalEventListeners } from "./events/eventListeners.js";
+import { productActions, productStore } from "./store/productStore.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -19,9 +20,6 @@ function main() {
 
   // 상태 구독 시스템 시작 (Store 변경 시 자동 리렌더링)
   subscribeToStore();
-
-  // 전역 이벤트 위임 시스템 시작
-  setupGlobalEventListeners();
 
   // 라우터 설정
   router = createRouter({
@@ -41,6 +39,10 @@ function main() {
       // 라우트에 따라 렌더링 - render.js 사용
       switch (route.component) {
         case "Home":
+          // URL 쿼리 파라미터에서 필터 상태 복원
+          if (Object.keys(queryObj).length > 0) {
+            productActions.loadFromURL(queryObj);
+          }
           render("home", queryObj);
           break;
         case "ProductDetail":
@@ -57,8 +59,20 @@ function main() {
   // 전역 스코프에 router 노출
   window.router = router;
 
+  // 전역 스코프에 store 노출 (디버깅용)
+  window.productStore = productStore;
+
   // 라우터 초기화
   router.init();
+
+  // 무한 스크롤 플래그 초기화
+  window.isInfiniteScrolling = false;
+
+  // 라우터 초기화 완료 후 이벤트 리스너 설정
+  // DOM과 라우터가 완전히 준비된 후에 이벤트 리스너 설정
+  setTimeout(() => {
+    setupGlobalEventListeners();
+  }, 500); // 500ms로 증가
 }
 
 // 애플리케이션 시작

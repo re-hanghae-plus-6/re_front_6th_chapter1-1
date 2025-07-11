@@ -82,12 +82,15 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오 > 난이도 쉬움 >
       const helpers = new E2EHelpers(page);
       await helpers.waitForPageLoad();
 
+      // 이벤트 리스너 설정 대기 (main.js에서 500ms 지연)
+      await page.waitForTimeout(1000);
+
       // 검색어 입력
       await page.fill("#search-input", "젤리");
       await page.press("#search-input", "Enter");
 
       // 검색 결과 확인
-      await expect(page.locator("text=3개")).toBeVisible();
+      await expect(page.locator("text=3개")).toBeVisible({ timeout: 5000 });
 
       // 검색어가 검색창에 유지되는지 확인
       await expect(page.locator("#search-input")).toHaveValue("젤리");
@@ -102,7 +105,13 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오 > 난이도 쉬움 >
 
     test("상품의 정렬을 변경할 수 있다.", async ({ page }) => {
       const helpers = new E2EHelpers(page);
+
+      // 깨끗한 상태로 시작
+      await page.goto("/");
       await helpers.waitForPageLoad();
+
+      // 이벤트 리스너 설정 대기 (main.js에서 500ms 지연)
+      await page.waitForTimeout(1000);
 
       // 가격 높은순으로 정렬
       await page.selectOption("#sort-select", "price_desc");
@@ -150,6 +159,9 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오 > 난이도 쉬움 >
 
       await page.goto("/");
       await helpers.waitForPageLoad();
+
+      // 이벤트 리스너 설정 대기 (main.js에서 500ms 지연)
+      await page.waitForTimeout(1000);
 
       // 10개로 변경
       await page.selectOption("#limit-select", "10");
