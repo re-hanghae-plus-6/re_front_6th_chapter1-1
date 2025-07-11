@@ -63,6 +63,28 @@ root.addEventListener("change", async (e) => {
   }
 });
 
+// Enter 키로 검색 수행
+root.addEventListener("keydown", async (e) => {
+  if (e.target.id !== "search-input" || e.key !== "Enter") return;
+
+  const keyword = e.target.value;
+  // 로딩 표시
+  root.innerHTML = MainList({ loading: true, limit: currentLimit, sort: currentSort, search: keyword });
+  // 검색 API 호출
+  const data = await getProducts({ page: 1, limit: currentLimit, sort: currentSort, search: keyword });
+  currentPage = data.pagination.page;
+  hasNext = data.pagination.hasNext;
+  allProducts = data.products;
+  // 결과 렌더
+  root.innerHTML = MainList({
+    loading: false,
+    products: allProducts,
+    limit: currentLimit,
+    sort: currentSort,
+    search: keyword,
+  });
+});
+
 // 무한 스크롤 이벤트
 window.addEventListener("scroll", async () => {
   if (!hasNext) return;
