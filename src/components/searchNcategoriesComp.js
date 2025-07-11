@@ -8,13 +8,15 @@ const SORT_FILTER_OPTIONS = [
 ];
 
 export const searchNcategoriesComp = (props) => {
+  console.log("searchNcategoriesComp", props);
   const isLoading = props.loading || false;
   const params = props.params || {};
   const categories = props.categories || {};
   const urlParams = props.urlParams || {};
   const depth2 = categories[urlParams.category1] || [];
   // 최초 진입 시 표시
-  const category1List = Object.keys(categories).map((c) => c) || [];
+  let array = Object.keys(categories).map((c) => c);
+  const category1List = array.length ? array : [];
   // 최초 진입 시 사용
   const categoryListHtml = !isLoading
     ? category1List // categories.list에서 가져온 category1List 사용
@@ -27,16 +29,14 @@ export const searchNcategoriesComp = (props) => {
         )
         .join("")
     : /* html*/ `<div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>`;
-
-  //
   let breadcrumbHtml = /*html*/ ``;
-  if (urlParams.category1) {
+  if (params.category1) {
     breadcrumbHtml += /* html */ `<span class="text-xs text-gray-500">&gt;</span>
-          <button data-breadcrumb="category1" data-category1="${urlParams.category1}" class="text-xs hover:text-blue-800 hover:underline">${urlParams.category1}</button>`;
+          <button data-breadcrumb="category1" data-category1="${decodeURI(params.category1)}" class="text-xs hover:text-blue-800 hover:underline">${params.category1}</button>`;
   }
 
-  if (urlParams.category2) {
-    breadcrumbHtml += /* html */ `<span class="text-xs text-gray-500">&gt;</span><span class="text-xs text-gray-600 cursor-default">${urlParams.category2}</span>`;
+  if (params.category2) {
+    breadcrumbHtml += /* html */ `<span class="text-xs text-gray-500">&gt;</span><span class="text-xs text-gray-600 cursor-default">${params.category2}</span>`;
   }
 
   // 브레드크럼 진입 시 2depth 카테고리 HTML 생성
@@ -93,7 +93,7 @@ export const searchNcategoriesComp = (props) => {
           <label class="text-sm text-gray-600">카테고리:</label>
           <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
           ${
-            Object.keys(urlParams).length > 0
+            urlParams["category1"]
               ? /*html*/ `
             ${breadcrumbHtml}
             `
@@ -101,7 +101,7 @@ export const searchNcategoriesComp = (props) => {
           }
         </div>
         ${
-          Object.keys(urlParams).length > 0
+          urlParams["category1"]
             ? /* html */ `<div class="space-y-2">
           <div class="flex flex-wrap gap-2">
             ${category2Html}
