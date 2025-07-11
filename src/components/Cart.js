@@ -108,8 +108,8 @@ function CartItem({ productId, title, lprice, image, quantity }) {
       <!-- 상품 이미지 -->
       <div class="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden mr-3 flex-shrink-0">
         <img
-          src=${image}
-          alt=${title}
+          src="${image}"
+          alt="${title}"
           class="w-full h-full object-cover cursor-pointer cart-item-image"
           data-product-id=${productId}
         />

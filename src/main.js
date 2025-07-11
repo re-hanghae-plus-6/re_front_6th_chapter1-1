@@ -1,8 +1,10 @@
 import { MainList } from "./components/pages/MainList.js";
-import { getProducts, getCategories } from "./api/productApi.js";
+import { getProducts, getProduct, getCategories } from "./api/productApi.js";
 import { cartManager } from "./utils/cart.js";
 import { Cart } from "./components/Cart.js";
 import { Toast } from "./components/common/Toast.js";
+import { ItemDetail } from "./components/pages/ItemDetail.js";
+import { NotFound } from "./components/pages/NotFound.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -22,6 +24,9 @@ let categories = {};
 let currentCategory1 = "";
 let currentCategory2 = "";
 let currentSearch = "";
+
+// 다음 페이지 로딩 중복 방지 플래그
+let loadingNextPage = false;
 
 async function main() {
   // 1) 로딩 표시 (카테고리, 필터 상태 포함)
@@ -70,23 +75,56 @@ async function main() {
   }
 }
 
+// 상품 상세 렌더링
+async function renderDetail(productId) {
+  // 1) 로딩 표시
+  root.innerHTML = ItemDetail({ loading: true });
+  try {
+    // 2) 상품 상세 데이터 로드 및 렌더 (관련 상품 제외)
+    const product = await getProduct(productId);
+    root.innerHTML = ItemDetail({ loading: false, product, related: [] });
+
+    // 3) 관련 상품 로드 및 렌더 (현재 상품 제외)
+    const relatedData = await getProducts({
+      category1: product.category1,
+      category2: product.category2,
+      limit: currentLimit,
+    });
+    const related = relatedData.products.filter((p) => p.productId !== productId);
+    root.innerHTML = ItemDetail({ loading: false, product, related });
+  } catch (err) {
+    console.error("상품 상세 로드 실패:", err);
+    root.innerHTML = `<p class="text-center text-red-500">상품 상세를 불러오는 데 실패했습니다.</p>`;
+  }
+}
+
+// 라우트 핸들러
+function handleRoute() {
+  const path = window.location.pathname;
+  if (path === "/") {
+    // 메인 페이지로 돌아올 때 전역 상태 초기화
+    currentPage = 1;
+    currentLimit = 20;
+    currentSort = "price_asc";
+    hasNext = true;
+    allProducts = [];
+    totalCount = 0;
+    currentCategory1 = "";
+    currentCategory2 = "";
+    currentSearch = "";
+    return main();
+  }
+  const m = path.match(/^\/product\/(.+)$/);
+  if (m) {
+    return renderDetail(m[1]);
+  }
+  root.innerHTML = NotFound;
+}
+
 // 애플리케이션 시작
-// 항상 MSW mocking 활성화 후 main 호출
-enableMocking().then(() => main());
-// 라우트 변경 시(main 호출 및 상태 초기화)
-window.addEventListener("popstate", () => {
-  // 페이지네이션 및 필터링 상태 초기화
-  currentPage = 1;
-  currentLimit = 20;
-  currentSort = "price_asc";
-  hasNext = true;
-  allProducts = [];
-  totalCount = 0;
-  currentCategory1 = "";
-  currentCategory2 = "";
-  currentSearch = "";
-  main();
-});
+// 초기 실행 및 popstate 라우팅
+enableMocking().then(handleRoute);
+window.addEventListener("popstate", handleRoute);
 
 // limit, sort change 이벤트 위임 (카테고리, 검색 유지)
 const root = document.getElementById("root");
@@ -169,9 +207,19 @@ root.addEventListener("keydown", async (e) => {
 
 // 무한 스크롤 이벤트
 window.addEventListener("scroll", async () => {
-  if (!hasNext) return;
-  // 페이지 하단 여부 무시하고 바로 다음 페이지 로드
-  // 전체 로딩 스켈레톤 렌더
+  // 상세 페이지에서는 무시 (MainList 페이지에서만 동작)
+  if (window.location.pathname !== "/") return;
+  // 더 불러올 페이지가 없거나 이미 로딩 중이면 무시
+  if (!hasNext || loadingNextPage) return;
+  // 테스트 환경(jsdom)에서는 즉시 로드, 웹 환경에서는 화면 하단 근처(100px)이내일 때만 로드
+  const isTestEnv = window.navigator.userAgent.includes("jsdom");
+  if (!isTestEnv) {
+    const scrollPos = window.innerHeight + window.scrollY;
+    const triggerPoint = document.documentElement.scrollHeight - 100;
+    if (scrollPos < triggerPoint) return;
+  }
+  loadingNextPage = true;
+  // 로딩 스켈레톤 표시
   root.innerHTML = MainList({
     loading: true,
     categories,
@@ -181,33 +229,95 @@ window.addEventListener("scroll", async () => {
     sort: currentSort,
     search: currentSearch,
   });
-  // 다음 페이지 데이터 fetch (검색/카테고리 포함)
-  const nextPage = currentPage + 1;
-  const params = { page: nextPage, limit: currentLimit, sort: currentSort };
-  if (currentSearch) params.search = currentSearch;
-  if (currentCategory1) params.category1 = currentCategory1;
-  if (currentCategory2) params.category2 = currentCategory2;
-  const data = await getProducts(params);
-  currentPage = data.pagination.page;
-  hasNext = data.pagination.hasNext;
-  // 기존 배열에 추가 후 전체 UI 갱신
-  allProducts = allProducts.concat(data.products);
-  totalCount = data.pagination.total;
-  root.innerHTML = MainList({
-    loading: false,
-    categories,
-    category1: currentCategory1,
-    category2: currentCategory2,
-    products: allProducts,
-    total: totalCount,
-    limit: currentLimit,
-    sort: currentSort,
-    search: currentSearch,
-  });
+  try {
+    const nextPage = currentPage + 1;
+    const params = { page: nextPage, limit: currentLimit, sort: currentSort };
+    if (currentSearch) params.search = currentSearch;
+    if (currentCategory1) params.category1 = currentCategory1;
+    if (currentCategory2) params.category2 = currentCategory2;
+    const data = await getProducts(params);
+    currentPage = data.pagination.page;
+    hasNext = data.pagination.hasNext;
+    allProducts = allProducts.concat(data.products);
+    totalCount = data.pagination.total;
+    // 갱신된 상품 목록 렌더
+    root.innerHTML = MainList({
+      loading: false,
+      categories,
+      category1: currentCategory1,
+      category2: currentCategory2,
+      products: allProducts,
+      total: totalCount,
+      limit: currentLimit,
+      sort: currentSort,
+      search: currentSearch,
+    });
+  } catch (err) {
+    console.error("무한 스크롤 로드 오류:", err);
+  } finally {
+    loadingNextPage = false;
+  }
 });
 
-// 카트 관련 이벤트 위임
+// 전역 클릭 이벤트 위임 (라우팅, 카트, 수량, 상세 기능)
 document.addEventListener("click", (e) => {
+  // SPA 링크(a[data-link]) 클릭
+  const link = e.target.closest("a[data-link]");
+  if (link) {
+    e.preventDefault();
+    history.pushState({}, "", link.getAttribute("href"));
+    return handleRoute();
+  }
+  // 상세 페이지 수량 증가
+  if (e.target.matches("#quantity-increase")) {
+    const input = document.querySelector("#quantity-input");
+    input.value = String(Math.min(parseInt(input.value) + 1, parseInt(input.max)));
+    return;
+  }
+  // 상세 페이지 수량 감소
+  if (e.target.matches("#quantity-decrease")) {
+    const input = document.querySelector("#quantity-input");
+    input.value = String(Math.max(parseInt(input.value) - 1, parseInt(input.min)));
+    return;
+  }
+  // 상세 페이지 장바구니 담기 버튼 클릭
+  if (e.target.matches("#add-to-cart-btn")) {
+    const pid = e.target.dataset.productId;
+    const prod = allProducts.find((p) => p.productId === pid);
+    if (prod) {
+      cartManager.addToCart(prod);
+      showToast("success");
+    }
+    return;
+  }
+  // 목록 페이지 장바구니 버튼 클릭
+  if (e.target.classList.contains("add-to-cart-btn")) {
+    const pid = e.target.dataset.productId;
+    const prod = allProducts.find((p) => p.productId === pid);
+    if (prod) {
+      cartManager.addToCart(prod);
+      window.openCartModal(cartManager.getCart());
+      showToast("success");
+    }
+    return;
+  }
+  // 상세 페이지 관련 상품 카드 클릭
+  const relatedCard = e.target.closest(".related-product-card");
+  if (relatedCard && relatedCard.dataset.productId) {
+    history.pushState({}, "", `/product/${relatedCard.dataset.productId}`);
+    return handleRoute();
+  }
+  // 상세 페이지 -> 목록으로 돌아가기
+  if (e.target.matches(".go-to-product-list")) {
+    history.pushState({}, "", "/");
+    return handleRoute();
+  }
+  // 목록 페이지 상품 카드 클릭
+  const card = e.target.closest(".product-card");
+  if (card && card.dataset.productId) {
+    history.pushState({}, "", `/product/${card.dataset.productId}`);
+    return handleRoute();
+  }
   // 카테고리 초기화: 전체
   if (e.target.matches('[data-breadcrumb="reset"]')) {
     currentCategory1 = "";
@@ -225,17 +335,6 @@ document.addEventListener("click", (e) => {
   if (e.target.matches("[data-category2]")) {
     currentCategory2 = e.target.dataset.category2;
     return main();
-  }
-  // 장바구니 담기 버튼 클릭
-  if (e.target.classList.contains("add-to-cart-btn")) {
-    const productId = e.target.dataset.productId;
-    const product = allProducts.find((p) => p.productId === productId);
-    if (product) {
-      cartManager.addToCart(product);
-      window.openCartModal(cartManager.getCart());
-      // 토스트 메시지 표시
-      showToast("success");
-    }
   }
 });
 
@@ -390,13 +489,3 @@ function showToast(type = "success") {
     }
   }, 3000);
 }
-
-// window.addEventListener("popstate", () => {
-//   // 라우트 변경 시 페이지네이션, 정렬 등 상태 초기화
-//   currentPage = 1;
-//   currentLimit = 20;
-//   currentSort = "price_asc";
-//   hasNext = true;
-//   allProducts = [];
-//   main();
-// });

@@ -6,8 +6,8 @@ export const ItemCard = ({ productId, image, title, lprice }) => `
     <!-- 상품 이미지 -->
     <div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image">
       <img
-        src=${image}
-        alt=${title}
+        src="${image}"
+        alt="${title}"
         class="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
         loading="lazy"
       />
