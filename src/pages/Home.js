@@ -112,6 +112,8 @@ export default function Home() {
   `;
 
   async function mount() {
+    // window.scrollTo(0, 0);
+
     renderFilter();
     renderProducts();
 

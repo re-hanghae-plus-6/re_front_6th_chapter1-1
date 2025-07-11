@@ -3,8 +3,7 @@ export default function ProductCard(product) {
   <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
   data-product-id="${product.productId}">
 <!-- 상품 이미지 -->
-<div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image"
-     data-product-id="${product.productId}">
+<div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image">
  <img src="${product.image}"
       alt="${product.title}"
       class="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
@@ -12,7 +11,7 @@ export default function ProductCard(product) {
 </div>
 <!-- 상품 정보 -->
 <div class="p-3">
- <div class="cursor-pointer product-info mb-3" data-product-id="${product.productId}">
+ <div class="cursor-pointer product-info mb-3">
    <h3 class="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
      ${product.title}
    </h3>
