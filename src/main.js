@@ -8,18 +8,30 @@ const enableMocking = () =>
     }),
   );
 
+// infinite scroll 상태 관리
+let currentPage = 1;
+let currentLimit = 20;
+let currentSort = "price_asc";
+let hasNext = true;
+let allProducts = [];
+
 async function main() {
   // 1) 로딩 표시
-  document.getElementById("root").innerHTML = MainList({ loading: true, limit: 20 });
+  document.getElementById("root").innerHTML = MainList({ loading: true, limit: currentLimit, sort: currentSort });
 
   try {
     // 2) MSW mock 데이터를 받아옴
-    const data = await getProducts({ page: 1, limit: 20 });
+    const data = await getProducts({ page: 1, limit: currentLimit, sort: currentSort });
+    currentPage = data.pagination.page;
+    hasNext = data.pagination.hasNext;
+    allProducts = data.products;
     // 3) 실제 UI 렌더
+
     document.getElementById("root").innerHTML = MainList({
       loading: false,
-      products: data.products,
-      limit: 20,
+      products: allProducts,
+      limit: currentLimit,
+      sort: currentSort,
     });
   } catch (err) {
     console.error("상품을 가져오는 중 에러:", err);
@@ -35,25 +47,37 @@ if (import.meta.env.MODE !== "test") {
   main();
 }
 
-// limit-select change 이벤트를 root에 위임하도록 처리
+// limit, sort change 이벤트 위임
 const root = document.getElementById("root");
-
 root.addEventListener("change", async (e) => {
-  // limit 또는 sort 변경 시 전체 UI 재렌더링
   if (e.target.id === "limit-select" || e.target.id === "sort-select") {
-    // 새로운 limit, sort 값 가져오기
-    const newLimit = Number(document.getElementById("limit-select").value);
-    const newSort = document.getElementById("sort-select").value;
-    // 로딩 화면 표시
-    root.innerHTML = MainList({ loading: true, limit: newLimit, sort: newSort });
-    // 데이터 fetch
-    const newData = await getProducts({ page: 1, limit: newLimit, sort: newSort });
-    // 전체 UI 렌더
-    root.innerHTML = MainList({
-      loading: false,
-      products: newData.products,
-      limit: newLimit,
-      sort: newSort,
-    });
+    currentLimit = Number(document.getElementById("limit-select").value);
+    currentSort = document.getElementById("sort-select").value;
+    // 로딩 화면
+    root.innerHTML = MainList({ loading: true, limit: currentLimit, sort: currentSort });
+    const data = await getProducts({ page: 1, limit: currentLimit, sort: currentSort });
+    currentPage = data.pagination.page;
+    hasNext = data.pagination.hasNext;
+    allProducts = data.products;
+    root.innerHTML = MainList({ loading: false, products: allProducts, limit: currentLimit, sort: currentSort });
+  }
+});
+
+// 무한 스크롤 이벤트
+window.addEventListener("scroll", async () => {
+  if (!hasNext) return;
+  const scrollPos = window.innerHeight + window.scrollY;
+  const threshold = document.documentElement.scrollHeight - 100;
+  if (scrollPos >= threshold) {
+    // 전체 로딩 스켈레톤 렌더
+    root.innerHTML = MainList({ loading: true, limit: currentLimit, sort: currentSort });
+    // 다음 페이지 데이터 fetch
+    const nextPage = currentPage + 1;
+    const data = await getProducts({ page: nextPage, limit: currentLimit, sort: currentSort });
+    currentPage = data.pagination.page;
+    hasNext = data.pagination.hasNext;
+    // 기존 배열에 추가 후 전체 UI 갱신
+    allProducts = allProducts.concat(data.products);
+    root.innerHTML = MainList({ loading: false, products: allProducts, limit: currentLimit, sort: currentSort });
   }
 });
