@@ -1,6 +1,7 @@
 import { findByText, getByText, queryByText, screen, waitFor } from '@testing-library/dom';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, beforeAll, beforeEach, describe, expect, test } from 'vitest';
+import cartLocalStorage from '../store/cartLocalStorage.js';
 
 const goTo = (path) => {
   window.history.pushState({}, '', path);
@@ -30,6 +31,8 @@ afterEach(() => {
   // 각 테스트 후 상태 초기화
   document.getElementById('root').innerHTML = '';
   localStorage.clear();
+
+  cartLocalStorage.clear();
 });
 
 describe('1. 장바구니 모달', () => {
