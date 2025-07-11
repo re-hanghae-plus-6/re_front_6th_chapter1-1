@@ -29,14 +29,15 @@ export let render = async function (state) {
   const detailPage = path.match(/^\/product=(.+)$/);
   let html;
 
-  if (path === "/" || 
-      path === "" ||
-      path.includes("limit") ||
-      path.includes("sort") || 
-      path.includes("searchValue") || 
-      path.includes("front_6th_chapter1") || 
-      path.includes("category")
-    ) {
+  if (
+    path === "/" ||
+    path === "" ||
+    path.includes("limit") ||
+    path.includes("sort") ||
+    path.includes("searchValue") ||
+    path.includes("front_6th_chapter1") ||
+    path.includes("category")
+  ) {
     html = MainLayout({
       content: `
         ${FilterSection({
