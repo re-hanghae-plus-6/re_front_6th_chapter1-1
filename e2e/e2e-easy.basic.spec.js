@@ -255,6 +255,8 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오 > 난이도 쉬움 >
       const helpers = new E2EHelpers(page);
       await helpers.waitForPageLoad();
 
+      await expect(page.locator(".product-card")).toHaveCount(20, { timeout: 5000 });
+
       // 초기 상품 카드 수 확인
       const initialCards = await page.locator(".product-card").count();
       expect(initialCards).toBe(20);
