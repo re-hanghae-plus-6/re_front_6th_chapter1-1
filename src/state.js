@@ -1,3 +1,5 @@
+import { getCartFromStorage } from "./utils/storage.js";
+
 export const initialState = {
   products: [],
   loading: false,
@@ -24,7 +26,7 @@ export const initialState = {
   },
 
   cart: {
-    items: [],
+    items: getCartFromStorage(),
     isModalOpen: false,
   },
 

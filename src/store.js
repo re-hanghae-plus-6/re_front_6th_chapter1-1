@@ -1,6 +1,7 @@
 import { initialState } from "./state.js";
 import { reducer } from "./reducers/index.js";
 import { CartComputed } from "./computed/cartComputed.js";
+import { saveCartToStorage } from "./utils/storage.js";
 
 class Store {
   #state = initialState;
@@ -52,3 +53,7 @@ class Store {
 }
 
 export const store = new Store();
+
+store.subscribe((state) => {
+  saveCartToStorage(state.cart.items);
+});
