@@ -1,0 +1,5 @@
+const ADD_TO_CART_SNACKBAR = "addToCart";
+const REMOVE_FROM_CART_SNACKBAR = "removeFromCart";
+const ERROR_SNACKBAR = "error";
+
+export { ADD_TO_CART_SNACKBAR, REMOVE_FROM_CART_SNACKBAR, ERROR_SNACKBAR };
