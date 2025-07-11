@@ -12,7 +12,8 @@ export function bindCartBadge(buttonSelector: string = "#cart-icon-btn") {
     if (!btn) return;
 
     let badge = btn.querySelector<HTMLSpanElement>("[data-cart-badge]");
-    const count = items.reduce((sum, i) => sum + i.qty, 0);
+    // 고유 상품 개수로 배지를 표시합니다. 동일 상품을 여러 번 담아도 1로 집계합니다.
+    const count = items.length;
 
     if (count === 0) {
       badge?.remove();
