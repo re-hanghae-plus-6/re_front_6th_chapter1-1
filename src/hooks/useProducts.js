@@ -66,25 +66,10 @@ export function useProducts() {
     }));
   };
 
-  const loadCategories = async () => {
-    productsState.setState((prevState) => ({
-      ...prevState,
-      isLoading: true,
-    }));
-
-    const response = await getCategories();
-
-    productsState.setState((prevState) => ({
-      ...prevState,
-      categories: response || {},
-    }));
-  };
-
   const loadInitialData = async (params = {}) => {
-    productsState.setState((prevState) => ({
-      ...prevState,
+    productsState.setState({
       isLoading: true,
-    }));
+    });
 
     const [products, categories] = await Promise.all([getProducts(params), getCategories()]);
 
@@ -105,12 +90,10 @@ export function useProducts() {
   };
 
   return {
-    ...productsState.getState(), // 현재 상태를 직접 반환
+    getState: productsState.getState,
     subscribe: productsState.subscribe,
-    getState: productsState.getState, // 현재 상태 가져오기 메서드
     loadInitialData,
     loadProducts,
-    loadCategories,
     loadMoreProducts,
   };
 }

@@ -42,16 +42,15 @@ class Router {
     }
   }
 
-  parseCurrentUrl() {
-    const url = new URL(window.location);
-    const path = url.pathname;
+  getQueryParams() {
+    const searchParams = new URLSearchParams(window.location.search);
     const query = {};
 
-    for (const [key, value] of url.searchParams) {
+    for (const [key, value] of searchParams) {
       query[key] = value;
     }
 
-    return { path, query };
+    return { query };
   }
 
   findRoute(path) {
@@ -97,7 +96,7 @@ class Router {
 
     if (result) {
       const component = this.routes[result.route];
-      const { query } = this.parseCurrentUrl();
+      const { query } = this.getQueryParams();
       const params = { ...result.params, ...query };
       await component(this.container, params);
     } else {

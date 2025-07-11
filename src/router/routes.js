@@ -1,27 +1,24 @@
-import { HomeController } from "../controllers/HomeController.js";
-import { ProductDetailController } from "../controllers/ProductDetailController.js";
+import Home from "../pages/Home.js";
+import ProductDetail from "../pages/ProductDetail.js";
 import { NotFound } from "../pages/NotFound.js";
 
 const routes = [
   {
     path: "/",
-    handler: async (container, params) => {
-      const homeController = new HomeController(container);
-      await homeController.render(params);
+    handler: (container, params) => {
+      new Home(container, params);
     },
   },
   {
     path: "/product/:id",
-    handler: async (container, params) => {
-      const productDetailController = new ProductDetailController(container);
-      await productDetailController.render(params);
+    handler: (container, params) => {
+      new ProductDetail(container, params);
     },
   },
   {
     path: "*",
     handler: (container) => {
-      const notFoundHTML = NotFound();
-      container.innerHTML = notFoundHTML;
+      container.innerHTML = NotFound(); // NotFound는 함수형 컴포넌트라고 가정
     },
   },
 ];
