@@ -387,7 +387,9 @@ export class CartModal {
     productLinks.forEach((link) => {
       link.addEventListener('click', (e) => {
         const productId = e.currentTarget.dataset.productId;
-        window.location.hash = `#/product/${productId}`;
+        if (window.router) {
+          window.router.navigate(`/product/${productId}`);
+        }
         this.store.toggleCart(); // 모달 닫기
       });
     });
