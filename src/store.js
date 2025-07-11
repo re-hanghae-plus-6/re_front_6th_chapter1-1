@@ -1,12 +1,20 @@
 export const store = {
   state: {
     mounted: false,
+    cartItems: [],
   },
   getState: (key) => {
+    if (localStorage.getItem(key)) {
+      store.state[key] = JSON.parse(localStorage.getItem(key));
+      return store.state[key];
+    }
     return store.state[key];
   },
-  setState: (key, value) => {
+  setState: (key, value, { persist = false } = {}) => {
     store.state[key] = value;
+    if (persist) {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
     // store.notify();
   },
   useState: (key) => {
