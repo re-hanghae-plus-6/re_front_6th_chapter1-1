@@ -1,4 +1,11 @@
-import { cartStore, categoriesStore, productDetailStore, productsStore } from "./store.js";
+import {
+  cartStore,
+  categoriesStore,
+  DEFAULT_LIMIT,
+  productDetailStore,
+  productsStore,
+  relatedProductsStore,
+} from "./store.js";
 import { fetchProducts } from "./entities/products.js";
 import { fetchCategories } from "./entities/categories.js";
 
@@ -13,17 +20,24 @@ const enableMocking = () =>
 
 window.addEventListener("popstate", renderHtml);
 async function main() {
-  const {
-    pagination: { limit },
-  } = productsStore.state;
+  const params = new URLSearchParams(window.location.search);
 
-  fetchProducts({ limit });
+  const sort = params.get("sort") || "price_asc";
+  const search = params.get("search") || "";
+  const limit = params.get("limit") || DEFAULT_LIMIT;
+  const fetchParams = {
+    sort,
+    search,
+    limit,
+  };
+  fetchProducts(fetchParams);
   fetchCategories();
 
   productsStore.subscribe(renderHtml);
   categoriesStore.subscribe(renderHtml);
   productDetailStore.subscribe(renderHtml);
   cartStore.subscribe(renderHtml);
+  relatedProductsStore.subscribe(renderHtml);
   renderHtml();
 }
 

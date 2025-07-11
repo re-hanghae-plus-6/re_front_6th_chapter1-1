@@ -63,3 +63,21 @@ export const productDetailStore = createStore({
 export const cartStore = createStore({
   cartsProductCount: 0,
 });
+
+export const relatedProductsStore = createStore({
+  filters: {
+    category1: "",
+    category2: "",
+    search: "",
+    sort: "price_asc",
+  },
+  pagination: {
+    hasNext: false,
+    hasPrev: false,
+    limit: DEFAULT_LIMIT,
+    page: 1,
+    total: 0,
+    totalPages: 0,
+  },
+  products: [],
+});

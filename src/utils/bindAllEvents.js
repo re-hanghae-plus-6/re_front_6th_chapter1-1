@@ -6,7 +6,7 @@ import LOCAL_STORAGE_KEY from "../constant/localstorageKey";
 import { showToast } from "../components/common/Toast";
 
 export const bindAllEvents = () => {
-  console.log(LOCAL_STORAGE_KEY.CARTS);
+  const params = new URLSearchParams(window.location.search);
 
   // 상품 리스트 개수 Limit 선택 이벤트
   const limitSelectElement = document.getElementById("limit-select");
@@ -14,6 +14,9 @@ export const bindAllEvents = () => {
     limitSelectElement.value = productsStore.state.pagination.limit + "";
     limitSelectElement.onchange = (e) => {
       const limit = Number(e.target.value);
+      params.set("limit", limit);
+      window.history.replaceState({}, "", `${window.location.pathname}?${params.toString()}`);
+
       fetchProducts({
         ...productsStore.state.pagination,
         limit,
@@ -28,6 +31,8 @@ export const bindAllEvents = () => {
     sortSelectElement.value = productsStore.state.filters.sort + "";
     sortSelectElement.onchange = (e) => {
       const sort = e.target.value;
+      params.set("sort", sort);
+      window.history.replaceState({}, "", `${window.location.pathname}?${params.toString()}`);
       fetchProducts({ sort });
     };
   }
@@ -35,7 +40,6 @@ export const bindAllEvents = () => {
   // 상품 리스트 검색 이벤트
   const searchInputElement = document.getElementById("search-input");
   if (searchInputElement) {
-    const params = new URLSearchParams(window.location.search);
     const searchValue = params.get("search") || "";
     searchInputElement.value = searchValue;
 
@@ -133,7 +137,6 @@ export const bindAllEvents = () => {
   }
 
   // 상품상세페이지 장바구니 담기 이벤트;
-
   const addToCartBtn = document.getElementById("add-to-cart-btn");
   if (addToCartBtn) {
     const { productId, image, lprice, title } = productDetailStore.state.productDetail;
@@ -167,6 +170,17 @@ export const bindAllEvents = () => {
       // 수량 초기화
       quantity = 1;
       quantityInput.value = quantity;
+    });
+  }
+
+  // 관련상품 상세페이지로 이동 이벤트
+  const relatedProductItemElements = document.querySelectorAll(".related-product-card");
+  if (relatedProductItemElements) {
+    relatedProductItemElements.forEach((element) => {
+      element.addEventListener("click", () => {
+        const productId = element.dataset.productId;
+        navigate(`/product/${productId}`);
+      });
     });
   }
 };
