@@ -3,6 +3,10 @@ import { ProductDetail } from "./pages/ProductDetail.js";
 import { NotFound } from "./pages/NotFound.js";
 import { addScrollListener, removeScrollListener } from "./main.js";
 
+const routes = [
+  { path: "/", component: home, isDetail: false },
+  { path: "/product/:id", component: ProductDetail, isDetail: true },
+];
 class Router {
   constructor(initialMainStatus) {
     this.routes = routes;
