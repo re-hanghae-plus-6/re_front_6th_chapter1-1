@@ -142,40 +142,45 @@ describe("4. 상품 정렬 기능", () => {
 
   test("정렬 변경 시 목록에 반영된다", async () => {
     await screen.findByText(/총 의 상품/i);
-    console.log("여기1");
     const expectProduct = (name, index = 0) => {
       const product = [...document.querySelectorAll(".product-card")][index];
       expect(getByRole(product, "heading", { level: 3, name })).toBeInTheDocument();
     };
 
-    console.log("여기2");
     await userEvent.selectOptions(document.querySelector("#sort-select"), "price_desc");
     await waitFor(() => {
       expectProduct("ASUS ROG Flow Z13 GZ302EA-RU110W 64GB, 1TB");
     });
 
-    console.log("여기3");
-
     await userEvent.selectOptions(document.querySelector("#sort-select"), "name_asc");
+
+    // ! DOM이 안정화될 때까지 대기
+    await waitFor(() => {
+      const productCards = document.querySelectorAll(".product-card");
+      return productCards.length > 10;
+    });
 
     await waitFor(() => {
       expectProduct("[1+1] 춘몽 섬유탈취제 섬유향수 룸스프레이 도플 패브릭 퍼퓸 217ml 블랑쉬");
     });
 
-    console.log("여기4");
     await userEvent.selectOptions(document.querySelector("#sort-select"), "name_desc");
     await waitFor(() => {
       expectProduct(/다우니 울트라 섬유유연제 에이프릴 프레쉬/i, 1);
     });
 
-    await userEvent.selectOptions(document.querySelector("#sort-select"), "price_asc");
+    // ! DOM이 안정화될 때까지 대기
+    await waitFor(() => {
+      const productCards = document.querySelectorAll(".product-card");
+      return productCards.length > 10;
+    });
 
-    console.log("여기5");
+    await userEvent.selectOptions(document.querySelector("#sort-select"), "price_asc");
 
     // ! DOM이 안정화될 때까지 대기
     await waitFor(() => {
       const productCards = document.querySelectorAll(".product-card");
-      return productCards.length > 0;
+      return productCards.length > 10;
     });
 
     await waitFor(() => {

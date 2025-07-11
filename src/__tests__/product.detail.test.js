@@ -75,7 +75,6 @@ describe("2. 상품 상세 - 장바구니 담기", () => {
   test("상품 상세 페이지에서 해당 상품을 장바구니에 추가할 수 있다", async () => {
     await 상품_상세페이지_접속();
 
-    // 장바구니 담기 버튼 찾기
     const addToCartButton = document.querySelector("#add-to-cart-btn");
 
     // 장바구니 담기 버튼 클릭
@@ -108,9 +107,8 @@ describe("2. 상품 상세 - 장바구니 담기", () => {
 describe("3. 관련 상품 기능", () => {
   test("상품 상세 페이지에서 현재 상품을 제외한 관련 상품들이 표시되고, 관련 상품 클릭 시 해당 상품의 상세 페이지로 이동한다", async () => {
     await 상품_상세페이지_접속();
-    screen.logTestingPlaygroundURL();
-    // 관련 상품 섹션이 있는지 확인
-    // expect(screen.queryByText("관련 상품")).not.toBeInTheDocument();
+
+    // 관련 상품 섹션이 있는지 확인;
     expect(await screen.findByText("관련 상품")).toBeInTheDocument();
 
     // 관련 상품 카드들이 있는지 확인

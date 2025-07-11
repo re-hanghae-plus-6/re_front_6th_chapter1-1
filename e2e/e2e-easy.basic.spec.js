@@ -20,6 +20,17 @@ class E2EHelpers {
     });
   }
 
+  // ! 상세 페이지 로딩 대기
+  async waitForProductDetailLoad() {
+    await this.page.waitForSelector("#detail-header-container", {
+      timeout: 10000,
+    });
+    await this.page.waitForFunction(() => {
+      const text = document.body.textContent;
+      return text.includes("상품 상세");
+    });
+  }
+
   // 상품을 장바구니에 추가
   async addProductToCart(productName) {
     await this.page.click(
@@ -222,7 +233,8 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오 > 난이도 쉬움 >
         .locator('xpath=ancestor::*[contains(@class, "product-card")]');
       await productCard.locator("img").click();
 
-      // 상세 페이지 로딩 확인
+      // ! 상세 페이지 로딩 확인
+      await helpers.waitForProductDetailLoad();
       await expect(page.locator("text=상품 상세")).toBeVisible();
 
       // h1 태그에 상품명 확인
