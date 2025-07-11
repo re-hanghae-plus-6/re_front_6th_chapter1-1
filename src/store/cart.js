@@ -79,7 +79,7 @@ export const cartStore = observable({
     if (cartStore.hasItem(product.productId)) {
       cartStore.addItemQuantity(product.productId, product.quantity ?? 1);
     } else {
-      const { productId, lprice, image, title, quantity = 1, selected = true } = product;
+      const { productId, lprice, image, title, quantity = 1, selected = false } = product;
       const item = {
         productId,
         lprice,
