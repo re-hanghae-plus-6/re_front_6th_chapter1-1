@@ -59,7 +59,7 @@ describe('1. 장바구니 모달', () => {
 
     // 장바구니 모달이 열렸는지 확인
     expect(screen.getByText('장바구니가 비어있습니다')).toBeInTheDocument();
-    expect(document.querySelector('.cart-modal-overlay')).toBeInTheDocument();
+    expect(document.querySelector('#cart-modal-backdrop')).toBeInTheDocument();
   });
 
   test('X 버튼으로 모달을 닫을 수 있다', async () => {
@@ -76,7 +76,7 @@ describe('1. 장바구니 모달', () => {
 
     // 모달이 닫혔는지 확인
     expect(
-      document.querySelector('.cart-modal-overlay'),
+      document.querySelector('#cart-modal-backdrop'),
     ).not.toBeInTheDocument();
   });
 
@@ -88,13 +88,13 @@ describe('1. 장바구니 모달', () => {
     await userEvent.click(cartIcon);
 
     // 배경 오버레이 클릭
-    const overlay = document.querySelector('.cart-modal-overlay');
+    const overlay = document.querySelector('#cart-modal-backdrop');
     expect(overlay).toBeInTheDocument();
     await userEvent.click(overlay);
 
     // 모달이 닫혔는지 확인
     expect(
-      document.querySelector('.cart-modal-overlay'),
+      document.querySelector('#cart-modal-backdrop'),
     ).not.toBeInTheDocument();
   });
 
@@ -104,7 +104,7 @@ describe('1. 장바구니 모달', () => {
     // 장바구니 모달 열기
     const cartIcon = document.querySelector('#cart-icon-btn');
     await userEvent.click(cartIcon);
-    const overlay = document.querySelector('.cart-modal-overlay');
+    const overlay = document.querySelector('#cart-modal-backdrop');
     expect(overlay).toBeInTheDocument();
 
     // ESC 키 입력
@@ -112,7 +112,7 @@ describe('1. 장바구니 모달', () => {
 
     // 모달이 닫혔는지 확인
     expect(
-      document.querySelector('.cart-modal-overlay'),
+      document.querySelector('#cart-modal-backdrop'),
     ).not.toBeInTheDocument();
   });
 });
@@ -221,7 +221,10 @@ describe.sequential('3. 장바구니 삭제', () => {
 
     // 상품이 장바구니에 있는지 확인
     expect(
-      getByText(document.querySelector('.cart-modal'), /pvc 투명 젤리 쇼핑백/i),
+      getByText(
+        document.querySelector('#cart-modal-container'),
+        /pvc 투명 젤리 쇼핑백/i,
+      ),
     ).toBeInTheDocument();
 
     // 삭제 버튼 클릭
@@ -264,7 +267,7 @@ describe.sequential('4. 장바구니 선택 삭제', () => {
 
     // 선택된 상품만 삭제되고 나머지는 남아있는지 확인
     await screen.findByText('전체선택 (1개)');
-    const cartModal = document.querySelector('.cart-modal');
+    const cartModal = document.querySelector('#cart-modal-container');
     expect(
       queryByText(cartModal, /pvc 투명 젤리 쇼핑백/i),
     ).not.toBeInTheDocument();
