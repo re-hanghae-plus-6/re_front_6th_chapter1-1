@@ -32,16 +32,11 @@ export function render() {
       if (currentMountedPage && currentPageComponent) {
         if (typeof currentPageComponent.unmount === "function") {
           currentPageComponent.unmount();
-        } else if (typeof currentPageComponent.onUnmount === "function") {
-          currentPageComponent.onUnmount();
         }
       }
 
       if (typeof Page.mount === "function") {
         Page.mount();
-        currentPageComponent = Page;
-      } else if (typeof Page.onMount === "function") {
-        Page.onMount();
         currentPageComponent = Page;
       }
 
