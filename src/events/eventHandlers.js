@@ -37,11 +37,11 @@ export function setupCommonEventListeners(mainStatus, appRouter) {
   });
   // 상품 카드 클릭 이벤트 (이벤트 위임)
   document.body.addEventListener("click", (e) => {
-    const productCard = e.target.closest(".product-card"); // 클릭된 요소의 가장 가까운
-
-    const addToCartBtn = e.target.closest("#add-to-cart-btn"); // 클릭된 요소가 장바구니 버튼인지
-    const increaseQuantyBtn = e.target.closest("#quantity-increase");
-    const decreaseQuantyBtn = e.target.closest("#quantity-decrease");
+    const productCard = e.target.closest(".product-card"); // 상품 카드
+    const addToCartBtn = e.target.closest("#add-to-cart-btn"); // 장바구니 담기
+    const increaseQuantyBtn = e.target.closest("#quantity-increase"); // 상품 수량 증가
+    const decreaseQuantyBtn = e.target.closest("#quantity-decrease"); // 상품 수량 감소
+    const breadcrumb = e.target.closest(".breadcrumb-link"); // 브레드크럼 (카테고리)
 
     // 상품 카드가 클릭되었고, 장바구니 버튼이 아닌 경우에만 상세 페이지로 이동
     if (productCard && !addToCartBtn) {
@@ -86,6 +86,7 @@ export function setupCommonEventListeners(mainStatus, appRouter) {
       }
       return;
     }
+    
   });
   // TODO: 그 외 다른 이벤트 설정.....
 }

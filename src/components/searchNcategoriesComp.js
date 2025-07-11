@@ -11,19 +11,16 @@ export const searchNcategoriesComp = (props) => {
   const isLoading = props.loading || false;
   const params = props.params || {};
   const categories = props.categories || {};
-
-  // 기존 코드에서 categories.list를 사용하도록 수정
-  const category1List = categories.list?.map((c) => c.name) || [];
-  // category2List는 현재 사용되지 않지만, 기존 로직을 유지합니다.
-  const category2List = params.category1
-    ? categories.list?.find((c) => c.name === params.category1)?.subcategories || []
-    : [];
-
+  const urlParams = props.urlParams || {};
+  const depth2 = categories[urlParams.category1] || [];
+  // 최초 진입 시 표시
+  const category1List = Object.keys(categories).map((c) => c) || [];
+  // 최초 진입 시 사용
   const categoryListHtml = !isLoading
     ? category1List // categories.list에서 가져온 category1List 사용
         .map(
           (name) => /*html*/ `
-        <button data-category-id="" class="category-btn text-sm bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded-full">
+        <button class="category-btn text-sm bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded-full" data-category1="${name}">
           ${name}
         </button>
       `,
@@ -31,6 +28,32 @@ export const searchNcategoriesComp = (props) => {
         .join("")
     : /* html*/ `<div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>`;
 
+  //
+  let breadcrumbHtml = /*html*/ ``;
+  if (urlParams.category1) {
+    breadcrumbHtml += /* html */ `<span class="text-xs text-gray-500">&gt;</span>
+          <button data-breadcrumb="category1" data-category1="${urlParams.category1}" class="text-xs hover:text-blue-800 hover:underline">${urlParams.category1}</button>`;
+  }
+
+  if (urlParams.category2) {
+    breadcrumbHtml += /* html */ `<span class="text-xs text-gray-500">&gt;</span><span class="text-xs text-gray-600 cursor-default">${urlParams.category2}</span>`;
+  }
+
+  // 브레드크럼 진입 시 2depth 카테고리 HTML 생성
+  const category2Html =
+    Object.keys(depth2).length > 0
+      ? Object.keys(depth2)
+          .map(
+            (subCategory) => /*html*/ `
+            <button data-category1="${urlParams.category1}" data-category2="${urlParams.category2}" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors 
+              ${urlParams.category2 === subCategory ? "bg-blue-100 border-blue-300 text-blue-800" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
+                ${subCategory}
+            </button>
+        `,
+          )
+          .join("")
+      : "";
+  debugger;
   // map() 이용하여 부모에서 받은 params(상태) 기반 selected 속성 동적 바인딩
   const countOptionsHtml = COUNT_FILTER_OPTIONS.map(
     (item) => /*html*/ `
@@ -70,12 +93,25 @@ export const searchNcategoriesComp = (props) => {
         <div class="flex items-center gap-2">
           <label class="text-sm text-gray-600">카테고리:</label>
           <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
+          ${
+            Object.keys(urlParams).length > 0
+              ? /*html*/ `
+            ${breadcrumbHtml}
+            `
+              : ``
+          }
         </div>
-        <!-- 1depth 카테고리 -->
-        <div class="flex flex-wrap gap-2">
-          ${categoryListHtml}
-        </div>
-        <!-- 2depth 카테고리 -->
+        ${
+          Object.keys(urlParams).length > 0
+            ? /* html */ `<div class="space-y-2">
+          <div class="flex flex-wrap gap-2">
+            ${category2Html}
+          </div>
+        </div>`
+            : /* html */ `<div class="flex flex-wrap gap-2">
+            ${categoryListHtml}
+        </div>`
+        }
       </div>
       <!-- 기존 필터들 -->
       <div class="flex gap-2 items-center justify-between">
