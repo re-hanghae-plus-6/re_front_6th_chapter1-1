@@ -8,6 +8,14 @@ export default function ProductGrid({ products = [], total = 0, loading = false,
       return ProductSkeleton({ count: 4 });
     }
 
+    if (products.length === 0) {
+      return /*html*/ `
+        <div class="col-span-2 text-center py-8 text-gray-500">
+          상품이 없습니다.
+        </div>
+      `;
+    }
+
     return `
             <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
                 ${products.map((product) => ProductItem({ product })).join("")}
@@ -16,6 +24,9 @@ export default function ProductGrid({ products = [], total = 0, loading = false,
   };
 
   const renderLoadMore = () => {
+    console.log('a');
+    console.log(loading);
+    console.log(products.length);
     if (loading && products.length > 0) {
       return LoadingSpinner();
     }

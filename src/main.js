@@ -28,8 +28,8 @@ export const state = {
 export let render = async function (state) {
   const rootDOM = document.body.querySelector("#root");
   const path = window.location.pathname;
-  // 정규식: /product=... 또는 /front_6th_chapter1-1/product=... 모두 매치
-  const detailPage = path.match(/(?:\/front_6th_chapter1-1)?\/product=([^/]+)/);
+  // 정규식: /product/... 또는 /front_6th_chapter1-1/product/... 모두 매치
+  const detailPage = path.match(/(?:\/front_6th_chapter1-1)?\/product\/([^/]+)/);
   let html;
 
   if (
@@ -102,11 +102,10 @@ async function main() {
     {
       products,
       pagination: { total },
-    }, 
-    categories
-  ]
-   = await Promise.all([ getProducts({ sort: state.selectedSort, limit: state.selectedLimit }), getCategories() ]);
-  
+    },
+    categories,
+  ] = await Promise.all([getProducts({ sort: state.selectedSort, limit: state.selectedLimit }), getCategories()]);
+
   // store.setState({
   //   products,
   //   total,
@@ -136,9 +135,8 @@ function attachEventListeners() {
   // 카테고리1
   document.querySelectorAll("[data-category1]:not([data-category2])").forEach((btn) => {
     btn.onclick = (e) => {
-      state.selectedCategory1 = e.target.getAttribute("data-category1"),
-      state.selectedCategory2 = ""
-     
+      (state.selectedCategory1 = e.target.getAttribute("data-category1")), (state.selectedCategory2 = "");
+
       if (e.target.matches("[data-category1]:not([data-category2])")) {
         const category1 = e.target.getAttribute("data-category1");
         router.navigateTo(`/category1=${encodeURIComponent(category1)}`);
@@ -151,7 +149,7 @@ function attachEventListeners() {
     btn.onclick = (e) => {
       state.selectedCategory1 = e.target.getAttribute("data-category1");
       state.selectedCategory2 = e.target.getAttribute("data-category2");
-      
+
       // 2depth 카테고리
       if (e.target.matches("[data-category2]")) {
         const category1 = e.target.getAttribute("data-category1");
@@ -173,8 +171,7 @@ function attachEventListeners() {
       if (category1) {
         router.navigateTo(`/category1=${encodeURIComponent(category1)}`);
       }
-      state.selectedCategory1 = e.target.getAttribute("data-category1"),
-      state.selectedCategory2 =  ""
+      (state.selectedCategory1 = e.target.getAttribute("data-category1")), (state.selectedCategory2 = "");
     };
   }
 
@@ -211,7 +208,7 @@ function attachEventListeners() {
         if (e.key === "Enter") {
           fetchProducts({ search: searchValue, page: state.currentPage });
           state.searchValue = searchValue;
-          
+
           router.navigateTo(`/search=${encodeURIComponent(searchValue)}`);
         }
       }
@@ -224,8 +221,8 @@ function attachEventListeners() {
           e.preventDefault();
           e._productLinkHandled = true;
           const productId = link.getAttribute("data-product-link");
-          
-          router.navigateTo(`/product=${productId}`);
+
+          router.navigateTo(`/product/${productId}`);
         }
       }
     });
@@ -277,11 +274,11 @@ const fetchProducts = async ({ limit = 20, sort = "price_asc", search = "", page
       state.products = [...state.products, ...products];
     } else {
       state.products = products;
+      state.loading = false;
     }
-    state.total = total;
-    state.loading = false;
-    state.currentPage = currentPage;
     state.isLoadingMore = false;
+    state.total = total;
+    state.currentPage = currentPage;
     state.hasNext = hasNext;
     state.selectedSort = sort;
     state.selectedLimit = limit;
@@ -296,7 +293,12 @@ const setupProductInfiniteScroll = () => {
   return setupInfiniteScroll({
     onLoadMore: () => {
       // 바닥에 갔을 떄 실행할 것
-      fetchProducts({ limit: state.selectedLimit, sort: state.selectedSort, search: state.searchValue, page: Number(state.currentPage) + 1 });
+      fetchProducts({
+        limit: state.selectedLimit,
+        sort: state.selectedSort,
+        search: state.searchValue,
+        page: Number(state.currentPage) + 1,
+      });
       // const currentParams = getURLParams(defaultParams);
       // loadMoreProducts(currentParams);
     },
