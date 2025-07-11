@@ -1,6 +1,6 @@
 import { screen } from "@testing-library/dom";
 import { userEvent } from "@testing-library/user-event";
-import { afterEach, beforeAll, describe, expect, test } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, test } from "vitest";
 
 const goTo = (path) => {
   window.history.pushState({}, "", path);
@@ -12,9 +12,12 @@ beforeAll(async () => {
   await import("../main.js");
 });
 
+beforeEach(() => {
+  goTo("/");
+});
+
 afterEach(() => {
   // 각 테스트 후 상태 초기화
-  goTo("/");
   document.getElementById("root").innerHTML = "";
   localStorage.clear();
 });
