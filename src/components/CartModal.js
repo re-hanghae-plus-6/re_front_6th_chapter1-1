@@ -36,7 +36,7 @@ export class CartModal extends Component {
       const $quantityDecreaseBtn = target.closest(".quantity-decrease-btn");
 
       if ($quantityIncreaseBtn || $quantityDecreaseBtn) {
-        const productId = $quantityIncreaseBtn.dataset.productId ?? $quantityDecreaseBtn.dataset.productId;
+        const productId = $quantityIncreaseBtn?.dataset.productId || $quantityDecreaseBtn?.dataset.productId;
         const $quantityInput = this.$el.querySelector(`.quantity-input[data-product-id="${productId}"]`);
         const value = $quantityIncreaseBtn ? +1 : -1;
         const nextValue = Math.max($quantityInput.valueAsNumber + value, 1);
