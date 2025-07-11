@@ -19,8 +19,25 @@ export class ProductDetail extends Component {
   render() {
     const {
       relatedProducts,
-      product: { category1, category2, image, title, description, rating, reviewCount, lprice, stock, productId },
+      product: {
+        category1,
+        category2,
+        image,
+        title,
+        description,
+        rating,
+        reviewCount,
+        lprice,
+        stock,
+        productId,
+        isLoading,
+      },
     } = this.props.productDetailStore;
+
+    if (isLoading) {
+      this.$el.innerHTML = this.renderContainer();
+      return;
+    }
 
     this.$el.innerHTML = html`${this.#Breadcrumb({ category1, category2 })}
       <div class="bg-white rounded-lg shadow-sm mb-6">
