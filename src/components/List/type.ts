@@ -5,6 +5,8 @@ interface IListProps {
   total: number;
   search?: string;
   sort?: string;
+  loadingMore?: boolean;
+  hasMore?: boolean;
 }
 
 export type { IListProps };
