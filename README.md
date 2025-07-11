@@ -190,79 +190,316 @@
 
 #### AI로 한 번 더 구현하기
 
-- [ ] 기존에 구현한 기능을 AI로 다시 구현한다.
-- [ ] 이 과정에서 직접 가공하는 것은 최대한 지양한다.
+- [⏳] 기존에 구현한 기능을 AI로 다시 구현한다.
+- [⏳] 이 과정에서 직접 가공하는 것은 최대한 지양한다.
+
 
 ## 과제 셀프회고
 
-<!-- 과제에 대한 회고를 작성해주세요 -->
+### 요구사항을 만족할 수 있는 구조를 설계하기
+
+요구사항을 만족하지 못해, 컴포넌트, 이벤트 핸들러, 스토어와 같은 중요한 코드를 계속 변경했다. 수정이 빈번했기 때문에 3일 정도는 코드를 계속 갈아치우며 상품목록만 들여다 봤다. 이후에도 장바구니를 구현하며 코드를 수정해야 했다. 처음부터 요구사항을 만족할 수 있는 구조를 생각했다면 시간을 효율적으로 사용할 수 있었을 것이라 느꼈다.
+
+
+### 우선 순위와 시간 관리하기
+
+과제를 제출하는 것에 목표를 두니 당장 테스트 코드 하나 하나를 통과하는 것에만 집착을 했다 느껴진다. 과제를 하는 목적이 학습을 위한 것이기 때문에, 앞으론 제출에 대한 압박 보다는 중간 중간 학습한 내용을 문서로 정리하는 시간을 가져보는 것도 좋을 것 같다. 하루중 문서화를 위한 시간을 따로 가지는 것도 해보면 좋을 것 같다.
+
 
 ### 기술적 성장
 
-<!-- 예시
-- 새로 학습한 개념
-- 기존 지식의 재발견/심화
-- 구현 과정에서의 기술적 도전과 해결
--->
+학습한 내용 정리
+
+#### 이벤트 위임
+
+이벤트 위임을 어떻게 효율적으로 할 수 있을지 생각할 수 있는 시간이었다.
+개발을 처음 공부할 때 요소별로 이벤트리스너를 설정해 성능 문제를 경험한 적이 있다.
+그 이후론 '이벤트는 document 에 달아야지' 라는 생각을 해왔다.
+과제를 진행하면서 처음엔 싱글톤을 이용해 document에 이벤트 타입별로 하나의 리스너만 유지할 수 있는 코드를 작성했다.
+리스너를 하나로 유지하기 위해, 핸들러 함수를 Set에 저장하고 이벤트가 발생하면 Set에 있는 핸들러를 모두 호출하는 방식이다.
+컴포넌트를 벗어나는 이벤트들도 핸들러로 실행되는 문제가 있어 이벤트 위임을 하면서 컴포넌트 안에서 실행이 가능하도록 한다는 고민을 하게 되었다.
+
+#### 이벤트리스너를 어디에 할당할까?
+
+바닐라 자바스크립트로 컴포넌트를 작성한 예시들을 보면 이벤트리스너를 document가 아닌 컴포넌트 요소에 할당하는 예시를 많이 볼 수 있었다.
+정보를 더 찾아보니 몇가지 장점이 있었는데, 첫째는 이벤트 핸들러가 실행되는 것을 컴포넌트 하위로 제한하기 때문에 document에 위임하는 것 보다 예측하기 쉬워진다. 둘째는 리렌더링이 발생하면서 요소가 변경 되었을 때 요소가 더이상 존재하지 않기 때문에 GC에 의해 이벤트리스너가 수거될 가능성이 있다. removeEventListener 매서드로 해제하지 않아도 큰 문제가 없을 수 있다는 점이다. 단점도 존재했는데, 첫째는 리렌더링마다 이벤트리스너를 다시 할당해줘야 한다. 둘쨰는 컴포넌트가 많아지면 결국 이벤트리스너 수가 많아진다는 점이다.
+
+#### 이벤트리스너를 최소화 하며 컴포넌트 별로 격리 시키기
+
+이벤트리스너 수를 최소화 하면서 컴포넌트 별로 핸들러를 격리 시키기를 원했다.
+처음 생각했던 것 처럼 이벤트리스너를 document로 관리하는 싱글톤 클래스를 활용하고, 컴포넌트 별로 생성자에서 고유한 id를 생성하는 구조를 만들었다. 이벤트리스너를 적게 유지하면서, 컴포넌트가 해제될 때 componentId를 이용해 이벤트도 쉽게 제거 가능한 것이 장점이다.
+```
+{
+  eventType: {
+    componentId: [{selector, handler}, {selector, handler}, ...]
+  }
+}
+```
+이벤트 타입에 컴포넌트 별로 selector와 handler의 목록을 저장한다.
+이벤트가 발생하면 closest 매서드를 활용해 어떤 컴포넌트에서 발생한 이벤트인지 추적하고, closest 매서드를 활용해 가장 먼저 만난 조상 selector의 핸들러만 호출한다.
+주의할 점은 자식 컴포넌트가 부모 컴포넌트 보다 먼저 생성자가 호출되어야 하는 것과, selector와 handler를 선언할 때 더 작은 요소를 먼저 배치해야 한다는 점이다.
+
+-> 이 부분은 최종 버전에 적용 못했습니다 ㅠ
+
+#### 반응형 시스템
+
+개인적으로 반응형 시스템을 이해하고 적용하는 것이 가장 어려웠다.
+NHN Cloud 게시글인 '0.7KB로 Vue와 같은 반응형 시스템 만들기' 와 준일 코치님 'Vanilla Javascript로 상태관리 시스템 만들기' 게시글을 많이 참고했다.
+처음엔 블로그에 있는 코드를 한 줄 씩 따라서 작성하고 실행 시켜가며 동작원리를 파악했다.
+반응형 시스템의 원리는 값이 바뀌었을 때, 값을 추적하는 함수를 실행해 알려주는 것이다. Proxy 객체를 사용해 값을 읽는 get과 할당하는 set에 대해 커스텀한 로직을 쉽게 지정할 수 있다. 이것을 활용해 특정한 키 마다 상태 변경을 추적할 수 있다. 주의할 점은 중첩된 속성에 대해선 변경을 감지하지 않는다. 키에 대한 값을 = 연산자를 활용해 할당해 주어야 한다.
+
+#### 최적화 하기
+
+상태 변경시 호출할 함수를 저장하게 되는데, 더이상 상태 변경을 관찰할 필요가 없어지면 저장한 함수를 제거할 필요가 있다. observe 로 관찰을 시작할 떄 메모리 해제를 할 수 있는 함수를 반환할 수 있는 구조를 만들었다. 상태 변경을 추적할 때 queueMicrotask 를 사용해 다음 태스크가 실행되기 전 상태를 추적하는 함수들이 모두 실행될 수 있도록 만들었다.
+
+
+#### 화면 렌더링 하기
+
+외부로 부터 selector를 주입 받아 렌더링 하는 것이 불편하게 느껴졌다. 컴포넌트의 구조와 스타일을 예측하려면 어떤 요소 하위에 렌더링이 될지 확인하는 과정이 필요했기 때문이다.
+외부로 부터 렌더링할 영역을 주입받는 것이 아닌, 컴포넌트 자체로 하나의 영역을 담당하도록 만들고 싶었다. 첫 렌더링에는 컴포넌트가 다룰 범위를 만들고, 이후 업데이트 되는 렌더링에서는 값이 변경되는 부분을 렌더링 하는 방법을 채택했다. 처음 만들 땐 컴포넌트를 편리하게 사용하고자 사용하는 측에서 최소한의 것을 설정하고, 내부에서 정해진 순서로 정해진 로직을 처리하도록 만들었다. 일부 상황에선 편리하게 사용이 가능했지만, 요구사항을 만족하지 못하는 상황에선 족쇄가 되어 버렸다. 이런 경험을 한 뒤 렌더링과 관련된 부분은 사용하는 측에서 자유롭게 설정할 수 있도록 변경을 했다. 구조를 유지하면서 자유도를 높일 수 있는 방법들을 많이 배워야 할 것 같다.
+
+#### 생명주기 관리하기
+
+리소스 관리를 위해 사용하지 않는 자원을 해제해 줘야 한다.
+페이지를 이동하면 더이상 리소스가 필요없기 때문에, 페이지 이동시에 자원을 해제할 수 있도록 만들고 싶었다. 컴포넌트 클래스에서 컴포넌트인 값들을 찾고, 컴포넌트들을 연쇄적으로 해제하도록 구조를 만들었다. 지원하지 않는 방법으로 컴포넌트를 생성한다면 자원을 해제할 수 없다는 단점은 있지만, 규칙을 잘 지킨다면 편리하게 자원을 관리할 수 있어서 마음에 들었다.
+컴포넌트가 생성될 때 컴포넌트 마다 고유한 아이디를 부여해 자원 관리에도 사용을 했다. 개인적으로 직관적으로 보이는 값을 사용하니 디버깅을 할 때도 유리한 부분이 많은 것 같다고 느꼈다.
+
 
 ### 자랑하고 싶은 코드
 
-<!-- 예시
-- 특히 만족스러운 구현
-- 리팩토링이 필요한 부분
-- 코드 설계 관련 고민과 결정
--->
+```js
+const privateClass = Symbol("privateClass");
+
+class Events {
+  #events = new Map([
+    // ["click", new Map([["componentId", new Set()]])],
+    // ["change", new Map([["componentId", new Set()]])],
+  ]);
+  #abortControllerMap = new Map([
+    // ["click", new AbortController()],
+    // ["change", new AbortController()],
+  ]);
+
+  constructor(symbol) {
+    if (privateClass !== symbol) {
+      throw new Error("Cannot instantiate directly");
+    }
+  }
+
+  addEvent({ eventName, comopnentId, callback, selector }) {
+    if (this.#events.has(eventName)) {
+      const eventMap = this.#events.get(eventName);
+      if (eventMap.has(comopnentId)) {
+        eventMap.get(comopnentId).add({ callback, selector });
+      } else {
+        eventMap.set(comopnentId, new Set([{ callback, selector }]));
+      }
+    } else {
+      this.setListener(eventName);
+      const eventMap = new Map([[comopnentId, new Set([{ callback, selector }])]]);
+      this.#events.set(eventName, eventMap);
+    }
+  }
+
+  setListener(eventName) {
+    const abortController = new AbortController();
+    this.#abortControllerMap.get(eventName)?.abort();
+    this.#abortControllerMap.set(eventName, abortController);
+    document.addEventListener(
+      eventName,
+      (e) => {
+        const eventMap = this.#events.get(eventName);
+
+        if (!eventMap) {
+          return;
+        }
+
+        for (const [componentId, handlers] of eventMap) {
+          if (!e.target.closest(componentId)) {
+            continue;
+          }
+
+          for (const { callback, selector } of handlers) {
+            const $closest = e.target.closest(selector);
+
+            if ($closest) {
+              callback(e, $closest);
+              break;
+            }
+          }
+        }
+      },
+      abortController,
+    );
+  }
+
+  removeEvent({ comopnentId, eventName }) {
+    if (!this.#events.has(eventName)) {
+      return;
+    }
+
+    this.#events.get(eventName).delete(comopnentId);
+    if (!this.#events.get(eventName).size) {
+      this.#abort(eventName);
+    }
+  }
+
+  removeComponentEvents(comopnentId) {
+    this.#events.forEach((eventMap, eventName) => {
+      eventMap.delete(comopnentId);
+      if (!eventMap.size) {
+        this.#abort(eventName);
+      }
+    });
+  }
+
+  #abort(eventName) {
+    this.#abortControllerMap.get(eventName)?.abort();
+    this.#abortControllerMap.delete(eventName);
+    this.#events.delete(eventName);
+  }
+
+  dispose() {
+    this.#abortControllerMap.forEach((v) => v.abort());
+  }
+}
+
+const events = new Events(privateClass);
+
+export class ComponentEvents {
+  #componentId;
+  constructor(componentId) {
+    this.#componentId = componentId;
+  }
+
+  addEvent({ eventName, selector, callback }) {
+    events.addEvent({
+      comopnentId: this.#componentId,
+      eventName,
+      selector,
+      callback,
+    });
+  }
+
+  removeEvent({ eventName }) {
+    events.removeEvent({
+      comopnentId: this.#componentId,
+      eventName,
+    });
+  }
+
+  dispose() {
+    events.removeComponentEvents(this.#componentId);
+  }
+}
+```
+
+컴포넌트 마다 이벤트리스너를 생성하지 않고 Events 안에서 이벤트의 종류당 하나의 리스너만 생성하도록 만들었다.
+처음엔 컴포넌트 아이디와 같은 영역을 구분하는 값이 없어서, 이벤트가 컴포넌트 구분 없이 모두 추적이 되는 문제가 있었다. 이벤트가 발생했을 때 addEvent를 설정한 컴포넌트에만 이벤트 추적이 가능하도록 만들고 싶었다. 이벤트를 컴포넌트 단위로 격리를 시킬 수 있어서 가장 만족스럽다. 아쉬운 점은 배포 버전엔 적용하지 못했다.
 
 ### 개선이 필요하다고 생각하는 코드
 
-<!-- 예시
-- 특히 만족스러운 구현
-- 리팩토링이 필요한 부분
-- 코드 설계 관련 고민과 결정
--->
+```js
+ class Component {
+  state;
+  props;
+  $el;
+  #disposeObserve;
+
+  constructor(props) {
+    this.props = props;
+    this.id = `${this.constructor.name}-component-${crypto.randomUUID()}`;
+    this.dataAttribute = createDataAttribute(this.id);
+    this.abortController = null;
+  }
+
+  /** 오버라이드 super 필수 */
+  setup() {
+    this.state = observable(this.initState());
+    this.#disposeObserve = observe(this.id, () => {
+      this.mounted();
+      this.setEvent();
+      this.render();
+    });
+    this.#getComponentInstance().forEach((v) => v.setup());
+  }
+
+  initState() {
+    return {};
+  }
+
+  /** html 템플릿 리터럴로 초기 렌더링용 */
+  renderContainer() {}
+
+  /** 상태변화시 렌더링용 */
+  render() {}
+
+  /** 오버라이드 super 필수 */
+  setEvent() {
+    if (this.abortController) {
+      this.abortController.abort();
+    }
+    this.abortController = new AbortController();
+  }
+
+  addEvent(eventType, callback) {
+    try {
+      this.$el.addEventListener(eventType, callback, this.abortController);
+    } catch (error) {
+      console.warn(error);
+    }
+  }
+
+  /** 오버라이드 super 필수 */
+  mounted() {
+    this.$el = document.querySelector(this.dataAttribute.selector);
+    if (!this.$el) {
+      // throw new Error(`${this.dataAttribute.selector} not found`);
+      console.warn(`${this.dataAttribute.selector} not found`);
+    }
+  }
+
+  /** 오버라이드 super 필수 */
+  dispose() {
+    if (this.#disposeObserve) {
+      this.#disposeObserve();
+    }
+    this.#getComponentInstance().forEach((v) => v.dispose());
+  }
+
+  #getComponentInstance() {
+    const properties = Object.values(this).filter((v) => v instanceof Component);
+    const props = Object.values(this.props ?? {}).filter((v) => v instanceof Component);
+    return [...properties, ...props];
+  }
+}
+```
+
+렌더링과 관련해 좀 더 세부적인 함수들이 많아야 할 것 같다.
+innerHTML을 사용하는 것, appendChild를 사용하는 것, insertBefore를 사용하는 것 처럼 다양한 렌더링 상황이 존재하는데, 각 상황을 대응할 수 있는 매서드듣이 있다면 개발자 경험이 향상될 것 깉다.
+값이 변경되지 않은 지점은 렌더링을 하지 않는 것 처럼 캐시 기능도 있으면 좋을 것 같다.
 
 ### 학습 효과 분석
 
-<!-- 예시
-- 가장 큰 배움이 있었던 부분
-- 추가 학습이 필요한 영역
-- 실무 적용 가능성
--->
+기능을 직접 구현하다 보니, 새롭게 배운 개념이 많았다.
+이번 과제를 통해 SPA 라이브러리를 조금더 이해할 수 있게 된 것 같다.
+추가적인 학습을 통해 불필요한 렌더링, 상태 업데이트와 같은 부분들을 최대한으로 최적화를 해보고 싶다.
+
 
 ### 과제 피드백
 
-<!-- 예시
-- 과제에서 모호하거나 애매했던 부분
-- 과제에서 좋았던 부분
--->
+동영상으로 구현해야 할 기능을 확인할 수 있어서 좋았습니다.
 
-### AI 활용 경험 공유하기
+테스트 코드를 맞추는 것이 어렵기도 했지만, 코드를 잘 못 수정해서 발생한 문제를 파악할 수 있어서 좋은 점도 있었습니다.
 
-<!-- 예시
-- 사용한 AI 도구 (예: ChatGPT, Copilot, Claude, Cursor, ...)
-- 프롬프트를 작성한 과정
-- AI가 일을 더 잘 하게 만든 방법
-- 내가 작성한 코드와 비교하기
--->
+과제의 양이 많다고 느껴졌습니다.
+반대로 양이 많았기 때문에 다양한 상황을 경험하고, 설계나 구조의 결함을 발견한 장점이 있었습니다.
 
 ## 리뷰 받고 싶은 내용
 
-<!--
-피드백 받고 싶은 내용을 구체적으로 남겨주세요
-모호한 요청은 피드백을 남기기 어렵습니다.
+`src/core/observer.js` 관련 질문
+- `queueMicrotask` 를 사용하는 것을 추천 받았는데, 알맞게 사용되고 있는지 궁금합니다.
+- 상태 추적을 해제하는 것을 더 효율적으로 가능한 방법이 있을까요?
 
-참고링크: https://chatgpt.com/share/675b6129-515c-8001-ba72-39d0fa4c7b62
-
-모호한 질문의 예시)
-- 무엇을 질문해야 할지 몰라서 코치님이 보시기에 고쳐야할것들 전반적으로 피드백 부탁드립니다.
-- 코드 스타일에 대한 피드백 부탁드립니다.
-- 코드 구조에 대한 피드백 부탁드립니다.
-- 개념적인 오류에 대한 피드백 부탁드립니다.
-- 추가 구현이 필요한 부분에 대한 피드백 부탁드립니다.
-
-구체적인 질문의 예시)
-- 파일A의 함수B와 그 안의 변수명을 보면 직관성이 떨어지는 것 같습니다. 함수와 변수 이름을 더 명확하게 지을 방법에 대해 조언해 주실 수 있나요?
-- 현재 파일 단위로 코드를 분리했지만, 이번 주차 발제를 기준으로 봤을 때 모듈화나 계층화에서 부족함이 있는 것 같습니다. 특히 A와 B 부분에서 모듈화를 더 진행할지 그대로 둘지 고민하였습니다. (...구체적인 고민 사항 적기...). 코치님의 의견이 궁금합니다.
-- 옵저버 패턴을 사용해 상태 관리 로직을 구현해 보려 했습니다. 제가 구현한 코드가 옵저버 패턴에 맞게 잘 구성되었는지 검토해 주시고, 보완할 부분을 제안해 주실 수 있을까요?
-- 컴포넌트 A를 테스트 할 때 B와의 의존성 때문에 테스트 코드를 작성하려다 포기했습니다. A와 B의 의존성을 낮추고 테스트 가능성을 높이는 구조 개선 방안이 있을까요?
--->
+`src/core/Component.js` 관련 질문
+- `src/pages/products.js` 를 진입점으로 홈 화면 컴포넌트들을 보았을 때 코치님이 해당 `src/core/Component.js` 컴포넌트를 사용해야 한다면 어떤 점을 개선하고 싶으신가요?
