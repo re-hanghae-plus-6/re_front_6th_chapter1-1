@@ -6,10 +6,14 @@ import { controller } from "./controllers";
 const enableMocking = async () => {
   try {
     const { worker } = await import("./mocks/browser.js");
+    const serviceWorkerUrl = import.meta.env.PROD
+      ? "/front_6th_chapter1-1/mockServiceWorker.js"
+      : "/mockServiceWorker.js";
+
     await worker.start({
       onUnhandledRequest: "bypass",
       serviceWorker: {
-        url: "/front_6th_chapter1-1/mockServiceWorker.js",
+        url: serviceWorkerUrl,
       },
     });
   } catch (error) {
