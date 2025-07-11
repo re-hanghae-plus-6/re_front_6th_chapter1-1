@@ -125,7 +125,6 @@ function handleAddToCart(e) {
   if (product) {
     // 장바구니에 추가
     cartActions.addToCart(product);
-    console.log("장바구니에 상품 추가:", product.title);
   }
 }
 
@@ -280,20 +279,10 @@ function handleScroll() {
 
   // 스크롤이 바닥에 도달했는지 확인 (100px 여유)
   if (scrollTop + clientHeight >= scrollHeight - 100) {
-    console.log("📍 스크롤 바닥 도달 - 무한 스크롤 검사 시작");
-
     const state = productStore.getState();
-    console.log("📊 현재 상태:", {
-      isLoading: state.isLoading,
-      error: state.error,
-      productsCount: state.products.length,
-      total: state.total,
-    });
 
     // 무한 스크롤 조건 확인
     if (!state.isLoading && !state.error && state.products.length < state.total) {
-      console.log("✅ 무한 스크롤 조건 만족 - loadMoreProducts 호출");
-
       // 무한 스크롤 플래그 설정
       window.isInfiniteScrolling = true;
 
@@ -301,13 +290,6 @@ function handleScroll() {
       loadMoreProducts().finally(() => {
         // 무한 스크롤 플래그 해제
         window.isInfiniteScrolling = false;
-        console.log("🏁 무한 스크롤 완료");
-      });
-    } else {
-      console.log("❌ 무한 스크롤 조건 불만족:", {
-        isLoading: state.isLoading,
-        hasError: !!state.error,
-        canLoadMore: state.products.length < state.total,
       });
     }
   }

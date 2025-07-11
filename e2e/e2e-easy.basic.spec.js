@@ -82,9 +82,6 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오 > 난이도 쉬움 >
       const helpers = new E2EHelpers(page);
       await helpers.waitForPageLoad();
 
-      // 이벤트 리스너 설정 대기 (main.js에서 500ms 지연)
-      await page.waitForTimeout(1000);
-
       // 검색어 입력
       await page.fill("#search-input", "젤리");
       await page.press("#search-input", "Enter");
@@ -109,9 +106,6 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오 > 난이도 쉬움 >
       // 깨끗한 상태로 시작
       await page.goto("/");
       await helpers.waitForPageLoad();
-
-      // 이벤트 리스너 설정 대기 (main.js에서 500ms 지연)
-      await page.waitForTimeout(1000);
 
       // 가격 높은순으로 정렬
       await page.selectOption("#sort-select", "price_desc");
@@ -160,9 +154,6 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오 > 난이도 쉬움 >
       await page.goto("/");
       await helpers.waitForPageLoad();
 
-      // 이벤트 리스너 설정 대기 (main.js에서 500ms 지연)
-      await page.waitForTimeout(1000);
-
       // 10개로 변경
       await page.selectOption("#limit-select", "10");
 
@@ -199,9 +190,6 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오 > 난이도 쉬움 >
       const helpers = new E2EHelpers(page);
       await helpers.waitForPageLoad();
 
-      // 이벤트 리스너 설정 대기 (main.js에서 500ms 지연)
-      await page.waitForTimeout(1000);
-
       // 초기에는 개수 표시가 없어야 함
       await expect(page.locator("#cart-icon-btn span")).not.toBeVisible();
 
@@ -226,9 +214,6 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오 > 난이도 쉬움 >
         window.loadFlag = true;
       });
       await helpers.waitForPageLoad();
-
-      // 이벤트 리스너 설정 대기 (main.js에서 500ms 지연)
-      await page.waitForTimeout(1000);
 
       // 상품 이미지 클릭하여 상세 페이지로 이동
       const productCard = page
@@ -273,24 +258,9 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오 > 난이도 쉬움 >
       const helpers = new E2EHelpers(page);
       await helpers.waitForPageLoad();
 
-      // 이벤트 리스너 설정 대기 (main.js에서 500ms 지연)
-      await page.waitForTimeout(1000);
-
       // 초기 상품 카드 수 확인
       const initialCards = await page.locator(".product-card").count();
       expect(initialCards).toBe(20);
-
-      // 디버깅: 현재 상태 확인
-      const currentState = await page.evaluate(() => {
-        const state = window.productStore?.getState();
-        return {
-          isLoading: state?.isLoading,
-          productsCount: state?.products?.length,
-          total: state?.total,
-          hasNextPage: state?.pagination?.hasNextPage,
-        };
-      });
-      console.log("🔍 스크롤 전 상태:", currentState);
 
       // 페이지 하단으로 스크롤
       await page.evaluate(() => {
@@ -298,19 +268,7 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오 > 난이도 쉬움 >
       });
 
       // 스크롤 이벤트 처리 대기
-      await page.waitForTimeout(100);
-
-      // 디버깅: 스크롤 후 상태 확인
-      const afterScrollState = await page.evaluate(() => {
-        const state = window.productStore?.getState();
-        return {
-          isLoading: state?.isLoading,
-          productsCount: state?.products?.length,
-          total: state?.total,
-          hasNextPage: state?.pagination?.hasNextPage,
-        };
-      });
-      console.log("🔍 스크롤 후 상태:", afterScrollState);
+      await page.waitForTimeout(50);
 
       // 로딩 인디케이터 확인
       await expect(page.locator("text=상품을 불러오는 중...")).toBeVisible();

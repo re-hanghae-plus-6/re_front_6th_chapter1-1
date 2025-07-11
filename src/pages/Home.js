@@ -110,26 +110,20 @@ export function loadProducts() {
  * 무한 스크롤용 추가 상품 로드 함수
  */
 export function loadMoreProducts() {
-  console.log("🔄 loadMoreProducts 함수 시작");
-
   const currentState = productStore.getState();
   const { filters, pagination, products, isLoading } = currentState;
 
   // 이미 로딩 중이거나 더 이상 로드할 데이터가 없으면 중단
   if (isLoading || !pagination.hasNextPage) {
-    console.log("⏹️ 로딩 중단:", { isLoading, hasNextPage: pagination.hasNextPage });
     return Promise.resolve();
   }
 
   // 로딩 인디케이터 즉시 표시
-  console.log("🎨 로딩 인디케이터 표시 시작");
   showInfiniteScrollLoading();
 
   // 다음 페이지 번호 계산
   const nextPage = pagination.currentPage + 1;
   const nextFilters = { ...filters, page: nextPage };
-
-  console.log("📡 API 호출 시작:", { nextPage, nextFilters });
 
   // 로딩 상태 설정
   productActions.setLoading(true);
@@ -140,11 +134,6 @@ export function loadMoreProducts() {
   // API 호출 - 다음 페이지 데이터 요청
   return getProducts(nextFilters)
     .then((response) => {
-      console.log("📦 API 응답 받음:", {
-        productsCount: response.products.length,
-        total: response.pagination.total,
-      });
-
       // 페이지네이션 상태 먼저 업데이트
       productActions.updatePagination({
         currentPage: nextPage,
@@ -161,7 +150,6 @@ export function loadMoreProducts() {
     })
     .finally(() => {
       // 로딩 인디케이터 제거
-      console.log("🧹 로딩 인디케이터 제거");
       hideInfiniteScrollLoading();
 
       // 무한 스크롤 상태 해제
@@ -354,13 +342,10 @@ function renderLoadMoreSection(isLoading, currentCount, total) {
  * 무한 스크롤 로딩 인디케이터 표시
  */
 function showInfiniteScrollLoading() {
-  console.log("🔍 로딩 인디케이터 DOM 조작 시작");
-
   // 기존 로딩 인디케이터 제거
   hideInfiniteScrollLoading();
 
   const productsGrid = document.querySelector("#products-grid");
-  console.log("📍 products-grid 찾기:", !!productsGrid);
 
   if (productsGrid) {
     const loadingHTML = `
@@ -376,16 +361,6 @@ function showInfiniteScrollLoading() {
     `;
 
     productsGrid.insertAdjacentHTML("afterend", loadingHTML);
-
-    // 로딩 인디케이터가 실제로 생성되었는지 확인
-    const loadingElement = document.querySelector("#infinite-scroll-loading");
-    console.log("✅ 로딩 인디케이터 생성 확인:", !!loadingElement);
-
-    if (loadingElement) {
-      console.log("📝 로딩 인디케이터 내용:", loadingElement.textContent);
-    }
-  } else {
-    console.error("❌ products-grid 요소를 찾을 수 없음");
   }
 }
 
@@ -395,7 +370,6 @@ function showInfiniteScrollLoading() {
 function hideInfiniteScrollLoading() {
   const loadingElement = document.querySelector("#infinite-scroll-loading");
   if (loadingElement) {
-    console.log("🗑️ 로딩 인디케이터 제거");
     loadingElement.remove();
   }
 }

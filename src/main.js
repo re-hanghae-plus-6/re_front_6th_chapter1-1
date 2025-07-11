@@ -68,11 +68,8 @@ function main() {
   // 무한 스크롤 플래그 초기화
   window.isInfiniteScrolling = false;
 
-  // 라우터 초기화 완료 후 이벤트 리스너 설정
-  // DOM과 라우터가 완전히 준비된 후에 이벤트 리스너 설정
-  setTimeout(() => {
-    setupGlobalEventListeners();
-  }, 500); // 500ms로 증가
+  // 이벤트 리스너 설정
+  setupGlobalEventListeners();
 }
 
 // 애플리케이션 시작
