@@ -3,8 +3,11 @@ import { ROUTE_ACTIONS } from "../actions/routeActions.js";
 export const routeReducer = (state, action) => {
   switch (action.type) {
     case ROUTE_ACTIONS.NAVIGATE: {
-      if (location.pathname !== action.payload) {
-        window.history.pushState(null, "", action.payload);
+      const basePath = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
+      const fullPath = basePath + action.payload;
+
+      if (location.pathname !== fullPath) {
+        window.history.pushState(null, "", fullPath);
       }
 
       const defaultState =

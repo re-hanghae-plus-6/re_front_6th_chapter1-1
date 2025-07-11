@@ -38,7 +38,11 @@ async function main() {
     render();
   });
 
-  const initialPath = location.pathname;
+  const basePath = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
+  let initialPath = location.pathname;
+  if (basePath && initialPath.startsWith(basePath)) {
+    initialPath = initialPath.slice(basePath.length) || "/";
+  }
 
   store.dispatch(actions.navigate(initialPath));
 }
