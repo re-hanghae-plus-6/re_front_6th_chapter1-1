@@ -116,7 +116,8 @@ describe.sequential("2. 장바구니 수량 조절", () => {
     await userEvent.click(increaseButton);
 
     // 수량이 증가했는지 확인
-    expect(quantityInput.value).toBe("2");
+    const quantityInput2 = document.querySelector(".quantity-input");
+    expect(quantityInput2.value).toBe("2");
   });
 
   test("각 장바구니 상품의 수량을 감소할 수 있다", async () => {
@@ -144,7 +145,8 @@ describe.sequential("2. 장바구니 수량 조절", () => {
     await userEvent.click(decreaseButton);
 
     // 수량이 감소했는지 확인
-    expect(quantityInput.value).toBe("1");
+    const quantityInput2 = document.querySelector(".quantity-input");
+    expect(quantityInput2.value).toBe("1");
   });
 
   test("수량 변경 시 총 금액이 실시간으로 업데이트된다", async () => {
