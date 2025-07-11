@@ -53,6 +53,11 @@ export const cartStore = observable({
   hasItem(productId) {
     return cartStore.items.has(productId);
   },
+  removeItem(productId) {
+    cartStore.items.delete(productId);
+    cartStore.items = new Map([...cartStore.items]);
+    cartStore.count = cartStore.items.size;
+  },
   addItem(product) {
     toast.success("장바구니에 추가되었습니다");
 

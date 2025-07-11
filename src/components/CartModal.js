@@ -32,6 +32,13 @@ export class CartModal extends Component {
         return;
       }
 
+      const $removeBtn = target.closest(".cart-item-remove-btn");
+      if ($removeBtn) {
+        const productId = $removeBtn.dataset.productId;
+        cartStore.removeItem(productId);
+        return;
+      }
+
       const $quantityIncreaseBtn = target.closest(".quantity-increase-btn");
       const $quantityDecreaseBtn = target.closest(".quantity-decrease-btn");
 
@@ -58,8 +65,10 @@ export class CartModal extends Component {
   }
 
   #CartList({ count, items }) {
-    const totalPrice = 0;
     const arrItems = Array.from(items.values());
+    const totalPrice = arrItems.reduce((acc, item) => {
+      return item.selected ? acc + item.lprice * item.quantity : acc;
+    }, 0);
 
     return html`
       <!-- 배경 오버레이 -->
