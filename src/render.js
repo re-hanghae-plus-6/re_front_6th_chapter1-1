@@ -6,8 +6,6 @@ export function render() {
   const pathname = window.location.pathname;
   const routes = Object.values(router.routes);
 
-  console.log("routes", routes);
-
   let page;
   for (const route of routes) {
     if (route.regex.test(pathname)) {

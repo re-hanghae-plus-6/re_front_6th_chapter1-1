@@ -148,7 +148,6 @@ ProductListPage.registerEvent = () => {
       entries.forEach((entry) => {
         if (entry.isIntersecting && !moreLoading) {
           moreLoading = true;
-          console.log("end");
           state.pagination.page++;
           io.unobserve(productListEndIndicator);
 
