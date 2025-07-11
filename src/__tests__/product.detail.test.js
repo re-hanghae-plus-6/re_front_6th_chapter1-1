@@ -20,6 +20,9 @@ afterEach(() => {
 });
 
 const 상품_상세페이지_접속 = async () => {
+  // 먼저 메인페이지로 이동
+  goTo("/");
+
   const productElement = await screen.findByRole("heading", {
     level: 3,
     name: /pvc 투명 젤리 쇼핑백/i,

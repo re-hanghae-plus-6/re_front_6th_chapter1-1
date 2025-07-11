@@ -166,7 +166,12 @@ function setupProductDetailEventListeners() {
 
     if (event.target.matches("#add-to-cart-btn")) {
       const productId = event.target.dataset.productId;
-      addToCart(productId);
+
+      // 상품 상세 페이지에서는 수량 고려
+      const quantityInput = document.querySelector("#quantity-input");
+      const quantity = quantityInput ? parseInt(quantityInput.value) || 1 : 1;
+
+      addToCart(productId, quantity);
       showToast({ type: "add" });
       return;
     }
@@ -295,12 +300,12 @@ export function showToast({ type = "add" }) {
   const config = {
     add: {
       bg: "bg-green-600",
-      message: "장바구니에 추가되었습니다.",
+      message: "장바구니에 추가되었습니다",
       icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>',
     },
     delete: {
       bg: "bg-blue-600",
-      message: "선택한 상품들이 삭제되었습니다.",
+      message: "선택한 상품들이 삭제되었습니다",
       icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>',
     },
     error: {
@@ -331,7 +336,9 @@ export function showToast({ type = "add" }) {
     </div>
   `;
 
-  document.body.insertAdjacentHTML("beforeend", toastHTML);
+  // 테스트 환경에서는 #root에 추가, 실제 환경에서는 body에 추가
+  const container = document.getElementById("root") || document.body;
+  container.insertAdjacentHTML("beforeend", toastHTML);
 
   // 자동으로 3초 후 제거
   const toastElement = document.querySelector(".toast-container:last-child");
