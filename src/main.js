@@ -20,7 +20,6 @@ function main() {
   // });
 
   router.init();
-  // router.navigate(window.location.pathname);
 }
 
 // 애플리케이션 시작

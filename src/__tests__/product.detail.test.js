@@ -37,15 +37,17 @@ const 상품_상세페이지_접속 = async () => {
   });
 };
 
-describe.only("1. 상품 클릭시 상세 페이지 이동", () => {
+describe("1. 상품 클릭시 상세 페이지 이동", () => {
   test("상품 목록에서 상품 이미지 클릭 시 상세 페이지로 이동되며, 상품 이미지, 설명, 가격 등의 상세 정보가 표시된다", async () => {
     goTo("/");
+
     await 상품_상세페이지_접속();
     screen.logTestingPlaygroundURL();
-
     // 상품 상세 페이지가 로드되었는지 확인
     expect(await screen.findByText("상품 상세")).toBeInTheDocument();
+    console.log("3. goTo 완료");
 
+    console.log("4. 상품_상세페이지_접속 호출 전");
     // 상품 제목 확인
     expect(
       await screen.findByText("PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장"),

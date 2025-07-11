@@ -1,7 +1,7 @@
 import { getProduct } from "../api/productApi.js";
 import { Header } from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
-
+import { Router } from "../router/router.js";
 // 상품 상세 데이터
 let data = null;
 let isLoading = false;
@@ -194,11 +194,22 @@ const breadcrumbUI = (product) => {
 };
 
 function ProductPage() {
+  const router = Router();
+  const setupEvent = () => {
+    const goBackBtn = document.querySelector(".go-to-product-list");
+    if (goBackBtn) {
+      goBackBtn.addEventListener("click", () => {
+        router.navigate("/");
+      });
+    }
+  };
+
   const setup = async (params = {}) => {
     const { id } = params;
 
     data = await getData(id);
     updateUI(data);
+    setupEvent();
   };
 
   const render = () => {
@@ -218,6 +229,7 @@ function ProductPage() {
   return {
     setup,
     cleanup,
+    setupEvent,
     render,
   };
 }
