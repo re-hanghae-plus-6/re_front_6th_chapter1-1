@@ -13,6 +13,7 @@ class Detail {
       loading: true,
       productId: options.productId,
     };
+    this.relatedProductsTimeout = null;
   }
 
   // 컴포넌트 재사용 시 상태 초기화
@@ -63,7 +64,7 @@ class Detail {
       });
 
       // 관련 상품은 비동기적으로 설정 (테스트에서 처음에는 없어야 함)
-      setTimeout(() => {
+      this.relatedProductsTimeout = setTimeout(() => {
         const relatedProducts = allProducts.products.filter((p) => p.productId !== productId).slice(0, 19);
         this.setState({
           relatedProducts,
@@ -377,6 +378,14 @@ class Detail {
     this.resetState();
     await this.fetchProductDetails();
     return this.render();
+  }
+
+  destroy() {
+    if (this.relatedProductsTimeout) {
+      clearTimeout(this.relatedProductsTimeout);
+      this.relatedProductsTimeout = null;
+    }
+    this.el = null;
   }
 }
 

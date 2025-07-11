@@ -33,19 +33,18 @@ class Cart {
       } else if (!currentIsOpen && prevIsOpen) {
         // 모달 닫기
         console.log("Closing cart modal");
-        this.hide();
-      } else if (currentIsOpen && prevIsOpen && this.el) {
-        // 모달이 이미 열려있을 때는 항상 전체 모달을 다시 렌더링
-        console.log("Updating cart modal - re-rendering entire modal");
-        this.hide();
-        this.render();
-        const root = document.getElementById("root");
-        if (root) {
-          root.appendChild(this.el);
-        } else {
-          document.body.appendChild(this.el);
+        if (this.el) {
+          // DOM에서 완전히 제거
+          if (this.el.parentNode) {
+            this.el.parentNode.removeChild(this.el);
+          }
+          this.el.style.display = "none";
+          this.el = null;
         }
-        this.show();
+      } else if (currentIsOpen && prevIsOpen && this.el) {
+        // 모달이 이미 열려있을 때는 내용만 업데이트
+        console.log("Updating cart modal content");
+        this.update();
       } else if (!currentIsOpen && !prevIsOpen) {
         // 모달이 닫혀있을 때는 상태만 업데이트 (렌더링하지 않음)
         console.log("Cart modal closed, updating state only");
@@ -59,21 +58,50 @@ class Cart {
     const contentContainer = this.el.querySelector(".cart-content");
     if (contentContainer) {
       contentContainer.innerHTML = this.templateContent();
+      // 이벤트 리스너를 다시 바인딩
+      this.addEvent();
     }
-    this.addEvent();
   }
 
   show() {
     if (this.el) {
       this.el.style.display = "block";
+    } else {
+      // this.el이 null이면 새로 렌더링
+      this.render();
+      const root = document.getElementById("root");
+      if (root) {
+        root.appendChild(this.el);
+      }
+      this.el.style.display = "block";
     }
   }
 
   hide() {
-    if (this.el && this.el.parentNode) {
-      this.el.parentNode.removeChild(this.el);
+    if (this.el) {
+      // DOM에서 완전히 제거
+      if (this.el.parentNode) {
+        this.el.parentNode.removeChild(this.el);
+      }
+      // display를 none으로 설정하여 숨김
+      this.el.style.display = "none";
+      this.el = null;
     }
-    this.el = null;
+    // 추가로 DOM에서 cart-modal-overlay가 남아있다면 제거
+    const existingOverlay = document.querySelector(".cart-modal-overlay");
+    if (existingOverlay && existingOverlay.parentNode) {
+      existingOverlay.parentNode.removeChild(existingOverlay);
+    }
+    // 이벤트 리스너 정리
+    this.removeEventListeners();
+  }
+
+  removeEventListeners() {
+    // ESC 키 이벤트 리스너 정리
+    if (this.keydownHandler) {
+      document.removeEventListener("keydown", this.keydownHandler);
+      this.keydownHandler = null;
+    }
   }
 
   // 장바구니 아이템 템플릿
@@ -238,12 +266,26 @@ class Cart {
   }
 
   addEvent() {
+    // 기존 이벤트 리스너 제거 (중복 방지)
+    this.removeEventListeners();
+
     this.el.querySelector("#cart-modal-close-btn")?.addEventListener("click", () => cartStore.close());
     this.el.querySelector(".cart-modal-overlay")?.addEventListener("click", (e) => {
       if (e.target === e.currentTarget) {
         cartStore.close();
       }
     });
+
+    // ESC 키 이벤트 리스너 추가
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        cartStore.close();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+
+    // 이벤트 리스너 정리를 위해 저장
+    this.keydownHandler = handleKeyDown;
 
     this.el.querySelectorAll(".cart-item-remove-btn").forEach((btn) => {
       btn.addEventListener("click", (e) => {
