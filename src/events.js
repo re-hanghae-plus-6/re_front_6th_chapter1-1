@@ -13,6 +13,16 @@ export const registerProductEvents = (productService) => {
     updateURLParams({ limit: parseInt(e.target.value), page: 1 });
     productService.loadProducts();
   };
+
+  // 정렬 옵션 선택
+  const sortSelect = document.querySelector("#sort-select");
+  if (!sortSelect) return;
+
+  sortSelect.value = getURLParams().sort;
+  sortSelect.onchange = (e) => {
+    updateURLParams({ sort: e.target.value, page: 1 });
+    productService.loadProducts();
+  };
 };
 
 /**

@@ -4,6 +4,7 @@ export function getURLParams() {
   return {
     limit: parseInt(params.get("limit")) || 20,
     page: parseInt(params.get("page")) || 1,
+    sort: params.get("sort") || "price_asc",
   };
 }
 
