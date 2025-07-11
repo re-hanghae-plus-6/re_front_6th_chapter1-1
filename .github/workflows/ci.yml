@@ -17,6 +17,7 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha }}
+
       - run: |
           pnpm install
           pnpm run test
