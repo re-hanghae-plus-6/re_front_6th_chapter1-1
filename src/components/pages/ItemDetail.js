@@ -1,7 +1,7 @@
 import { cartManager } from "../../utils/cart";
 import { formatPrice } from "../../utils/format.js";
 
-export const ItemDetail = ({ product, related, loading = false } = {}) => {
+export const ItemDetail = ({ product, related = [], loading = false } = {}) => {
   return `
     <div class="min-h-screen bg-gray-50">
       ${DetailHeader()}
@@ -47,7 +47,7 @@ function DetailHeader() {
   `;
 }
 
-function DetailContent(loading, product, related) {
+function DetailContent(loading = false, product, related = []) {
   if (loading) {
     return `
     <div class="py-20 bg-gray-50 flex items-center justify-center">
@@ -150,6 +150,9 @@ function DetailContent(loading, product, related) {
       </button>
     </div>
     <!-- 관련 상품 -->
+    ${
+      relatedProducts.length > 0
+        ? `
     <div class="bg-white rounded-lg shadow-sm">
       <div class="p-4 border-b border-gray-200">
         <h2 class="text-lg font-bold text-gray-900">관련 상품</h2>
@@ -157,13 +160,13 @@ function DetailContent(loading, product, related) {
       </div>
       <div class="p-4">
         <div class="grid grid-cols-2 gap-3 responsive-grid">
-          ${relatedProducts
-            .slice(0, 4)
-            .map((item) => RelatedItemCard(item))
-            .join("")}
+          ${relatedProducts.map((item) => RelatedItemCard(item)).join("")}
         </div>
       </div>
     </div>
+    `
+        : ""
+    }
   `;
 }
 
