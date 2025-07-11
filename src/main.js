@@ -6,11 +6,7 @@ import notFound from "./page/innerText/notFound.js";
 import toast from "./page/innerText/toast.js";
 
 const enableMocking = () =>
-  import("./mocks/browser.js").then(({ worker }) =>
-    worker.start({
-      onUnhandledRequest: "bypass",
-    }),
-  );
+  import("./mocks/browser.js").then(({ worker, workerOptions }) => worker.start(workerOptions));
 
 window.addEventListener("popstate", () => {
   console.log("앞뒤");
