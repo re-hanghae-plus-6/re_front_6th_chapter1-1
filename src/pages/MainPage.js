@@ -23,11 +23,6 @@ export const MainPage = (appState) => {
   const selectedCategory1 = selectedCategories.category1 || "";
   const selectedCategory2 = selectedCategories.category2 || "";
 
-  console.log("🔍 categories 배열:", categories);
-  console.log("🔍 categories 길이:", categories.length);
-  console.log("🔍 categoriesLoading:", categoriesLoading);
-  console.log("🔍 selectedCategories:", selectedCategories);
-
   return `
     <div class="min-h-screen bg-gray-50">
       <main class="max-w-md mx-auto px-4 py-4">

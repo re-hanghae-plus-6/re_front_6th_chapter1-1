@@ -49,18 +49,8 @@ function bindBreadcrumbEvents(product) {
 }
 
 export async function ProductDetailPage({ productId }) {
-  const callStack = new Error().stack;
-  console.log("🏪 ProductDetailPage: 시작", {
-    productId,
-    timestamp: Date.now(),
-    isLoadingProduct,
-    currentLoadingProductId,
-    callStack: callStack?.split("\n").slice(0, 5).join("\n"), // 호출 스택 상위 5개만
-  });
-
   // 중복 호출 방지
   if (isLoadingProduct && currentLoadingProductId === productId) {
-    console.log("⚠️ ProductDetailPage: 중복 호출 감지, 건너뛰기", { productId });
     return;
   }
 
@@ -70,11 +60,9 @@ export async function ProductDetailPage({ productId }) {
 
   try {
     // 상품 데이터 fetch
-    console.log("🔍 ProductDetailPage: 상품 상세 API 호출", { productId });
     const product = await getProduct(productId);
 
     // 관련 상품 데이터 fetch (같은 category2, 현재 상품 제외)
-    console.log("🔍 ProductDetailPage: 관련 상품 API 호출", { category2: product.category2 });
     const relatedProductsResponse = await getProducts({
       page: 1,
       limit: 20,
@@ -84,11 +72,6 @@ export async function ProductDetailPage({ productId }) {
 
     // 현재 상품을 제외한 관련 상품들 (전체 호출)
     const relatedProducts = relatedProductsResponse.products.filter((p) => p.productId !== product.productId);
-
-    console.log("✅ ProductDetailPage: 모든 API 호출 완료", {
-      productId,
-      relatedCount: relatedProducts.length,
-    });
 
     // 페이지 렌더링
     document.getElementById("root").innerHTML = `
@@ -322,8 +305,9 @@ export async function ProductDetailPage({ productId }) {
         // 장바구니 뱃지 업데이트 (메인 페이지로 돌아갔을 때 반영되도록)
         updateCartCountBadge();
       } catch (error) {
-        console.error("장바구니 담기 중 오류 발생:", error);
-        showToast("error");
+        if (error) {
+          showToast("error");
+        }
       }
     };
 
@@ -360,8 +344,8 @@ export async function ProductDetailPage({ productId }) {
     // 브레드크럼 이벤트 바인딩
     bindBreadcrumbEvents(product);
   } catch (error) {
-    console.error("상품 상세 페이지 로딩 오류:", error);
-    document.getElementById("root").innerHTML = `
+    if (error) {
+      document.getElementById("root").innerHTML = `
       <div class="min-h-screen bg-gray-50">
         <header class="bg-white shadow-sm sticky top-0 z-40">
           <div class="max-w-md mx-auto px-4 py-4">
@@ -396,6 +380,7 @@ export async function ProductDetailPage({ productId }) {
         ${Footer()}
       </div>
     `;
+    }
   } finally {
     // 로딩 상태 초기화
     isLoadingProduct = false;

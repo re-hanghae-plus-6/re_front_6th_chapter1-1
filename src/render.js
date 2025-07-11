@@ -40,7 +40,6 @@ export function initRender() {
 
     // 상세 페이지에서는 완전히 건너뛰기
     if (isCurrentlyOnDetailPage()) {
-      console.log("⏭️ Render: 상세 페이지이므로 ProductStore 렌더링 완전 건너뛰기");
       return;
     }
 
@@ -52,7 +51,6 @@ export function initRender() {
     }
     // 그 외의 경우는 모두 전체 렌더링
     else {
-      console.log("🔄 Render: ProductStore 변화로 인한 렌더링");
       render();
     }
   });
@@ -66,15 +64,13 @@ export function initRender() {
       // 상세 페이지에서는 CategoryStore는 완전히 건너뛰기, CartStore만 허용
       if (isCurrentlyOnDetailPage()) {
         if (storeName === "CategoryStore") {
-          console.log(`⏭️ Render: 상세 페이지이므로 ${storeName} 렌더링 완전 건너뛰기`);
           return;
         }
         // CartStore는 상세 페이지에서도 장바구니 뱃지 업데이트를 위해 허용하지만 render는 호출하지 않음
-        console.log(`⏭️ Render: 상세 페이지에서 ${storeName} 변화 감지했지만 render 건너뛰기`);
+
         return;
       }
 
-      console.log(`🔄 Render: ${storeName} 변화로 인한 렌더링`);
       render();
     });
   });
@@ -87,17 +83,12 @@ export function render() {
   const appPath = getAppPath(); // 배포환경 서브디렉토리 경로 처리
   const root = document.getElementById("root");
 
-  console.log("🎨 Render: 시작", { appPath, timestamp: Date.now() });
-
   // store에서 현재 상태 가져오기 (상세 페이지에서는 건너뛰기)
   const isProductDetailPage = /^\/product\/\d+$/.test(appPath);
   let appState = null;
 
   if (!isProductDetailPage) {
-    console.log("📦 Render: getAppState 호출");
     appState = getAppState();
-  } else {
-    console.log("⏭️ Render: 상세 페이지이므로 getAppState 건너뛰기");
   }
 
   // 페이지별 렌더링
@@ -277,8 +268,9 @@ function bindProductEvents() {
         showToast("add");
         updateCartCountBadge();
       } catch (error) {
-        console.error("장바구니 담기 중 오류 발생:", error);
-        showToast("error");
+        if (error) {
+          showToast("error");
+        }
       }
     });
   });
@@ -324,7 +316,6 @@ function bindCategoryEvents() {
  */
 function bindInfiniteScrollEvent() {
   // 무한 스크롤 이벤트 리스너 (메인 페이지에서만, 한 번만 등록)
-  console.log("무한 스크롤 이벤트 바인딩");
   if (!window.scrollHandlerAdded) {
     window.addEventListener("scroll", () => {
       // 메인 페이지가 아니면 무한 스크롤 비활성화
