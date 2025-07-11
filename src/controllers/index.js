@@ -18,6 +18,11 @@ class Controller {
 
   async initialize() {
     this.setupGlobalEventListeners();
+
+    if (!this.controllers.cartModal) {
+      this.controllers.cartModal = new CartModalController();
+      this.controllers.cartModal.setupEventListeners();
+    }
   }
 
   setupGlobalEventListeners() {
