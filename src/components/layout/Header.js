@@ -12,7 +12,7 @@ export const Header = (page) => {
     }
   };
 
-  const cartCount = cartStore.state.cartItems.length;
+  const cartCount = cartStore.state.cartsProductCount;
 
   return ` <header class="bg-white shadow-sm sticky top-0 z-40">
     <div class="max-w-md mx-auto px-4 py-4">

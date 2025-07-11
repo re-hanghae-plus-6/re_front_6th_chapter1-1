@@ -26,7 +26,6 @@ async function main() {
   cartStore.subscribe(renderHtml);
   renderHtml();
 }
-console.log("cartStore.state.cartItems", cartStore.state.cartItems);
 
 // 애플리케이션 시작
 if (import.meta.env.MODE !== "test") {
