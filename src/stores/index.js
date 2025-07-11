@@ -20,7 +20,7 @@ class StoreManager {
     categoryStore.subscribe(() => {
       if (isInitializing) return; // 초기화 중에는 구독 로직 실행하지 않음
 
-      const categoryState = categoryStore.getSelectedCategories();
+      const categoryState = categoryStore.getState().selectedCategories;
       const productState = productStore.getState();
 
       // URL 업데이트
@@ -43,7 +43,7 @@ class StoreManager {
       if (isInitializing) return; // 초기화 중에는 구독 로직 실행하지 않음
 
       const productState = productStore.getState();
-      const categoryState = categoryStore.getSelectedCategories();
+      const categoryState = categoryStore.getState().selectedCategories;
 
       // 로딩 중이 아닐 때만 URL 업데이트
       if (!productState.loading) {
@@ -82,21 +82,21 @@ class StoreManager {
   // 상품 검색
   async searchProducts(searchTerm) {
     productStore.setSearch(searchTerm);
-    const categoryState = categoryStore.getSelectedCategories();
+    const categoryState = categoryStore.getState().selectedCategories;
     await productStore.loadProducts(categoryState);
   }
 
   // 정렬 변경
   async changeSorting(sortType) {
     productStore.setSort(sortType);
-    const categoryState = categoryStore.getSelectedCategories();
+    const categoryState = categoryStore.getState().selectedCategories;
     await productStore.loadProducts(categoryState);
   }
 
   // 페이지당 아이템 수 변경
   async changeLimit(newLimit) {
     productStore.setLimit(newLimit);
-    const categoryState = categoryStore.getSelectedCategories();
+    const categoryState = categoryStore.getState().selectedCategories;
     await productStore.loadProducts(categoryState);
   }
 
@@ -116,7 +116,7 @@ class StoreManager {
 
   // 무한 스크롤
   async loadMoreProducts() {
-    const categoryState = categoryStore.getSelectedCategories();
+    const categoryState = categoryStore.getState().selectedCategories;
     await productStore.loadMoreProducts(categoryState);
   }
 
@@ -133,7 +133,7 @@ class StoreManager {
       await categoryStore.loadCategories();
 
       // 상품 로드
-      const categoryState = categoryStore.getSelectedCategories();
+      const categoryState = categoryStore.getState().selectedCategories;
       await productStore.loadProducts(categoryState);
     } finally {
       // 초기화 완료 - 구독 로직 활성화
@@ -147,12 +147,14 @@ export const storeManager = new StoreManager();
 
 // 편의 함수들
 export function getAppState() {
+  const categoryState = categoryStore.getState();
+
   return {
     cart: cartStore.getCartItems(),
     cartCount: cartStore.getUniqueProductCount(),
-    categories: categoryStore.getCategories(),
-    categoriesLoading: categoryStore.getLoading(),
-    selectedCategories: categoryStore.getSelectedCategories(),
+    categories: categoryState.categories,
+    categoriesLoading: categoryState.loading,
+    selectedCategories: categoryState.selectedCategories,
     products: productStore.getState(),
   };
 }

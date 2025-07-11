@@ -16,9 +16,18 @@ export const MainPage = (appState) => {
     } = {},
     categories = [],
     categoriesLoading = false,
-    selectedCategories: { category1: selectedCategory1 = "", category2: selectedCategory2 = "" } = {},
+    selectedCategories = {},
   } = appState || {};
-  const categorylist = Object.entries(categories);
+
+  // selectedCategories에서 개별 값 추출
+  const selectedCategory1 = selectedCategories.category1 || "";
+  const selectedCategory2 = selectedCategories.category2 || "";
+
+  console.log("🔍 categories 배열:", categories);
+  console.log("🔍 categories 길이:", categories.length);
+  console.log("🔍 categoriesLoading:", categoriesLoading);
+  console.log("🔍 selectedCategories:", selectedCategories);
+
   return `
     <div class="min-h-screen bg-gray-50">
       <main class="max-w-md mx-auto px-4 py-4">
@@ -56,15 +65,14 @@ export const MainPage = (appState) => {
               ${
                 categoriesLoading
                   ? '<div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>'
-                  : categorylist
+                  : categories
                       .map(
-                        ([category1, category2]) => `
+                        (category) => `
                           <button 
-                            data-category1="${category1}" 
-                            data-category2='${JSON.stringify(category2)}'
+                            data-category1="${category.name}" 
                             class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
-                            ${selectedCategory1 === category1 ? "bg-blue-100 border-blue-300 text-blue-700" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
-                            ${category1}
+                            ${selectedCategory1 === category.name ? "bg-blue-100 border-blue-300 text-blue-700" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
+                            ${category.name}
                           </button>
                         `,
                       )
@@ -81,10 +89,10 @@ export const MainPage = (appState) => {
                 <div class="space-y-2">
                   <div class="flex flex-wrap gap-2">
                     ${
-                      categories[selectedCategory1]
-                        ? Object.keys(categories[selectedCategory1])
-                            .map(
-                              (category2) => `
+                      categories
+                        .find((cat) => cat.name === selectedCategory1)
+                        ?.subCategories?.map(
+                          (category2) => `
                           <button 
                             data-category1="${selectedCategory1}"
                             data-category2="${category2}"
@@ -93,9 +101,8 @@ export const MainPage = (appState) => {
                             ${category2}
                           </button>
                         `,
-                            )
-                            .join("")
-                        : ""
+                        )
+                        .join("") || ""
                     }
                   </div>
                 </div>

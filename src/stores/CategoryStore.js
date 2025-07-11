@@ -1,4 +1,5 @@
 import { createObservable } from "./observable.js";
+import { getCategories } from "../api/productApi.js";
 
 // 함수형 CategoryStore
 function createCategoryStore() {
@@ -19,10 +20,9 @@ function createCategoryStore() {
     observable.notify();
 
     try {
-      const { getCategories } = await import("../api/productApi.js");
       categories = await getCategories();
     } catch (error) {
-      console.error("카테고리 로드 실패:", error);
+      console.error("❌ 카테고리 로드 실패:", error);
       categories = [];
     } finally {
       loading = false;
@@ -58,19 +58,6 @@ function createCategoryStore() {
     observable.notify();
   }
 
-  // 현재 선택된 카테고리 정보 반환
-  function getSelectedCategories() {
-    return {
-      category1: selectedCategory1,
-      category2: selectedCategory2,
-    };
-  }
-
-  // 전체 카테고리 목록 반환
-  function getCategories() {
-    return categories;
-  }
-
   // 선택된 1depth 카테고리의 2depth 목록 반환
   function getSubCategories() {
     if (!selectedCategory1) return [];
@@ -79,9 +66,17 @@ function createCategoryStore() {
     return category ? category.subCategories : [];
   }
 
-  // 로딩 상태 반환
-  function getLoading() {
-    return loading;
+  // 현재 상태 반환 (ProductStore와 동일한 패턴)
+  function getState() {
+    return {
+      categories,
+      selectedCategories: {
+        category1: selectedCategory1,
+        category2: selectedCategory2,
+      },
+      loading,
+      subCategories: getSubCategories(),
+    };
   }
 
   // 공개 API 반환
@@ -92,10 +87,8 @@ function createCategoryStore() {
     selectCategory2,
     resetSelection,
     setFromURLParams,
-    getSelectedCategories,
-    getCategories,
+    getState,
     getSubCategories,
-    getLoading,
   };
 }
 
