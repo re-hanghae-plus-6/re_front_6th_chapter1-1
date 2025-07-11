@@ -11,14 +11,17 @@ function initializeApp() {
 }
 
 const enableMocking = () =>
-  import("./mocks/browser.js").then(({ worker, workerOptions }) => worker.start(workerOptions));
+  import("./mocks/browser.js").then(({ worker, workerOptions }) => {
+    // GitHub Pages 환경에서는 base path를 설정
+    if (import.meta.env.PROD) {
+      workerOptions.serviceWorker.options = {
+        scope: "/front_6th_chapter1-1/",
+      };
+    }
+    return worker.start(workerOptions);
+  });
 
 // 애플리케이션 시작
-if (import.meta.env.MODE === "development") {
-  enableMocking().then(() => {
-    initializeApp();
-  });
-} else {
-  // 프로덕션 또는 테스트 환경에서는 MSW 비활성화
+enableMocking().then(() => {
   initializeApp();
-}
+});
