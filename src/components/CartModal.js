@@ -2,10 +2,63 @@ export class CartModal {
   constructor(store) {
     this.store = store;
     this.selectedItems = new Set(); // 선택된 상품 ID들
+
+    // 로컬 스토리지에서 선택 상태 복원
+    this.loadSelectedItemsFromStorage();
+  }
+
+  // 선택 상태를 localStorage에 저장
+  saveSelectedItemsToStorage() {
+    try {
+      const selectedArray = Array.from(this.selectedItems);
+      localStorage.setItem(
+        'cart-selected-items',
+        JSON.stringify(selectedArray),
+      );
+    } catch (error) {
+      console.error('Failed to save selected items to storage:', error);
+    }
+  }
+
+  // localStorage에서 선택 상태 복원
+  loadSelectedItemsFromStorage() {
+    try {
+      const savedSelectedItems = localStorage.getItem('cart-selected-items');
+      if (savedSelectedItems) {
+        const selectedArray = JSON.parse(savedSelectedItems);
+        this.selectedItems = new Set(selectedArray);
+
+        // 장바구니에 없는 상품의 선택 상태는 제거
+        this.cleanupSelectedItems();
+      }
+    } catch (error) {
+      console.error('Failed to load selected items from storage:', error);
+      this.selectedItems = new Set();
+    }
+  }
+
+  // 장바구니에 없는 상품의 선택 상태 정리
+  cleanupSelectedItems() {
+    const cartProductIds = new Set(
+      this.store.state.cart.map((item) => item.id),
+    );
+    const validSelectedItems = new Set();
+
+    this.selectedItems.forEach((productId) => {
+      if (cartProductIds.has(productId)) {
+        validSelectedItems.add(productId);
+      }
+    });
+
+    this.selectedItems = validSelectedItems;
+    this.saveSelectedItemsToStorage();
   }
 
   render() {
     const { cart } = this.store.state;
+
+    // 장바구니에 없는 상품의 선택 상태 정리
+    this.cleanupSelectedItems();
 
     if (cart.length === 0) {
       return this.renderEmptyCart();
@@ -280,6 +333,7 @@ export class CartModal {
           // 전체 해제
           this.selectedItems.clear();
         }
+        this.saveSelectedItemsToStorage();
         this.rerender();
       });
     }
@@ -294,6 +348,7 @@ export class CartModal {
         } else {
           this.selectedItems.delete(productId);
         }
+        this.saveSelectedItemsToStorage();
         this.rerender();
       });
     });
@@ -337,6 +392,7 @@ export class CartModal {
         const productId = e.currentTarget.dataset.productId;
         this.store.removeFromCart(productId);
         this.selectedItems.delete(productId);
+        this.saveSelectedItemsToStorage();
       });
     });
 
@@ -351,6 +407,7 @@ export class CartModal {
           this.store.removeFromCart(productId, false); // 토스트 표시하지 않음
         });
         this.selectedItems.clear();
+        this.saveSelectedItemsToStorage();
 
         if (selectedCount > 0) {
           this.store.showToast('선택된 상품들이 삭제되었습니다', 'info');
@@ -365,6 +422,7 @@ export class CartModal {
         const cartCount = this.store.state.cart.length;
         this.store.clearCart();
         this.selectedItems.clear();
+        this.saveSelectedItemsToStorage();
 
         if (cartCount > 0) {
           this.store.showToast('장바구니가 비워졌습니다', 'info');
