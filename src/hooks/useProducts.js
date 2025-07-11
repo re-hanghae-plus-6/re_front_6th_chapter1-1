@@ -1,7 +1,7 @@
 import { useState } from "./useState.js";
 import { getProducts, getCategories } from "../api/productApi.js";
 
-export function useProducts(callback) {
+export function useProducts() {
   const productsState = useState({
     products: [],
     categories: {},
@@ -16,11 +16,6 @@ export function useProducts(callback) {
       hasPrev: false,
     },
   });
-
-  let unsubscribe = null;
-  if (callback) {
-    unsubscribe = productsState.subscribe(callback);
-  }
 
   const loadProducts = async (params = {}) => {
     productsState.setState((prevState) => ({
@@ -90,21 +85,30 @@ export function useProducts(callback) {
       isLoading: true,
     }));
 
-    await Promise.all([loadCategories(), loadProducts(params)]);
-  };
+    const [products, categories] = await Promise.all([getProducts(params), getCategories()]);
 
-  const destroy = () => {
-    if (unsubscribe) {
-      unsubscribe();
-    }
+    productsState.setState((prevState) => ({
+      ...prevState,
+      products: products.products || [],
+      categories: categories || {},
+      isLoading: false,
+      pagination: products.pagination || {
+        page: 1,
+        limit: 20,
+        total: 0,
+        totalPages: 1,
+        hasNext: false,
+        hasPrev: false,
+      },
+    }));
   };
 
   return {
     ...productsState.getState(),
+    subscribe: productsState.subscribe,
     loadInitialData,
     loadProducts,
     loadCategories,
     loadMoreProducts,
-    destroy,
   };
 }
