@@ -33,7 +33,7 @@ export const Category = (
     // 1depth 목록
     Object.keys(categories).forEach((cat1) => {
       categoryButtons.push(
-        `<button data-category1="${cat1}" class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50">${cat1}</button>`,
+        `<button data-category1="${cat1}" data-level="1" class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50">${cat1}</button>`,
       );
     });
   } else if (!currentCategory2) {
@@ -41,7 +41,7 @@ export const Category = (
     const second = categories[currentCategory1] || {};
     Object.keys(second).forEach((cat2) => {
       categoryButtons.push(
-        `<button data-category1="${currentCategory1}" data-category2="${cat2}" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50">${cat2}</button>`,
+        `<button data-category1="${currentCategory1}" data-category2="${cat2}" data-level="2" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50">${cat2}</button>`,
       );
     });
   }

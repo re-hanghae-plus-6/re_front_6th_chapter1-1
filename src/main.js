@@ -100,9 +100,6 @@ async function renderDetail(productId) {
     });
     const related = relatedData.products.filter((p) => p.productId !== productId);
     root.innerHTML = ItemDetail({ loading: false, product, related });
-
-    // 상세 페이지 수량 조절 이벤트 리스너 직접 추가
-    setupDetailQuantityEvents();
   } catch (err) {
     console.error("상품 상세 로드 실패:", err);
     root.innerHTML = `<p class="text-center text-red-500">상품 상세를 불러오는 데 실패했습니다.</p>`;
@@ -199,26 +196,20 @@ function setupLimitSelectListener() {
       urlParams.set("current", "1");
       history.pushState({}, "", `${url.pathname}?${urlParams.toString()}`);
 
-      // 로딩 화면
-      const root = document.getElementById("root");
-      root.innerHTML = MainList({
-        loading: true,
-        categories,
-        category1: currentCategory1,
-        category2: currentCategory2,
-        limit: currentLimit,
-        sort: currentSort,
-        search: currentSearch,
-      });
+      // 기존 상품들을 유지하면서 백그라운드에서 데이터 로드
       const params = { page: 1, limit: currentLimit, sort: currentSort };
       if (currentSearch) params.search = currentSearch;
       if (currentCategory1) params.category1 = currentCategory1;
       if (currentCategory2) params.category2 = currentCategory2;
+
       const data = await getProducts(params);
       currentPage = data.pagination.page;
       hasNext = data.pagination.hasNext;
       allProducts = data.products;
       totalCount = data.pagination.total;
+
+      // 데이터 로드 완료 후 바로 새로운 상품 목록 표시
+      const root = document.getElementById("root");
       root.innerHTML = MainList({
         loading: false,
         categories,
@@ -253,26 +244,20 @@ window.addEventListener("change", async (e) => {
     urlParams.set("current", "1"); // 페이지 번호도 1로 리셋
     history.pushState({}, "", `${url.pathname}?${urlParams.toString()}`);
 
-    // 로딩 화면
-    const root = document.getElementById("root");
-    root.innerHTML = MainList({
-      loading: true,
-      categories,
-      category1: currentCategory1,
-      category2: currentCategory2,
-      limit: currentLimit,
-      sort: currentSort,
-      search: currentSearch,
-    });
+    // 기존 상품들을 유지하면서 백그라운드에서 데이터 로드
     const params = { page: 1, limit: currentLimit, sort: currentSort };
     if (currentSearch) params.search = currentSearch;
     if (currentCategory1) params.category1 = currentCategory1;
     if (currentCategory2) params.category2 = currentCategory2;
+
     const data = await getProducts(params);
     currentPage = data.pagination.page;
     hasNext = data.pagination.hasNext;
     allProducts = data.products;
     totalCount = data.pagination.total;
+
+    // 데이터 로드 완료 후 바로 새로운 상품 목록 표시
+    const root = document.getElementById("root");
     root.innerHTML = MainList({
       loading: false,
       categories,
@@ -418,7 +403,7 @@ window.addEventListener("scroll", async () => {
 });
 
 // 전역 클릭 이벤트 위임 (라우팅, 카트, 수량, 상세 기능)
-document.addEventListener("click", (e) => {
+document.addEventListener("click", async (e) => {
   // SPA 링크(a[data-link]) 클릭
   const link = e.target.closest("a[data-link]");
   if (link) {
@@ -511,7 +496,30 @@ document.addEventListener("click", (e) => {
     history.pushState({}, "", `${url.pathname}?${params.toString()}`);
 
     currentSearch = "";
-    return main();
+
+    // 즉시 반영 (로딩 화면 없이)
+    const apiParams = { page: 1, limit: currentLimit, sort: currentSort };
+    if (currentSearch) apiParams.search = currentSearch;
+
+    const data = await getProducts(apiParams);
+    currentPage = data.pagination.page;
+    hasNext = data.pagination.hasNext;
+    allProducts = data.products;
+    totalCount = data.pagination.total;
+
+    const root = document.getElementById("root");
+    root.innerHTML = MainList({
+      loading: false,
+      categories,
+      category1: currentCategory1,
+      category2: currentCategory2,
+      products: allProducts,
+      total: totalCount,
+      limit: currentLimit,
+      sort: currentSort,
+      search: currentSearch,
+    });
+    return;
   }
   // 1depth 카테고리 선택
   if (e.target.matches("[data-category1]") && !e.target.dataset.category2) {
@@ -525,7 +533,31 @@ document.addEventListener("click", (e) => {
     history.pushState({}, "", `${url.pathname}?${params.toString()}`);
 
     currentCategory2 = "";
-    return main();
+
+    // 즉시 반영 (로딩 화면 없이)
+    const apiParams = { page: 1, limit: currentLimit, sort: currentSort };
+    if (currentSearch) apiParams.search = currentSearch;
+    if (currentCategory1) apiParams.category1 = currentCategory1;
+
+    const data = await getProducts(apiParams);
+    currentPage = data.pagination.page;
+    hasNext = data.pagination.hasNext;
+    allProducts = data.products;
+    totalCount = data.pagination.total;
+
+    const root = document.getElementById("root");
+    root.innerHTML = MainList({
+      loading: false,
+      categories,
+      category1: currentCategory1,
+      category2: currentCategory2,
+      products: allProducts,
+      total: totalCount,
+      limit: currentLimit,
+      sort: currentSort,
+      search: currentSearch,
+    });
+    return;
   }
   // 2depth 카테고리 선택
   if (e.target.matches("[data-category2]")) {
@@ -537,7 +569,31 @@ document.addEventListener("click", (e) => {
     params.set("current", "1");
     history.pushState({}, "", `${url.pathname}?${params.toString()}`);
 
-    return main();
+    // 즉시 반영 (로딩 화면 없이)
+    const apiParams = { page: 1, limit: currentLimit, sort: currentSort };
+    if (currentSearch) apiParams.search = currentSearch;
+    if (currentCategory1) apiParams.category1 = currentCategory1;
+    if (currentCategory2) apiParams.category2 = currentCategory2;
+
+    const data = await getProducts(apiParams);
+    currentPage = data.pagination.page;
+    hasNext = data.pagination.hasNext;
+    allProducts = data.products;
+    totalCount = data.pagination.total;
+
+    const root = document.getElementById("root");
+    root.innerHTML = MainList({
+      loading: false,
+      categories,
+      category1: currentCategory1,
+      category2: currentCategory2,
+      products: allProducts,
+      total: totalCount,
+      limit: currentLimit,
+      sort: currentSort,
+      search: currentSearch,
+    });
+    return;
   }
   // 재시도 버튼 클릭 시 main() 호출
   if (e.target.id === "retry-btn") {
@@ -547,56 +603,42 @@ document.addEventListener("click", (e) => {
   }
   // 검색 버튼 클릭 시 검색 수행
   if (e.target.id === "search-btn") {
-    // 검색어 상태 업데이트 및 URL 세팅 후 라우트 핸들러로 재실행
+    // 검색어 상태 업데이트 및 URL 세팅
     const keyword = document.getElementById("search-input").value;
     currentSearch = keyword;
     const url = new URL(window.location);
     url.searchParams.set("search", keyword);
     url.searchParams.set("current", "1");
     history.pushState({}, "", url);
-    return handleRoute();
+
+    // 즉시 반영 (로딩 화면 없이)
+    const apiParams = { page: 1, limit: currentLimit, sort: currentSort, search: currentSearch };
+    if (currentCategory1) apiParams.category1 = currentCategory1;
+    if (currentCategory2) apiParams.category2 = currentCategory2;
+
+    const data = await getProducts(apiParams);
+    currentPage = data.pagination.page;
+    hasNext = data.pagination.hasNext;
+    allProducts = data.products;
+    totalCount = data.pagination.total;
+
+    const root = document.getElementById("root");
+    root.innerHTML = MainList({
+      loading: false,
+      categories,
+      category1: currentCategory1,
+      category2: currentCategory2,
+      products: allProducts,
+      total: totalCount,
+      limit: currentLimit,
+      sort: currentSort,
+      search: currentSearch,
+    });
+    return;
   }
 });
 
-// 상세 페이지 수량 조절 이벤트 설정 함수
-function setupDetailQuantityEvents() {
-  const increaseBtn = document.querySelector("#quantity-increase");
-  const decreaseBtn = document.querySelector("#quantity-decrease");
-
-  if (increaseBtn) {
-    // 기존 이벤트 리스너 제거 (중복 방지)
-    increaseBtn.removeEventListener("click", handleQuantityIncrease);
-    increaseBtn.addEventListener("click", handleQuantityIncrease);
-  }
-
-  if (decreaseBtn) {
-    // 기존 이벤트 리스너 제거 (중복 방지)
-    decreaseBtn.removeEventListener("click", handleQuantityDecrease);
-    decreaseBtn.addEventListener("click", handleQuantityDecrease);
-  }
-}
-
-// 수량 증가 핸들러
-function handleQuantityIncrease() {
-  const quantityInput = document.querySelector("#quantity-input");
-  if (quantityInput) {
-    const currentValue = parseInt(quantityInput.value) || 1;
-    const maxValue = parseInt(quantityInput.max) || 999;
-    const newValue = Math.min(currentValue + 1, maxValue);
-    quantityInput.value = String(newValue);
-  }
-}
-
-// 수량 감소 핸들러
-function handleQuantityDecrease() {
-  const quantityInput = document.querySelector("#quantity-input");
-  if (quantityInput) {
-    const currentValue = parseInt(quantityInput.value) || 1;
-    const minValue = parseInt(quantityInput.min) || 1;
-    const newValue = Math.max(currentValue - 1, minValue);
-    quantityInput.value = String(newValue);
-  }
-}
+// 수량 증가/감소 전용 핸들러는 전역 클릭 위임 로직 내부에 존재하므로 별도 함수 필요 없음
 
 // 모달 이벤트 설정 함수
 function setupModalEvents(modalRoot) {
