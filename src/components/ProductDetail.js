@@ -22,12 +22,6 @@ export class ProductDetail extends Component {
       product: { category1, category2, image, title, description, rating, reviewCount, lprice, stock, productId },
     } = this.props.productDetailStore;
 
-    console.log(
-      "render",
-      `category1: ${category1}`,
-      `category2: ${category2} relatedProducts: ${relatedProducts.length}`,
-    );
-
     this.$el.innerHTML = html`${this.#Breadcrumb({ category1, category2 })}
       <div class="bg-white rounded-lg shadow-sm mb-6">
         <!-- 수량 선택 및 액션 -->

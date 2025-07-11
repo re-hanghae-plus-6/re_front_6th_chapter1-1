@@ -33,7 +33,6 @@ export const createProductDetailStore = () => {
       productDetailStore.productId = productId;
     },
     clear() {
-      console.log("clear");
       for (const [key, value] of Object.entries(defaultData)) {
         productDetailStore[key] = value;
       }

@@ -13,7 +13,6 @@ const addProductToCart = async (productName) => {
   const cartButton = productElement.closest(".product-card").querySelector(".add-to-cart-btn");
   await userEvent.click(cartButton);
 
-  console.log("장바구니 클릭!!");
   expect(screen.getByText("장바구니에 추가되었습니다")).toBeInTheDocument();
 };
 
