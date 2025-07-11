@@ -1,10 +1,10 @@
 import { LoadingListItem } from "./ListItem";
 import LoadingListSearchBox from "./ListSearchBox/loadingUi";
 
-const LoadingList = (limit: number = 20) => `
+const LoadingList = (limit: number = 20, search: string = "") => `
   <main class="max-w-md mx-auto px-4 py-4">
   <!-- 검색 및 필터 -->
-  ${LoadingListSearchBox(limit)}
+  ${LoadingListSearchBox(limit, search)}
     <!-- 상품 목록 -->
     <div class="mb-6">
       <div>

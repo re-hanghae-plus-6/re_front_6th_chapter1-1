@@ -5,8 +5,8 @@ import type { ListPageController } from "./controller";
 /**
  * 순수 렌더링 함수: 상태를 받아서 HTML 문자열만 반환
  */
-const ListPage = ({ products, total, loading, limit }: IListPageProps): string => {
-  return loading ? LoadingList(limit) : List({ products, total });
+const ListPage = ({ products, total, loading, limit, search }: IListPageProps): string => {
+  return loading ? LoadingList(limit, search) : List({ products, total, search });
 };
 
 /**
@@ -31,7 +31,9 @@ const updateListPageUI = (state: IListPageProps, controller?: ListPageController
  */
 const initializeListSearchBox = (controller: ListPageController): void => {
   const limitSelect = document.querySelector("#limit-select") as HTMLSelectElement;
+  const searchInput = document.querySelector("#search-input") as HTMLInputElement;
 
+  // Limit Select 이벤트 처리
   if (limitSelect) {
     // 현재 limit 값으로 select 값 설정
     limitSelect.value = controller.getLimit().toString();
@@ -43,6 +45,24 @@ const initializeListSearchBox = (controller: ListPageController): void => {
 
       if (!isNaN(newLimit)) {
         controller.setLimit(newLimit, (updatedState) => {
+          updateListPageUI(updatedState, controller);
+        });
+      }
+    });
+  }
+
+  // Search Input 이벤트 처리
+  if (searchInput) {
+    // 현재 search 값으로 input 값 설정
+    searchInput.value = controller.getSearch();
+
+    // Enter 키 검색 이벤트 리스너 등록
+    searchInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        const searchValue = searchInput.value;
+
+        controller.setSearch(searchValue, (updatedState) => {
           updateListPageUI(updatedState, controller);
         });
       }
