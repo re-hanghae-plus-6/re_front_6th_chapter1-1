@@ -1,27 +1,23 @@
 import { CartItems } from "./cartItems.js";
 import { EmptyCart } from "./emptyCart.js";
 
-export const ModalContents = ({ cartItems = [] }) => `
+export const ModalContents = ({ cartItems = [] }) => {
+  console.log(cartItems);
+  return `
     ${
       cartItems.length > 0
         ? `
+         <!-- 전체 선택 섹션 -->
+          <div class="p-4 border-b border-gray-200 bg-gray-50">
+            <label class="flex items-center text-sm text-gray-700">
+              <input type="checkbox" id="cart-modal-select-all-checkbox" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-2">
+              전체선택 (2개)
+            </label>
+          </div>
         <!-- 아이템 목록 -->
         <div class="flex-1 overflow-y-auto">
             <div class="p-4 space-y-4">
-                ${cartItems
-                  .map(
-                    (cartItem) => `
-                ${CartItems({
-                  productId: cartItem.productId,
-                  image: cartItem.image,
-                  name: cartItem.name,
-                  price: cartItem.price,
-                  count: cartItem.count,
-                  checked: cartItem.checked,
-                })}
-                `,
-                  )
-                  .join("")}
+                ${cartItems.map((cartItem) => `${CartItems(cartItem)}`).join("")}
             </div>
         </div>
         <!-- 하단 액션 -->
@@ -34,7 +30,9 @@ export const ModalContents = ({ cartItems = [] }) => `
           <!-- 총 금액 -->
           <div class="flex justify-between items-center mb-4">
             <span class="text-lg font-bold text-gray-900">총 금액</span>
-            <span class="text-xl font-bold text-blue-600">670원</span>
+            <span id="cart-modal-total-price" class="text-xl font-bold text-blue-600">${cartItems
+              .reduce((acc, cartItem) => acc + cartItem.lprice * cartItem.quantity, 0)
+              .toLocaleString("ko-KR")}원</span>
           </div>
           <!-- 액션 버튼들 -->
           <div class="space-y-2">
@@ -60,3 +58,4 @@ export const ModalContents = ({ cartItems = [] }) => `
         `
     }
 `;
+};
