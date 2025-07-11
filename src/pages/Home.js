@@ -1,4 +1,5 @@
 import { getCategories, getProducts } from "../api/productApi";
+import Breadcrumb from "../components/Breadcrumb";
 import Loading from "../components/Loading";
 import ProductCard from "../components/ProductCard";
 import ProductList from "../components/ProductList";
@@ -106,6 +107,8 @@ Home.mount = async () => {
     Object.entries(newValue).forEach(([key, value]) => {
       if (value !== "" && value) {
         url.searchParams.set(key, value);
+      } else {
+        url.searchParams.delete(key);
       }
     });
     window.history.pushState({}, "", url.toString());
@@ -120,8 +123,12 @@ Home.mount = async () => {
         pagination: state.pagination,
       }),
     );
+    render.draw("#search-container", Search(store.get("categories"), false));
+    Search.mount();
 
-    // Search.mount();
+    render.draw("#breadcrumb-container", Breadcrumb());
+    Breadcrumb.mount();
+
     ProductCard.mount();
   }, "params");
 };

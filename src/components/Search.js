@@ -1,4 +1,5 @@
-import { render, store } from "../main";
+import { store } from "../main";
+import Breadcrumb from "./Breadcrumb";
 import Loading from "./Loading";
 
 Search.mount = () => {
@@ -40,23 +41,29 @@ Search.mount = () => {
     });
   });
 
+  // 1depth 카테고리 버튼 이벤트 바인딩
   const category1Buttons = document.querySelectorAll(".category1-filter-btn");
   const categoryDefaultStyle = "category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors";
 
   category1Buttons.forEach((category1) => {
     category1.addEventListener("click", () => {
       store.set("params.category1", category1.getAttribute("data-category1"));
+      // params가 바뀌면 Home.js의 watch에서 Search, Breadcrumb 모두 다시 렌더+mount됨
+    });
+  });
 
-      render.draw("#search-container", Search(store.get("categories"), false));
-
-      document.querySelectorAll(".category2-filter-btn").forEach((category2) => {
-        category2.classList = categoryDefaultStyle + " bg-white border-gray-300 text-gray-700 hover:bg-gray-50";
-
-        category2.addEventListener("click", (event) => {
-          event.target.classList = categoryDefaultStyle + " bg-blue-100 border-blue-300 text-blue-800";
-          store.set("params.category2", category2.getAttribute("data-category2"));
-        });
+  // 2depth 카테고리 버튼 이벤트 바인딩 (렌더 후 mount에서만 바인딩!)
+  const category2Buttons = document.querySelectorAll(".category2-filter-btn");
+  category2Buttons.forEach((category2) => {
+    category2.addEventListener("click", (event) => {
+      // 모든 버튼 스타일 초기화
+      category2Buttons.forEach((btn) => {
+        btn.classList = categoryDefaultStyle + " bg-white border-gray-300 text-gray-700 hover:bg-gray-50";
       });
+      // 클릭된 버튼만 파란색
+      event.target.classList = categoryDefaultStyle + " bg-blue-100 border-blue-300 text-blue-800";
+      store.set("params.category2", category2.getAttribute("data-category2"));
+      // params가 바뀌면 Home.js의 watch에서 Search, Breadcrumb 모두 다시 렌더+mount됨
     });
   });
 };
@@ -82,9 +89,8 @@ export default function Search(categories = {}, isLoading = true) {
       <div class="space-y-3">
         <!-- 카테고리 필터 -->
         <div class="space-y-2">
-          <div class="flex items-center gap-2">
-            <label class="text-sm text-gray-600">카테고리:</label>
-            <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
+          <div class="flex items-center gap-2" id="breadcrumb-container">
+            ${Breadcrumb()}
           </div>
           <!-- 1depth 카테고리 -->
           <div class="flex flex-wrap gap-2">
@@ -107,7 +113,7 @@ export default function Search(categories = {}, isLoading = true) {
                     .join("")
                 : ""
           }
-    
+        <!-- 2depth 카테고리 -->
           ${
             store.get("params")["category1"] && categories[store.get("params")["category1"]]
               ? Object.keys(categories[store.get("params")["category1"]])
