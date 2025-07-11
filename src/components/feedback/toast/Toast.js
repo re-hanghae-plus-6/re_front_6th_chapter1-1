@@ -1,5 +1,5 @@
 import Component from '../../../core/Component.js';
-import toastStore from '../../../store/toastStore.js';
+import toastStore, { closeToast } from '../../../store/toastStore.js';
 
 const TOAST_TYPE_MAP = {
   success: {
@@ -42,23 +42,12 @@ class Toast extends Component {
     super(element, props);
   }
 
-  onMount() {
-    setTimeout(() => {
-      this.closeToast();
-    }, 3000);
-  }
-
-  closeToast() {
-    toastStore.setState({
-      isOpen: false,
-    });
-  }
-
   attachEventListeners() {
     this.addEventListener(this.element, 'click', (event) => {
       const state = toastStore.getState();
-      if (!event.target.closest('#toast-close-btn') && state.isOpen) {
-        this.closeToast();
+      const toastCloseBtn = event.target.closest('#toast-close-btn');
+      if (toastCloseBtn && state.isOpen) {
+        closeToast();
       }
     });
   }

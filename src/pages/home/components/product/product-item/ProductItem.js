@@ -1,7 +1,7 @@
 import Component from '../../../../../core/Component.js';
 import { numberUtils } from '../../../../../utils/numberUtils.js';
 import cartLocalStorage from '../../../../../store/cartLocalStorage.js';
-import toastStore from '../../../../../store/toastStore.js';
+import { toastSuccess } from '../../../../../store/toastStore.js';
 import { router } from '../../../../../utils/router.js';
 
 class ProductItem extends Component {
@@ -29,20 +29,12 @@ class ProductItem extends Component {
     cartLocalStorage.set('cartProducts', cartItems);
   }
 
-  openToast() {
-    toastStore.setState({
-      isOpen: true,
-      type: 'success',
-      message: '장바구니에 추가되었습니다',
-    });
-  }
-
   attachEventListeners() {
     this.addEventListener(this.element, 'click', (event) => {
       if (event.target.id === 'cart-add-button') {
         event.stopPropagation();
         this.addCartItem();
-        this.openToast();
+        toastSuccess('장바구니에 추가되었습니다', 3000);
         return;
       }
 
