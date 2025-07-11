@@ -73,12 +73,9 @@ export const productsStore = observable({
     productsStore.updateParams("category1", "");
     productsStore.updateParams("category2", "");
   },
-  setCategory1(category1) {
-    productsStore.loadProducts({ category1 });
+  setCategories({ category1, category2 }) {
+    productsStore.loadProducts({ category1, category2 });
     productsStore.updateParams("category1", category1);
-  },
-  setCategory2(category2) {
-    productsStore.loadProducts({ category2 });
     productsStore.updateParams("category2", category2);
   },
   setSort(sort) {
@@ -97,6 +94,7 @@ export const productsStore = observable({
     };
   },
   async loadProducts(params = {}) {
+    console.log("loadProducts", params);
     const data = await productsStore.fetchProducts({ ...productsStore.getParams(), ...params, page: 1 });
     productsStore.setData(data);
     productsStore.setParams({ ...params, page: 1 });
