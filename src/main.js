@@ -8,13 +8,12 @@ import { NotFound } from "./components/pages/NotFound.js";
 import { formatPrice } from "./utils/format.js";
 
 const enableMocking = () =>
-  import("./mocks/browser.js").then(({ worker, workerOptions }) => worker.start(workerOptions));
+  import("./mocks/browser.js").then(({ worker }) =>
+    worker.start({
+      onUnhandledRequest: "bypass",
+    }),
+  );
 
-if (import.meta.env.MODE !== "test") {
-  enableMocking().then(main);
-} else {
-  main();
-}
 // infinite scroll 상태 관리
 let totalCount = 0;
 let currentPage = 1;
