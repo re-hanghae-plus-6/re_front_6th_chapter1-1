@@ -68,6 +68,11 @@ export const productsStore = observable({
     productsStore.loadProducts({ search });
     productsStore.updateParams("search", search);
   },
+  resetCategories() {
+    productsStore.loadProducts({ category1: "", category2: "" });
+    productsStore.updateParams("category1", "");
+    productsStore.updateParams("category2", "");
+  },
   setCategory1(category1) {
     productsStore.loadProducts({ category1 });
     productsStore.updateParams("category1", category1);

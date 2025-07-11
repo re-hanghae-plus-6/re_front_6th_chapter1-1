@@ -24,8 +24,7 @@ export class Breadcrumb extends Component {
         productsStore.setCategory1(dataset.category1);
         productsStore.setCategory2("");
       } else if ("breadcrumb" in dataset) {
-        productsStore.setCategory1("");
-        productsStore.setCategory2("");
+        productsStore.resetCategories();
       }
     });
   }
