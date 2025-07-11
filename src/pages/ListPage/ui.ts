@@ -29,7 +29,7 @@ const updateListPageUI = (state: IListPageProps): void => {
  * 초기 ListPage 컨테이너 생성
  */
 const createListPageContainer = (): string => {
-  return `</>`;
+  return `<div id="list-page-container"></div>`;
 };
 
 export default ListPage;
