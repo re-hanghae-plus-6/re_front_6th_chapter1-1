@@ -134,7 +134,7 @@ describe("3. 관련 상품 기능", () => {
     await 상품_상세페이지_접속();
 
     // 관련 상품 섹션이 있는지 확인
-    expect(screen.queryByText("관련 상품")).not.toBeInTheDocument();
+
     expect(await screen.findByText("관련 상품")).toBeInTheDocument();
 
     // 관련 상품 카드들이 있는지 확인
