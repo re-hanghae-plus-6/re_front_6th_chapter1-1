@@ -5,11 +5,7 @@ import { NotFoundPage } from "./pages/NotFoundPage.js";
 import { onChangeUrl } from "./utils/urlUtils.js";
 
 const enableMocking = () =>
-  import("./mocks/browser.js").then(({ worker }) =>
-    worker.start({
-      onUnhandledRequest: "bypass",
-    }),
-  );
+  import("./mocks/browser.js").then(({ worker, workerOptions }) => worker.start(workerOptions));
 
 function main() {
   /**TODO :: 규칙에 따라 matchPattern을 만들어내는 함수 추출 */
