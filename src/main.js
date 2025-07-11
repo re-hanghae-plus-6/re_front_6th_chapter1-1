@@ -1,4 +1,5 @@
 import { router } from "./core/router.js";
+import { _404Page } from "./pages/404.js";
 import { ProductDetailPage } from "./pages/product-detail.js";
 import { ProductsPage } from "./pages/products.js";
 import { cartStore } from "./store/cart.js";
@@ -8,14 +9,9 @@ const enableMocking = () =>
 
 function main() {
   cartStore.init();
-  router
-    .addPage("/", ProductsPage)
-    .addPage("/product/:productId", ProductDetailPage)
-    .init({
-      _404: () => {
-        throw new Error("404");
-      },
-    });
+  router.addPage("/", ProductsPage).addPage("/product/:productId", ProductDetailPage).init({
+    _404: _404Page,
+  });
 }
 
 main2();
