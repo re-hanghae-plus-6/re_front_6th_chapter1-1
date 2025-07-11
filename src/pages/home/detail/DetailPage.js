@@ -21,7 +21,7 @@ class DetailPage extends Component {
     const product = await getProduct(this.props.id);
     const relatedProducts = await getProducts({
       category1: product.category1,
-      categrty2: product.categrty2,
+      category2: product.category2,
     });
     this.setState({
       loading: false,
