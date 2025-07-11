@@ -1,3 +1,5 @@
+const BASE = process.env.NODE_ENV === "production" ? "/front_6th_chapter1-1/" : "/";
+
 export class Router {
   constructor(routes, rootElement) {
     this.routes = routes;
@@ -61,17 +63,32 @@ export class Router {
     // 쿼리스트링이 있는 경우
     if (path.includes("?")) {
       const [pathname, search] = path.split("?");
+
       // pathname이 /로 시작하지 않으면 / 추가
       const normalizedPathname = pathname.startsWith("/") ? pathname : `/${pathname}`;
-      return `${normalizedPathname}?${search}`;
+
+      const fullPath =
+        BASE === "/" ? normalizedPathname : `${BASE.slice(0, -1)}${normalizedPathname}`;
+      return `${fullPath}?${search}`;
     }
 
     // 쿼리스트링이 없는 경우
-    return path.startsWith("/") ? path : `/${path}`;
+    const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+    return BASE === "/" ? normalizedPath : `${BASE.slice(0, -1)}${normalizedPath}`;
   }
 
   getCurrentPath() {
-    return window.location.pathname;
+    const fullPath = window.location.pathname;
+
+    if (BASE !== "/") {
+      const baseWithoutSlash = BASE.slice(0, -1);
+
+      if (fullPath.startsWith(baseWithoutSlash)) {
+        return fullPath.slice(baseWithoutSlash.length) || "/";
+      }
+    }
+
+    return fullPath;
   }
 
   parseQueryParams() {
@@ -198,6 +215,11 @@ export class Router {
   updateURL() {
     const url = new URL(window.location);
 
+    const relativePath = this.getCurrentPath();
+
+    const fullPath = BASE === "/" ? relativePath : `${BASE.slice(0, -1)}${relativePath}`;
+
+    url.pathname = fullPath;
     url.search = "";
 
     Object.entries(this.queryParams).forEach(([key, value]) => {
