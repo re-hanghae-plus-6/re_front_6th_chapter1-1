@@ -118,7 +118,7 @@ export async function selectAll(selected) {
     i.selected = selected;
   });
   persist();
-  await renderModalContent(); // DOM 렌더링 완료 보장
+  await renderModalContent();
 }
 
 // Helper to keep in-memory cart in sync with localStorage (important for test isolation)
