@@ -1,4 +1,5 @@
 import { addEvent } from "../../utils/eventManager.js";
+import { createComponent } from "../../utils/domUtils.js";
 
 const getToastIcon = (type) => {
   switch (type) {
@@ -26,20 +27,7 @@ const getToastColor = (type) => {
   }
 };
 
-const getToastContainer = () => {
-  let container = document.getElementById("toast-container");
-  if (!container) {
-    container = document.createElement("div");
-    container.id = "toast-container";
-    container.className = "fixed bottom-4 left-1/2 transform -translate-x-1/2 z-[100]";
-    document.body.appendChild(container);
-
-    Toast.onMount();
-  }
-  return container;
-};
-
-const createToastHTML = ({ message, type = "info" }) => `
+const renderToast = ({ message, type = "info" }) => `
   <div class="${getToastColor(type)} text-white px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2 max-w-sm animate-slide-up">
     <div class="flex-shrink-0">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -55,24 +43,51 @@ const createToastHTML = ({ message, type = "info" }) => `
   </div>
 `;
 
+let toastEventListenerInitialized = false;
+
+const ToastComponent = createComponent(
+  renderToast,
+  { message: "", type: "info" },
+  {
+    mount: () => {
+      if (!toastEventListenerInitialized) {
+        addEvent("click", ".toast-close-btn", (e) => {
+          const toast = e.target.closest('[id^="toast-"]');
+          if (toast) {
+            toast.remove();
+          }
+        });
+        toastEventListenerInitialized = true;
+      }
+    },
+  },
+);
+
+const getToastContainer = () => {
+  let container = document.getElementById("toast-container");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "toast-container";
+    container.className = "fixed bottom-4 left-1/2 transform -translate-x-1/2 z-[100]";
+    document.body.appendChild(container);
+
+    ToastComponent.mount();
+  }
+  return container;
+};
+
 export const Toast = ({ message, type = "info" }) => {
-  const toastElement = document.createElement("div");
-  toastElement.innerHTML = createToastHTML({ message, type });
-
-  const toastContent = toastElement.firstElementChild;
-
-  return toastContent;
+  return renderToast({ message, type });
 };
 
-Toast.toHTML = createToastHTML;
-
-Toast.onMount = () => {
-  addEvent("click", ".toast-close-btn", (e) => {
-    const toast = e.target.closest('[id^="toast-"]');
-    if (toast) {
-      toast.remove();
-    }
-  });
-};
-
+Toast.toHTML = renderToast;
 Toast.getContainer = getToastContainer;
+
+Toast.create = ({ message, type = "info" }) => {
+  const toastElement = document.createElement("div");
+  toastElement.innerHTML = renderToast({ message, type });
+  return toastElement.firstElementChild;
+};
+
+Toast.mount = ToastComponent.mount;
+Toast.unmount = ToastComponent.unmount;

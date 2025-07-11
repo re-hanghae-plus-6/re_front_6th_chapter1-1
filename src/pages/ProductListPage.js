@@ -7,7 +7,7 @@ import { getProducts, getCategories } from "../api/productApi.js";
 import { getURLParams, updateURLParams } from "../utils/urlParams.js";
 import { addEvent } from "../utils/eventManager.js";
 import { router } from "../router.js";
-import { updateElement } from "../utils/domUtils.js";
+import { updateElement, createComponent } from "../utils/domUtils.js";
 import { setupInfiniteScroll } from "../utils/infiniteScroll.js";
 import { addToCart } from "../features/cart/services/cartService.js";
 import { showSuccessToast, showErrorToast } from "../utils/toastManager.js";
@@ -172,7 +172,7 @@ const renderErrorContent = (errorMessage) => `
   </div>
 `;
 
-export const ProductListPage = () => {
+const renderProductListPage = () => {
   const state = productStore.getState();
   const params = getURLParams(defaultParams);
 
@@ -485,21 +485,25 @@ const setupPageComponents = () => {
   infiniteScrollCleanup = setupProductInfiniteScroll();
 };
 
-ProductListPage.onMount = async () => {
-  const currentParams = getURLParams(defaultParams);
+export const ProductListPage = createComponent(
+  renderProductListPage,
+  {},
+  {
+    mount: async () => {
+      const currentParams = getURLParams(defaultParams);
+      setupPageComponents();
+      await loadProductListPageInitialData(currentParams);
+    },
+    unmount: () => {
+      if (storeUnsubscribe) {
+        storeUnsubscribe();
+        storeUnsubscribe = null;
+      }
 
-  setupPageComponents();
-  await loadProductListPageInitialData(currentParams);
-};
-
-ProductListPage.onUnmount = () => {
-  if (storeUnsubscribe) {
-    storeUnsubscribe();
-    storeUnsubscribe = null;
-  }
-
-  if (infiniteScrollCleanup) {
-    infiniteScrollCleanup();
-    infiniteScrollCleanup = null;
-  }
-};
+      if (infiniteScrollCleanup) {
+        infiniteScrollCleanup();
+        infiniteScrollCleanup = null;
+      }
+    },
+  },
+);

@@ -20,23 +20,32 @@ export function render() {
     const Page = currentRoute.getTarget() ?? NotFoundPage;
     const routePath = currentRoute.path;
 
-    $root.innerHTML = Page();
+    const pageHTML = typeof Page === "function" ? Page() : Page.render?.() || "";
+    $root.innerHTML = pageHTML;
 
-    if (!isHeaderInitialized && typeof Header.onMount === "function") {
-      Header.onMount();
+    if (!isHeaderInitialized && typeof Header.mount === "function") {
+      Header.mount();
       isHeaderInitialized = true;
     }
 
-    if (typeof Page.onMount === "function") {
-      if (routePath !== currentMountedPage) {
-        if (currentMountedPage && currentPageComponent && typeof currentPageComponent.onUnmount === "function") {
+    if (routePath !== currentMountedPage) {
+      if (currentMountedPage && currentPageComponent) {
+        if (typeof currentPageComponent.unmount === "function") {
+          currentPageComponent.unmount();
+        } else if (typeof currentPageComponent.onUnmount === "function") {
           currentPageComponent.onUnmount();
         }
+      }
 
+      if (typeof Page.mount === "function") {
+        Page.mount();
+        currentPageComponent = Page;
+      } else if (typeof Page.onMount === "function") {
         Page.onMount();
-        currentMountedPage = routePath;
         currentPageComponent = Page;
       }
+
+      currentMountedPage = routePath;
     }
   } catch (error) {
     console.error(error);

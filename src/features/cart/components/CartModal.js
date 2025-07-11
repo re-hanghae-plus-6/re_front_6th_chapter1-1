@@ -11,7 +11,7 @@ import { cartStore, CART_STORAGE_KEY } from "../store/cartStore.js";
 import { saveToStorage } from "../../../utils/localStorage.js";
 import { navigate } from "../../../router.js";
 import { addEvent } from "../../../utils/eventManager.js";
-import { updateElement } from "../../../utils/domUtils.js";
+import { updateElement, createComponent } from "../../../utils/domUtils.js";
 import { showInfoToast, showSuccessToast } from "../../../utils/toastManager.js";
 
 const renderHeader = (totalItems = 0) => `
@@ -188,7 +188,7 @@ const renderCartWithItemsContent = (items, selectedItems) => {
   `;
 };
 
-export const CartModal = ({ items = [], selectedItems = [] } = {}) => {
+const renderCartModal = ({ items = [], selectedItems = [] } = {}) => {
   const totalItems = items.length;
 
   if (totalItems === 0) {
@@ -198,78 +198,99 @@ export const CartModal = ({ items = [], selectedItems = [] } = {}) => {
   return renderModalWrapper(renderCartWithItemsContent(items, selectedItems));
 };
 
-CartModal.onMount = () => {
-  const closeBtn = document.getElementById("cart-modal-close-btn");
-  if (closeBtn) {
-    closeBtn.addEventListener("click", closeCartModal);
-  }
+let keydownHandler = null;
 
-  const escKeyHandler = (e) => {
-    if (e.key === "Escape") {
-      closeCartModal();
-    }
-  };
-  document.addEventListener("keydown", escKeyHandler);
-
-  const modalContainer = document.getElementById("cart-modal-container");
-  if (modalContainer) {
-    modalContainer.addEventListener("click", (e) => {
-      const modalContent = e.target.closest("#cart-modal-content");
-      if (!modalContent) {
-        closeCartModal();
+const CartModalComponent = createComponent(
+  renderCartModal,
+  { items: [], selectedItems: [] },
+  {
+    mount: () => {
+      const closeBtn = document.getElementById("cart-modal-close-btn");
+      if (closeBtn) {
+        closeBtn.addEventListener("click", closeCartModal);
       }
-    });
-  }
 
-  addEvent("change", "#cart-modal-select-all-checkbox", (e) => {
-    toggleAllSelection(e.target.checked);
-  });
+      keydownHandler = (e) => {
+        if (e.key === "Escape") {
+          closeCartModal();
+        }
+      };
+      document.addEventListener("keydown", keydownHandler);
 
-  addEvent("change", ".cart-item-checkbox", (e) => {
-    const productId = e.target.dataset.productId;
-    toggleItemSelection(productId, e.target.checked);
-  });
+      const modalContainer = document.getElementById("cart-modal-container");
+      if (modalContainer) {
+        modalContainer.addEventListener("click", (e) => {
+          const modalContent = e.target.closest("#cart-modal-content");
+          if (!modalContent) {
+            closeCartModal();
+          }
+        });
+      }
 
-  addEvent("click", ".quantity-increase-btn", (e) => {
-    const productId = e.target.closest("button").dataset.productId;
-    const quantityInput = document.querySelector(`.quantity-input[data-product-id="${productId}"]`);
-    const newQuantity = parseInt(quantityInput.value) + 1;
-    updateItemQuantity(productId, newQuantity);
-  });
+      addEvent("change", "#cart-modal-select-all-checkbox", (e) => {
+        toggleAllSelection(e.target.checked);
+      });
 
-  addEvent("click", ".quantity-decrease-btn", (e) => {
-    const productId = e.target.closest("button").dataset.productId;
-    const quantityInput = document.querySelector(`.quantity-input[data-product-id="${productId}"]`);
-    const newQuantity = Math.max(1, parseInt(quantityInput.value) - 1);
-    updateItemQuantity(productId, newQuantity);
-  });
+      addEvent("change", ".cart-item-checkbox", (e) => {
+        const productId = e.target.dataset.productId;
+        toggleItemSelection(productId, e.target.checked);
+      });
 
-  addEvent("click", ".cart-item-remove-btn", (e) => {
-    const productId = e.target.dataset.productId;
-    removeFromCart(productId);
-    showSuccessToast("상품이 장바구니에서 제거되었습니다.");
-  });
+      addEvent("click", ".quantity-increase-btn", (e) => {
+        const productId = e.target.closest("button").dataset.productId;
+        const quantityInput = document.querySelector(`.quantity-input[data-product-id="${productId}"]`);
+        const newQuantity = parseInt(quantityInput.value) + 1;
+        updateItemQuantity(productId, newQuantity);
+      });
 
-  addEvent("click", "#cart-modal-remove-selected-btn", () => {
-    removeSelectedItems();
-    showSuccessToast("선택한 상품들이 삭제되었습니다.");
-  });
+      addEvent("click", ".quantity-decrease-btn", (e) => {
+        const productId = e.target.closest("button").dataset.productId;
+        const quantityInput = document.querySelector(`.quantity-input[data-product-id="${productId}"]`);
+        const newQuantity = Math.max(1, parseInt(quantityInput.value) - 1);
+        updateItemQuantity(productId, newQuantity);
+      });
 
-  addEvent("click", "#cart-modal-clear-cart-btn", () => {
-    clearCart();
-    showInfoToast("장바구니가 비워졌습니다.");
-  });
+      addEvent("click", ".cart-item-remove-btn", (e) => {
+        const productId = e.target.dataset.productId;
+        removeFromCart(productId);
+        showSuccessToast("상품이 장바구니에서 제거되었습니다.");
+      });
 
-  addEvent("click", "#cart-modal-checkout-btn", () => {
-    showSuccessToast("구매 기능은 준비중입니다.");
-  });
+      addEvent("click", "#cart-modal-remove-selected-btn", () => {
+        removeSelectedItems();
+        showSuccessToast("선택한 상품들이 삭제되었습니다.");
+      });
 
-  addEvent("click", ".cart-item-image, .cart-item-title", (e) => {
-    const productId = e.target.dataset.productId;
-    closeCartModal();
-    navigate(`/product/${productId}`);
-  });
+      addEvent("click", "#cart-modal-clear-cart-btn", () => {
+        clearCart();
+        showInfoToast("장바구니가 비워졌습니다.");
+      });
+
+      addEvent("click", "#cart-modal-checkout-btn", () => {
+        showSuccessToast("구매 기능은 준비중입니다.");
+      });
+
+      addEvent("click", ".cart-item-image, .cart-item-title", (e) => {
+        const productId = e.target.dataset.productId;
+        closeCartModal();
+        navigate(`/product/${productId}`);
+      });
+    },
+    unmount: () => {
+      if (keydownHandler) {
+        document.removeEventListener("keydown", keydownHandler);
+        keydownHandler = null;
+      }
+    },
+  },
+);
+
+export const CartModal = (props) => {
+  return renderCartModal(props);
 };
+
+CartModal.mount = CartModalComponent.mount;
+CartModal.unmount = CartModalComponent.unmount;
 
 const createModalContainer = () => {
   cleanupModal();
@@ -300,7 +321,7 @@ const renderModal = () => {
   if (isModalOpen) {
     createModalContainer();
     updateElement("#cart-modal-container", CartModal({ items, selectedItems }));
-    CartModal.onMount();
+    CartModal.mount();
   } else {
     cleanupModal();
   }

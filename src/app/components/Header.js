@@ -1,6 +1,7 @@
 import { cartStore } from "../../features/cart/store/cartStore.js";
 import { addEvent } from "../../utils/eventManager.js";
 import { openCartModal } from "../../features/cart/services/cartService.js";
+import { createComponent } from "../../utils/domUtils.js";
 
 const updateCartIcon = () => {
   const { itemCount } = cartStore.getState();
@@ -29,7 +30,7 @@ const handleCartIconClick = () => {
   openCartModal();
 };
 
-export const Header = ({ title = "쇼핑몰", showBackButton = false } = {}) => {
+const renderHeader = ({ title = "쇼핑몰", showBackButton = false } = {}) => {
   const { itemCount } = cartStore.getState();
 
   return `
@@ -77,8 +78,28 @@ export const Header = ({ title = "쇼핑몰", showBackButton = false } = {}) => 
   `;
 };
 
-Header.onMount = () => {
-  addEvent("click", "#cart-icon-btn", handleCartIconClick);
+let cartStoreUnsubscribe = null;
 
-  cartStore.subscribe(updateCartIcon);
+const HeaderComponent = createComponent(
+  renderHeader,
+  { title: "쇼핑몰", showBackButton: false },
+  {
+    mount: () => {
+      addEvent("click", "#cart-icon-btn", handleCartIconClick);
+      cartStoreUnsubscribe = cartStore.subscribe(updateCartIcon);
+    },
+    unmount: () => {
+      if (cartStoreUnsubscribe) {
+        cartStoreUnsubscribe();
+        cartStoreUnsubscribe = null;
+      }
+    },
+  },
+);
+
+export const Header = ({ title = "쇼핑몰", showBackButton = false } = {}) => {
+  return renderHeader({ title, showBackButton });
 };
+
+Header.mount = HeaderComponent.mount;
+Header.unmount = HeaderComponent.unmount;

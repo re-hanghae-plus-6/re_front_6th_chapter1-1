@@ -5,7 +5,7 @@ import { productDetailStore } from "../features/product/store/productDetailStore
 import { getProduct, getProducts } from "../api/productApi.js";
 import { useParams, router } from "../router.js";
 import { addEvent } from "../utils/eventManager.js";
-import { updateElement } from "../utils/domUtils.js";
+import { updateElement, createComponent } from "../utils/domUtils.js";
 import { addToCart } from "../features/cart/services/cartService.js";
 import { showSuccessToast, showErrorToast } from "../utils/toastManager.js";
 
@@ -217,6 +217,20 @@ const generateStars = (rating) => {
   return stars;
 };
 
+const renderProductDetailPage = () => {
+  const state = productDetailStore.getState();
+
+  return `
+    <div class="min-h-screen bg-gray-50">
+      ${Header({ title: "상품 상세", showBackButton: true })}
+      <main class="max-w-md mx-auto px-4 py-4">
+        ${state.isLoading ? renderLoadingContent() : state.error ? renderErrorContent(state.error) : renderProductContent(state.product, state.relatedProducts, state.quantity)}
+      </main>
+      ${Footer()}
+    </div>
+  `;
+};
+
 const loadProductDetail = async (productId) => {
   try {
     productDetailStore.setState({
@@ -378,37 +392,28 @@ const setupStateSubscriptions = () => {
   });
 };
 
-export const ProductDetailPage = () => {
-  const state = productDetailStore.getState();
+export const ProductDetailPage = createComponent(
+  renderProductDetailPage,
+  {},
+  {
+    mount: () => {
+      const params = useParams();
+      const productId = params.id;
 
-  return `
-    <div class="min-h-screen bg-gray-50">
-      ${Header({ title: "상품 상세", showBackButton: true })}
-      <main class="max-w-md mx-auto px-4 py-4">
-        ${state.isLoading ? renderLoadingContent() : state.error ? renderErrorContent(state.error) : renderProductContent(state.product, state.relatedProducts, state.quantity)}
-      </main>
-      ${Footer()}
-    </div>
-  `;
-};
+      if (!productId) {
+        console.error("상품 ID가 없습니다.");
+        return;
+      }
 
-ProductDetailPage.onMount = () => {
-  const params = useParams();
-  const productId = params.id;
-
-  if (!productId) {
-    console.error("상품 ID가 없습니다.");
-    return;
-  }
-
-  storeUnsubscribe = setupStateSubscriptions();
-  setupEventHandlers();
-  loadProductDetail(productId);
-};
-
-ProductDetailPage.onUnmount = () => {
-  if (storeUnsubscribe) {
-    storeUnsubscribe();
-    storeUnsubscribe = null;
-  }
-};
+      storeUnsubscribe = setupStateSubscriptions();
+      setupEventHandlers();
+      loadProductDetail(productId);
+    },
+    unmount: () => {
+      if (storeUnsubscribe) {
+        storeUnsubscribe();
+        storeUnsubscribe = null;
+      }
+    },
+  },
+);

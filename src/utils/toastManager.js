@@ -4,7 +4,7 @@ let toastIdCounter = 0;
 
 const createToast = (message, type, duration) => {
   const toastId = `toast-${++toastIdCounter}`;
-  const toastElement = Toast({ message, type });
+  const toastElement = Toast.create({ message, type });
 
   toastElement.id = toastId;
   toastElement.className += " mb-2";
