@@ -6,7 +6,7 @@ export async function getProducts(params = {}) {
   const searchParams = new URLSearchParams({
     page: page.toString(),
     limit: limit.toString(),
-    ...(search && { search: encodeURIComponent(search) }),
+    ...(search && { search }),
     ...(category1 && { category1 }),
     ...(category2 && { category2 }),
     sort,
