@@ -21,6 +21,30 @@ let state = {
   category2: '',
 };
 
+function getStateFromURL() {
+  const urlParams = new URLSearchParams(window.location.search);
+  return {
+    search: urlParams.get('search') || '',
+    category1: decodeURIComponent(urlParams.get('category1') || ''),
+    category2: decodeURIComponent(urlParams.get('category2') || ''),
+    sort: urlParams.get('sort') || 'price_asc',
+    limit: parseInt(urlParams.get('limit')) || 20,
+  };
+}
+
+function updateURL() {
+  const params = new URLSearchParams();
+
+  if (state.search) params.set('search', state.search);
+  if (state.category1) params.set('category1', state.category1);
+  if (state.category2) params.set('category2', state.category2);
+  if (state.sort !== 'price_asc') params.set('sort', state.sort);
+  if (state.limit !== 20) params.set('limit', state.limit.toString());
+
+  const newURL = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+  window.history.replaceState({}, '', newURL);
+}
+
 let isEventListenerSetUp = false;
 
 function render() {
@@ -72,6 +96,7 @@ function setUpEventListeners() {
         state.search = searchValue;
         state.page = 1;
         state.loading = true;
+        updateURL();
         render();
 
         const data = await getProducts({
@@ -98,6 +123,7 @@ function setUpEventListeners() {
       state.category2 = ''; // 2depth 초기화
       state.page = 1;
       state.loading = true;
+      updateURL();
       render();
 
       const data = await getProducts({
@@ -120,6 +146,7 @@ function setUpEventListeners() {
       state.category2 = selectedCategory2;
       state.page = 1;
       state.loading = true;
+      updateURL();
       render();
 
       const data = await getProducts({
@@ -143,6 +170,7 @@ function setUpEventListeners() {
       state.category2 = '';
       state.page = 1;
       state.loading = true;
+      updateURL();
       render();
 
       const data = await getProducts({
@@ -162,6 +190,7 @@ function setUpEventListeners() {
       state.category2 = ''; // 2depth만 초기화
       state.page = 1;
       state.loading = true;
+      updateURL();
       render();
 
       const data = await getProducts({
@@ -185,6 +214,7 @@ function setUpEventListeners() {
       state.limit = newLimit;
       state.page = 1;
       state.loading = true;
+      updateURL();
       render();
 
       const data = await getProducts({
@@ -206,6 +236,7 @@ function setUpEventListeners() {
       state.sort = newSort;
       state.page = 1;
       state.loading = true;
+      updateURL();
       render();
 
       const data = await getProducts({
@@ -230,9 +261,19 @@ function setUpEventListeners() {
 }
 
 export async function main() {
+  const urlState = getStateFromURL();
+  state = { ...state, ...urlState };
+
   state.loading = true;
   render();
-  const data = await getProducts({ page: 1, limit: state.limit });
+  const data = await getProducts({
+    page: 1,
+    limit: state.limit,
+    search: state.search,
+    sort: state.sort,
+    category1: state.category1,
+    category2: state.category2,
+  });
   console.log(data);
   const categories = await getCategories();
   console.log(categories);
