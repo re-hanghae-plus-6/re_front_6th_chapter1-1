@@ -30,7 +30,7 @@ class DetailPage extends Component {
     });
 
     // 장바구니 데이터 변경시 자동 리렌더
-    this.unsubscribeCartStorage = cartLocalStorage.subscribe('cartProducts', () => {
+    this.unsubscribeCartStorage = cartLocalStorage.subscribe('shopping_cart', () => {
       this.render();
     });
   }
@@ -74,7 +74,7 @@ class DetailPage extends Component {
       updatedCart = [...items, newItem];
     }
 
-    cartLocalStorage.set('cartProducts', updatedCart);
+    cartLocalStorage.set('shopping_cart', updatedCart);
     toastSuccess('장바구니에 추가되었습니다');
   }
 
@@ -98,7 +98,7 @@ class DetailPage extends Component {
         return;
       }
 
-      const products = cartLocalStorage.get('cartProducts') || [];
+      const products = cartLocalStorage.get('shopping_cart') || [];
       const addToCartBtn = event.target.closest('#add-to-cart-btn');
       if (addToCartBtn) {
         this.handleAddCartItem(products, {

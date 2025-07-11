@@ -11,7 +11,7 @@ class ProductItem extends Component {
 
   addCartItem() {
     const { productId, title, image, lprice } = this.props;
-    const cartItems = cartLocalStorage.get('cartProducts') || [];
+    const cartItems = cartLocalStorage.get('shopping_cart') || [];
     const idx = cartItems.findIndex((i) => i.productId === productId);
 
     if (idx > -1) {
@@ -26,7 +26,7 @@ class ProductItem extends Component {
         isSelected: false,
       });
     }
-    cartLocalStorage.set('cartProducts', cartItems);
+    cartLocalStorage.set('shopping_cart', cartItems);
   }
 
   attachEventListeners() {

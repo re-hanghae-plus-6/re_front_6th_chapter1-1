@@ -13,7 +13,7 @@ class Header extends Component {
 
   onMount() {
     // 장바구니 데이터 변경시 자동 리렌더
-    this.unsubscribeCartStorage = cartLocalStorage.subscribe('cartProducts', () => {
+    this.unsubscribeCartStorage = cartLocalStorage.subscribe('shopping_cart', () => {
       this.render();
     });
 
@@ -72,7 +72,7 @@ class Header extends Component {
 
   render() {
     const isDetailPage = this.router.isCurrentPathStartsWith('/detail');
-    const cartItems = cartLocalStorage.get('cartProducts') || [];
+    const cartItems = cartLocalStorage.get('shopping_cart') || [];
     const cartItemsLength = cartItems.length || 0;
 
     this.element.innerHTML = /* HTML */ `

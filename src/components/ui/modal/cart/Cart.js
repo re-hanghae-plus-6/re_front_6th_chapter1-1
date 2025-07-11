@@ -11,7 +11,7 @@ class Cart extends Component {
 
   onMount() {
     // 장바구니 데이터 변경시 자동 리렌더
-    this.unsubscribeCartStorage = cartLocalStorage.subscribe('cartProducts', () => {
+    this.unsubscribeCartStorage = cartLocalStorage.subscribe('shopping_cart', () => {
       this.render();
     });
   }
@@ -33,7 +33,7 @@ class Cart extends Component {
       return { ...item, isSelected: !item.isSelected };
     });
 
-    cartLocalStorage.set('cartProducts', updatedCartItems);
+    cartLocalStorage.set('shopping_cart', updatedCartItems);
   }
 
   handleSelectItem(items, productId) {
@@ -45,7 +45,7 @@ class Cart extends Component {
       return { ...item, isSelected: !item.isSelected };
     });
 
-    cartLocalStorage.set('cartProducts', updatedCartItems);
+    cartLocalStorage.set('shopping_cart', updatedCartItems);
   }
 
   handleChangeQuantity(items, productId, action) {
@@ -64,7 +64,7 @@ class Cart extends Component {
       return { ...item, quantity: newQuantity };
     });
 
-    cartLocalStorage.set('cartProducts', updatedCartItems);
+    cartLocalStorage.set('shopping_cart', updatedCartItems);
   }
 
   handleRemoveItem(items, productId) {
@@ -72,12 +72,12 @@ class Cart extends Component {
       return item.productId !== productId;
     });
 
-    cartLocalStorage.set('cartProducts', updatedCartItems);
+    cartLocalStorage.set('shopping_cart', updatedCartItems);
   }
 
   handleClearAllItems() {
-    cartLocalStorage.set('cartProducts', []);
-    cartLocalStorage.remove('cartProducts');
+    cartLocalStorage.set('shopping_cart', []);
+    cartLocalStorage.remove('shopping_cart');
   }
 
   handleSelectedRemoveItem(items) {
@@ -85,7 +85,7 @@ class Cart extends Component {
       return !item.isSelected;
     });
 
-    cartLocalStorage.set('cartProducts', updatedCartItems);
+    cartLocalStorage.set('shopping_cart', updatedCartItems);
   }
 
   attachEventListeners() {
@@ -101,7 +101,7 @@ class Cart extends Component {
         return;
       }
 
-      const products = cartLocalStorage.get('cartProducts');
+      const products = cartLocalStorage.get('shopping_cart');
       const decreaseBtn = event.target.closest('.quantity-decrease-btn');
       if (decreaseBtn) {
         const productId = decreaseBtn.dataset.productId;
@@ -343,7 +343,7 @@ class Cart extends Component {
   }
 
   render() {
-    const cartItems = cartLocalStorage.get('cartProducts') || [];
+    const cartItems = cartLocalStorage.get('shopping_cart') || [];
     const isAllSelected = cartItems.length > 0 && cartItems.every((item) => item.isSelected);
     const selectedItems = cartItems.filter((item) => item.isSelected);
     const selectedItemLength = selectedItems.length || 0;
