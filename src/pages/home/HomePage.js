@@ -13,27 +13,28 @@ const DEFAULT_CATEGORY2 = '';
 class HomePage extends Component {
   constructor(element, props) {
     super(element, props);
+
+    const params = new URLSearchParams(window.location.search);
+
     this.state = {
       loading: true,
       products: null,
       categories: null,
       query: {
-        page: DEFAULT_PAGE,
-        limit: DEFAULT_LIMIT,
-        sort: DEFAULT_SORT,
-        search: DEFAULT_SEARCH,
-        category1: DEFAULT_CATEGORY1,
-        category2: DEFAULT_CATEGORY2,
+        page: Number(params.get('page')) || DEFAULT_PAGE,
+        limit: Number(params.get('limit')) || DEFAULT_LIMIT,
+        sort: params.get('sort') || DEFAULT_SORT,
+        search: params.get('search') || DEFAULT_SEARCH,
+        category1: params.get('category1') || DEFAULT_CATEGORY1,
+        category2: params.get('category2') || DEFAULT_CATEGORY2,
       },
     };
   }
 
   async onMount() {
+    console.log('asd', this.state.query);
     const [products, categories] = await Promise.all([
-      getProducts({
-        page: this.state.query.page,
-        limit: this.state.query.limit,
-      }),
+      getProducts(this.state.query),
       getCategories(),
     ]);
     this.setState({

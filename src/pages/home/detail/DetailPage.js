@@ -107,12 +107,22 @@ class DetailPage extends Component {
           image: this.state.product.image,
           lprice: this.state.product.lprice,
         });
+        return;
       }
 
       const relatedProductCard = event.target.closest('.related-product-card');
       if (relatedProductCard) {
         const productId = relatedProductCard.dataset.productId;
         router.push(`/detail/${productId}`);
+        return;
+      }
+
+      const breadcrumbLink = event.target.closest('.breadcrumb-link');
+      if (breadcrumbLink) {
+        const params = breadcrumbLink.dataset.category1
+          ? `?category1=${breadcrumbLink.dataset.category1}`
+          : `?category2=${breadcrumbLink.dataset.category2}`;
+        router.push(`/${params}`);
       }
     });
 
