@@ -2,6 +2,7 @@ import Component from '../../../../../core/Component.js';
 import { numberUtils } from '../../../../../utils/numberUtils.js';
 import cartLocalStorage from '../../../../../store/cartLocalStorage.js';
 import toastStore from '../../../../../store/toastStore.js';
+import { router } from '../../../../../utils/router.js';
 
 class ProductItem extends Component {
   constructor(element, props) {
@@ -39,8 +40,16 @@ class ProductItem extends Component {
   attachEventListeners() {
     this.addEventListener(this.element, 'click', (event) => {
       if (event.target.id === 'cart-add-button') {
+        event.stopPropagation();
         this.addCartItem();
         this.openToast();
+        return;
+      }
+
+      const card = event.target.closest('.product-card');
+      if (card) {
+        const productId = card.dataset.productId;
+        router.push(`/detail/${productId}`);
       }
     });
   }
