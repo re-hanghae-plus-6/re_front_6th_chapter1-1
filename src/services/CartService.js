@@ -64,6 +64,47 @@ class CartService {
 
     return false;
   }
+
+  /**
+   * 특정 상품의 수량을 1 증가시킵니다
+   *
+   * @param {string} productId - 상품 ID
+   * @returns {boolean} 성공 여부
+   */
+  increaseQuantity(productId) {
+    const items = this.cartStorage.get("items") || [];
+    const itemIndex = items.findIndex((item) => item.id === productId);
+
+    if (itemIndex !== -1) {
+      items[itemIndex].quantity += 1;
+      return this.cartStorage.set("items", items);
+    }
+
+    return false;
+  }
+
+  /**
+   * 특정 상품의 수량을 1 감소시킵니다
+   *
+   * @param {string} productId - 상품 ID
+   * @returns {boolean} 성공 여부
+   */
+  decreaseQuantity(productId) {
+    const items = this.cartStorage.get("items") || [];
+    const itemIndex = items.findIndex((item) => item.id === productId);
+
+    if (itemIndex !== -1) {
+      const currentQuantity = items[itemIndex].quantity;
+
+      if (currentQuantity > 1) {
+        // 수량이 1보다 크면 1 감소
+        items[itemIndex].quantity -= 1;
+        return this.cartStorage.set("items", items);
+      }
+    }
+
+    return false;
+  }
 }
 
-export const createCartService = CartService.getInstance;
+export const cartService = CartService.getInstance();

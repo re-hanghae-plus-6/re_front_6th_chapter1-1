@@ -9,14 +9,12 @@ import { ProductSkeleton } from "../components/productList/ProductSkeleton";
 import { ScrollLoader } from "../components/productList/ScrollLoader";
 import { Component } from "../core/Component";
 import { InfiniteScroll } from "../core/InfiniteScroll";
-import { createCartService } from "../services/CartService";
+import { cartService } from "../services/CartService";
 import { updateURLParams } from "../utils/url";
 
 export class ProductListPage extends Component {
   constructor(props) {
     super(props);
-
-    this.cartService = createCartService();
 
     const params = new URLSearchParams(window.location.search);
     this.state = {
@@ -31,8 +29,8 @@ export class ProductListPage extends Component {
       },
       categories: {},
       isOpenCartModal: false,
-      cartItemCount: this.cartService.itemCount,
-      cartItems: this.cartService.items,
+      cartItemCount: cartService.itemCount,
+      cartItems: cartService.items,
     };
 
     const infinite = new InfiniteScroll({
@@ -50,6 +48,8 @@ export class ProductListPage extends Component {
     });
 
     this.on(Component.EVENTS.UPDATE, () => {
+      console.log("### TEST STATE:", this.state);
+
       // 더 이상 불러올 컨텐츠 없음, InfiniteScroll 인스턴스 정리
       if (!this.state.pagination.hasNext) {
         infinite.destroy();
@@ -161,7 +161,7 @@ export class ProductListPage extends Component {
         const productId = e.target.dataset.productId;
         const product = this.state.products.find((item) => item.productId === productId);
 
-        this.cartService.addItem({
+        cartService.addItem({
           id: productId,
           image: product.image,
           price: product.lprice,
@@ -170,9 +170,19 @@ export class ProductListPage extends Component {
         });
 
         this.setState({
-          cartItemCount: this.cartService.itemCount,
-          cartItems: this.cartService.items,
+          cartItemCount: cartService.itemCount,
+          cartItems: cartService.items,
         });
+
+        return;
+      }
+
+      if (e.target.classList.contains("quantity-increase-btn")) {
+        const targetElement = e.target.closest("[data-product-id]");
+        if (targetElement) {
+          const productId = targetElement.dataset.productId;
+          console.log("### TEST productId:", productId);
+        }
 
         return;
       }
