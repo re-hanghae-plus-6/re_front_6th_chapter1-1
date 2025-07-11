@@ -27,8 +27,8 @@ async function main() {
   // 2. 컨트롤러 생성 및 데이터 로드
   const controller = new ListPageController();
   await controller.loadData((state) => {
-    // 3. 상태 변경 시마다 UI 업데이트
-    updateListPageUI(state);
+    // 3. 상태 변경 시마다 UI 업데이트 (controller도 함께 전달)
+    updateListPageUI(state, controller);
   });
 }
 
