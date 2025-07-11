@@ -32,11 +32,11 @@ export default function initializeHandlers(state, render) {
   // 검색 입력 엔터 핸들러
   const searchInput = document.getElementById("search-input");
   if (searchInput) {
-    searchInput.addEventListener("keydown", (e) => {
+    searchInput.onkeydown = (e) => {
       if (e.key === "Enter") {
         const value = e.target.value; // 문자열이어야 함
         filterHandlers.handleSearch(value, state, render);
       }
-    });
+    };
   }
 }

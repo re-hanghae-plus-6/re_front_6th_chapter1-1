@@ -16,9 +16,10 @@ export function ProductDetail(productId) {
       category2: product.category2,
     });
 
-    // 현재 상품과 ID가 같은 건 제외하고 저장
     state.relatedProducts = relatedProducts.products.filter((p) => p.productId !== product.productId);
+
     render();
+
     initializeHandlers(state, render);
   }
 

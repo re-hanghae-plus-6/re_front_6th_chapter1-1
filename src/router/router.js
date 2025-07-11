@@ -40,4 +40,4 @@ export function navigateTo(url, { replace = false } = {}) {
 }
 
 // 뒤로가기/앞으로가기 시에도 라우트 다시 실행
-window.addEventListener("popstate", handleRoute);
+window.onpopstate = handleRoute;

@@ -53,7 +53,7 @@ export async function handleSearch(value, state, render) {
 export function handleCategory1Filter(state, render) {
   const category1Buttons = document.querySelectorAll(".category1-filter-btn");
   category1Buttons.forEach((btn) => {
-    btn.addEventListener("click", () => {
+    btn.onclick = () => {
       const category1 = btn.dataset.category1;
 
       updateUrlParams((params) => {
@@ -69,7 +69,7 @@ export function handleCategory1Filter(state, render) {
       state.category1 = category1;
       state.category2 = "";
       fetchAndSetProducts(state, render);
-    });
+    };
   });
 }
 
@@ -77,7 +77,7 @@ export function handleCategory1Filter(state, render) {
 export function handleCategory2Filter(state, render) {
   const category2Buttons = document.querySelectorAll(".category2-filter-btn");
   category2Buttons.forEach((btn) => {
-    btn.addEventListener("click", () => {
+    btn.onclick = () => {
       const category2 = btn.dataset.category2;
 
       updateUrlParams((params) => {
@@ -87,14 +87,14 @@ export function handleCategory2Filter(state, render) {
 
       state.category2 = category2;
       fetchAndSetProducts(state, render);
-    });
+    };
   });
 }
 
 /** 브레드크럼 전체 경로 클릭 핸들러 */
 export function handleResetBreadcrumb(state, render) {
   document.querySelectorAll('button[data-breadcrumb="reset"]').forEach((btn) => {
-    btn.addEventListener("click", () => {
+    btn.onclick = () => {
       updateUrlParams((params) => {
         params.delete("category1");
         params.delete("category2");
@@ -108,14 +108,14 @@ export function handleResetBreadcrumb(state, render) {
         category1: "",
         category2: "",
       });
-    });
+    };
   });
 }
 
 /** 브레드크럼 카테고리1 경로 클릭 핸들러 */
 export function handleSetupBreadcrumb(state, render) {
   document.querySelectorAll('button[data-breadcrumb="category1"]').forEach((btn) => {
-    btn.addEventListener("click", () => {
+    btn.onclick = () => {
       updateUrlParams((params) => {
         params.delete("category2");
       });
@@ -128,7 +128,7 @@ export function handleSetupBreadcrumb(state, render) {
         category1: state.category1,
         category2: "",
       });
-    });
+    };
   });
 }
 
@@ -137,7 +137,7 @@ export function limitHandler(state, render) {
   const limitSelect = document.getElementById("limit-select");
   if (!limitSelect) return;
 
-  limitSelect.addEventListener("change", async (event) => {
+  limitSelect.onchange = async (event) => {
     const selectedLimit = event.target.value;
     state.selectedLimit = selectedLimit; // 여기
 
@@ -170,7 +170,7 @@ export function limitHandler(state, render) {
     state.allLoaded = state.products.length >= data.pagination.total;
 
     render();
-  });
+  };
 }
 
 // 상품 정렬 변경 핸들러
@@ -178,7 +178,7 @@ export function sortHandler(state, render) {
   const sortSelect = document.getElementById("sort-select");
   if (!sortSelect) return;
 
-  sortSelect.addEventListener("change", async (event) => {
+  sortSelect.onchange = async (event) => {
     const selectedSort = event.target.value;
     state.selectedSort = selectedSort;
 
@@ -212,5 +212,5 @@ export function sortHandler(state, render) {
     state.allLoaded = state.products.length >= data.pagination.total;
 
     render();
-  });
+  };
 }

@@ -37,11 +37,11 @@ export function closeCartModal() {
   const escListener = (e) => {
     if (e.key === "Escape" && modalPortal) {
       modalPortal.innerHTML = "";
-      document.removeEventListener("keydown", escListener); // 이벤트 제거
+      document.onkeydown = null; // 이벤트 제거
     }
   };
 
-  document.addEventListener("keydown", escListener);
+  document.onkeydown = escListener;
 }
 
 // 수량 증가/감소 버튼 셋업
@@ -49,15 +49,13 @@ export function setupQuantityButtons(state) {
   const itemMap = new Map();
 
   cart.state.forEach((item) => {
-    if (itemMap.has(item.productId)) {
-      itemMap.get(item.productId).quantity += 1;
-    } else {
-      itemMap.set(item.productId, { ...item, quantity: 1 });
-    }
+    itemMap.set(item.productId, { ...item });
   });
 
   document.querySelectorAll(".quantity-increase-btn").forEach((button) => {
-    button.addEventListener("click", () => {
+    console.log("foreach button", button);
+
+    button.onclick = () => {
       const productId = button.dataset.productId;
       const input = document.querySelector(`.quantity-input[data-product-id="${productId}"]`);
       const priceEl = document.querySelector(`.item-price[data-product-id="${productId}"]`);
@@ -70,11 +68,11 @@ export function setupQuantityButtons(state) {
 
       // 상태에 반영 (필요 시)
       updateCartStateQuantity(state, productId, item.quantity);
-    });
+    };
   });
 
   document.querySelectorAll(".quantity-decrease-btn").forEach((button) => {
-    button.addEventListener("click", () => {
+    button.onclick = () => {
       const productId = button.dataset.productId;
       const input = document.querySelector(`.quantity-input[data-product-id="${productId}"]`);
       const priceEl = document.querySelector(`.item-price[data-product-id="${productId}"]`);
@@ -89,7 +87,7 @@ export function setupQuantityButtons(state) {
         // 상태에 반영 (필요 시)
         updateCartStateQuantity(state, productId, item.quantity);
       }
-    });
+    };
   });
 
   updateTotal(itemMap);
@@ -137,7 +135,7 @@ export function addToCartHandler(state) {
   const buttons = document.querySelectorAll(".add-to-cart-btn");
 
   buttons.forEach((btn) => {
-    btn.addEventListener("click", () => {
+    btn.onclick = () => {
       const productId = btn.dataset.productId;
       const product = state.products.find((p) => p.productId === productId);
 
@@ -157,14 +155,14 @@ export function addToCartHandler(state) {
         updateCartCount(cart.state);
         showAddToCartToast();
       }
-    });
+    };
   });
 }
 
 /** 삭제버튼 클릭시 제거 */
 export function removeSelectedHandler(state) {
   document.querySelectorAll(".cart-item-remove-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
+    btn.onclick = () => {
       const productId = btn.dataset.productId;
 
       const changedState = cart.state.filter((item) => item.productId !== productId);
@@ -176,7 +174,7 @@ export function removeSelectedHandler(state) {
       CartModal(state);
 
       updateCartCount();
-    });
+    };
   });
 }
 /** 선택된 상품 삭제 */
@@ -184,7 +182,7 @@ export function handleRemoveSelectedItems(state) {
   const removeBtn = document.querySelector("#cart-modal-remove-selected-btn");
   if (!removeBtn) return;
 
-  removeBtn.addEventListener("click", () => {
+  removeBtn.onclick = () => {
     const checkedBoxes = document.querySelectorAll(".cart-item-checkbox:checked");
     const selectedIds = Array.from(checkedBoxes).map((cb) => cb.dataset.productId);
     if (selectedIds.length === 0) return;
@@ -193,7 +191,7 @@ export function handleRemoveSelectedItems(state) {
     localStorage.setItem("cart", JSON.stringify(cart.state));
     CartModal(state);
     updateCartCount();
-  });
+  };
 }
 
 /** 전체 선택 */
@@ -201,17 +199,17 @@ export function handleSelectAllCheckbox() {
   const allCheckbox = document.querySelector("#cart-modal-select-all-checkbox");
   if (!allCheckbox) return;
 
-  allCheckbox.addEventListener("change", () => {
+  allCheckbox.onchange = () => {
     const itemCheckboxes = document.querySelectorAll(".cart-item-checkbox");
     const isAllChecked = allCheckbox.checked;
     itemCheckboxes.forEach((cb) => {
       cb.checked = isAllChecked;
     });
-  });
+  };
 
   // 각 개별 체크박스가 변경될 때 전체선택 체크박스 상태도 동기화
   document.querySelectorAll(".cart-item-checkbox").forEach((cb) => {
-    cb.addEventListener("change", () => {
+    cb.onchange = () => {
       const itemCheckboxes = document.querySelectorAll(".cart-item-checkbox");
       const checkedCount = Array.from(itemCheckboxes).filter((c) => c.checked).length;
       if (checkedCount === itemCheckboxes.length) {
@@ -219,7 +217,7 @@ export function handleSelectAllCheckbox() {
       } else {
         allCheckbox.checked = false;
       }
-    });
+    };
   });
 }
 
@@ -228,11 +226,11 @@ export function removeAllHandler(state) {
   const clearBtn = document.getElementById("cart-modal-clear-cart-btn");
   if (!clearBtn) return;
 
-  clearBtn.addEventListener("click", () => {
+  clearBtn.onclick = () => {
     cart.state = [];
     CartModal(state);
     updateCartCount();
-  });
+  };
 }
 
 // 장바구니 추가 알림 토스트
@@ -262,9 +260,9 @@ export function showAddToCartToast() {
 
   document.body.appendChild(toast);
 
-  toast.querySelector("#toast-close-btn").addEventListener("click", () => {
+  toast.querySelector("#toast-close-btn").onclick = () => {
     toast.remove();
-  });
+  };
 
   setTimeout(() => {
     toast.remove();

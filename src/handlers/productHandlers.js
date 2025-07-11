@@ -7,7 +7,7 @@ export function infinityScrollHandler(state, render) {
   //스크롤 이벤트 중복 실행 방지
   let ticking = false;
 
-  window.addEventListener("scroll", async () => {
+  window.onscroll = async () => {
     if (ticking || state.isLoading || state.allLoaded) return;
 
     const scrollTop = window.scrollY;
@@ -38,10 +38,10 @@ export function infinityScrollHandler(state, render) {
       render();
       ticking = false;
     }
-  });
+  };
 }
 /** 상품 디테일 페이지 이동 */
-document.addEventListener("click", (e) => {
+document.onclick = (e) => {
   const target = e.target.closest(".product-image, .product-info");
   if (target) {
     const productId = target.closest(".product-card")?.dataset.productId;
@@ -49,4 +49,4 @@ document.addEventListener("click", (e) => {
       navigateTo(`/product/${productId}`);
     }
   }
-});
+};

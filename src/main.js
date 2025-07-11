@@ -8,9 +8,9 @@ const enableMocking = () =>
     }),
   );
 
-window.addEventListener("popstate", () => {
+window.onpopstate = () => {
   handleRoute();
-});
+};
 
 async function main() {
   handleRoute();
