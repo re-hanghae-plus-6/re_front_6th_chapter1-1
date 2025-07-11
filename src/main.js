@@ -4,11 +4,13 @@ import { throttle } from "./utils/throttle.js"; // throttle 함수 임포트
 import { setupCommonEventListeners } from "./events/eventHandlers.js"; // 새로 추가된 이벤트 핸들러 임포트
 
 const enableMocking = () =>
-  import("./mocks/browser.js").then(({ worker }) =>
-    worker.start({
-      onUnhandledRequest: "bypass",
-    }),
-  );
+  import("./mocks/browser.js").then(({ worker, workerOptions }) => worker.start(workerOptions));
+
+if (import.meta.env.MODE !== "test") {
+  enableMocking().then(main);
+} else {
+  main();
+}
 
 /**
  * 메인 홈페이지 렌더링 및 상태 값
