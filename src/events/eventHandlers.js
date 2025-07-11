@@ -4,37 +4,40 @@ import { showToast } from "../template/toast.js";
 
 export function setupCommonEventListeners(mainStatus, appRouter) {
   const currentMainStatus = appRouter.getCurrentState(); // 항상 최신 mainStatus 가져오기
-  const newUrl = new URL("/?", window.location.origin);
   /** change */
   document.body.addEventListener("change", (e) => {
     const target = e.target;
+    const newUrl = new URL(window.location.href); // 현재 URL을 기반으로 새로운 URL 객체 생성
 
     if (target.id === "limit-select") {
       mainStatus.params.limit = parseInt(target.value, 10);
+      newUrl.searchParams.set("limit", mainStatus.params.limit);
     } else if (target.id === "sort-select") {
       mainStatus.params.sort = target.value;
       mainStatus.params.limit = 20; // 정렬 변경 시 limit도 초기화
+      newUrl.searchParams.set("sort", mainStatus.params.sort);
+      newUrl.searchParams.set("limit", mainStatus.params.limit);
     } else {
       return;
     }
 
-    for (const key of Object.keys(mainStatus.params)) {
-      let value = mainStatus.params[key];
-      if (value) {
-        newUrl.href += `${key}=${value}&`;
-      }
-    }
-    let href = newUrl.href;
-    newUrl.href = href.substring(0, href.lastIndexOf("&"));
-    window.history.replaceState({}, "", newUrl.toString());
     mainStatus.params.page = 1; // 필터 변경 시 첫 페이지로 초기화
+    newUrl.searchParams.set("page", mainStatus.params.page);
+
+    window.history.replaceState({}, "", newUrl.toString());
     loadProductsAndUpdateUI(mainStatus, appRouter); // mainStatus와 appRouter 전달
   });
 
   document.body.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && e.target.id === "search-input") {
+      const newUrl = new URL(window.location.href); // 현재 URL을 기반으로 새로운 URL 객체 생성
       mainStatus.params.search = e.target.value;
       mainStatus.params.page = 1; // 필터 변경 시 첫 페이지로 초기화
+
+      newUrl.searchParams.set("search", mainStatus.params.search);
+      newUrl.searchParams.set("page", mainStatus.params.page);
+
+      window.history.replaceState({}, "", newUrl.toString());
       loadProductsAndUpdateUI(mainStatus, appRouter); // mainStatus와 appRouter 전달
     } else {
       return;
@@ -61,7 +64,7 @@ export function setupCommonEventListeners(mainStatus, appRouter) {
     // --- 상세 페이지 버튼 처리 ---
     let quantityInput;
     let quantity;
-    if (Object.keys(currentMainStatus.urlParams).length) {
+    if (window.location.pathname.includes("/product")) {
       quantityInput = document.body.querySelector("#quantity-input");
       quantity = parseInt(quantityInput.value, 10);
     }
