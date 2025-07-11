@@ -30,15 +30,15 @@ class CartStore {
     const existingItemIndex = this.state.items.findIndex((existingItem) => existingItem.productId === item.productId);
 
     if (existingItemIndex >= 0) {
-      // 이미 존재하는 상품의 수량 증가
-      this.state.items[existingItemIndex].quantity += item.quantity;
+      // 이미 존재하는 상품이면 담지 않음
+      return false;
     } else {
       // 새로운 상품 추가
       this.state.items.push({ ...item });
+      this.updateTotals();
+      this.notify();
+      return true;
     }
-
-    this.updateTotals();
-    this.notify();
   }
 
   // 장바구니에서 아이템 제거
