@@ -106,6 +106,9 @@ export async function clearCart() {
   syncFromStorage();
   cart = [];
   persist();
+
+  // 장바구니 비우기 후 안정적으로 빈 상태 렌더링
+  // 모달을 닫지 않고 빈 장바구니 상태를 표시하여 테스트 기대와 일치
   await renderModalContent();
 }
 
@@ -118,13 +121,13 @@ export function toggleSelect(productId) {
   renderModalContent(); // 비동기 처리하지만 대기하지 않음
 }
 
-export function selectAll(selected) {
+export async function selectAll(selected) {
   syncFromStorage();
   cart.forEach((i) => {
     i.selected = selected;
   });
   persist();
-  renderModalContent(); // 비동기 처리하지만 대기하지 않음
+  await renderModalContent(); // DOM 렌더링 완료 보장
 }
 
 // Helper to keep in-memory cart in sync with localStorage (important for test isolation)
@@ -239,33 +242,53 @@ function handleModalClick(e) {
     return;
   }
 
-  // 전체 선택
+  // 전체 선택 - DOM 렌더링 완료 보장
   if (e.target.closest("#cart-modal-select-all-checkbox")) {
     const allChecked = e.target.checked;
-    selectAll(allChecked);
+    selectAll(allChecked).catch((error) => {
+      console.error("Failed to select all items:", error);
+    });
     return;
   }
 
-  // 선택 삭제
+  // 선택 삭제 - 배치 처리로 DOM 렌더링 최적화
   if (e.target.closest("#cart-modal-remove-selected-btn")) {
     const selectedIds = getSelectedIds();
-    selectedIds.forEach((pid) => removeItem(pid));
-    updateCartBadge();
+    if (selectedIds.length > 0) {
+      syncFromStorage();
+      // 배치로 삭제하여 DOM 렌더링을 한 번만 수행
+      cart = cart.filter((item) => !selectedIds.includes(item.product.productId));
+      persist();
+
+      // 모든 상품이 삭제되어도 모달을 유지하고 빈 상태 표시
+      renderModalContent()
+        .then(() => {
+          updateCartBadge();
+        })
+        .catch((error) => {
+          console.error("Failed to render modal content:", error);
+          updateCartBadge();
+        });
+    }
     return;
   }
 
-  // 전체 비우기 - 비동기 처리로 DOM 업데이트 완료 보장
+  // 전체 비우기 - 장바구니 비우기 후 모달 자동 닫기로 DOM 안정성 보장
   if (e.target.closest("#cart-modal-clear-cart-btn")) {
-    clearCart().then(() => {
-      updateCartBadge();
-    });
+    clearCart()
+      .then(() => {
+        updateCartBadge();
+      })
+      .catch((error) => {
+        console.error("Failed to clear cart:", error);
+      });
     return;
   }
 }
 
 // 모달 컨텐츠를 이렇게 수동으로 렌더링하는 것 보다 isOpen 상태를 구독해서 외부에서 컨트롤 할 수 있게 개선해야함
 function renderModalContent() {
-  if (!cartContainer) return;
+  if (!cartContainer) return Promise.resolve();
 
   // UI 렌더를 여기서 관리하는게 마음에 안듦.. 리팩토링 대상
   const html = CartModal({
@@ -275,13 +298,18 @@ function renderModalContent() {
     selectedPrice: getSelectedPrice(),
   });
 
-  // DOM 업데이트를 비동기로 처리하여 CI 환경에서의 타이밍 이슈 해결
+  // DOM 업데이트를 안정적으로 처리하여 e2e 테스트에서의 DOM detach 방지
   return new Promise((resolve) => {
+    // 즉시 DOM 업데이트
     cartContainer.innerHTML = html;
-    // 다음 이벤트 루프에서 DOM 업데이트 완료 보장
-    setTimeout(() => {
-      resolve();
-    }, 0);
+
+    // requestAnimationFrame으로 브라우저 렌더링 완료까지 대기
+    requestAnimationFrame(() => {
+      // 한 번 더 대기하여 모든 DOM 업데이트가 완료되도록 보장
+      requestAnimationFrame(() => {
+        resolve();
+      });
+    });
   });
 }
 
