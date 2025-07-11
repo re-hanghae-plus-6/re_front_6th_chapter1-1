@@ -88,23 +88,27 @@ export const cartStore = observable({
     cartStore.items = new Map([...items]);
   },
   addItem(product) {
-    toast.success("장바구니에 추가되었습니다");
-
-    if (cartStore.hasItem(product.productId)) {
-      cartStore.addItemQuantity(product.productId, product.quantity ?? 1);
-    } else {
-      const { productId, lprice, image, title, quantity = 1, selected = false } = product;
-      const item = {
-        productId,
-        lprice,
-        image,
-        title,
-        selected,
-        quantity,
-      };
-      cartStore.items.set(productId, item);
-      cartStore.items = new Map([...cartStore.items]);
-      cartStore.count = cartStore.items.size;
+    try {
+      if (cartStore.hasItem(product.productId)) {
+        cartStore.addItemQuantity(product.productId, product.quantity ?? 1);
+      } else {
+        const { productId, lprice, image, title, quantity = 1, selected = false } = product;
+        const item = {
+          productId,
+          lprice,
+          image,
+          title,
+          selected,
+          quantity,
+        };
+        cartStore.items.set(productId, item);
+        cartStore.items = new Map([...cartStore.items]);
+        cartStore.count = cartStore.items.size;
+      }
+      toast.success("장바구니에 추가되었습니다");
+    } catch (error) {
+      console.error(error);
+      toast.error("장바구니에 추가하지 못했습니다");
     }
   },
   getItem(productId) {
