@@ -95,7 +95,7 @@ class HomePage extends Component {
       },
     });
     paramsUtils.updateUrlParams({
-      limit: newSortValue,
+      sort: newSortValue,
     });
   };
 
