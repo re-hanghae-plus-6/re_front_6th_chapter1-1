@@ -6,14 +6,13 @@ import _404Page from "./pages/_404Page";
 import { router } from "./shared/router";
 import { cartStore } from "./shared/store/CartStore.js";
 
-const enableMocking = () => {
-  return import("./mocks/browser.js").then(({ worker }) =>
-    worker.start({
-      onUnhandledRequest: "bypass",
-    }),
-  );
-};
-
+const enableMocking = () =>
+  import("./mocks/browser.js").then(({ worker, workerOptions }) => worker.start(workerOptions));
+if (import.meta.env.MODE !== "test") {
+  enableMocking().then(main);
+} else {
+  main();
+}
 // 현재 컨트롤러들
 let listController = null;
 let detailController = null;
