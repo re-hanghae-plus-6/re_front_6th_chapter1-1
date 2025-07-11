@@ -146,7 +146,7 @@ function ProductDetailContent({ product, loading = true }) {
           </div>
           <!-- 가격 -->
           <div class="mb-4">
-            <span class="text-2xl font-bold text-blue-600">${product.lprice}원</span>
+            <span class="text-2xl font-bold text-blue-600">${Number.parseInt(product.lprice).toLocaleString()}원</span>
           </div>
           <!-- 재고 -->
           <div class="text-sm text-gray-600 mb-4">재고 ${product.stock}개</div>
