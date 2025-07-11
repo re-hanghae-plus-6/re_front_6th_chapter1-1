@@ -4,10 +4,15 @@ on:
   push:
     branches: [main]
 
+on:
+  push:
+    branches: [main]
+
 jobs:
-  hard-basic:
+  deploy:
     runs-on: ubuntu-latest
-   steps:
+
+    steps:
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -35,7 +40,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
-          
+
   hard-advanced:
     timeout-minutes: 60
     runs-on: ubuntu-latest
