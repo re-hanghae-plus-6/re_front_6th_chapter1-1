@@ -314,3 +314,4 @@ const setupProductInfiniteScroll = () => {
   });
 };
 setupProductInfiniteScroll();
+
