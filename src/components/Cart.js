@@ -67,7 +67,7 @@ class Cart {
     const contentContainer = this.el.querySelector(".cart-content");
     if (contentContainer) {
       contentContainer.innerHTML = this.templateContent();
-      this.addEvent();
+      this.bindEventListeners();
     }
   }
 
@@ -276,7 +276,7 @@ class Cart {
   }
 
   // 이벤트 리스너 등록
-  addEvent() {
+  bindEventListeners() {
     this.removeEventListeners();
 
     // 모달 닫기
@@ -351,7 +351,7 @@ class Cart {
     const template = document.createElement("template");
     template.innerHTML = this.templateShell().trim();
     this.el = template.content.firstElementChild;
-    this.addEvent();
+    this.bindEventListeners();
     return this.el;
   }
 }

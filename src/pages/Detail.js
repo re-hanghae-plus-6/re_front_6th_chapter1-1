@@ -1,6 +1,6 @@
 import { getProduct, getProducts } from "../api/productApi";
 import { cartStore } from "../store/store.js";
-import { navigate, router } from "../router/router.js";
+import { navigate, router, BASE_PATH } from "../router/router.js";
 import toast from "../components/Toast.js";
 
 class Detail {
@@ -132,7 +132,7 @@ class Detail {
       const categories = [this.state.product.category1, this.state.product.category2].filter(Boolean); // 빈 값 제거
 
       let breadcrumbHTML = `
-        <a href="/" data-link="" class="hover:text-blue-600 transition-colors">홈</a>
+        <a href="${BASE_PATH}/" data-link="" class="hover:text-blue-600 transition-colors">홈</a>
       `;
 
       categories.forEach((category, index) => {
@@ -289,11 +289,7 @@ class Detail {
         }
 
         const url = `/?${params.toString()}`;
-        history.pushState({}, "", url);
-
-        window.dispatchEvent(new CustomEvent("urlchange"));
-
-        router();
+        navigate(url);
       });
     });
 
