@@ -6,6 +6,7 @@ Layout.mount = () => {
   Header.init();
   render.draw("header", Header());
   render.draw("footer", Footer());
+  Header.mount();
 };
 
 export default function Layout() {

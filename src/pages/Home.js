@@ -107,6 +107,7 @@ Home.mount = async () => {
   Search.mount();
   ProductCard.mount();
   store.set("categories", state.categories);
+  ProductList.mount(state.products);
 
   fetchMoreProductsScroll();
 
@@ -137,6 +138,8 @@ Home.mount = async () => {
         pagination: state.pagination,
       }),
     );
+
+    ProductList.mount(state.products);
 
     ProductCard.mount();
   }, "params");

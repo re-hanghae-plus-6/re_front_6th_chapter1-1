@@ -1,4 +1,15 @@
+import { handleAddCart } from "../js/cart";
 import ProductCard from "./ProductCard";
+
+ProductList.mount = (products) => {
+  document.querySelectorAll(".add-to-cart-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const productId = btn.getAttribute("data-product-id");
+      const product = products.find((p) => p.productId === productId);
+      handleAddCart(product);
+    });
+  });
+};
 
 export default function ProductList({ products, pagination }) {
   return /* html */ `

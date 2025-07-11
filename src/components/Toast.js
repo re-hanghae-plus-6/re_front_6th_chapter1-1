@@ -84,7 +84,8 @@ Toast.mount = (type) => {
   document.querySelector("main").insertAdjacentHTML("beforeend", Toast(type));
   const toastCloseBtn = document.getElementById("toast-close-btn");
   toastCloseBtn.addEventListener("click", (event) => {
-    console.log(event.target, "event");
+    const toastEl = event.target.closest("#toast");
+    toastEl.remove();
   });
 };
 

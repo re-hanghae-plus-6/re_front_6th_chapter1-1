@@ -20,15 +20,16 @@ const useStore = (() => {
     },
 
     categories: {},
-
     // cart: (() => {
     //   try {
     //     const cart = window.localStorage.getItem("cart");
-    //     return cart ? JSON.parse(cart).length : 0;
+    //     return cart ? JSON(cart).length : [];
     //   } catch {
     //     return 0;
     //   }
     // })(),
+
+    cart: 0,
   };
 
   const listener = [];
