@@ -54,6 +54,9 @@ export const cartStore = observable({
     cartStore.items = new Map();
     cartStore.count = 0;
   },
+  checkout() {
+    toast.info("구매 기능은 추후 구현 예정입니다.");
+  },
   hasItem(productId) {
     return cartStore.items.has(productId);
   },

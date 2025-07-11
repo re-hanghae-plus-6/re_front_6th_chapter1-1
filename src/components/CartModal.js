@@ -65,6 +65,12 @@ export class CartModal extends Component {
         return;
       }
 
+      const $checkoutBtn = target.closest("#cart-modal-checkout-btn");
+      if ($checkoutBtn) {
+        cartStore.checkout();
+        return;
+      }
+
       const $quantityIncreaseBtn = target.closest(".quantity-increase-btn");
       const $quantityDecreaseBtn = target.closest(".quantity-decrease-btn");
 
