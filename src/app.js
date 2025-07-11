@@ -104,10 +104,13 @@ const globalClickHandler = (e) => {
   }
 
   // SPA 내비게이션 링크 클릭
-  const link = e.target.closest("[data-link]");
+  const link = e.target.closest("a");
   if (link) {
-    e.preventDefault();
-    window.navigateTo(link.getAttribute("href"));
+    const href = link.getAttribute("href");
+    if (href && href.startsWith("/")) {
+      e.preventDefault();
+      window.navigateTo(href);
+    }
   }
 };
 
