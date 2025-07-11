@@ -30,8 +30,8 @@ export class Router {
     const route = this.getCurrentRoute();
 
     // 기존 인스턴스가 있으면 unmount
-    if (this.currentInstance?.unmount) {
-      this.currentInstance.unmount();
+    if (this.currentInstance && this.currentInstance.destroy) {
+      this.currentInstance.destroy();
     }
 
     // 새 컴포넌트 인스턴스 생성

@@ -4,6 +4,7 @@ import Header from "../components/common/Header";
 import Filter from "../components/filter/FilterSection";
 import ProductList from "../components/product/ProductList";
 import Component from "../lib/Component";
+import { Router } from "../lib/Router";
 
 import { homeStore } from "../store/homeStore";
 
@@ -16,9 +17,15 @@ const CHILD_COMPONENT = {
 export default class HomePage extends Component {
   setup() {
     this.unsubscribe = homeStore.subscribe(() => {
-      this.render();
-      this.setEvent();
-      this.mounted();
+      const router = Router.getInstance();
+      const currentPath = router?.getCurrentPath();
+
+      // 홈페이지 경로일 때만 재렌더링
+      if (currentPath === "/") {
+        this.render();
+        this.setEvent();
+        this.mounted();
+      }
     });
 
     this.fetchCategories();

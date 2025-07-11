@@ -55,7 +55,7 @@ export default class ProductDetailPage extends Component {
     if (this.state.isRelatedProductsLoading) return;
 
     this.setState({
-      isLoading: true,
+      isRelatedProductsLoading: true,
     });
 
     const params = {
@@ -88,25 +88,19 @@ export default class ProductDetailPage extends Component {
     }
   }
 
-  handleAddToCart() {
-    if (this.state.isLoading) return;
-
-    const $cartButton = document.querySelector("#add-to-cart-btn");
-    if (!$cartButton) return;
-
-    $cartButton.addEventListener("click", (e) => {
-      e.stopPropagation();
-
-      homeStore.setState({
-        cart: {
-          items: [
-            ...homeStore.getState().cart.items,
-            { ...this.state.product, quantity: this.state.quantity },
-          ],
-        },
-      });
+  handleAddToCart = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("add to cart");
+    homeStore.setState({
+      cart: {
+        items: [
+          ...homeStore.getState().cart.items,
+          { ...this.state.product, quantity: this.state.quantity },
+        ],
+      },
     });
-  }
+  };
 
   handleClickIncrease() {
     const $quantityInput = document.querySelector("#quantity-input");
@@ -121,7 +115,7 @@ export default class ProductDetailPage extends Component {
     });
   }
 
-  handleClickDecreate() {
+  handleClickDecrease() {
     const $quantityInput = document.querySelector("#quantity-input");
     const $decreaseButton = document.querySelector("#quantity-decrease");
     if (!$quantityInput || !$decreaseButton) return;
@@ -134,17 +128,38 @@ export default class ProductDetailPage extends Component {
     });
   }
 
-  setEvent() {
-    if (this.state.isLoading) return;
+  handleGoToProductList = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const { navigate } = useNavigate();
+    navigate("/");
+  };
 
-    this.$target.addEventListener("click", this.handleRelatedProductClick);
-    this.handleAddToCart();
+  setEvent() {
+    if (this.state.isLoading || this.state.isRelatedProductsLoading) return;
+
+    this.$target.querySelectorAll(".related-product-card").forEach((card) => {
+      card.addEventListener("click", this.handleRelatedProductClick);
+    });
+    this.$target.querySelector("#add-to-cart-btn").addEventListener("click", this.handleAddToCart);
+    this.$target
+      .querySelector(".go-to-product-list")
+      .addEventListener("click", this.handleGoToProductList);
+
     this.handleClickIncrease();
-    this.handleClickDecreate();
+    this.handleClickDecrease();
   }
 
   cleanup() {
-    this.$target.addEventListener("click", this.handleRelatedProductClick);
+    this.$target.querySelectorAll(".related-product-card").forEach((card) => {
+      card.removeEventListener("click", this.handleRelatedProductClick);
+    });
+    this.$target
+      .querySelector("#add-to-cart-btn")
+      .removeEventListener("click", this.handleAddToCart);
+    this.$target
+      .querySelector(".go-to-product-list")
+      .removeEventListener("click", this.handleGoToProductList);
   }
 
   starTemplate() {
@@ -167,7 +182,7 @@ export default class ProductDetailPage extends Component {
   }
 
   mounted() {
-    if (this.state.isLoading) return;
+    if (this.state.isLoading || this.state.isRelatedProductsLoading) return;
 
     const $headerContainer = document.querySelector("#detail-header-container");
 

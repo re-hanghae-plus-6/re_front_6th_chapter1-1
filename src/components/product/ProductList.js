@@ -58,12 +58,16 @@ export default class ProductList extends Component {
   }
 
   setEvent() {
-    this.$target.addEventListener("click", this.handleProductClick);
+    this.$target.querySelectorAll(".product-card img").forEach((img) => {
+      img.addEventListener("click", this.handleProductClick);
+    });
     this.handleAddToCart();
   }
 
   cleanup() {
-    this.$target.removeEventListener("click", this.handleProductClick);
+    this.$target.querySelectorAll(".product-card img").forEach((img) => {
+      img.removeEventListener("click", this.handleProductClick);
+    });
 
     // 쿼리 파라미터 변경 이벤트 리스너 제거
     window.removeEventListener("queryParamsChange", this.handleQueryParamsChange);

@@ -13,10 +13,20 @@ export default class Filter extends Component {
   setup() {
     this.child = new Map();
 
+    this.selectLimit = this.selectLimit.bind(this);
+    this.selectSort = this.selectSort.bind(this);
+    this.search = this.search.bind(this);
+    this.selectCategory = this.selectCategory.bind(this);
+
     this.unsubscribe = homeStore.subscribe(() => {
-      this.render();
-      this.setEvent();
-      this.mounted();
+      const router = Router.getInstance();
+      const currentPath = router?.getCurrentPath();
+
+      if (currentPath === "/") {
+        this.render();
+        this.setEvent();
+        this.mounted();
+      }
     });
 
     this.setState({
@@ -28,95 +38,50 @@ export default class Filter extends Component {
     return `<div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>`;
   }
 
-  setSearchParam(key, value) {
-    const router = Router.getInstance();
+  selectLimit(e) {
+    const setQueryParam = useQueryParam();
+    const limit = parseInt(e.target.value);
 
-    router.setQueryParam(key, value);
+    this.resetPage();
+    setQueryParam("limit", limit);
   }
 
-  selectLimit() {
+  selectSort(e) {
     const setQueryParam = useQueryParam();
-    const { limit } = getFilter();
+    const sort = e.target.value;
 
-    const $limitOptions = document.querySelectorAll("#limit-select option");
-    $limitOptions.forEach((option) => {
-      if (option.value === limit) {
-        option.selected = true;
-      }
-    });
-
-    const limitSelect = document.getElementById("limit-select");
-
-    limitSelect.addEventListener("change", (e) => {
-      const limit = parseInt(e.target.value);
-
-      this.resetPage();
-
-      setQueryParam("limit", limit);
-    });
+    this.resetPage();
+    setQueryParam("sort", sort);
   }
 
-  selectSort() {
+  search(e) {
     const setQueryParam = useQueryParam();
-    const { sort } = getFilter();
-
-    const $sortOptions = document.querySelectorAll("#sort-select option");
-    $sortOptions.forEach((option) => {
-      if (option.value === sort) {
-        option.selected = true;
-      }
-    });
-
-    const sortSelect = document.getElementById("sort-select");
-    if (!sortSelect) return;
-
-    sortSelect.addEventListener("change", (e) => {
-      const sort = e.target.value;
-
-      this.resetPage();
-      setQueryParam("sort", sort);
-    });
-  }
-
-  search() {
-    const setQueryParam = useQueryParam();
-    const { search } = getFilter();
 
     const $searchInput = document.getElementById("search-input");
     if (!$searchInput) return;
 
-    $searchInput.value = search;
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const search = e.target.value;
 
-    $searchInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        const search = e.target.value;
-
-        this.setSearchParam("search", search);
-        setQueryParam("search", search);
-      }
-    });
+      setQueryParam("search", search);
+    }
   }
 
-  selectCategory() {
+  selectCategory(e) {
     const setQueryParam = useQueryParam();
     const { categoryList } = homeStore.getState().categories;
 
-    const $categoryFilterBtns = document.querySelectorAll(".category-filter-btn");
-    if (!$categoryFilterBtns.length) return;
+    const selectedCategory = e.target.dataset.category;
 
-    $categoryFilterBtns.forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        const selectedCategory = e.target.dataset.category;
+    const breadcrumb = findBreadcrumb(categoryList, selectedCategory);
+    const newCategory1 = breadcrumb[0] || "";
+    const newCategory2 = breadcrumb[1] || "";
 
-        const breadcrumb = findBreadcrumb(categoryList, selectedCategory);
-        const newCategory1 = breadcrumb[0] || "";
-        const newCategory2 = breadcrumb[1] || "";
+    setQueryParam("category1", newCategory1);
+    setQueryParam("category2", newCategory2);
 
-        setQueryParam("category1", newCategory1);
-        setQueryParam("category2", newCategory2);
-      });
-    });
+    this.resetPage();
   }
 
   resetPage() {
@@ -130,10 +95,32 @@ export default class Filter extends Component {
   }
 
   setEvent() {
-    this.selectLimit();
-    this.selectSort();
-    this.search();
-    this.selectCategory();
+    const $limitSelect = document.getElementById("limit-select");
+    const $sortSelect = document.getElementById("sort-select");
+    const $searchInput = document.getElementById("search-input");
+    const $categoryFilterBtns = document.querySelectorAll(".category-filter-btn");
+
+    $limitSelect.addEventListener("change", this.selectLimit);
+    $sortSelect.addEventListener("change", this.selectSort);
+    $searchInput.addEventListener("keydown", this.search);
+
+    $categoryFilterBtns.forEach((btn) => {
+      btn.addEventListener("click", this.selectCategory);
+    });
+  }
+
+  cleanup() {
+    const $limitSelect = document.getElementById("limit-select");
+    const $sortSelect = document.getElementById("sort-select");
+    const $searchInput = document.getElementById("search-input");
+    const $categoryFilterBtns = document.querySelectorAll(".category-filter-btn");
+
+    $limitSelect.removeEventListener("change", this.selectLimit);
+    $sortSelect.removeEventListener("change", this.selectSort);
+    $searchInput.removeEventListener("keydown", this.search);
+    $categoryFilterBtns.forEach((btn) => {
+      btn.removeEventListener("click", this.selectCategory);
+    });
   }
 
   mounted() {
@@ -154,7 +141,7 @@ export default class Filter extends Component {
       categories: { isCategoryLoading, categoryList },
     } = homeStore.getState();
 
-    const { limit, sort } = getFilter();
+    const { limit, sort, search } = getFilter();
     const currentCategory = getCurrentCategory();
 
     const categoryChildren = findChildren(categoryList, currentCategory);
@@ -167,7 +154,7 @@ export default class Filter extends Component {
             type="text"
             id="search-input"
             placeholder="상품명을 검색해보세요..."
-            value=""
+            value="${search}"
             class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
