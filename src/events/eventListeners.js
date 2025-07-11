@@ -4,14 +4,10 @@ import { loadProducts } from "../pages/Home.js";
 
 // 이벤트 위임 설정 - 앱 시작 시 한 번만 호출
 export function setupGlobalEventListeners() {
-  console.log("전역 이벤트 위임 설정 중...");
-
   // document에 전역 이벤트 리스너 등록
   document.addEventListener("click", handleGlobalClick);
   document.addEventListener("input", handleGlobalInput);
   document.addEventListener("change", handleGlobalChange);
-
-  console.log("전역 이벤트 위임 설정 완료");
 }
 
 // 전역 클릭 이벤트 처리
@@ -95,7 +91,6 @@ function handleProductClick(e) {
   if (!productCard) return;
 
   const productId = productCard.dataset.productId;
-  console.log("상품 클릭:", productId);
 
   // 상품 상세 페이지로 이동
   window.history.pushState(null, "", `/product/${productId}`);
@@ -108,8 +103,7 @@ function handleAddToCart(e) {
   const productCard = e.target.closest(".product-card");
   if (!productCard) return;
 
-  const productId = productCard.dataset.productId;
-  console.log("장바구니 담기:", productId);
+  // const productId = productCard.dataset.productId;
 
   // TODO: 장바구니 추가 로직
   // cartActions.addToCart(productId);
@@ -117,7 +111,6 @@ function handleAddToCart(e) {
 
 function handleCartIconClick(e) {
   e.preventDefault();
-  console.log("장바구니 아이콘 클릭");
 
   // TODO: 장바구니 모달 열기
   // cartActions.openCartModal();
@@ -129,8 +122,7 @@ function handleQuantityIncrease(e) {
   const cartItem = e.target.closest(".cart-item");
   if (!cartItem) return;
 
-  const productId = cartItem.dataset.productId;
-  console.log("수량 증가:", productId);
+  // const productId = cartItem.dataset.productId;
 
   // TODO: 장바구니 수량 증가
   // cartActions.increaseQuantity(productId);
@@ -142,8 +134,7 @@ function handleQuantityDecrease(e) {
   const cartItem = e.target.closest(".cart-item");
   if (!cartItem) return;
 
-  const productId = cartItem.dataset.productId;
-  console.log("수량 감소:", productId);
+  // const productId = cartItem.dataset.productId;
 
   // TODO: 장바구니 수량 감소
   // cartActions.decreaseQuantity(productId);
@@ -187,9 +178,12 @@ function handleSearchInput(e) {
 
 function handleSortChange(e) {
   const sortValue = e.target.value;
-  console.log("정렬 변경:", sortValue);
 
-  // TODO: 나중에 구현
+  // 필터 업데이트
+  productActions.updateFilters({ sort: sortValue });
+
+  // 새로운 조건으로 상품 다시 로드
+  loadProducts();
 }
 
 function handleLimitChange(e) {

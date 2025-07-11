@@ -68,9 +68,13 @@ function renderHomeContent(params) {
   console.log("홈 페이지 렌더링", params);
   // 상품 자동 로드 체크
   const state = productStore.getState();
-  // 상품이 없고 에러가 없고 로딩 중이 아닐 때만 자동 로드
-  if (state.products.length === 0 && !state.error && !state.isLoading) {
-    loadProducts();
+
+  // 상품이 없고, 에러가 없고, 로딩 중이 아니고, 이미 로드 시도 중이 아닐 때만 자동 로드
+  if (state.products.length === 0 && !state.error && !state.isLoading && !renderHomeContent.isLoading) {
+    renderHomeContent.isLoading = true;
+    loadProducts().finally(() => {
+      renderHomeContent.isLoading = false;
+    });
   }
 
   // Home 컴포넌트 사용
@@ -218,9 +222,19 @@ function getCartCount() {
 
 // 상태 구독 시스템 - Store 변경 시 자동 리렌더링
 export function subscribeToStore() {
-  productStore.subscribe(() => {
-    // 현재 페이지 다시 렌더링
-    render(currentPageType, currentParams);
+  productStore.subscribe((newState, prevState) => {
+    // 렌더링이 필요한 변경사항인지 확인
+    const shouldRender =
+      newState.products !== prevState.products ||
+      newState.isLoading !== prevState.isLoading ||
+      newState.error !== prevState.error ||
+      newState.filters !== prevState.filters ||
+      newState.total !== prevState.total;
+
+    if (shouldRender) {
+      // 현재 페이지 다시 렌더링
+      render(currentPageType, currentParams);
+    }
   });
 }
 
