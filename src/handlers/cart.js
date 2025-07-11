@@ -25,10 +25,11 @@ function updateTotalPrice(state) {
 // 헤더의 장바구니 카운트를 업데이트하는 함수
 function updateCartCount(state) {
   const cartCountElement = document.querySelector("#cart-icon-btn span");
+  const uniqueProductCount = [...new Set(state.cart.map((item) => item.productId))].length;
 
-  if (state.cart.length > 0) {
+  if (uniqueProductCount > 0) {
     if (cartCountElement) {
-      cartCountElement.textContent = state.cart.length;
+      cartCountElement.textContent = uniqueProductCount;
     } else {
       // 카운트 요소가 없으면 생성
       const cartButton = document.querySelector("#cart-icon-btn");
@@ -36,7 +37,7 @@ function updateCartCount(state) {
         const countSpan = document.createElement("span");
         countSpan.className =
           "absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center";
-        countSpan.textContent = state.cart.length;
+        countSpan.textContent = uniqueProductCount;
         cartButton.appendChild(countSpan);
       }
     }
