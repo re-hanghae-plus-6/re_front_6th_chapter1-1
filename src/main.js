@@ -29,7 +29,13 @@ export let render = async function (state) {
   const detailPage = path.match(/^\/product=(.+)$/);
   let html;
 
-  if (path === "/" || path === "" || path.includes("limit") || path.includes("sort") || path.includes("searchValue")) {
+  if (path === "/" || path === "" ||
+      path.includes("limit") ||
+      path.includes("sort") || 
+      path.includes("searchValue") || 
+      path.includes("front_6th_chapter1") || 
+      path.includes("category")
+    ) {
     html = MainLayout({
       content: `
         ${FilterSection({
@@ -48,9 +54,9 @@ export let render = async function (state) {
           hasMore: state.hasMore,
         })}
         `,
-        cartCount: state.cartCount,
-        showBackButton: false,
-        title: "쇼핑몰",
+      cartCount: state.cartCount,
+      showBackButton: false,
+      title: "쇼핑몰",
     });
   } else if (detailPage) {
     const productId = path.split("=")[1];
@@ -63,9 +69,8 @@ export let render = async function (state) {
       showBackButton: true,
       title: "상품 상세",
     });
-
   } else {
-    html = '<h1>404</h1>';
+    html = "<h1>404</h1>";
   }
   rootDOM.innerHTML = html;
 };
@@ -75,17 +80,14 @@ async function main() {
   state.categoriesLoading = true;
   state.cartCount = localStorage.getItem("cartCount");
   render(state);
-  
+
   const [
     {
       products,
       pagination: { total },
     },
     categories,
-  ] = await Promise.all([
-    getProducts({}),
-    getCategories(),
-  ]);
+  ] = await Promise.all([getProducts({}), getCategories()]);
 
   store.setState({
     products,
@@ -102,10 +104,8 @@ async function main() {
 
 // 애플리케이션 시작
 const enableMocking = () =>
-  import("./mocks/browser.js").then(({ worker, workerOptions }) => 
-    worker.start(workerOptions)
-  );
-  
+  import("./mocks/browser.js").then(({ worker, workerOptions }) => worker.start(workerOptions));
+
 if (import.meta.env.MODE !== "test") {
   enableMocking().then(main);
 } else {
@@ -114,7 +114,7 @@ if (import.meta.env.MODE !== "test") {
 
 // // 상품 상세 페이지 HTML 생성 함수
 // function createProductDetailPageHTML({ product, relatedProducts = [], quantity = 1 }) {
-  
+
 //   const {
 //     productId,
 //     image,
@@ -185,7 +185,7 @@ if (import.meta.env.MODE !== "test") {
 //           <div class="flex items-center">
 //             <button
 //               id="quantity-decrease"
-//               class="w-8 h-8 flex items-center justify-center border border-gray-300 
+//               class="w-8 h-8 flex items-center justify-center border border-gray-300
 //                            rounded-l-md bg-gray-50 hover:bg-gray-100"
 //             >
 //               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -198,12 +198,12 @@ if (import.meta.env.MODE !== "test") {
 //               value="${quantity}"
 //               min="1"
 //               max="${stock}"
-//               class="w-16 h-8 text-center text-sm border-t border-b border-gray-300 
+//               class="w-16 h-8 text-center text-sm border-t border-b border-gray-300
 //                           focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
 //             />
 //             <button
 //               id="quantity-increase"
-//               class="w-8 h-8 flex items-center justify-center border border-gray-300 
+//               class="w-8 h-8 flex items-center justify-center border border-gray-300
 //                            rounded-r-md bg-gray-50 hover:bg-gray-100"
 //             >
 //               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -216,7 +216,7 @@ if (import.meta.env.MODE !== "test") {
 //         <button
 //           id="add-to-cart-btn"
 //           data-product-id="${productId}"
-//           class="w-full bg-blue-600 text-white py-3 px-4 rounded-md 
+//           class="w-full bg-blue-600 text-white py-3 px-4 rounded-md
 //                        hover:bg-blue-700 transition-colors font-medium"
 //         >
 //           장바구니 담기
@@ -283,7 +283,7 @@ function attachEventListeners() {
       });
     };
   }
-  
+
   // 개수 옵션(페이지당 상품 수) 변경 시 라우터 이동
   const limitSelect = document.getElementById("limit-select");
   if (limitSelect) {
@@ -313,20 +313,18 @@ function attachEventListeners() {
       });
       // 현재 선택된 카테고리, 정렬, 검색어 등 상태값을 가져와서 쿼리스트링 구성
       const state = store.getState();
-      
+
       router.navigateTo(`/sort=${encodeURIComponent(state.sort)}`);
     };
   }
-
 
   // 상품명 검색 입력 필드(Enter 키로 검색)
   const searchInput = document.getElementById("search-input");
   if (searchInput) {
     searchInput.addEventListener("keydown", (e) => {
       const searchValue = e.target.value.trim();
-        if (searchValue !== "") {
+      if (searchValue !== "") {
         if (e.key === "Enter") {
-
           fetchProducts({ search: searchValue });
           store.setState({
             searchValue,
@@ -337,7 +335,7 @@ function attachEventListeners() {
         }
       }
     });
-    
+
     document.body.addEventListener("click", (e) => {
       if (!e._productLinkHandled) {
         const link = e.target.closest("[data-product-link]");
@@ -345,48 +343,46 @@ function attachEventListeners() {
           e.preventDefault();
           e._productLinkHandled = true;
           const productId = link.getAttribute("data-product-link");
-          store.setState({ productId })
+          store.setState({ productId });
           router.navigateTo(`/product=${productId}`);
         }
       }
     });
 
+    // 무한 스크롤(인피니트 스크롤) 이벤트
+    // let isLoading = false;
+    // let hasMore = true;
 
+    // const handleScroll = async () => {
+    //   if (isLoading || !hasMore) return;
+    //   const scrollY = window.scrollY || window.pageYOffset;
+    //   const viewportHeight = window.innerHeight;
+    //   const fullHeight = document.documentElement.scrollHeight;
 
-  // 무한 스크롤(인피니트 스크롤) 이벤트
-  // let isLoading = false;
-  // let hasMore = true;
+    //   // 스크롤이 바닥에 거의 도달했을 때(여유 100px)
+    //   if (scrollY + viewportHeight >= fullHeight - 100) {
+    //     isLoading = true;
+    //     const state = store.getState();
+    //     const nextPage = (state.currentPage || 1) + 1;
+    //     console.log(state);
+    //     console.log(nextPage);
+    //     // 전체 상품 수보다 이미 다 불러왔으면 중단
+    //     if (state.products && state.products.length >= state.total) {
+    //       hasMore = false;
+    //       return;
+    //     }
+    //     // await fetchProducts({
+    //     //   limit: state.limit,
+    //     //   sort: state.sort,
+    //     //   search: state.searchValue,
+    //     //   page: nextPage,
+    //     // });
+    //     store.setState({ currentPage: nextPage });
+    //     isLoading = false;
+    //   }
+    // };
 
-  // const handleScroll = async () => {
-  //   if (isLoading || !hasMore) return;
-  //   const scrollY = window.scrollY || window.pageYOffset;
-  //   const viewportHeight = window.innerHeight;
-  //   const fullHeight = document.documentElement.scrollHeight;
-
-  //   // 스크롤이 바닥에 거의 도달했을 때(여유 100px)
-  //   if (scrollY + viewportHeight >= fullHeight - 100) {
-  //     isLoading = true;
-  //     const state = store.getState();
-  //     const nextPage = (state.currentPage || 1) + 1;
-  //     console.log(state);
-  //     console.log(nextPage);
-  //     // 전체 상품 수보다 이미 다 불러왔으면 중단
-  //     if (state.products && state.products.length >= state.total) {
-  //       hasMore = false;
-  //       return;
-  //     }
-  //     // await fetchProducts({
-  //     //   limit: state.limit,
-  //     //   sort: state.sort,
-  //     //   search: state.searchValue,
-  //     //   page: nextPage,
-  //     // });
-  //     store.setState({ currentPage: nextPage });
-  //     isLoading = false;
-  //   }
-  // };
-
-  // window.addEventListener("scroll", handleScroll);
+    // window.addEventListener("scroll", handleScroll);
   }
 
   // 장바구니 담기 버튼 클릭 시 cartCount 증가
@@ -408,7 +404,6 @@ function attachEventListeners() {
     });
     cartContainer._cartListenerAttached = true;
   }
-
 }
 
 // 렌더 후마다 핸들러 재연결
@@ -423,7 +418,7 @@ const fetchProducts = async ({ limit = 20, sort = "price_asc", search = "" }) =>
   state.loading = true;
 
   try {
-    const { 
+    const {
       products,
       pagination: { total },
     } = await getProducts({
