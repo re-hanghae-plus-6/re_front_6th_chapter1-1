@@ -1,12 +1,17 @@
-const 상품목록_레이아웃_로딩 = `
-<div class="min-h-screen bg-gray-50">
+import { LoadingListItem } from "./ListItem";
+import { LoadingListSearchBox } from "./ListSearchBox";
+
+const LoadingList = `
   <main class="max-w-md mx-auto px-4 py-4">
+  <!-- 검색 및 필터 -->
+  ${LoadingListSearchBox}
     <!-- 상품 목록 -->
     <div class="mb-6">
       <div>
         <!-- 상품 그리드 -->
         <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
           <!-- 로딩 스켈레톤 -->
+          ${LoadingListItem.repeat(4)}
         </div>
         
         <div class="text-center py-4">
@@ -22,5 +27,6 @@ const 상품목록_레이아웃_로딩 = `
       </div>
     </div>
   </main>
-</div>
 `;
+
+export default LoadingList;

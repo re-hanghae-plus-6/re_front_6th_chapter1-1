@@ -1,4 +1,4 @@
-const loadingUi = `
+const LoadingListSearchBox = `
     <!-- 검색 및 필터 -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
       <!-- 검색창 -->
@@ -65,4 +65,4 @@ const loadingUi = `
     </div>
 `;
 
-export default loadingUi;
+export default LoadingListSearchBox;
