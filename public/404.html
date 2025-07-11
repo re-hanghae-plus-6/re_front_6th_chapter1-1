@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>상품 목록</title>
+    <script>
+      (function () {
+        var path = window.location.pathname;
+        var base = "/front_6th_chapter1-1/";
+
+        if (path !== base) {
+          var redirect = base + "?redirect=" + encodeURIComponent(path);
+          window.location.replace(redirect);
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
