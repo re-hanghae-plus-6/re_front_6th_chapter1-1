@@ -27,6 +27,7 @@ const state = {
   selectedLimit: "20",
   currentPage: 1,
   hasMore: true,
+  cartCount: 0,
 };
 
 export let render = function (state) {
@@ -49,23 +50,30 @@ export let render = function (state) {
         hasMore: state.hasMore,
       })}
       `,
-    showBackButton: false,
+      cartCount: state.cartCount,
   });
 };
 
 async function main() {
   state.loading = true;
   state.categoriesLoading = true;
+  state.cartCount = localStorage.getItem("cartCount");
   render(state);
+  
   const [
     {
       products,
       pagination: { total },
     },
     categories,
-  ] = await Promise.all([getProducts({}), getCategories()]);
+  ] = await Promise.all([
+    getProducts({}),
+    getCategories(),
+  ]);
 
   store.setState({
+    products,
+    total,
     categories,
   });
   state.products = products;
@@ -137,6 +145,82 @@ function attachEventListeners() {
       });
     };
   }
+  
+  // 개수 옵션(페이지당 상품 수) 변경 시 라우터 이동
+  const limitSelect = document.getElementById("limit-select");
+  if (limitSelect) {
+    limitSelect.onchange = (e) => {
+      const newLimit = e.target.value;
+      fetchProducts({ limit: newLimit });
+      store.setState({
+        limit: Number(newLimit),
+        currentPage: 1,
+      });
+
+      // 현재 선택된 카테고리, 정렬, 검색어 등 상태값을 가져와서 쿼리스트링 구성
+      const state = store.getState();
+      router.navigateTo(`/limit=${encodeURIComponent(state.limit)}`);
+    };
+  }
+
+  // 개수 옵션(페이지당 상품 수) 변경 시 라우터 이동
+  const sortSelect = document.getElementById("sort-select");
+  if (sortSelect) {
+    sortSelect.onchange = (e) => {
+      const newSort = e.target.value;
+      fetchProducts({ sort: newSort });
+      store.setState({
+        sort: newSort,
+        currentPage: 1,
+      });
+      // 현재 선택된 카테고리, 정렬, 검색어 등 상태값을 가져와서 쿼리스트링 구성
+      const state = store.getState();
+      
+      router.navigateTo(`/sort=${encodeURIComponent(state.sort)}`);
+    };
+  }
+
+
+  // 상품명 검색 입력 필드(Enter 키로 검색)
+  const searchInput = document.getElementById("search-input");
+  if (searchInput) {
+    searchInput.addEventListener("keydown", (e) => {
+      const searchValue = e.target.value.trim();
+        if (searchValue !== "") {
+        if (e.key === "Enter") {
+
+          fetchProducts({ search: searchValue });
+          store.setState({
+            searchValue,
+            currentPage: 1,
+          });
+
+          router.navigateTo(`/search=${encodeURIComponent(searchValue)}`);
+        }
+      }
+    });
+  }
+
+  // 장바구니 담기 버튼 클릭 시 cartCount 증가
+  // 이벤트 위임 방식으로, 클릭된 버튼 하나에 대해서만 동작하게 처리
+  // 기존 cartContainer 이벤트 리스너가 중복 등록되는 문제 방지
+  const cartContainer = document.getElementById("product-list") || document.body;
+  if (cartContainer._cartListenerAttached !== true) {
+    cartContainer.addEventListener("click", (e) => {
+      const btn = e.target.closest(".add-to-cart-btn");
+      if (btn) {
+        e.preventDefault();
+        let cartCount = Number(localStorage.getItem("cartCount")) || 0;
+        const newCartCount = cartCount + 1;
+        localStorage.setItem("cartCount", newCartCount);
+        store.setState({ cartCount: newCartCount });
+        const state = store.getState();
+        render(state);
+      }
+    });
+    cartContainer._cartListenerAttached = true;
+  }
+
 }
 
 // 렌더 후마다 핸들러 재연결
@@ -145,4 +229,26 @@ render = function (...args) {
   const result = originalRender.apply(this, args);
   attachEventListeners();
   return result;
+};
+
+const fetchProducts = async ({ limit = 20, sort = "price_asc", search = "" }) => {
+  state.loading = true;
+
+  try {
+    const { 
+      products,
+      pagination: { total },
+    } = await getProducts({
+      limit,
+      sort,
+      search,
+    });
+    state.products = products;
+    state.total = total;
+    state.loading = false;
+    render(state);
+  } catch (error) {
+    state.loading = false;
+    console.log(error);
+  }
 };

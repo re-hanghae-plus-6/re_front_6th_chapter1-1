@@ -11,6 +11,7 @@ let state = {
   selectedLimit: "20",
   currentPage: 1,
   hasMore: true,
+  cartCount: 0
 };
 
 const listeners = [];

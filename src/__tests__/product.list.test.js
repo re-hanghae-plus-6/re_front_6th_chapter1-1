@@ -23,7 +23,7 @@ afterEach(() => {
 });
 
 describe("1. 상품 목록 로딩", () => {
-  test("페이지 접속 시 로딩 상태가 표시되고, 데이터 로드 완료 후 상품 목록이 렌더링된다", async () => {
+  test.only("페이지 접속 시 로딩 상태가 표시되고, 데이터 로드 완료 후 상품 목록이 렌더링된다", async () => {
     expect(screen.getByText("카테고리 로딩 중...")).toBeInTheDocument();
     expect(screen.queryByText(/총 의 상품/i)).not.toBeInTheDocument();
 

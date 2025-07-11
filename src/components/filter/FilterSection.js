@@ -92,7 +92,21 @@ export default function FilterSection({
         .join("");
     }
   };
+  const pathname = window.location.pathname;
+  if (pathname.includes("limit")) {
+    const match = pathname.match(/limit=([^&/]+)/)[1];
+    limit = decodeURIComponent(match);
+  }
 
+  if (pathname.includes("sort")) {
+    const match = pathname.match(/sort=([^&/]+)/)[1];
+    sort = decodeURIComponent(match);
+  }
+
+  if (pathname.includes("search")) {
+    const match = pathname.match(/search=([^&/]+)/)[1];
+    searchValue = decodeURIComponent(match);
+  }
   // 정렬 옵션
   const sortOptions = [
     { value: "price_asc", label: "가격 낮은순" },
@@ -105,8 +119,8 @@ export default function FilterSection({
   const limitOptions = [
     { value: "10", label: "10개" },
     { value: "20", label: "20개" },
-    { value: "30", label: "30개" },
-    { value: "40", label: "40개" },
+    { value: "50", label: "50개" },
+    { value: "100", label: "100개" },
   ];
 
   return `
