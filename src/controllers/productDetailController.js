@@ -78,12 +78,12 @@ export class ProductDetailController {
         return;
       }
 
-      if (event.target.id === "quantity-decrease") {
+      if (event.target.closest("#quantity-decrease")) {
         this.#handleQuantityDecrease();
         return;
       }
 
-      if (event.target.id === "quantity-increase") {
+      if (event.target.closest("#quantity-increase")) {
         this.#handleQuantityIncrease();
         return;
       }
@@ -141,8 +141,9 @@ export class ProductDetailController {
   }
 
   #handleQuantityIncrease() {
-    const { productDetail } = this.state;
-    const product = productDetail.product;
+    const state = store.getState();
+    const { productDetail } = state;
+    const product = productDetail?.product;
     const maxStock = product?.stock || 999;
 
     const quantityInput = document.getElementById("quantity-input");
@@ -155,8 +156,9 @@ export class ProductDetailController {
   }
 
   #handleQuantityInput(event) {
-    const { productDetail } = this.state;
-    const product = productDetail.product;
+    const state = store.getState();
+    const { productDetail } = state;
+    const product = productDetail?.product;
     const maxStock = product?.stock || 999;
     const inputValue = parseInt(event.target.value) || 1;
     this.#quantity = Math.max(1, Math.min(maxStock, inputValue));
