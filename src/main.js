@@ -6,9 +6,6 @@ const enableMocking = () => import("./mocks/browser.js").then(({ worker, workOpt
 function main() {
   const router = Router();
   window.router = router;
-  // 장바구니 모달 추가
-
-  // 라우트 등록
 
   // Object.entries(routes).forEach(([path, component]) => {
   //   router.addRoute(path, component);
