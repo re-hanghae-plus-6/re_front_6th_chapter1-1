@@ -139,8 +139,9 @@ export class ProductListPage extends Component {
 
   bindEvents(element) {
     element.addEventListener("click", (e) => {
-      const route = e.target.dataset.route;
-      if (route) {
+      const targetElement = e.target.closest("[data-route]");
+      if (targetElement) {
+        const route = targetElement.dataset.route;
         this.props.router.navigate(route);
         return;
       }
