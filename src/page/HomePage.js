@@ -201,7 +201,7 @@ async function fetchProducts() {
   }
 }
 
-// popstate 이벤트 핸들러.
+// popstate 이벤트 핸들러..
 function handlePopState() {
   if (window.location.pathname === "/") {
     const urlState = queryParamsToState(getQueryParams());
