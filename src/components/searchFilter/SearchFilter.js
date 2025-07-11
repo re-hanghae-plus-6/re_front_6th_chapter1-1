@@ -1,4 +1,4 @@
-import { CategoryFilter } from "./categoryFilter";
+import { CategoryFilter } from "./CategoryFilter";
 import { ProductSortSelect } from "./ProductSortSelect";
 import { QuantitySelect } from "./QuantitySelect";
 import { SearchBar } from "./SearchBar";
