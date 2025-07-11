@@ -38,14 +38,18 @@ if (import.meta.env.MODE !== "test") {
 
 // limit-select change 이벤트를 root에 위임하도록 처리
 const root = document.getElementById("root");
+
 root.addEventListener("change", async (e) => {
-  if (e.target.id !== "limit-select") return;
-  const newLimit = Number(e.target.value);
-  // 새로운 limit으로 데이터 fetch
-  const newData = await getProducts({ page: 1, limit: newLimit });
-  // products-grid만 갱신
-  const grid = document.getElementById("products-grid");
-  if (grid) {
-    grid.innerHTML = newData.products.map((item) => ItemCard(item)).join("");
+  const limitSelect = document.getElementById("limit-select");
+  const sortSelect = document.getElementById("sort-select");
+  if (e.target.id === "limit-select" || e.target.id === "sort-select") {
+    const newLimit = Number(limitSelect.value);
+    const newSort = sortSelect.value;
+    // 데이터 fetch 및 grid 업데이트
+    const newData = await getProducts({ page: 1, limit: newLimit, sort: newSort });
+    const grid = document.getElementById("products-grid");
+    if (grid) {
+      grid.innerHTML = newData.products.map((item) => ItemCard(item)).join("");
+    }
   }
 });

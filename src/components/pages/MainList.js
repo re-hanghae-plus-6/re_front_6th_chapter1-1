@@ -1,8 +1,8 @@
 import { ItemCard } from "../ItemCard";
 import { Category } from "./../Category";
 
-export const MainList = ({ loading = false, products = [], limit = 20 } = {}) =>
-  loading ? renderLoading() : renderItems(products, limit);
+export const MainList = ({ loading = false, products = [], limit, sort } = {}) =>
+  loading ? renderLoading() : renderItems(products, limit, sort);
 
 function renderLoading() {
   return `
@@ -143,12 +143,12 @@ function renderLoading() {
   </div>`;
 }
 
-function renderItems(products, limit) {
+function renderItems(products, limit, sort) {
   return `
   <div class="min-h-screen bg-gray-50">
     ${MainHeader()}
     <main class="max-w-md mx-auto px-4 py-4">
-      ${Category(0, limit)}
+      ${Category(0, limit, sort)}
       <!-- 상품 목록 -->
       <div class="mb-6">
         <!-- 상품 개수 정보 -->
