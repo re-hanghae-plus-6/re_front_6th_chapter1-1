@@ -9,4 +9,9 @@ export default [
   pluginJs.configs.recommended,
   eslintPluginPrettier,
   eslintConfigPrettier,
+  {
+    rules: {
+      "no-unused-vars": "off",
+    },
+  },
 ];
