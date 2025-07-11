@@ -5,12 +5,16 @@ import { Category } from "./../Category";
 
 export const MainList = ({
   loading = false,
+  categories = {},
+  category1 = "",
+  category2 = "",
   products = [],
   total = 0,
   limit = 20,
   sort = "price_asc",
   search = "",
-} = {}) => (loading ? renderLoading() : renderItems(products, total, limit, sort, search));
+} = {}) =>
+  loading ? renderLoading() : renderItems(categories, category1, category2, products, total, limit, sort, search);
 
 function renderLoading() {
   return `
@@ -151,12 +155,12 @@ function renderLoading() {
   </div>`;
 }
 
-function renderItems(products, total, limit, sort, search) {
+function renderItems(categories, category1, category2, products, total, limit, sort, search) {
   return `
   <div class="min-h-screen bg-gray-50">
     ${MainHeader()}
     <main class="max-w-md mx-auto px-4 py-4">
-      ${Category(0, limit, sort, search)}
+      ${Category(categories, category1, category2, limit, sort, search)}
       <!-- 상품 목록 -->
       <div class="mb-6">
         <!-- 상품 개수 정보 -->

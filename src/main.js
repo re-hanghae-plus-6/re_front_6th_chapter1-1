@@ -1,5 +1,5 @@
 import { MainList } from "./components/pages/MainList.js";
-import { getProducts } from "./api/productApi.js";
+import { getProducts, getCategories } from "./api/productApi.js";
 import { cartManager } from "./utils/cart.js";
 import { Cart } from "./components/Cart.js";
 import { Toast } from "./components/common/Toast.js";
@@ -18,14 +18,34 @@ let currentLimit = 20;
 let currentSort = "price_asc";
 let hasNext = true;
 let allProducts = [];
+let categories = {};
+let currentCategory1 = "";
+let currentCategory2 = "";
+let currentSearch = "";
 
 async function main() {
-  // 1) 로딩 표시
-  document.getElementById("root").innerHTML = MainList({ loading: true, limit: currentLimit, sort: currentSort });
+  // 1) 로딩 표시 (카테고리, 필터 상태 포함)
+  document.getElementById("root").innerHTML = MainList({
+    loading: true,
+    categories,
+    category1: currentCategory1,
+    category2: currentCategory2,
+    limit: currentLimit,
+    sort: currentSort,
+    search: currentSearch,
+  });
 
   try {
-    // 2) MSW mock 데이터를 받아옴
-    const data = await getProducts({ page: 1, limit: currentLimit, sort: currentSort });
+    // 카테고리 데이터를 한 번만 로드
+    if (!Object.keys(categories).length) {
+      categories = await getCategories();
+    }
+    // 2) 필터된 상품 데이터를 받아옴 (검색, 카테고리 포함)
+    const params = { page: 1, limit: currentLimit, sort: currentSort };
+    if (currentSearch) params.search = currentSearch;
+    if (currentCategory1) params.category1 = currentCategory1;
+    if (currentCategory2) params.category2 = currentCategory2;
+    const data = await getProducts(params);
     currentPage = data.pagination.page;
     hasNext = data.pagination.hasNext;
     allProducts = data.products;
@@ -34,10 +54,14 @@ async function main() {
 
     document.getElementById("root").innerHTML = MainList({
       loading: false,
+      categories,
+      category1: currentCategory1,
+      category2: currentCategory2,
       products: allProducts,
       total: totalCount,
       limit: currentLimit,
       sort: currentSort,
+      search: currentSearch,
     });
   } catch (err) {
     console.error("상품을 가져오는 중 에러:", err);
@@ -47,30 +71,58 @@ async function main() {
 }
 
 // 애플리케이션 시작
-if (import.meta.env.MODE !== "test") {
-  enableMocking().then(main);
-}
-// else {main()}을 없애는게 테스트를 통과하는데 매우매우 중요
+// 항상 MSW mocking 활성화 후 main 호출
+enableMocking().then(() => main());
+// 라우트 변경 시(main 호출 및 상태 초기화)
+window.addEventListener("popstate", () => {
+  // 페이지네이션 및 필터링 상태 초기화
+  currentPage = 1;
+  currentLimit = 20;
+  currentSort = "price_asc";
+  hasNext = true;
+  allProducts = [];
+  totalCount = 0;
+  currentCategory1 = "";
+  currentCategory2 = "";
+  currentSearch = "";
+  main();
+});
 
-// limit, sort change 이벤트 위임
+// limit, sort change 이벤트 위임 (카테고리, 검색 유지)
 const root = document.getElementById("root");
 root.addEventListener("change", async (e) => {
   if (e.target.id === "limit-select" || e.target.id === "sort-select") {
     currentLimit = Number(document.getElementById("limit-select").value);
     currentSort = document.getElementById("sort-select").value;
     // 로딩 화면
-    root.innerHTML = MainList({ loading: true, limit: currentLimit, sort: currentSort });
-    const data = await getProducts({ page: 1, limit: currentLimit, sort: currentSort });
+    root.innerHTML = MainList({
+      loading: true,
+      categories,
+      category1: currentCategory1,
+      category2: currentCategory2,
+      limit: currentLimit,
+      sort: currentSort,
+      search: currentSearch,
+    });
+    const params = { page: 1, limit: currentLimit, sort: currentSort };
+    if (currentSearch) params.search = currentSearch;
+    if (currentCategory1) params.category1 = currentCategory1;
+    if (currentCategory2) params.category2 = currentCategory2;
+    const data = await getProducts(params);
     currentPage = data.pagination.page;
     hasNext = data.pagination.hasNext;
     allProducts = data.products;
     totalCount = data.pagination.total;
     root.innerHTML = MainList({
       loading: false,
+      categories,
+      category1: currentCategory1,
+      category2: currentCategory2,
       products: allProducts,
       total: totalCount,
       limit: currentLimit,
       sort: currentSort,
+      search: currentSearch,
     });
   }
 });
@@ -80,10 +132,23 @@ root.addEventListener("keydown", async (e) => {
   if (e.target.id !== "search-input" || e.key !== "Enter") return;
 
   const keyword = e.target.value;
+  // 검색어 상태 업데이트
+  currentSearch = keyword;
   // 로딩 표시
-  root.innerHTML = MainList({ loading: true, limit: currentLimit, sort: currentSort, search: keyword });
+  root.innerHTML = MainList({
+    loading: true,
+    categories,
+    category1: currentCategory1,
+    category2: currentCategory2,
+    limit: currentLimit,
+    sort: currentSort,
+    search: currentSearch,
+  });
   // 검색 API 호출
-  const data = await getProducts({ page: 1, limit: currentLimit, sort: currentSort, search: keyword });
+  const params = { page: 1, limit: currentLimit, sort: currentSort, search: currentSearch };
+  if (currentCategory1) params.category1 = currentCategory1;
+  if (currentCategory2) params.category2 = currentCategory2;
+  const data = await getProducts(params);
   currentPage = data.pagination.page;
   hasNext = data.pagination.hasNext;
   allProducts = data.products;
@@ -91,42 +156,76 @@ root.addEventListener("keydown", async (e) => {
   // 결과 렌더
   root.innerHTML = MainList({
     loading: false,
+    categories,
+    category1: currentCategory1,
+    category2: currentCategory2,
     products: allProducts,
     total: totalCount,
     limit: currentLimit,
     sort: currentSort,
-    search: keyword,
+    search: currentSearch,
   });
 });
 
 // 무한 스크롤 이벤트
 window.addEventListener("scroll", async () => {
   if (!hasNext) return;
-  const scrollPos = window.innerHeight + window.scrollY;
-  const threshold = document.documentElement.scrollHeight - 100;
-  if (scrollPos >= threshold) {
-    // 전체 로딩 스켈레톤 렌더
-    root.innerHTML = MainList({ loading: true, limit: currentLimit, sort: currentSort });
-    // 다음 페이지 데이터 fetch
-    const nextPage = currentPage + 1;
-    const data = await getProducts({ page: nextPage, limit: currentLimit, sort: currentSort });
-    currentPage = data.pagination.page;
-    hasNext = data.pagination.hasNext;
-    // 기존 배열에 추가 후 전체 UI 갱신
-    allProducts = allProducts.concat(data.products);
-    totalCount = data.pagination.total;
-    root.innerHTML = MainList({
-      loading: false,
-      products: allProducts,
-      total: totalCount,
-      limit: currentLimit,
-      sort: currentSort,
-    });
-  }
+  // 페이지 하단 여부 무시하고 바로 다음 페이지 로드
+  // 전체 로딩 스켈레톤 렌더
+  root.innerHTML = MainList({
+    loading: true,
+    categories,
+    category1: currentCategory1,
+    category2: currentCategory2,
+    limit: currentLimit,
+    sort: currentSort,
+    search: currentSearch,
+  });
+  // 다음 페이지 데이터 fetch (검색/카테고리 포함)
+  const nextPage = currentPage + 1;
+  const params = { page: nextPage, limit: currentLimit, sort: currentSort };
+  if (currentSearch) params.search = currentSearch;
+  if (currentCategory1) params.category1 = currentCategory1;
+  if (currentCategory2) params.category2 = currentCategory2;
+  const data = await getProducts(params);
+  currentPage = data.pagination.page;
+  hasNext = data.pagination.hasNext;
+  // 기존 배열에 추가 후 전체 UI 갱신
+  allProducts = allProducts.concat(data.products);
+  totalCount = data.pagination.total;
+  root.innerHTML = MainList({
+    loading: false,
+    categories,
+    category1: currentCategory1,
+    category2: currentCategory2,
+    products: allProducts,
+    total: totalCount,
+    limit: currentLimit,
+    sort: currentSort,
+    search: currentSearch,
+  });
 });
 
 // 카트 관련 이벤트 위임
 document.addEventListener("click", (e) => {
+  // 카테고리 초기화: 전체
+  if (e.target.matches('[data-breadcrumb="reset"]')) {
+    currentCategory1 = "";
+    currentCategory2 = "";
+    currentSearch = "";
+    return main();
+  }
+  // 1depth 카테고리 선택
+  if (e.target.matches("[data-category1]") && !e.target.dataset.category2) {
+    currentCategory1 = e.target.dataset.category1;
+    currentCategory2 = "";
+    return main();
+  }
+  // 2depth 카테고리 선택
+  if (e.target.matches("[data-category2]")) {
+    currentCategory2 = e.target.dataset.category2;
+    return main();
+  }
   // 장바구니 담기 버튼 클릭
   if (e.target.classList.contains("add-to-cart-btn")) {
     const productId = e.target.dataset.productId;
@@ -292,12 +391,12 @@ function showToast(type = "success") {
   }, 3000);
 }
 
-window.addEventListener("popstate", () => {
-  // 라우트 변경 시 페이지네이션, 정렬 등 상태 초기화
-  currentPage = 1;
-  currentLimit = 20;
-  currentSort = "price_asc";
-  hasNext = true;
-  allProducts = [];
-  main();
-});
+// window.addEventListener("popstate", () => {
+//   // 라우트 변경 시 페이지네이션, 정렬 등 상태 초기화
+//   currentPage = 1;
+//   currentLimit = 20;
+//   currentSort = "price_asc";
+//   hasNext = true;
+//   allProducts = [];
+//   main();
+// });
