@@ -8,6 +8,7 @@ import { formatPrice } from "../utils/commonFunc.js";
 export const ProductDetail = (props) => {
   const { urlParams, product, relatedProducts } = props;
   const productId = urlParams.id;
+  let router = props.router;
   let quantity = 1;
 
   // productId가 없거나 product 데이터가 없는 경우 NotFound 컴포넌트를 반환
@@ -25,13 +26,13 @@ export const ProductDetail = (props) => {
           <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
           </svg>
-          <a href="/?category1=${encodeURIComponent(product.category1)}" data-link="" class="hover:text-blue-600 transition-colors">
+          <a href="${router.BASE_PATH}/?category1=${encodeURIComponent(product.category1)}" data-link="" class="hover:text-blue-600 transition-colors">
             ${product.category1}
           </a>
           <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
           </svg>
-          <a href="/?category1=${encodeURIComponent(product.category1)}&category2=${encodeURIComponent(product.category2)}" data-link="" class="hover:text-blue-600 transition-colors">
+          <a href="${router.BASE_PATH}/?category1=${encodeURIComponent(product.category1)}&category2=${encodeURIComponent(product.category2)}" data-link="" class="hover:text-blue-600 transition-colors">
             ${product.category2}
           </a>
         </div>
