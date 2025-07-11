@@ -5,10 +5,10 @@ import { Search } from "./Search";
 import { LimitSelect, SortSelect } from "./Select";
 
 export class Filters extends Component {
-  search = new Search();
-  breadcrumb = new Breadcrumb();
-  limitSelect = new LimitSelect();
-  sortSelect = new SortSelect();
+  search = new Search(this.props);
+  breadcrumb = new Breadcrumb(this.props);
+  limitSelect = new LimitSelect(this.props);
+  sortSelect = new SortSelect(this.props);
 
   renderContainer() {
     return html` <div

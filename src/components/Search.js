@@ -1,5 +1,4 @@
 import { Component } from "../core/Component";
-import { productsStore } from "../store/products";
 import { html } from "../utils/html";
 
 export class Search extends Component {
@@ -12,7 +11,7 @@ export class Search extends Component {
           type="text"
           id="${this.inputId}"
           placeholder="상품명을 검색해보세요..."
-          value="${productsStore.search}"
+          value="${this.props.productsStore.search}"
           class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         />
@@ -35,7 +34,7 @@ export class Search extends Component {
     this.addEvent("keydown", (e) => {
       if (e.target.closest(`#${this.inputId}`)) {
         if (e.key === "Enter") {
-          productsStore.setSearch(e.target.value);
+          this.props.productsStore.setSearch(e.target.value);
         }
       }
     });

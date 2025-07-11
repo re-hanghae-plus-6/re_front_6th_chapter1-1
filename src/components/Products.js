@@ -1,7 +1,6 @@
 import { Component } from "../core/Component";
 import { router } from "../core/router";
 import { cartStore } from "../store/cart";
-import { productsStore } from "../store/products";
 import { priceFormat } from "../utils/format";
 import { html } from "../utils/html";
 
@@ -18,7 +17,7 @@ export class Products extends Component {
   };
 
   renderContainer() {
-    const { isLoading, hasNext } = productsStore;
+    const { isLoading, hasNext } = this.props.productsStore;
     return html`<div ${this.dataAttribute.attribute} class="mb-6">
       <!-- 상품 그리드 -->
       <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid"></div>
@@ -27,7 +26,7 @@ export class Products extends Component {
   }
 
   render() {
-    const { limit, data } = productsStore;
+    const { limit, data } = this.props.productsStore;
     const { page, total, products, currentPageProducts, isLoading, hasNext, isFetching } = data;
     if (isLoading) {
       this.$el.innerHTML = html`<!-- 상품 그리드 -->
@@ -60,7 +59,7 @@ export class Products extends Component {
       const $addCartBtn = target.closest("button[data-product-id]");
       if ($addCartBtn) {
         const { productId } = $addCartBtn.dataset;
-        const item = productsStore.data.products.find((p) => p.productId === productId);
+        const item = this.props.productsStore.data.products.find((p) => p.productId === productId);
 
         if (!item) {
           throw new Error(`${productId} is not in products`);
@@ -129,7 +128,7 @@ export class Products extends Component {
     this.#intersectionObserver = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting && !isLoading && hasNext && !isFetching) {
-          productsStore.loadNextPage();
+          this.props.productsStore.loadNextPage();
         }
       });
     });

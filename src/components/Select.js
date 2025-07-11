@@ -1,5 +1,4 @@
 import { Component } from "../core/Component";
-import { productsStore } from "../store/products";
 import { html } from "../utils/html";
 
 class SelectFilter extends Component {
@@ -49,8 +48,8 @@ export class LimitSelect extends SelectFilter {
         value,
         name: `${value}개`,
       })),
-      initValue: () => productsStore.limit,
-      setValue: (value) => productsStore.setLimit(value),
+      initValue: () => this.props.productsStore.limit,
+      setValue: (value) => this.props.productsStore.setLimit(value),
     });
   }
 }
@@ -67,8 +66,8 @@ export class SortSelect extends SelectFilter {
         { value: "name_asc", name: "이름순" },
         { value: "name_desc", name: "이름 역순" },
       ],
-      initValue: () => productsStore.sort,
-      setValue: (value) => productsStore.setSort(value),
+      initValue: () => this.props.productsStore.sort,
+      setValue: (value) => this.props.productsStore.setSort(value),
     });
   }
 }

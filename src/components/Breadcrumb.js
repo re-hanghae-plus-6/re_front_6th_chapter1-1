@@ -1,10 +1,9 @@
 import { Component } from "../core/Component";
-import { productsStore } from "../store/products";
 import { html } from "../utils/html";
 
 export class Breadcrumb extends Component {
   renderContainer() {
-    const { categories, category1, category2 } = productsStore;
+    const { categories, category1, category2 } = this.props.productsStore;
 
     return html`<div ${this.dataAttribute.attribute} class="space-y-2">
       ${this.renderBreadcrumb({ category1, category2 })} ${this.renderCategories({ categories, category1, category2 })}
@@ -19,11 +18,14 @@ export class Breadcrumb extends Component {
     super.setEvent();
     this.addEvent("click", ({ target: { dataset } }) => {
       if ("category2" in dataset) {
-        productsStore.setCategories({ category1: productsStore.category1, category2: dataset.category2 });
+        this.props.productsStore.setCategories({
+          category1: this.props.productsStore.category1,
+          category2: dataset.category2,
+        });
       } else if ("category1" in dataset) {
-        productsStore.setCategories({ category1: dataset.category1, category2: "" });
+        this.props.productsStore.setCategories({ category1: dataset.category1, category2: "" });
       } else if ("breadcrumb" in dataset) {
-        productsStore.resetCategories();
+        this.props.productsStore.resetCategories();
       }
     });
   }

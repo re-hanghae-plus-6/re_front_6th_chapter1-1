@@ -5,11 +5,12 @@ import { Layouy } from "../components/Layout";
 import { Products } from "../components/Products";
 import { Component } from "../core/Component";
 import { cartStore } from "../store/cart";
-import { productsStore } from "../store/products";
+import { createProductsStore } from "../store/products";
 import { html } from "../utils/html";
 
 export function ProductsPage($root) {
   cartStore.init();
+  const productsStore = createProductsStore();
   productsStore.initSearchParams();
   productsStore.loadCategories().then(() => {
     productsStore.loadProducts();
@@ -18,8 +19,8 @@ export function ProductsPage($root) {
   const layout = new Layouy({
     header: new Header({ nav: new Nav() }),
     main: new Main({
-      filters: new Filters(),
-      products: new Products(),
+      filters: new Filters({ productsStore }),
+      products: new Products({ productsStore }),
     }),
     footer: new Footer(),
   });
