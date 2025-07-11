@@ -1,4 +1,4 @@
-export const createObserver = () => {
+export const useObserver = () => {
   const observers = new Set();
 
   const subscribe = (callback) => {

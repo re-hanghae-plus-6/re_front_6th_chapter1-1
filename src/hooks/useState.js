@@ -1,8 +1,8 @@
-import { createObserver } from "./createObserver.js";
+import { useObserver } from "./useObserver.js";
 
-export function createState(initialState) {
+export function useState(initialState) {
   let state = { ...initialState };
-  const observer = createObserver();
+  const observer = useObserver();
 
   const subscribe = (callback) => {
     observer.subscribe(callback);
@@ -11,7 +11,12 @@ export function createState(initialState) {
 
   const setState = (newState) => {
     const prevState = { ...state };
-    state = { ...state, ...newState };
+
+    if (typeof newState === "function") {
+      state = { ...state, ...newState(prevState) };
+    } else {
+      state = { ...state, ...newState };
+    }
 
     observer.notify(state, prevState);
   };
