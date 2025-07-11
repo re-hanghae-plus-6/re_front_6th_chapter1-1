@@ -39,6 +39,12 @@ export class CartModal extends Component {
         return;
       }
 
+      const $removeSelectedBtn = target.closest("#cart-modal-remove-selected-btn");
+      if ($removeSelectedBtn) {
+        cartStore.removeSelectedItems();
+        return;
+      }
+
       const $quantityIncreaseBtn = target.closest(".quantity-increase-btn");
       const $quantityDecreaseBtn = target.closest(".quantity-decrease-btn");
 
@@ -68,6 +74,9 @@ export class CartModal extends Component {
     const arrItems = Array.from(items.values());
     const totalPrice = arrItems.reduce((acc, item) => {
       return item.selected ? acc + item.lprice * item.quantity : acc;
+    }, 0);
+    const selectedCount = arrItems.reduce((acc, item) => {
+      return item.selected ? acc + 1 : acc;
     }, 0);
 
     return html`
@@ -127,6 +136,16 @@ export class CartModal extends Component {
                     </div>
                     <!-- 액션 버튼들 -->
                     <div class="space-y-2">
+                      ${selectedCount > 0
+                        ? html`<button
+                            id="cart-modal-remove-selected-btn"
+                            class="w-full bg-red-600 text-white py-2 px-4 rounded-md 
+                                   hover:bg-red-700 transition-colors text-sm"
+                          >
+                            선택한 상품 삭제 (${selectedCount}개)
+                          </button>`
+                        : ""}
+
                       <div class="flex gap-2">
                         <button
                           id="cart-modal-clear-cart-btn"
