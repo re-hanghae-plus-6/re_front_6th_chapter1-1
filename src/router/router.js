@@ -67,5 +67,6 @@ export function initRouter() {
 export function navigate(appPath) {
   const fullPath = getFullPath(appPath);
   window.history.pushState({}, "", fullPath);
-  window.dispatchEvent(new PopStateEvent("popstate"));
+  window.dispatchEvent(new CustomEvent("urlchange"));
+  router();
 }
