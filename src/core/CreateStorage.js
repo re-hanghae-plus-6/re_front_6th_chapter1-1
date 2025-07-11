@@ -25,7 +25,6 @@ class CreateStorage {
 
   clear() {
     this.storage.clear();
-    this.listeners = {};
   }
 
   subscribe(key, callback) {
