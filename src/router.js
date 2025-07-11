@@ -4,6 +4,12 @@ import NotFound from "./pages/NotFound.js";
 import { getQueryParams } from "./utils/urlParam.js";
 import { productStore } from "./store/productStore.js";
 
+const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
+
+const getAppPath = (fullPath = window.location.pathname) => {
+  return fullPath.startsWith(BASE_PATH) ? fullPath.slice(BASE_PATH.length) || "/" : fullPath;
+};
+
 const routes = {
   "/": Home,
   "/product/:productId": Detail,
@@ -13,7 +19,7 @@ const routes = {
 let currentCleanup = null;
 
 export function router() {
-  const path = window.location.pathname;
+  const path = getAppPath();
   const query = getQueryParams();
 
   // store 상태 동기화
