@@ -231,7 +231,7 @@ window.setupModalEvents = setupModalEvents;
 // 토스트 메시지 함수
 function showToast(type = "success") {
   const toastContainer = document.createElement("div");
-  toastContainer.className = "fixed top-4 right-4 z-50";
+  toastContainer.className = "fixed top-4 right-4 z-[1000]";
   toastContainer.innerHTML = Toast(type);
   document.body.appendChild(toastContainer);
 
