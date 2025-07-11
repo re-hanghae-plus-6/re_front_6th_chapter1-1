@@ -53,6 +53,7 @@ export const cartStore = observable({
   clearCart() {
     cartStore.items = new Map();
     cartStore.count = 0;
+    toast.info("장바구니에서 모두 제거되었습니다");
   },
   checkout() {
     toast.info("구매 기능은 추후 구현 예정입니다.");
@@ -64,6 +65,7 @@ export const cartStore = observable({
     cartStore.items.delete(productId);
     cartStore.items = new Map([...cartStore.items]);
     cartStore.count = cartStore.items.size;
+    toast.info("장바구니에서 제거되었습니다");
   },
   removeSelectedItems() {
     const { items } = cartStore;
@@ -74,6 +76,7 @@ export const cartStore = observable({
     });
     cartStore.items = new Map([...items]);
     cartStore.count = cartStore.items.size;
+    toast.info("장바구니에서 선택된 상품이 제거되었습니다");
   },
   toggleSelectedItem(productId) {
     const item = cartStore.getItem(productId);
