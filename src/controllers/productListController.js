@@ -20,7 +20,6 @@ export class ProductListController {
     });
     this.#eventListeners = [];
 
-    // 새로 등록
     this.#setupEventListeners();
   }
 
