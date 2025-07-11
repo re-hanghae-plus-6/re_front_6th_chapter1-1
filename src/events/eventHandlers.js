@@ -40,6 +40,8 @@ export function setupCommonEventListeners(mainStatus, appRouter) {
     const productCard = e.target.closest(".product-card"); // 클릭된 요소의 가장 가까운
 
     const addToCartBtn = e.target.closest("#add-to-cart-btn"); // 클릭된 요소가 장바구니 버튼인지
+    const increaseQuantyBtn = e.target.closest("#quantity-increase");
+    const decreaseQuantyBtn = e.target.closest("#quantity-decrease");
 
     // 상품 카드가 클릭되었고, 장바구니 버튼이 아닌 경우에만 상세 페이지로 이동
     if (productCard && !addToCartBtn) {
@@ -48,13 +50,37 @@ export function setupCommonEventListeners(mainStatus, appRouter) {
       if (productId) {
         appRouter.navigate(`/product/${productId}`); // 라우터로 페이지 이동
       }
+      return; // 다른 버튼들과의 중복 실행 방지
     }
 
+    // --- 상세 페이지 버튼 처리 ---
+    const quantityInput = document.body.querySelector("#quantity-input");
+
+    // 수량 증가
+    if (increaseQuantyBtn && quantityInput) {
+      quantityInput.value = parseInt(quantityInput.value, 10) + 1;
+      return;
+    }
+
+    // 수량 감소
+    if (decreaseQuantyBtn && quantityInput) {
+      const currentValue = parseInt(quantityInput.value, 10);
+      if (currentValue > 1) {
+        quantityInput.value = currentValue - 1;
+      }
+      return;
+    }
+
+    // 장바구니 담기
     if (addToCartBtn) {
+      if (!quantityInput) return; // quantityInput이 없으면 로직 중단
+
+      const quantity = parseInt(quantityInput.value, 10);
       const productId = addToCartBtn.dataset.productId;
       const product = mainStatus.products.find((p) => p.productId === productId);
+
       if (product) {
-        addCart(product);
+        addCart(product, quantity); // 수량을 함께 전달
         showToast("장바구니에 추가되었습니다");
         updateHeaderCartCount();
       }

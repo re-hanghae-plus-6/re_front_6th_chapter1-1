@@ -8,7 +8,7 @@ import { ProductCard } from "../components/ProductCard.js";
 export const ProductDetail = (props) => {
   const { urlParams } = props;
   const productId = urlParams.id;
-  let quantity = 4;
+  let quantity = 1;
   // productId가 없는 경우 NotFound 컴포넌트를 반환
   if (!productId) {
     return NotFound();
@@ -38,11 +38,6 @@ export const ProductDetail = (props) => {
       const product = await getProduct(productId);
       props.params.category1 = product.category1;
       props.params.category2 = product.category2;
-      const related = await getProducts(props.params);
-      const productCardsHtml = related.products
-        .filter((item) => item.productId !== productId)
-        .map(ProductCard)
-        .join("");
       const productHTML = /*html*/ `
         ${header(props)}
         <main class="max-w-md mx-auto px-4 py-4">
@@ -146,16 +141,8 @@ export const ProductDetail = (props) => {
             </a>
           </div>
           <!-- 관련 상품 -->
-          <div class="bg-white rounded-lg shadow-sm">
-            <div class="p-4 border-b border-gray-200">
-              <h2 class="text-lg font-bold text-gray-900">관련 상품</h2>
-              <p class="text-sm text-gray-600">같은 카테고리의 다른 상품들</p>
-            </div>
-            <div class="p-4">
-              <div class="grid grid-cols-2 gap-3 responsive-grid">
-                ${productCardsHtml}
-              </div>
-            </div>
+          <div id="related-products-section" class="bg-white rounded-lg shadow-sm">
+            
           </div>
         </main>
         ${footer()}
@@ -163,6 +150,29 @@ export const ProductDetail = (props) => {
       // 현재 페이지가 여전히 해당 상품 상세 페이지일 때만 DOM을 업데이트
       if (window.location.pathname === `/product/${productId}`) {
         appRoot.innerHTML = productHTML;
+      }
+
+      const related = await getProducts(props.params);
+      const productCardsHtml = related.products
+        .filter((item) => item.productId !== productId)
+        .map(ProductCard)
+        .join("");
+      const relatedProductsSection = document.querySelector("#related-products-section");
+      if (relatedProductsSection) {
+        relatedProductsSection.innerHTML = /*html*/ `
+        <div class="bg-white rounded-lg shadow-sm">
+          <div class="p-4 border-b border-gray-200">
+            <h2 class="text-lg font-bold text-gray-900">관련 상품</h2>
+            <p class="text-sm text-gray-600">같은 카테고리의 다른 상품들</p>
+          </div>
+          <div class="p-4">
+            <div class="grid grid-cols-2 gap-3 responsive-grid">
+              ${productCardsHtml}
+            </div>
+          </div>
+        </div>
+    
+      `;
       }
     } catch (error) {
       console.error("상품 정보를 불러오는 데 실패했습니다.", error);
