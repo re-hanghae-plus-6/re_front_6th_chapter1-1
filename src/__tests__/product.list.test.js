@@ -1,26 +1,6 @@
 import { getByRole, screen, waitFor } from "@testing-library/dom";
-import { afterEach, beforeAll, beforeEach, describe, expect, test } from "vitest";
-import { server } from "./mockServerHandler.js";
 import { userEvent } from "@testing-library/user-event";
-
-const goTo = (path) => {
-  window.history.pushState({}, "", path);
-  window.dispatchEvent(new Event("popstate"));
-};
-
-beforeAll(async () => {
-  document.body.innerHTML = '<div id="root"></div>';
-  await import("../main.js");
-});
-
-beforeEach(() => goTo("/"));
-
-afterEach(() => {
-  // 각 테스트 후 상태 초기화
-  document.getElementById("root").innerHTML = "";
-  localStorage.clear();
-  server.resetHandlers();
-});
+import { describe, expect, test } from "vitest";
 
 describe("1. 상품 목록 로딩", () => {
   test("페이지 접속 시 로딩 상태가 표시되고, 데이터 로드 완료 후 상품 목록이 렌더링된다", async () => {
@@ -111,7 +91,10 @@ describe("3. 페이지당 상품 수 선택", () => {
       ).not.toBeInTheDocument(),
     );
 
-    expect(document.querySelectorAll(".product-card").length).toBe(10);
+    await waitFor(() => {
+      const productCards = document.querySelectorAll(".product-card");
+      expect(productCards).toHaveLength(10);
+    });
   });
 });
 

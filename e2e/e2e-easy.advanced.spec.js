@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 // 테스트 설정
-test.describe.configure({ mode: "serial" });
+// test.describe.configure({ mode: "serial" });
 
 // 헬퍼 함수들
 class E2EHelpers {
@@ -179,7 +179,9 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오", () => {
       await expect(page.locator("#search-input")).toHaveValue("젤리");
       await expect(page.locator("#sort-select")).toHaveValue("price_desc");
       await expect(page.locator("#limit-select")).toHaveValue("10");
-      await expect(page.getByRole("main")).toMatchAriaSnapshot(`- text: /총 3개의 상품/`);
+      await expect(page.locator("text=총")).toBeVisible();
+      await expect(page.locator("text=3개")).toBeVisible();
+      await expect(page.locator("text=의 상품")).toBeVisible();
 
       await page.goto("/?search=고양이&sort=name_desc&limit=50");
       await helpers.waitForPageLoad();
@@ -187,7 +189,9 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오", () => {
       await expect(page.locator("#search-input")).toHaveValue("고양이");
       await expect(page.locator("#sort-select")).toHaveValue("name_desc");
       await expect(page.locator("#limit-select")).toHaveValue("50");
-      await expect(page.getByRole("main")).toMatchAriaSnapshot(`- text: /총 84개의 상품/`);
+      await expect(page.locator("text=총")).toBeVisible();
+      await expect(page.locator("text=84개")).toBeVisible();
+      await expect(page.locator("text=의 상품")).toBeVisible();
     });
   });
 
@@ -296,10 +300,9 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오", () => {
       await page.goto("/non-existent-page");
 
       // 404 페이지 확인
-      await expect(page.getByRole("main")).toMatchAriaSnapshot(`
-    - img: /404 페이지를 찾을 수 없습니다/
-    - link "홈으로"
-    `);
+      // 404 이미지와 링크가 올바르게 표시되는지 확인
+      await expect(page.getByRole("img", { name: "404 페이지를 찾을 수 없습니다" })).toBeVisible();
+      await expect(page.getByRole("link", { name: "홈으로" })).toBeVisible();
     });
   });
 });

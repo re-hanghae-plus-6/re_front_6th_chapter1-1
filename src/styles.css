@@ -40,17 +40,32 @@
 /* 토스트 애니메이션 */
 @keyframes slide-up {
   from {
-    transform: translateY(100px);
+    transform: translateX(-50%) translateY(100px);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: translateX(-50%) translateY(0);
     opacity: 1;
   }
 }
 
 .animate-slide-up {
   animation: slide-up 0.3s ease-out;
+}
+
+@keyframes slide-down {
+  from {
+    transform: translate(-50%, -20px);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-down {
+  animation: slide-down 0.3s ease-out;
 }
 
 /* 모달 애니메이션 */

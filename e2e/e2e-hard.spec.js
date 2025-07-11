@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 // 테스트 설정
-test.describe.configure({ mode: "serial" });
+// test.describe.configure({ mode: "serial" });
 
 // 헬퍼 함수들
 class E2EHelpers {
@@ -643,11 +643,9 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오", () => {
       // 존재하지 않는 경로로 이동
       await page.goto("/non-existent-page");
 
-      // 404 페이지 확인
-      await expect(page.getByRole("main")).toMatchAriaSnapshot(`
-    - img: /404 페이지를 찾을 수 없습니다/
-    - link "홈으로"
-    `);
+      // 404 이미지와 링크가 올바르게 표시되는지 확인
+      await expect(page.getByRole("img", { name: "404 페이지를 찾을 수 없습니다" })).toBeVisible();
+      await expect(page.getByRole("link", { name: "홈으로" })).toBeVisible();
     });
   });
 });

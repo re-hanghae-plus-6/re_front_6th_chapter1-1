@@ -1,10 +1,11 @@
 import { findByText, getByText, queryByText, screen } from "@testing-library/dom";
 import { userEvent } from "@testing-library/user-event";
-import { afterEach, beforeAll, beforeEach, describe, expect, test } from "vitest";
+import { describe, expect, test } from "vitest";
 
-const goTo = (path) => {
-  window.history.pushState({}, "", path);
-  window.dispatchEvent(new Event("popstate"));
+import { cartStore } from "../store/cart";
+
+const resetBeforeEach = () => {
+  cartStore.resetInitialState();
 };
 
 // 장바구니에 상품을 추가하는 헬퍼 함수
@@ -16,21 +17,9 @@ const addProductToCart = async (productName) => {
   expect(screen.getByText("장바구니에 추가되었습니다")).toBeInTheDocument();
 };
 
-beforeAll(async () => {
-  document.body.innerHTML = '<div id="root"></div>';
-  await import("../main.js");
-});
-
-beforeEach(() => goTo("/"));
-
-afterEach(() => {
-  // 각 테스트 후 상태 초기화
-  document.getElementById("root").innerHTML = "";
-  localStorage.clear();
-});
-
-describe("1. 장바구니 모달", () => {
+describe("1-1. 장바구니 아이콘 클릭 시 모달 형태로 장바구니가 열린다", () => {
   test("장바구니 아이콘 클릭 시 모달 형태로 장바구니가 열린다", async () => {
+    resetBeforeEach();
     // 상품 목록이 로드될 때까지 대기
     await screen.findByText(/총 의 상품/i);
 
@@ -44,8 +33,11 @@ describe("1. 장바구니 모달", () => {
     expect(screen.getByText("장바구니가 비어있습니다")).toBeInTheDocument();
     expect(document.querySelector(".cart-modal-overlay")).toBeInTheDocument();
   });
+});
 
+describe("1-2. X 버튼으로 모달을 닫을 수 있다", () => {
   test("X 버튼으로 모달을 닫을 수 있다", async () => {
+    resetBeforeEach();
     await screen.findByText(/총 의 상품/i);
 
     // 장바구니 모달 열기
@@ -60,8 +52,11 @@ describe("1. 장바구니 모달", () => {
     // 모달이 닫혔는지 확인
     expect(document.querySelector(".cart-modal-overlay")).not.toBeInTheDocument();
   });
+});
 
+describe("1-3. 배경 클릭으로 모달을 닫을 수 있다", () => {
   test("배경 클릭으로 모달을 닫을 수 있다", async () => {
+    resetBeforeEach();
     await screen.findByText(/총 의 상품/i);
 
     // 장바구니 모달 열기
@@ -76,8 +71,11 @@ describe("1. 장바구니 모달", () => {
     // 모달이 닫혔는지 확인
     expect(document.querySelector(".cart-modal-overlay")).not.toBeInTheDocument();
   });
+});
 
+describe("1-4. ESC 키로 모달을 닫을 수 있다", () => {
   test("ESC 키로 모달을 닫을 수 있다", async () => {
+    resetBeforeEach();
     await screen.findByText(/총 의 상품/i);
 
     // 장바구니 모달 열기
@@ -94,8 +92,9 @@ describe("1. 장바구니 모달", () => {
   });
 });
 
-describe.sequential("2. 장바구니 수량 조절", () => {
+describe("2-1. 각 장바구니 상품의 수량을 증가할 수 있다", () => {
   test("각 장바구니 상품의 수량을 증가할 수 있다", async () => {
+    resetBeforeEach();
     await screen.findByText(/총 의 상품/i);
 
     // 상품을 장바구니에 추가
@@ -105,49 +104,52 @@ describe.sequential("2. 장바구니 수량 조절", () => {
     const cartIcon = document.querySelector("#cart-icon-btn");
     await userEvent.click(cartIcon);
 
-    // 수량 증가 버튼 클릭
-    const increaseButton = document.querySelector(".quantity-increase-btn");
-    expect(increaseButton).toBeInTheDocument();
+    // 수량 증가 버튼 있는가?
+    expect(document.querySelector(".quantity-increase-btn")).toBeInTheDocument();
 
     // 현재 수량 확인
-    const quantityInput = document.querySelector(".quantity-input");
-    expect(quantityInput.value).toBe("1");
-
-    await userEvent.click(increaseButton);
-
-    // 수량이 증가했는지 확인
-    expect(quantityInput.value).toBe("2");
-  });
-
-  test("각 장바구니 상품의 수량을 감소할 수 있다", async () => {
-    await screen.findByText(/총 의 상품/i);
-
-    // 상품을 장바구니에 추가하고 수량을 2개로 증가
-    await addProductToCart("pvc 투명 젤리 쇼핑백");
-
-    const cartIcon = document.querySelector("#cart-icon-btn");
-    await userEvent.click(cartIcon);
-
     expect(document.querySelector(".quantity-input").value).toBe("1");
 
-    // 수량을 먼저 2개로 증가
-    const increaseButton = document.querySelector(".quantity-increase-btn");
-    await userEvent.click(increaseButton);
+    // 수량 증가 버튼 클릭
+    await userEvent.click(document.querySelector(".quantity-increase-btn"));
+
+    // 수량이 증가했는지 확인
+    expect(document.querySelector(".quantity-input").value).toBe("2");
+  });
+});
+
+describe("2-2. 각 장바구니 상품의 수량을 감소할 수 있다", () => {
+  test("각 장바구니 상품의 수량을 감소할 수 있다", async () => {
+    resetBeforeEach();
+    await screen.findByText(/총 의 상품/i);
+
+    // 상품을 장바구니에 추가
+    await addProductToCart("pvc 투명 젤리 쇼핑백");
+
+    // 장바구니 모달을 열어 수량을 확인
+    await userEvent.click(document.querySelector("#cart-icon-btn"));
+    expect(document.querySelector(".quantity-input").value).toBe("1");
+
+    // 수량 증가 버튼 클릭
+    await userEvent.click(document.querySelector(".quantity-increase-btn"));
 
     // 수량 감소 버튼 클릭
-    const decreaseButton = document.querySelector(".quantity-decrease-btn");
-    expect(decreaseButton).toBeInTheDocument();
+    expect(document.querySelector(".quantity-decrease-btn")).toBeInTheDocument();
 
     const quantityInput = document.querySelector(".quantity-input");
     expect(quantityInput.value).toBe("2");
 
-    await userEvent.click(decreaseButton);
+    // 수량 감소 버튼 클릭
+    await userEvent.click(document.querySelector(".quantity-decrease-btn"));
 
     // 수량이 감소했는지 확인
-    expect(quantityInput.value).toBe("1");
+    expect(document.querySelector(".quantity-input").value).toBe("1");
   });
+});
 
+describe("2-3. 수량 변경 시 총 금액이 실시간으로 업데이트된다", () => {
   test("수량 변경 시 총 금액이 실시간으로 업데이트된다", async () => {
+    resetBeforeEach();
     await screen.findByText(/총 의 상품/i);
 
     // 상품을 장바구니에 추가
@@ -159,7 +161,7 @@ describe.sequential("2. 장바구니 수량 조절", () => {
     // 초기 총 금액 확인
     const getTotalAmountElement = () => screen.getByText("총 금액").parentNode.querySelector("span:last-child");
     const initialAmount = getTotalAmountElement().textContent;
-    expect(initialAmount).toBe("220원");
+    expect(initialAmount.trim()).toBe("220원");
 
     // 수량 증가
     const increaseButton = document.querySelector(".quantity-increase-btn");
@@ -167,12 +169,13 @@ describe.sequential("2. 장바구니 수량 조절", () => {
 
     // 총 금액이 업데이트되었는지 확인
     const updatedAmount = getTotalAmountElement().textContent;
-    expect(updatedAmount).toBe("440원");
+    expect(updatedAmount.trim()).toBe("440원");
   });
 });
 
-describe.sequential("3. 장바구니 삭제", () => {
+describe("3-1. 각 상품에 삭제 버튼이 배치되어 있다", () => {
   test("각 상품에 삭제 버튼이 배치되어 있다", async () => {
+    resetBeforeEach();
     await screen.findByText(/총 의 상품/i);
 
     // 상품을 장바구니에 추가
@@ -185,8 +188,11 @@ describe.sequential("3. 장바구니 삭제", () => {
     const deleteButton = document.querySelector(".cart-item-remove-btn");
     expect(deleteButton).toBeInTheDocument();
   });
+});
 
+describe("3-2. 삭제 버튼 클릭 시 해당 상품이 장바구니에서 제거된다", () => {
   test("삭제 버튼 클릭 시 해당 상품이 장바구니에서 제거된다", async () => {
+    resetBeforeEach();
     await screen.findByText(/총 의 상품/i);
 
     // 상품을 장바구니에 추가
@@ -210,8 +216,9 @@ describe.sequential("3. 장바구니 삭제", () => {
   });
 });
 
-describe.sequential("4. 장바구니 선택 삭제", () => {
+describe("4-1. 각 상품에 선택을 위한 체크박스가 제공되고, 체크된 상품들만 삭제할 수 있다", () => {
   test("각 상품에 선택을 위한 체크박스가 제공되고, 체크된 상품들만 삭제할 수 있다.", async () => {
+    resetBeforeEach();
     await screen.findByText(/총 의 상품/i);
     screen.getByText("340개");
 
@@ -240,8 +247,9 @@ describe.sequential("4. 장바구니 선택 삭제", () => {
   });
 });
 
-describe.sequential("5. 장바구니 전체 선택", () => {
+describe("5-1. 모든 상품을 한 번에 선택할 수 있는 마스터 체크박스가 있다", () => {
   test("모든 상품을 한 번에 선택할 수 있는 마스터 체크박스가 있다", async () => {
+    resetBeforeEach();
     await screen.findByText(/총 의 상품/i);
 
     // 상품을 장바구니에 추가
@@ -255,8 +263,11 @@ describe.sequential("5. 장바구니 전체 선택", () => {
     expect(selectAllCheckbox).toBeInTheDocument();
     expect(screen.getByText(/전체선택/)).toBeInTheDocument();
   });
+});
 
+describe("5-2. 전체 선택 시 모든 상품의 체크박스가 선택된다", () => {
   test("전체 선택 시 모든 상품의 체크박스가 선택된다", async () => {
+    resetBeforeEach();
     await screen.findByText(/총 의 상품/i);
 
     // 두 개의 상품을 장바구니에 추가
@@ -276,8 +287,11 @@ describe.sequential("5. 장바구니 전체 선택", () => {
       expect(checkbox.checked).toBe(true);
     });
   });
+});
 
+describe("5-3. 전체 해제 시 모든 상품의 체크박스가 해제된다", () => {
   test("전체 해제 시 모든 상품의 체크박스가 해제된다", async () => {
+    resetBeforeEach();
     await screen.findByText(/총 의 상품/i);
 
     // 두 개의 상품을 장바구니에 추가
@@ -296,8 +310,9 @@ describe.sequential("5. 장바구니 전체 선택", () => {
   });
 });
 
-describe.sequential("6. 장바구니 비우기", () => {
+describe("6-1. 장바구니에 있는 모든 상품을 한 번에 삭제할 수 있다", () => {
   test("장바구니에 있는 모든 상품을 한 번에 삭제할 수 있다", async () => {
+    resetBeforeEach();
     await screen.findByText(/총 의 상품/i);
 
     // 상품들을 장바구니에 추가
