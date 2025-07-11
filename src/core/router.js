@@ -1,7 +1,17 @@
+const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
+
+const getAppPath = (fullPath = window.location.pathname) => {
+  return fullPath.startsWith(BASE_PATH) ? fullPath.slice(BASE_PATH.length) || "/" : fullPath;
+};
+
+const getFullPath = (appPath) => {
+  return BASE_PATH + appPath;
+};
+
 export class Router {
   constructor() {
     this.routes = new Map();
-    this.currentPath = window.location.pathname;
+    this.currentPath = getAppPath();
     this.init();
   }
 
@@ -36,14 +46,14 @@ export class Router {
   navigate(path) {
     if (this.currentPath === path) return;
     const cleanPath = path.split("?")[0];
-    window.history.pushState(null, "", cleanPath);
+    window.history.pushState(null, "", getFullPath(cleanPath));
     this.currentPath = cleanPath;
 
     this.handleRoute();
   }
 
   async handleRoute() {
-    const path = window.location.pathname;
+    const path = getAppPath();
     this.currentPath = path;
 
     if (this.routes.has(path)) {
