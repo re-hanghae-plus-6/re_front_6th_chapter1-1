@@ -50,6 +50,7 @@ const fetchMoreProductsScroll = () => {
 
   const handleScroll = () => {
     const location = getAppPath();
+    // 메인페이지에서만 가능하도록 처리
     if (location !== "/") return;
     if (state.isLoadingMore || !state.pagination?.hasNext) return;
     const currentScroll = window.scrollY;
