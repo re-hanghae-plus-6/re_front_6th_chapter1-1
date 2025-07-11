@@ -7,7 +7,7 @@ export const MainList = ({ loading = false, products = [] } = {}) =>
 function renderLoading() {
   return `
   <div class="min-h-screen bg-gray-50">
-    {${MainHeader()}}
+    ${MainHeader()}
     <main class="max-w-md mx-auto px-4 py-4">
       <!-- 검색 및 필터 -->
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
