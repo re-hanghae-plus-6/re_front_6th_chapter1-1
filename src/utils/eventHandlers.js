@@ -1,4 +1,5 @@
 import { productStore } from "../store/productStore.js";
+import { cartStore } from "../store/cartStore.js";
 import { updateQueryParams } from "./urlParam.js";
 import { router } from "../router.js";
 
@@ -103,6 +104,16 @@ function handleClick(e, loadProducts) {
       window.history.pushState({}, "", `/product/${productId}`);
       router();
     }
+  }
+
+  // 장바구니 담기 버튼 클릭
+  if (target.classList.contains("add-to-cart-btn")) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    cartStore.addToCart({}, 1);
+
+    return;
   }
 }
 

@@ -4,9 +4,12 @@ import Header from "../components/common/Header";
 import Footer from "../components/common/Footer";
 import { getProducts, getCategories } from "../api/productApi.js";
 import { productStore } from "../store/productStore.js";
+import { cartStore } from "../store/cartStore.js";
 import ProductFilter from "../components/product/ProductFilter.js";
 import { registerHomeEventListeners } from "../utils/eventHandlers.js";
+import { CartIcon } from "../components/common/Header.js";
 
+// 상품 목록
 function renderProducts() {
   const productsGrid = document.getElementById("products-grid");
   const totalCountContainer = document.getElementById("total-count-container");
@@ -89,6 +92,16 @@ function renderFilter() {
   filterContainer.insertAdjacentHTML("afterbegin", filterHTML);
 }
 
+// 장바구니 카운트 업데이트
+function updateCartCount() {
+  const cartState = cartStore.getState();
+  const cartIconContainer = document.getElementById("cart-icon-container");
+
+  if (cartIconContainer) {
+    cartIconContainer.innerHTML = CartIcon(cartState.totalCount);
+  }
+}
+
 export default function Home() {
   const template = `
     ${Header()}
@@ -114,6 +127,7 @@ export default function Home() {
   async function mount() {
     // window.scrollTo(0, 0);
 
+    updateCartCount();
     renderFilter();
     renderProducts();
 
@@ -145,13 +159,21 @@ export default function Home() {
       observer.observe(observerTarget);
     }
 
+    // 상품 스토어 구독
     const unsubscribe = productStore.subscribe(() => {
       renderProducts();
       renderFilter();
     });
+
+    // 장바구니 스토어 구독
+    const cartUnsubscribe = cartStore.subscribe(() => {
+      updateCartCount();
+    });
+
     return () => {
       observer.disconnect();
       unsubscribe();
+      cartUnsubscribe();
     };
   }
 

@@ -1,4 +1,4 @@
-function CartIcon(count = 0) {
+export function CartIcon(count = 0) {
   return /*html*/ `
     <button id="cart-icon-btn" class="relative p-2 text-gray-700 hover:text-gray-900 transition-colors">
       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -25,7 +25,9 @@ export default function Header(pageType = "home") {
               <h1 class="text-lg font-bold text-gray-900">상품 상세</h1>
             </div>
             <div class="flex items-center space-x-2">
-              ${CartIcon(1)}
+              <div id="cart-icon-container">
+                ${CartIcon(0)}
+              </div>
             </div>
           </div>
         </div>
@@ -42,7 +44,9 @@ export default function Header(pageType = "home") {
             <a href="/" data-link="">쇼핑몰</a>
           </h1>
           <div class="flex items-center space-x-2">
-            ${CartIcon(0)}
+            <div id="cart-icon-container">
+              ${CartIcon(0)}
+            </div>
           </div>
         </div>
       </div>
