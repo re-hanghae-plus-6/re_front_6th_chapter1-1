@@ -2,6 +2,7 @@ import Component from '../../../../core/Component.js';
 import cartStore from '../../../../store/cartStore.js';
 import cartLocalStorage from '../../../../store/cartLocalStorage.js';
 import { numberUtils } from '../../../../utils/numberUtils.js';
+import { toastInfo } from '../../../../store/toastStore.js';
 
 class Cart extends Component {
   constructor(element, props) {
@@ -74,11 +75,13 @@ class Cart extends Component {
     });
 
     cartLocalStorage.set('shopping_cart', updatedCartItems);
+    toastInfo('선택한 상품이 삭제되었습니다');
   }
 
   handleClearAllItems() {
     cartLocalStorage.set('shopping_cart', []);
     cartLocalStorage.remove('shopping_cart');
+    toastInfo('장바구니가 비워졌습니다');
   }
 
   handleSelectedRemoveItem(items) {
@@ -87,6 +90,7 @@ class Cart extends Component {
     });
 
     cartLocalStorage.set('shopping_cart', updatedCartItems);
+    toastInfo('선택된 상품들이 삭제되었습니다');
   }
 
   attachEventListeners() {
