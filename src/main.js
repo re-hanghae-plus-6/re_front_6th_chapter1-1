@@ -15,7 +15,12 @@ function updateUrlParams(params) {
   // 새로운 파라미터들 추가 (값이 있는 경우만)
   Object.entries(params).forEach(([key, value]) => {
     if (value !== null && value !== undefined && value !== "") {
-      url.searchParams.set(key, value);
+      // URLSearchParams.set()이 자동으로 인코딩하지만, 검색어는 명시적으로 처리
+      if (key === "search" && typeof value === "string") {
+        url.searchParams.set(key, encodeURIComponent(value));
+      } else {
+        url.searchParams.set(key, value);
+      }
     }
   });
 
@@ -29,7 +34,7 @@ function getUrlParams() {
     limit: parseInt(url.searchParams.get("limit")) || 20,
     page: parseInt(url.searchParams.get("page")) || 1,
     sort: url.searchParams.get("sort") || "price_asc",
-    search: url.searchParams.get("search") || "",
+    search: url.searchParams.get("search") ? decodeURIComponent(url.searchParams.get("search")) : "",
     category1: url.searchParams.get("category1") || null,
     category2: url.searchParams.get("category2") || null,
   };
