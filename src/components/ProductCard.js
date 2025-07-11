@@ -1,21 +1,13 @@
-import { render } from "../main";
-import Header from "./Header";
-import Toast from "./Toast";
-
+import { navigate } from "../main";
 ProductCard.mount = () => {
   const items = document.querySelectorAll(".product-card");
   items.forEach((item) => {
     const productId = item.getAttribute("data-product-id");
     item.querySelector("img").addEventListener("click", async () => {
-      window.history.pushState({}, "", `/product/${productId}`);
-      Header.init();
-      render.draw("header", Header());
-      await render.view();
+      navigate.push({}, `/product/${productId}`);
     });
 
-    item.querySelector(".add-to-cart-btn").addEventListener("click", () => {
-      Toast.mount("addCart");
-    });
+    item.querySelector(".add-to-cart-btn").addEventListener("click", () => {});
   });
 };
 
