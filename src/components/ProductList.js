@@ -7,12 +7,13 @@ import { getProductParams } from "../pages/Main";
 
 class ProductList extends Component {
   async setup() {
+    urlSearchParamsStore.subscribe(() => this.updateProductList());
+
     this.state = {
       isLoading: true,
       productData: null,
     };
 
-    // TODO: 비동기 처리가 있을 때 렌더링 순서 개선해야 함
     this.children = {
       productSkeleton: {
         component: ProductSkeleton,
@@ -20,27 +21,7 @@ class ProductList extends Component {
       },
     };
 
-    urlSearchParamsStore.subscribe(() => this.render());
-    const productParams = getProductParams();
-    const productData = await getProducts(productParams);
-
-    const productChildren = productData?.products?.reduce((acc, product) => {
-      acc[`product${product.productId}`] = { props: product, component: ProductCard };
-      return acc;
-    }, {});
-
-    this.children = {
-      productSkeleton: {
-        component: ProductSkeleton,
-        props: { length: 4 },
-      },
-      ...productChildren,
-    };
-
-    this.setState({
-      isLoading: false,
-      productData,
-    });
+    await this.updateProductList();
   }
 
   template() {
@@ -67,6 +48,36 @@ class ProductList extends Component {
         </div>
       </div>
     `;
+  }
+
+  async updateProductList() {
+    const productParams = getProductParams();
+
+    if (!this.state?.isLoading) {
+      this.setState({
+        isLoading: true,
+      });
+    }
+
+    const productData = await getProducts(productParams);
+
+    const productChildren = productData?.products?.reduce((acc, product) => {
+      acc[`product${product.productId}`] = { props: product, component: ProductCard };
+      return acc;
+    }, {});
+
+    this.children = {
+      productSkeleton: {
+        component: ProductSkeleton,
+        props: { length: 4 },
+      },
+      ...productChildren,
+    };
+
+    this.setState({
+      isLoading: false,
+      productData,
+    });
   }
 }
 

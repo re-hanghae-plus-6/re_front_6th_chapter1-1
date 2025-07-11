@@ -15,7 +15,7 @@ class Filter extends Component {
   }
 
   template() {
-    const { limit, sort } = getProductParams();
+    const { limit = "20", sort } = getProductParams();
 
     return `
 			<!-- 검색 및 필터 -->
