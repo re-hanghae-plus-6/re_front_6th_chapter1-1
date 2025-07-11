@@ -1,14 +1,20 @@
 import { defineConfig } from "vitest/config";
+import path from "path";
 
 const isProd = process.env.NODE_ENV === "production";
 
 export default defineConfig({
+  define: {
+    "import.meta.env.BASE_URL": JSON.stringify(isProd ? "/front_6th_chapter1-1/" : "/"),
+    "import.meta.env.MODE": JSON.stringify(process.env.NODE_ENV),
+  },
   base: isProd ? "/front_6th_chapter1-1/" : undefined,
   build: {
     outDir: "dist",
     assetsDir: "assets",
     sourcemap: false,
     rollupOptions: {
+      input: path.resolve(__dirname, "src/main.js"),
       output: {
         manualChunks: undefined,
       },
