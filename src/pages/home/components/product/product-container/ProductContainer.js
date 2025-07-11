@@ -17,7 +17,7 @@ class ProductContainer extends Component {
       this.element.innerHTML = `
         <!-- 상품 개수 정보 -->
         <div class="mb-4 text-sm text-gray-600">
-          총 <span class="font-medium text-gray-900">${this.props.products.pagination.total}개</span>의 상품
+          총 <span class="font-medium text-gray-900">${this.props.products?.pagination?.total}개</span>의 상품
         </div>
         <div id="product-list"></div>
       `;
