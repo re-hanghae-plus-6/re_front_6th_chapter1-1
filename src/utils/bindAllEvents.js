@@ -3,6 +3,7 @@ import { cartStore, productDetailStore, productsStore } from "../store";
 import { navigate } from "./navigate";
 import LocalStorageUtil from "../localstorage";
 import LOCAL_STORAGE_KEY from "../constant/localstorageKey";
+import { showToast } from "../components/common/Toast";
 
 export const bindAllEvents = () => {
   console.log(LOCAL_STORAGE_KEY.CARTS);
@@ -83,6 +84,7 @@ export const bindAllEvents = () => {
         cartStore.setState({
           cartsProductCount: carts.length,
         });
+        showToast("success", "장바구니에 추가되었습니다");
       });
     });
   }
@@ -94,27 +96,33 @@ export const bindAllEvents = () => {
   const increaseBtn = document.getElementById("quantity-increase");
   const quantityInput = document.getElementById("quantity-input");
 
-  decreaseBtn.addEventListener("click", () => {
-    if (quantity > 1) {
-      quantity--;
+  if (decreaseBtn) {
+    decreaseBtn.addEventListener("click", () => {
+      if (quantity > 1) {
+        quantity--;
+        quantityInput.value = quantity;
+      }
+    });
+  }
+
+  if (increaseBtn) {
+    increaseBtn.addEventListener("click", () => {
+      if (quantity < maxQuantity) {
+        quantity++;
+      }
       quantityInput.value = quantity;
-    }
-  });
+    });
+  }
 
-  increaseBtn.addEventListener("click", () => {
-    if (quantity < maxQuantity) {
-      quantity++;
-    }
-    quantityInput.value = quantity;
-  });
-
-  quantityInput.addEventListener("input", () => {
-    let value = parseInt(quantityInput.value, 10);
-    if (isNaN(value) || value < 1) value = 1;
-    if (value > maxQuantity) value = maxQuantity;
-    quantity = value;
-    quantityInput.value = quantity;
-  });
+  if (quantityInput) {
+    quantityInput.addEventListener("input", () => {
+      let value = parseInt(quantityInput.value, 10);
+      if (isNaN(value) || value < 1) value = 1;
+      if (value > maxQuantity) value = maxQuantity;
+      quantity = value;
+      quantityInput.value = quantity;
+    });
+  }
 
   // 상품상세페이지 장바구니 담기 이벤트;
 
@@ -147,6 +155,7 @@ export const bindAllEvents = () => {
       cartStore.setState({
         cartsProductCount: carts.length,
       });
+      showToast("success", "장바구니에 추가되었습니다");
       // 수량 초기화
       quantity = 1;
       quantityInput.value = quantity;
