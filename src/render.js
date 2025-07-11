@@ -15,6 +15,7 @@ export const createRenderer = (store, productService, router) => {
           product: state.productDetail,
           loading: state.productDetailLoading,
           relatedProducts: [],
+          cart: state.cart,
         });
         break;
       case "Cart":
@@ -24,7 +25,10 @@ export const createRenderer = (store, productService, router) => {
         root.innerHTML = NotFoundPage(state);
         break;
       default:
-        root.innerHTML = ProductListPage(state);
+        root.innerHTML = ProductListPage({
+          ...state,
+          cart: state.cart,
+        });
     }
 
     registerAllEvents(store, productService, router);
