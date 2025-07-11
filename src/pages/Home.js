@@ -10,6 +10,7 @@ import { isStateChanged } from "../states/isStateChanged";
 import { navigate } from "../utils/navigate";
 import { updateUrlState } from "../states/updateUrlState";
 import { productListState } from "../states/product/productState";
+import { getAppPath } from "../router";
 
 let store = null;
 let prev = { ...productListState };
@@ -123,7 +124,7 @@ export function Home(cartCount) {
     store = createStore(productListState);
 
     store.subscribe((state) => {
-      if (window.location.pathname === "/") {
+      if (getAppPath() === "/") {
         renderHomePage(state, cartCount);
       }
     });

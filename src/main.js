@@ -5,16 +5,13 @@ import { getCartCount } from "./states/cart/cartStore.js";
 import { cartStore } from "./states/cart/cartStore.js";
 import { renderCartCount } from "./components/Layout/Header.js";
 import { addHeaderEvents } from "./components/Modal/CartModal.js";
+import { getAppPath } from "./router.js";
 
 const enableMocking = () =>
-  import("./mocks/browser.js").then(({ worker }) =>
-    worker.start({
-      onUnhandledRequest: "bypass",
-    }),
-  );
+  import("./mocks/browser.js").then(({ worker, workerOptions }) => worker.start(workerOptions));
 
 async function main() {
-  const path = location.pathname;
+  const path = getAppPath();
   const cartCount = getCartCount();
 
   if (path === "/") {
