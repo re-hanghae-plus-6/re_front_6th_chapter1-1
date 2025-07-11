@@ -5,15 +5,25 @@ const delay = async () => await new Promise((resolve) => setTimeout(resolve, 200
 
 // 카테고리 추출 함수
 function getUniqueCategories() {
-  const categories = {};
+  const categoriesMap = {};
 
   items.forEach((item) => {
     const cat1 = item.category1;
     const cat2 = item.category2;
 
-    if (!categories[cat1]) categories[cat1] = {};
-    if (cat2 && !categories[cat1][cat2]) categories[cat1][cat2] = {};
+    if (!categoriesMap[cat1]) {
+      categoriesMap[cat1] = new Set();
+    }
+    if (cat2) {
+      categoriesMap[cat1].add(cat2);
+    }
   });
+
+  // CategoryStore에서 기대하는 형태로 변환
+  const categories = Object.keys(categoriesMap).map((cat1) => ({
+    name: cat1,
+    subCategories: Array.from(categoriesMap[cat1]),
+  }));
 
   return categories;
 }

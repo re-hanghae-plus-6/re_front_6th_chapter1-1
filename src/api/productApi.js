@@ -12,9 +12,20 @@ export async function getProducts(params = {}) {
     sort,
   });
 
-  const response = await fetch(`/api/products?${searchParams}`);
+  try {
+    const response = await fetch(`/api/products?${searchParams}`);
 
-  return await response.json();
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+
+    return data;
+  } catch (error) {
+    if (error) {
+      throw error;
+    }
+  }
 }
 
 // 상품 상세 조회
