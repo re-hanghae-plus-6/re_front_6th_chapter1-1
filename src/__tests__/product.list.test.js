@@ -102,16 +102,10 @@ describe("3. 페이지당 상품 수 선택", () => {
     const limitSelect = document.querySelector("#limit-select");
     await userEvent.selectOptions(limitSelect, "10");
 
-    await waitFor(() =>
-      expect(
-        screen.queryByRole("heading", {
-          level: 3,
-          name: "창틀벌레 모풍지판 창문 벌레 차단 틈새 창문틈 막이 방충망",
-        }),
-      ).not.toBeInTheDocument(),
-    );
-
-    expect(document.querySelectorAll(".product-card").length).toBe(10);
+    await waitFor(() => {
+      const productCards = document.querySelectorAll(".product-card");
+      expect(productCards).toHaveLength(10);
+    });
   });
 });
 

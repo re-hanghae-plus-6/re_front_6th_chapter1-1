@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom";
 import { configure } from "@testing-library/dom";
-import { afterAll, beforeAll } from "vitest";
+import { vi, afterAll, beforeAll } from "vitest";
 import { server } from "./__tests__/mockServerHandler.js";
 
 configure({
@@ -14,3 +14,9 @@ beforeAll(() => {
 afterAll(() => {
   server.close();
 });
+
+const intersectionObserverMock = () => ({
+  observe: () => null,
+  disconnect: () => null,
+});
+window.IntersectionObserver = vi.fn().mockImplementation(intersectionObserverMock);

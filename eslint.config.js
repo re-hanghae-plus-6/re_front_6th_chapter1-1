@@ -9,4 +9,12 @@ export default [
   pluginJs.configs.recommended,
   eslintPluginPrettier,
   eslintConfigPrettier,
+  {
+    rules: {
+      "no-unused-vars": "warn",
+      "no-undef": "error",
+      "no-redeclare": "error",
+      "no-unused-expressions": "error",
+    },
+  },
 ];
