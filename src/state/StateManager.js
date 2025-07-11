@@ -19,7 +19,7 @@ class StateManager {
   }
 
   /**
-   * 특정 상태 키(들)에 대한 변경 사항을 구독합니다.
+   * 특정 상태 키(들)에 대한 변경 사항 구독
    *
    * @param {string|string[]} keys - 구독할 상태 키 (문자열 또는 문자열 배열)
    * @param {Function} observer - 상태 변경 시 호출될 콜백 함수 (value, key, fullState) => void
@@ -61,7 +61,7 @@ class StateManager {
   }
 
   /**
-   * 특정 키를 구독한 모든 옵저버에게 상태 변경을 알립니다.
+   * 특정 키를 구독한 모든 옵저버에게 상태 변경 알림
    *
    * @param {string} key - 변경된 상태 키
    * @param {*} value - 새로운 값
@@ -73,7 +73,7 @@ class StateManager {
   }
 
   /**
-   * 상태를 업데이트하고 변경된 키들에 대해 옵저버들에게 알립니다.
+   * 상태 업데이트 및 변경된 키에 대해 옵저버들에게 알림
    *
    * @param {Object} updates - 업데이트할 상태 객체 { key: value, ... }
    *
@@ -92,7 +92,7 @@ class StateManager {
   }
 
   /**
-   * 현재 상태를 조회합니다.
+   * 현재 상태 조회
    *
    * @param {string|null} key - 조회할 상태 키 (null이면 전체 상태 반환)
    * @returns {*} 상태 값 또는 전체 상태 객체
@@ -103,6 +103,30 @@ class StateManager {
    */
   getState(key = null) {
     return key ? this.state[key] : this.state;
+  }
+
+  /**
+   * 모든 옵저버 구독 해제
+   * 주로 컴포넌트 언마운트 시 메모리 누수 방지용으로 사용
+   *
+   * @example
+   * manager.unsubscribeAll();
+   */
+  unsubscribeAll() {
+    this.observers = {};
+  }
+
+  /**
+   * 상태를 초기 상태로 리셋
+   * 주로 테스트 환경에서 테스트 간 상태 초기화용으로 사용
+   *
+   * @example
+   * manager.reset();
+   */
+  reset() {
+    this.unsubscribeAll();
+    // 하위 클래스에서 오버라이드하여 초기 상태를 설정
+    this.state = {};
   }
 }
 

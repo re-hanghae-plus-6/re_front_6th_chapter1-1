@@ -207,6 +207,18 @@ class CartManager extends StateManager {
       this.setState({ cart: [] });
     }
   }
+
+  /**
+   * 상태를 초기 상태로 리셋합니다.
+   * 테스트 환경에서 테스트 간 상태 초기화용으로 사용됩니다.
+   */
+  reset() {
+    // 구독자들은 유지하고 상태만 초기화
+    this.state = {
+      cart: [],
+      isCartModalOpen: false,
+    };
+  }
 }
 
 export default CartManager;
