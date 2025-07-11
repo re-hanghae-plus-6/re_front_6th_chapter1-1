@@ -201,7 +201,7 @@ async function fetchProducts() {
   }
 }
 
-// popstate 이벤트 핸들러
+// popstate 이벤트 핸들러.
 function handlePopState() {
   if (window.location.pathname === "/") {
     const urlState = queryParamsToState(getQueryParams());
@@ -347,7 +347,7 @@ function attachEventListeners() {
     };
   }
 
-  // 상품 상세 이동
+  // 상품 상세 이동.
   document.querySelectorAll("[data-product-link]").forEach((link) => {
     link.onclick = (e) => {
       const productId = e.currentTarget.getAttribute("data-product-link");
