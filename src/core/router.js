@@ -48,6 +48,14 @@ class Router {
       const params = this.#getSearchParams();
       this.#navigateTo(location.pathname, params);
     });
+    document.addEventListener("click", (e) => {
+      const $link = e.target.closest("[data-link]");
+      if ($link) {
+        e.preventDefault();
+        const { pathname } = new URL($link.href);
+        this.push({ pathname });
+      }
+    });
   }
 
   #getSearchParams() {
