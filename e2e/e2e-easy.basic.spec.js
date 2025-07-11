@@ -273,14 +273,44 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오 > 난이도 쉬움 >
       const helpers = new E2EHelpers(page);
       await helpers.waitForPageLoad();
 
+      // 이벤트 리스너 설정 대기 (main.js에서 500ms 지연)
+      await page.waitForTimeout(1000);
+
       // 초기 상품 카드 수 확인
       const initialCards = await page.locator(".product-card").count();
       expect(initialCards).toBe(20);
+
+      // 디버깅: 현재 상태 확인
+      const currentState = await page.evaluate(() => {
+        const state = window.productStore?.getState();
+        return {
+          isLoading: state?.isLoading,
+          productsCount: state?.products?.length,
+          total: state?.total,
+          hasNextPage: state?.pagination?.hasNextPage,
+        };
+      });
+      console.log("🔍 스크롤 전 상태:", currentState);
 
       // 페이지 하단으로 스크롤
       await page.evaluate(() => {
         window.scrollTo(0, document.body.scrollHeight);
       });
+
+      // 스크롤 이벤트 처리 대기
+      await page.waitForTimeout(100);
+
+      // 디버깅: 스크롤 후 상태 확인
+      const afterScrollState = await page.evaluate(() => {
+        const state = window.productStore?.getState();
+        return {
+          isLoading: state?.isLoading,
+          productsCount: state?.products?.length,
+          total: state?.total,
+          hasNextPage: state?.pagination?.hasNextPage,
+        };
+      });
+      console.log("🔍 스크롤 후 상태:", afterScrollState);
 
       // 로딩 인디케이터 확인
       await expect(page.locator("text=상품을 불러오는 중...")).toBeVisible();

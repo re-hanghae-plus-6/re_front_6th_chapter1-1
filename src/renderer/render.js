@@ -282,13 +282,18 @@ export function subscribeToStore() {
       newState.filters !== prevState.filters ||
       newState.total !== prevState.total;
 
-    // 무한 스크롤 로딩 중에만 렌더링 스킵
+    // 무한 스크롤 로딩 중인지 확인
     const isInfiniteScrollLoading =
       newState.isLoading && newState.pagination.currentPage > 1 && prevState.products.length > 0;
 
-    if (shouldRender && !isInfiniteScrollLoading) {
-      // 현재 페이지 다시 렌더링
-      render(currentPageType, currentParams);
+    if (shouldRender) {
+      if (isInfiniteScrollLoading) {
+        // 무한 스크롤 중: 상품 목록만 부분 업데이트
+        updateProductListOnly(newState);
+      } else {
+        // 일반적인 경우: 전체 페이지 리렌더링
+        render(currentPageType, currentParams);
+      }
     }
   });
 
@@ -301,6 +306,67 @@ export function subscribeToStore() {
       render(currentPageType, currentParams);
     }
   });
+}
+
+// 무한 스크롤 시 상품 목록만 부분 업데이트
+function updateProductListOnly(state) {
+  const { products = [], total = 0 } = state;
+
+  // 상품 그리드 요소 찾기
+  const productsGrid = document.querySelector("#products-grid");
+  const productCountElement = document.querySelector("[data-testid='product-total']");
+
+  if (productsGrid && productCountElement) {
+    // 상품 카운트 업데이트
+    productCountElement.textContent = total.toLocaleString();
+
+    // 새로운 상품 카드들만 추가 (기존 카드는 유지)
+    const existingCards = productsGrid.querySelectorAll(".product-card");
+    const existingCount = existingCards.length;
+
+    // 새로 추가된 상품들만 렌더링
+    const newProducts = products.slice(existingCount);
+
+    if (newProducts.length > 0) {
+      const newCardsHTML = newProducts.map((product) => renderProductCard(product)).join("");
+      productsGrid.insertAdjacentHTML("beforeend", newCardsHTML);
+    }
+  }
+}
+
+// 개별 상품 카드 렌더링 함수 (재사용을 위해 export)
+function renderProductCard(product) {
+  return `
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card" 
+         data-product-id="${product.productId}">
+      <!-- 상품 이미지 -->
+      <div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image">
+        <img src="${product.image}" 
+             alt="${product.title}"
+             class="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+             loading="lazy">
+      </div>
+      
+      <!-- 상품 정보 -->
+      <div class="p-3">
+        <div class="cursor-pointer product-info mb-3">
+          <h3 class="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
+            ${product.title}
+          </h3>
+          ${product.brand ? `<p class="text-xs text-gray-500 mb-2">${product.brand}</p>` : ""}
+          <p class="text-lg font-bold text-gray-900">
+            ${parseInt(product.lprice).toLocaleString()}원
+          </p>
+        </div>
+        
+        <!-- 장바구니 버튼 -->
+        <button class="w-full bg-blue-600 text-white text-sm py-2 px-3 rounded-md hover:bg-blue-700 transition-colors add-to-cart-btn" 
+                data-product-id="${product.productId}">
+          장바구니 담기
+        </button>
+      </div>
+    </div>
+  `;
 }
 
 // 현재 페이지 타입 가져오기
