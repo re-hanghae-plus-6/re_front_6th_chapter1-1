@@ -1,4 +1,5 @@
 import { createObservable } from "./observable.js";
+import { getFullPath, getAppPath } from "../utils/pathUtils.js";
 
 // 함수형 URLStore
 function createURLStore() {
@@ -38,7 +39,9 @@ function createURLStore() {
     if (newParams.limit) url.searchParams.set("limit", newParams.limit.toString());
     if (newParams.page && newParams.page !== 1) url.searchParams.set("current", newParams.page.toString());
 
-    window.history.pushState({}, "", url);
+    // 베이스 경로를 포함한 전체 URL로 변경
+    const fullUrl = getFullPath(getAppPath(url.pathname)) + url.search;
+    window.history.pushState({}, "", fullUrl);
     observable.notify();
   }
 
@@ -54,7 +57,7 @@ function createURLStore() {
     url.searchParams.delete("limit");
     url.searchParams.delete("current");
 
-    window.history.pushState({}, "", url.pathname);
+    window.history.pushState({}, "", getFullPath(getAppPath(url.pathname)));
     observable.notify();
   }
 

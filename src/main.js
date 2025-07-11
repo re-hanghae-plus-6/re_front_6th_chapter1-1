@@ -1,50 +1,26 @@
 import { storeManager } from "./stores/index.js";
 import { initRender, render } from "./render.js";
 
-// MSW 초기화 상태 관리
-let mswReady = false;
-const mswReadyPromise = new Promise((resolve) => {
-  window.mswResolve = resolve;
-});
+const enableMocking = () =>
+  import("./mocks/browser.js").then(({ worker, workerOptions }) => worker.start(workerOptions));
 
-const enableMocking = async () => {
-  try {
-    const { worker } = await import("./mocks/browser.js");
-    await worker.start({
-      onUnhandledRequest: "bypass",
-    });
-    mswReady = true;
-    window.mswResolve && window.mswResolve();
-    return true;
-  } catch (error) {
-    console.error("MSW 초기화 실패:", error);
-    return false;
+// GitHub Pages SPA 리다이렉트 처리
+function handleGitHubPagesRedirect() {
+  // GitHub Pages에서 404.html을 통해 리다이렉트된 경우 처리
+  const query = window.location.search;
+  if (query.startsWith("/?/")) {
+    const path = query.slice(2).replace(/~and~/g, "&");
+    if (path) {
+      // 원래 경로로 리다이렉트
+      window.history.replaceState({}, "", path);
+    }
   }
-};
-
-// MSW 준비 상태 확인 함수
-export function isMSWReady() {
-  return mswReady;
 }
 
-// MSW 준비까지 기다리는 함수
-export function waitForMSW() {
-  if (mswReady) {
-    return Promise.resolve();
-  }
-  return mswReadyPromise;
-}
-
-// 앱 시작
-async function startApp() {
-  // MSW 초기화 (테스트 환경이 아닌 경우)
-  if (import.meta.env.MODE !== "test") {
-    await enableMocking();
-  } else {
-    // 테스트 환경에서는 MSW 준비 상태로 설정
-    mswReady = true;
-    window.mswResolve && window.mswResolve();
-  }
+// 메인 앱 함수
+async function main() {
+  // GitHub Pages 리다이렉트 처리 (앱 시작 전)
+  handleGitHubPagesRedirect();
 
   // 렌더링 시스템 초기화
   initRender();
@@ -68,4 +44,9 @@ async function startApp() {
   });
 }
 
-startApp();
+// 앱 시작
+if (import.meta.env.MODE !== "test") {
+  enableMocking().then(main);
+} else {
+  main();
+}

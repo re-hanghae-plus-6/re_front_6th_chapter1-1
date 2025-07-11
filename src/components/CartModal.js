@@ -1,6 +1,7 @@
 import { formatPrice } from "../utils/formatters.js";
 import { cartStore } from "../stores/CartStore.js";
 import { productStore } from "../stores/ProductStore.js";
+import { getFullPath } from "../utils/pathUtils.js";
 
 /**
  * 장바구니 모달 렌더링 및 이벤트 처리
@@ -289,7 +290,7 @@ function bindCartModalEvents() {
     element.addEventListener("click", () => {
       const productId = element.getAttribute("data-product-id");
       hideCartModal();
-      window.history.pushState({}, "", `/product/${productId}`);
+      window.history.pushState({}, "", getFullPath(`/product/${productId}`));
       window.dispatchEvent(new Event("popstate"));
     });
   });

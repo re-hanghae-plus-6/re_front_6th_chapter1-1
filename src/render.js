@@ -6,6 +6,7 @@ import { showToast } from "./components/Toast.js";
 import { ProductItem } from "./components/ProductItem.js";
 import { bindCartIconEvent } from "./components/CartModal.js";
 import { cartStore, categoryStore, productStore, storeManager, getAppState } from "./stores/index.js";
+import { getFullPath, getAppPath } from "./utils/pathUtils.js";
 
 /**
  * 렌더링 초기화 - Store 변화 감지와 렌더링 설정
@@ -53,14 +54,14 @@ export function initRender() {
  * 메인 렌더링 함수
  */
 export function render() {
-  const path = window.location.pathname;
+  const appPath = getAppPath(); // 배포환경 서브디렉토리 경로 처리
   const root = document.getElementById("root");
 
   // store에서 현재 상태 가져오기
   const appState = getAppState();
 
   // 페이지별 렌더링
-  if (path === "/") {
+  if (appPath === "/") {
     root.innerHTML = `
       ${Header()}
       ${MainPage(appState)}
@@ -79,13 +80,13 @@ export function render() {
  * 이벤트 바인딩 함수
  */
 function bindEvents() {
-  const path = window.location.pathname;
+  const appPath = getAppPath(); // 배포환경 서브디렉토리 경로 처리
 
   // SPA 내비게이션 처리
   bindNavigationEvents();
 
   // 홈 버튼 이벤트
-  bindHomeButtonEvent(path);
+  bindHomeButtonEvent(appPath);
 
   // 장바구니 개수 뱃지 업데이트
   updateCartCountBadge();
@@ -114,7 +115,7 @@ function bindNavigationEvents() {
     a.addEventListener("click", (e) => {
       e.preventDefault();
       const href = a.getAttribute("href");
-      window.history.pushState({}, "", href);
+      window.history.pushState({}, "", getFullPath(href));
       render();
     });
   });
@@ -123,7 +124,7 @@ function bindNavigationEvents() {
 /**
  * 홈 버튼 이벤트 바인딩
  */
-function bindHomeButtonEvent(path) {
+function bindHomeButtonEvent(appPath) {
   const shopTitle = document.querySelector("h1 a[data-link]");
   if (shopTitle) {
     shopTitle.addEventListener("click", async (e) => {
@@ -132,7 +133,7 @@ function bindHomeButtonEvent(path) {
       // 현재 상태가 이미 초기 상태인지 확인
       const currentAppState = getAppState();
       const isAlreadyInitialState =
-        path === "/" &&
+        appPath === "/" &&
         !currentAppState.selectedCategories.category1 &&
         !currentAppState.selectedCategories.category2 &&
         !currentAppState.products.search &&
@@ -261,9 +262,9 @@ function bindInfiniteScrollEvent() {
   if (!window.scrollHandlerAdded) {
     window.addEventListener("scroll", () => {
       // 메인 페이지가 아니면 무한 스크롤 비활성화
-      const path = window.location.pathname;
+      const appPath = getAppPath(); // 배포환경 서브디렉토리 경로 처리
       const currentAppState = getAppState();
-      if (path !== "/" || currentAppState.products.loading || !currentAppState.products.hasMore) return;
+      if (appPath !== "/" || currentAppState.products.loading || !currentAppState.products.hasMore) return;
 
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
       const windowHeight = window.innerHeight;

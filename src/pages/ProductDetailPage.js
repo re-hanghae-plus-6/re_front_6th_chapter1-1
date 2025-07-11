@@ -1,17 +1,12 @@
 import { getProduct, getProducts } from "../api/productApi.js";
 import { Footer } from "./Footer.js";
-import { waitForMSW } from "../main.js";
 import { showToast } from "../components/Toast.js";
 import { cartStore } from "../stores/index.js";
 import { formatPrice } from "../utils/formatters.js";
+import { getFullPath } from "../utils/pathUtils.js";
 
 export async function ProductDetailPage({ productId }) {
   try {
-    // MSW가 준비될 때까지 기다림 (테스트 환경이 아닌 경우)
-    if (import.meta.env.MODE !== "test") {
-      await waitForMSW();
-    }
-
     // 상품 데이터 fetch
     const product = await getProduct(productId);
 
@@ -201,7 +196,7 @@ export async function ProductDetailPage({ productId }) {
 
     // 4. 이벤트 바인딩
     document.querySelector(".go-to-product-list").onclick = () => {
-      window.history.pushState({}, "", "/");
+      window.history.pushState({}, "", getFullPath("/"));
       window.dispatchEvent(new Event("popstate"));
     };
 
@@ -229,7 +224,7 @@ export async function ProductDetailPage({ productId }) {
     document.querySelectorAll(".related-product-card").forEach((card) => {
       card.onclick = () => {
         const productId = card.getAttribute("data-product-id");
-        window.history.pushState({}, "", `/product/${productId}`);
+        window.history.pushState({}, "", getFullPath(`/product/${productId}`));
         window.dispatchEvent(new Event("popstate"));
       };
     });
@@ -292,8 +287,8 @@ export async function ProductDetailPage({ productId }) {
 
     // 페이지 로드 시 장바구니 뱃지 업데이트
     updateCartCountBadge();
-  } catch (e) {
-    console.log("e", e);
+  } catch (error) {
+    console.error("상품 상세 페이지 로딩 오류:", error);
     document.getElementById("root").innerHTML = `
       <div class="min-h-screen bg-gray-50">
         <header class="bg-white shadow-sm sticky top-0 z-40">

@@ -1,11 +1,12 @@
 import { routes } from "./routes.js";
+import { getAppPath } from "../utils/pathUtils.js";
 
-// 어떻게 짜여졌고 동작하는지 여부는 파악이 필요
+// GitHub Pages 배포 환경을 고려한 라우터
 
 export function router() {
-  const path = window.location.pathname;
+  const appPath = getAppPath(); // 배포환경 서브디렉토리 경로 처리
   for (const route of routes) {
-    const match = path.match(route.path);
+    const match = appPath.match(route.path);
     if (match) {
       route.action(match);
       return;
