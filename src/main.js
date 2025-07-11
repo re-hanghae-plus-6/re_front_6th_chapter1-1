@@ -5,6 +5,7 @@ import { getProduct, getProducts, getCategories } from "./api/productApi.js";
 import router from "./utils/router.js";
 import ProductDetail from "./components/detail/ProductDetail.js";
 import { setupInfiniteScroll } from "./utils/infiniteScroll.js";
+import { Errorpage } from "./components/Errorpage.js";
 
 // const , let 차이점
 // const -> 값을 변경(재할당) 할 수 없음 , let -> 값을 변경(재할당) 할 수 있음.
@@ -75,7 +76,10 @@ export let render = async function (state) {
       title: "상품 상세",
     });
   } else {
-    html = "<h1>404</h1>";
+    html = MainLayout({
+      content: `${Errorpage()}`,
+      title: "쇼핑몰",
+    });
   }
   rootDOM.innerHTML = html;
 };

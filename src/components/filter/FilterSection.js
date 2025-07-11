@@ -7,7 +7,6 @@ export default function FilterSection({
   limit = 20,
   loading = false,
 }) {
-  console.log("FS sort => ", sort);
   // 브레드크럼(breadcrumb) 영역 렌더링
   // 1depth, 2depth 카테고리 선택에 따라 동적으로 표시
   const renderBreadcrumb = () => {
