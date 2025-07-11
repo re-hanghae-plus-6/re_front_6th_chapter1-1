@@ -6,9 +6,14 @@ import { store, resetStoreState } from "./store.js";
 
 import ProductItem from "./components/ProductItem.js";
 
+const BASE_URL = "/front_6th_chapter1-1";
+
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
     worker.start({
+      serviceWorker: {
+        url: `${BASE_URL}/mockServiceWorker.js`,
+      },
       onUnhandledRequest: "bypass",
     }),
   );
@@ -331,14 +336,23 @@ const handleAddToCartFromDetail = async (event) => {
   });
 };
 
+const HOME_PATH_REGEX = /^\/$/;
+
 const routes = [
-  { path: /^\/$/, view: () => HomePage(store.getState()) },
+  { path: HOME_PATH_REGEX, view: () => HomePage(store.getState()) },
   { path: /^\/product\/([\w-]+)$/, view: (productId) => ProductPage(productId) },
 ];
 
 const router = async () => {
-  const currentPath = window.location.pathname;
+  let currentPath = window.location.pathname;
   const root = document.body.querySelector("#root");
+
+  if (currentPath.startsWith(BASE_URL)) {
+    currentPath = currentPath.substring(BASE_URL.length);
+  }
+  if (currentPath === "" || currentPath === "/") {
+    currentPath = "/";
+  }
 
   const match = routes
     .map((route) => {
@@ -361,7 +375,7 @@ const router = async () => {
   const params = match.result.slice(1);
   let pageContent;
 
-  if (match.route.path === "/") {
+  if (currentPath === "/") {
     pageContent = await match.route.view(store.getState());
   } else {
     pageContent = await match.route.view(...params);
@@ -380,22 +394,30 @@ const router = async () => {
 };
 
 const navigateTo = (url) => {
-  window.history.pushState(null, null, url);
-  router();
+  let targetUrl = BASE_URL + url;
+  if (window.location.href !== targetUrl) {
+    window.history.pushState({ isPopstate: false }, null, targetUrl);
+  }
 };
 
 function main() {
-  window.addEventListener("popstate", router);
+  const currentPath = window.location.pathname;
+  window.addEventListener("popstate", (event) => {
+    const newState = event.state || {};
+    newState.isPopstate = true;
+    window.history.replaceState(newState, "", window.location.href);
+    router();
+  });
 
   store.subscribe(() => {
-    if (window.location.pathname === "/") {
+    if (window.location.pathname === BASE_URL || window.location.pathname === BASE_URL + "/") {
       router();
     }
   });
 
   router();
 
-  if (window.location.pathname === "/") {
+  if (currentPath === "/") {
     fetchAndRenderHomepageData();
   }
 }

@@ -1,7 +1,7 @@
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-  base: "/front_6th_chapter1-1/",
+  base: "/",
   build: {
     outDir: "dist",
     assetsDir: "assets",
