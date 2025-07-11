@@ -1,5 +1,5 @@
 import { getProducts, getCategories } from "../api/productApi.js";
-import { getURLParams } from "../utils/urlParams.js";
+import { getURLParams, updateSingleParam } from "../utils/urlParams.js";
 import { actions } from "../stores/actions.js";
 
 export const createProductService = (store) => {
@@ -25,7 +25,6 @@ export const createProductService = (store) => {
     const { dispatch, getState } = store;
     const state = getState();
 
-    // 이미 로딩 중이거나 더 이상 로드할 데이터가 없으면 중단
     if (state.isLoadingMore || !state.pagination.hasNext || state.loading) {
       return;
     }
@@ -33,20 +32,26 @@ export const createProductService = (store) => {
     try {
       dispatch(actions.setLoadingMore(true));
 
+      // URL의 current 파라미터를 사용해서 다음 페이지 계산
+      const urlParams = getURLParams();
+      const nextPage = urlParams.current + 1;
+
       const params = {
-        ...getURLParams(),
-        page: state.pagination.currentPage + 1,
+        ...urlParams,
+        page: nextPage,
       };
 
       const { products, pagination } = await getProducts(params);
 
-      // 서버 응답에 hasNext가 없을 경우를 대비한 계산
       const enrichedPagination = {
         ...pagination,
         hasNext: pagination.hasNext ?? state.products.length + products.length < pagination.total,
       };
 
       dispatch(actions.appendProducts(products, enrichedPagination));
+
+      // 무한스크롤 시 URL의 current 파라미터 업데이트 (current > 1일 때만 URL에 포함)
+      updateSingleParam("current", nextPage, { replace: true });
     } catch (error) {
       console.error("추가 상품 로딩 실패:", error);
       dispatch(actions.setLoadingMore(false));

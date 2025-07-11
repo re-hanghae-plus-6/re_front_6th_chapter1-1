@@ -1,6 +1,5 @@
-import { updateURLParams, getURLParams } from "./utils/urlParams.js";
+import { updateParamsWithPageReset, getURLParams } from "./utils/urlParams.js";
 
-// Observer 인스턴스를 모듈 레벨에서 관리 (전역 오염 방지)
 let infiniteScrollObserver = null;
 
 /**
@@ -9,41 +8,40 @@ let infiniteScrollObserver = null;
 export const registerProductEvents = (productService) => {
   const currentParams = getURLParams();
 
-  // 페이지당 상품 수 선택
+  // 페이지당 상품 수 선택 이벤트
   const limitSelect = document.querySelector("#limit-select");
   if (!limitSelect) return;
 
-  limitSelect.value = getURLParams().limit;
+  limitSelect.value = currentParams.limit;
   limitSelect.onchange = (e) => {
-    updateURLParams({ limit: parseInt(e.target.value), page: 1 });
+    const newLimit = parseInt(e.target.value);
+    updateParamsWithPageReset({ limit: newLimit });
     productService.loadProducts();
   };
 
-  // 정렬 옵션 선택
+  // 정렬 옵션 선택 이벤트
   const sortSelect = document.querySelector("#sort-select");
   if (!sortSelect) return;
 
-  sortSelect.value = getURLParams().sort;
+  sortSelect.value = currentParams.sort;
   sortSelect.onchange = (e) => {
-    updateURLParams({ sort: e.target.value, page: 1 });
+    const newSort = e.target.value;
+    updateParamsWithPageReset({ sort: newSort });
     productService.loadProducts();
   };
 
   // 검색 이벤트
   const searchInput = document.querySelector("#search-input");
-  if (searchInput) {
-    // 현재 검색어 표시
-    searchInput.value = currentParams.search;
 
-    // Enter 키 이벤트
-    searchInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") {
-        const searchTerm = e.target.value.trim();
-        updateURLParams({ search: searchTerm, page: 1 });
-        productService.loadProducts();
-      }
-    });
-  }
+  if (!searchInput) return;
+  searchInput.value = currentParams.search;
+  searchInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      const searchTerm = e.target.value.trim();
+      updateParamsWithPageReset({ search: searchTerm });
+      productService.loadProducts();
+    }
+  });
 };
 
 /**
@@ -80,14 +78,13 @@ export const registerInfiniteScroll = (productService) => {
  * 브라우저 이벤트 등록
  */
 export const registerBrowserEvents = (productService) => {
-  // 뒤로가기/앞으로가기 처리
   window.addEventListener("popstate", () => {
     productService.loadProducts();
   });
 };
 
 /**
- * 모든 이벤트 등록 (메인 함수)
+ * 모든 이벤트 등록
  */
 export const registerAllEvents = (store, productService) => {
   registerProductEvents(productService);
