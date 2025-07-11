@@ -1,6 +1,5 @@
 import { defineConfig } from "vitest/config";
 import path from "path";
-import fs from "fs";
 
 const isProd = process.env.NODE_ENV === "production";
 
@@ -32,15 +31,5 @@ export default defineConfig({
       },
     },
     testTimeout: 10000,
-  },
-  buildEnd() {
-    if (isProd) {
-      const dist = path.resolve(__dirname, "dist");
-      const indexPath = path.join(dist, "index.html");
-      const fallbackPath = path.join(dist, "404.html");
-      if (fs.existsSync(indexPath)) {
-        fs.copyFileSync(indexPath, fallbackPath);
-      }
-    }
   },
 });

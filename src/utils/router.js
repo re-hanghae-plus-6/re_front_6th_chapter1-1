@@ -2,9 +2,16 @@ import { productListPage } from "../pages/productListPage";
 import { productDetailPage } from "../pages/productDetailPage";
 import { get404Page } from "../pages/404Page";
 
+// 공통 BASE_PATH 정의
+const BASE_PATH = import.meta.env.MODE === "production" ? "/front_6th_chapter1-1" : "";
+
+// path에서 BASE_PATH를 제거
+const stripBasePath = (path) => (path.startsWith(BASE_PATH) ? path.slice(BASE_PATH.length) : path);
+
 // 경로별 라우팅 처리 함수
-const handleRoute = async (path) => {
-  // 상품 상세 페이지 라우팅
+const handleRoute = async (rawPath) => {
+  const path = stripBasePath(rawPath) || "/";
+
   if (path.startsWith("/product/")) {
     const productId = path.split("/product/")[1];
     if (productId) {
@@ -13,104 +20,77 @@ const handleRoute = async (path) => {
     }
   }
 
-  // 루트 경로 또는 기타 경로는 상품 목록 페이지로
   if (path === "/" || path === "") {
     await productListPage();
     return;
   }
 
-  // 404 페이지
   document.body.innerHTML = get404Page();
 };
 
 // 라우터 초기화 함수
 export const initializeRouter = async () => {
-  // 초기 라우팅 실행
   await handleRoute(window.location.pathname);
 
-  // 브라우저 뒤로가기/앞으로가기 처리
   window.addEventListener("popstate", async () => {
-    // popstate 이벤트가 발생하면 항상 현재 경로로 라우팅
     await handleRoute(window.location.pathname);
   });
 
-  // 링크 클릭 처리 (SPA 동작)
   document.addEventListener("click", async (e) => {
     const link = e.target.closest("a[data-link]");
     if (link) {
       e.preventDefault();
       const href = link.getAttribute("href");
-      window.history.pushState({}, "", href);
-      await handleRoute(href);
+      const fullPath = BASE_PATH + href;
+      window.history.pushState({}, "", fullPath);
+      await handleRoute(fullPath);
     }
   });
 };
 
 // 프로그래매틱 네비게이션 함수들
 export const navigateTo = async (path) => {
-  // 현재 경로와 같다면 네비게이션하지 않음
-  if (window.location.pathname === path) {
-    return;
-  }
-  window.history.pushState({}, "", path);
-  await handleRoute(path);
+  const fullPath = BASE_PATH + path;
+  if (window.location.pathname === fullPath) return;
+  window.history.pushState({}, "", fullPath);
+  await handleRoute(fullPath);
 };
 
 export const navigateToProduct = async (productId) => {
-  const productPath = `/product/${productId}`;
-  // 현재 경로와 같다면 네비게이션하지 않음
-  if (window.location.pathname === productPath) {
-    return;
-  }
-  window.history.pushState({}, "", productPath);
-  await handleRoute(productPath);
+  const path = `/product/${productId}`;
+  await navigateTo(path);
 };
 
 export const navigateToHome = async () => {
-  const homePath = "/";
-  // 현재 경로와 같다면 네비게이션하지 않음
-  if (window.location.pathname === homePath) {
-    return;
-  }
-  window.history.pushState({}, "", homePath);
-  await handleRoute(homePath);
+  await navigateTo("/");
 };
 
-// 뒤로가기 함수
 export const goBack = async () => {
   if (window.history.length > 1) {
     window.history.back();
   } else {
-    // 히스토리가 없으면 홈으로 이동
     await navigateToHome();
   }
 };
 
 // 현재 경로 확인 함수
 export const getCurrentPath = () => {
-  return window.location.pathname;
+  return stripBasePath(window.location.pathname);
 };
 
 // 상품 ID 추출 함수
 export const extractProductId = (path) => {
-  if (path.startsWith("/product/")) {
-    return path.split("/product/")[1];
-  }
-  return null;
+  const cleaned = stripBasePath(path);
+  return cleaned.startsWith("/product/") ? cleaned.split("/product/")[1] : null;
 };
 
 // 경로 유효성 검사 함수
 export const isValidRoute = (path) => {
-  // 루트 경로
-  if (path === "/" || path === "") {
-    return true;
-  }
-
-  // 상품 상세 페이지 경로
-  if (path.startsWith("/product/")) {
-    const productId = path.split("/product/")[1];
+  const cleaned = stripBasePath(path);
+  if (cleaned === "/" || cleaned === "") return true;
+  if (cleaned.startsWith("/product/")) {
+    const productId = cleaned.split("/product/")[1];
     return productId && productId.length > 0;
   }
-
   return false;
 };
