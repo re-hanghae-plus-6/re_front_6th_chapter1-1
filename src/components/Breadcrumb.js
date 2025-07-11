@@ -4,6 +4,9 @@ import { html } from "../utils/html";
 export class Breadcrumb extends Component {
   renderContainer() {
     const { categories, category1, category2 } = this.props.productsStore;
+    if (!category1 && !category2) {
+      return html`<div ${this.dataAttribute.attribute} class="space-y-2">${this.#renderAllCategories()}</div>`;
+    }
 
     return html`<div ${this.dataAttribute.attribute} class="space-y-2">
       ${this.renderBreadcrumb({ category1, category2 })} ${this.renderCategories({ categories, category1, category2 })}
@@ -28,6 +31,37 @@ export class Breadcrumb extends Component {
         this.props.productsStore.resetCategories();
       }
     });
+  }
+
+  #renderAllCategories() {
+    return html`
+      <div class="flex items-center gap-2">
+        <label class="text-sm text-gray-600">카테고리:</label>
+        <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
+      </div>
+
+      <!-- 1depth 카테고리 -->
+
+      <div class="flex flex-wrap gap-2">
+        <button
+          data-category1="생활/건강"
+          class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
+                 bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+        >
+          생활/건강
+        </button>
+
+        <button
+          data-category1="디지털/가전"
+          class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
+                 bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+        >
+          디지털/가전
+        </button>
+      </div>
+
+      <!-- 2depth 카테고리 -->
+    `;
   }
 
   renderBreadcrumb({ category1, category2 }) {
