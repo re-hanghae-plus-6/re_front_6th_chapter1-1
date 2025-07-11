@@ -5,7 +5,9 @@ export class Breadcrumb extends Component {
   renderContainer() {
     const { categories, category1, category2 } = this.props.productsStore;
     if (!category1 && !category2) {
-      return html`<div ${this.dataAttribute.attribute} class="space-y-2">${this.#renderAllCategories()}</div>`;
+      return html`<div ${this.dataAttribute.attribute} class="space-y-2">
+        ${this.#renderAllCategories({ isLoading: !categories })}
+      </div>`;
     }
 
     return html`<div ${this.dataAttribute.attribute} class="space-y-2">
@@ -33,7 +35,22 @@ export class Breadcrumb extends Component {
     });
   }
 
-  #renderAllCategories() {
+  #renderAllCategories({ isLoading }) {
+    if (isLoading) {
+      return html`
+        <div class="flex items-center gap-2">
+          <label class="text-sm text-gray-600">카테고리:</label>
+          <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
+        </div>
+
+        <!-- 1depth 카테고리 -->
+
+        <div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>
+
+        <!-- 2depth 카테고리 -->
+      `;
+    }
+
     return html`
       <div class="flex items-center gap-2">
         <label class="text-sm text-gray-600">카테고리:</label>
