@@ -3,7 +3,6 @@ import { addCart, updateHeaderCartCount } from "../utils/cart.js";
 import { showToast } from "../template/toast.js";
 
 export function setupCommonEventListeners(mainStatus, appRouter) {
-  const currentMainStatus = appRouter.getCurrentState(); // 항상 최신 mainStatus 가져오기
   /** change */
   document.body.addEventListener("change", (e) => {
     const target = e.target;
@@ -14,7 +13,6 @@ export function setupCommonEventListeners(mainStatus, appRouter) {
       newUrl.searchParams.set("limit", mainStatus.params.limit);
     } else if (target.id === "sort-select") {
       mainStatus.params.sort = target.value;
-      mainStatus.params.limit = 20; // 정렬 변경 시 limit도 초기화
       newUrl.searchParams.set("sort", mainStatus.params.sort);
       newUrl.searchParams.set("limit", mainStatus.params.limit);
     } else {
@@ -89,7 +87,7 @@ export function setupCommonEventListeners(mainStatus, appRouter) {
       const productId = addToCartBtn.dataset.productId;
       let productToAdd = null;
 
-      if (window.location.pathname.startsWith('/product/')) {
+      if (window.location.pathname.startsWith("/product/")) {
         // 상품 상세 페이지인 경우, 라우터의 현재 상태에서 상품 정보를 가져옵니다.
         const currentState = appRouter.getCurrentState();
         if (currentState.product && currentState.product.productId === productId) {
