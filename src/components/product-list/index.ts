@@ -1,8 +1,7 @@
-import { 상품목록_스켈레톤_카드_그리드, 카테고리_플레이스홀더_HTML } from "./product-list-loading.ts";
-import { 상품목록_레이아웃_카테고리 } from "../category/index.ts";
-import type { Categories, CategoryState } from "../category/index.ts";
+import { 상품목록_스켈레톤_카드_그리드 } from "./product-list-loading.ts";
 import { 공통_헤더 } from "../header/index.ts";
 import { 상품목록_로딩실패 } from "./product-list-error.ts";
+import { 브레드크럼, createCategoryBreadcrumb } from "../breadcrumb/index.ts";
 
 export interface ProductCard {
   id: string;
@@ -17,15 +16,14 @@ export interface Props {
   products?: ProductCard[];
   cartCount?: number;
   isLoadingNextPage?: boolean;
-  categories?: Categories;
+  categories?: Record<string, Record<string, unknown>>;
   category1?: string | null;
   category2?: string | null;
 }
 
-export interface LayoutProps extends Props {
+interface LayoutProps extends Props {
   loading?: boolean;
   error?: boolean;
-  onRetry?: () => void;
 }
 
 export const 상품목록_레이아웃 = ({
@@ -42,20 +40,53 @@ export const 상품목록_레이아웃 = ({
   // 공통 헤더 HTML
   const headerHtml = 공통_헤더({ cartCount });
 
-  // 카테고리 영역 렌더링
-  let renderedCategoryHtml = 카테고리_플레이스홀더_HTML;
-
+  // 카테고리 버튼 생성
+  let categoryButtonsHtml = "";
   if (!loading && categories) {
-    let categoryState: CategoryState;
     if (category1 && category2) {
-      categoryState = { depth: 2, category1, category2 } as const;
+      // 2depth: 같은 category1의 다른 category2들 표시
+      const category2Map = categories[category1];
+      if (category2Map) {
+        const buttons = Object.keys(category2Map)
+          .map((cat2) => {
+            const isActive = cat2 === category2;
+            const baseClass = "category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors";
+            const style = isActive
+              ? "bg-blue-100 border-blue-300 text-blue-800"
+              : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50";
+            return `<button data-category1="${category1}" data-category2="${cat2}" class="${baseClass} ${style}">
+              ${cat2}
+            </button>`;
+          })
+          .join("");
+        categoryButtonsHtml = `<div class="flex flex-wrap gap-2">${buttons}</div>`;
+      }
     } else if (category1) {
-      categoryState = { depth: 1, category1 } as const;
+      // 1depth: 선택된 category1의 category2들 표시
+      const category2Map = categories[category1];
+      if (category2Map) {
+        const buttons = Object.keys(category2Map)
+          .map(
+            (cat2) => `
+            <button data-category1="${category1}" data-category2="${cat2}" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
+              ${cat2}
+            </button>`,
+          )
+          .join("");
+        categoryButtonsHtml = `<div class="flex flex-wrap gap-2">${buttons}</div>`;
+      }
     } else {
-      categoryState = { depth: 0 } as const;
+      // 0depth: 모든 category1들 표시
+      const buttons = Object.keys(categories)
+        .map(
+          (cat1) => `
+          <button data-category1="${cat1}" class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
+            ${cat1}
+          </button>`,
+        )
+        .join("");
+      categoryButtonsHtml = `<div class="flex flex-wrap gap-2">${buttons}</div>`;
     }
-
-    renderedCategoryHtml = 상품목록_레이아웃_카테고리(categoryState, categories);
   }
 
   const productGridHtml = loading
@@ -86,18 +117,26 @@ export const 상품목록_레이아웃 = ({
           })
           .join("");
 
-  const listFooterHtml = loading
-    ? `<div class="text-center py-4"><div class="inline-flex items-center"><svg class="animate-spin h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span class="text-sm text-gray-600">상품을 불러오는 중...</span></div></div>`
-    : products.length >= total
-      ? '<div class="text-center py-4 text-sm text-gray-500">모든 상품을 확인했습니다</div>'
-      : isLoadingNextPage
-        ? '<div class="text-center py-4 text-sm text-gray-500">상품을 불러오는 중...</div>'
-        : "";
+  const listFooterHtml = isLoadingNextPage
+    ? `<div class="text-center py-4">
+        <div class="inline-flex items-center">
+          <svg class="animate-spin h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" 
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span class="text-sm text-gray-600">상품을 불러오는 중...</span>
+        </div>
+      </div>`
+    : `<div class="text-center py-4 text-sm text-gray-500">
+        모든 상품을 확인했습니다
+      </div>`;
 
   return `
     <div class="bg-gray-50">
       ${headerHtml}
       <main class="max-w-md mx-auto px-4 py-4">
+        
         <!-- 검색 및 필터 -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
           <!-- 검색창 -->
@@ -113,7 +152,14 @@ export const 상품목록_레이아웃 = ({
           </div>
           <!-- 필터 옵션 -->
           <div class="space-y-3">
-            ${renderedCategoryHtml}
+            <!-- 카테고리 필터 -->
+            <div class="space-y-2">
+              <div class="flex items-center gap-2">
+                <label class="text-sm text-gray-600">카테고리:</label>
+                ${브레드크럼({ items: createCategoryBreadcrumb(category1, category2), inline: true })}
+              </div>
+              ${loading ? `<div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>` : categoryButtonsHtml}
+            </div>
             <!-- 기존 필터들 -->
             <div class="flex gap-2 items-center justify-between">
               <!-- 페이지당 상품 수 -->

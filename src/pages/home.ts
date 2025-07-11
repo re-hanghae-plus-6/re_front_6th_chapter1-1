@@ -1,6 +1,5 @@
 import { 상품목록_레이아웃 } from "../components/product-list/index.ts";
 import { getProducts, getCategories } from "../api/productApi.js";
-import type { Categories } from "../components/category/index.ts";
 import type { PageModule } from "../router.ts";
 import { navigate } from "../router.ts";
 import { createQueryParams } from "../utils/queryParams.ts";
@@ -28,7 +27,7 @@ interface State {
   search: string;
   category1: string | null;
   category2: string | null;
-  categories: Categories | null;
+  categories: Record<string, Record<string, unknown>> | null;
 }
 
 export const homePage: PageModule = {
