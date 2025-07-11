@@ -1,12 +1,12 @@
 import { getProducts, getCategories } from "../api/productApi";
 import { productListLoaded } from "../components/productListLoaded";
-import { productListLoading } from "../components/productListLoading";
 import { setupCartEventListeners, updateCartCount, resetCartEventListeners } from "../utils/cartHandler.js";
 import { updateQueryParams, syncStateFromQuery } from "../utils/queryStringHandler.js";
 import {
   setupGlobalEventHandlers,
   setupSearchEventListeners,
 } from "../utils/eventHandlers/setupGlobalEventHandlers.js";
+import { renderProductListLoading } from "../utils/loadingHandler.js";
 
 const root = document.getElementById("root");
 
@@ -27,10 +27,6 @@ let state = {
 
 // URL 쿼리 파라미터로 초기 state 동기화
 state = syncStateFromQuery(state);
-
-const renderLoading = () => {
-  root.innerHTML = productListLoading;
-};
 
 const renderContent = () => {
   root.innerHTML = productListLoaded(
@@ -86,7 +82,7 @@ const loadCategories = async () => {
 };
 
 const renderInitialContent = async () => {
-  renderLoading();
+  renderProductListLoading(root);
 
   try {
     // 카테고리 데이터 로드
@@ -121,7 +117,7 @@ const loadMoreProducts = async () => {
   // 페이지 변경 시 쿼리 스트링 업데이트 (무한 스크롤에서는 히스토리 추가하지 않음)
   updateQueryParams({ page: state.page }, false);
 
-  renderLoading();
+  renderProductListLoading(root);
   try {
     const { products: nextProducts, pagination } = await getProducts({
       page: state.page,
