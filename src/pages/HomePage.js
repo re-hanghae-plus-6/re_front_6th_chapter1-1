@@ -9,6 +9,7 @@ import { productFilterStore, productFilterState } from "../core/productFilterSta
 import { normalizeCategories } from "../utils/normalizeCategories.js";
 import { createComponent } from "../core/createComponent.js";
 import { useInfiniteScroll } from "../utils/useInfiniteScroll.js";
+import { navigate } from "../router.js";
 
 let subscriptions = [];
 let unsubscribeScroll;
@@ -48,6 +49,22 @@ export const HomePage = createComponent({
         if (t.id === "search-input" && e.key === "Enter") {
           productFilterStore.setState({ filters: { page: 1, search: t.value.trim() } });
           loadProducts();
+        }
+      });
+    }
+
+    function bindProductCardClickEvents() {
+      const grid = document.getElementById("products-grid");
+
+      if (!grid) return;
+
+      grid.addEventListener("click", (e) => {
+        const productCard = e.target.closest(".product-card");
+        if (!productCard) return;
+
+        const productId = productCard.dataset.productId;
+        if (productId) {
+          navigate(`/products/detail/${productId}`);
         }
       });
     }
@@ -100,6 +117,7 @@ export const HomePage = createComponent({
 
     return {
       bindFilterEvents,
+      bindProductCardClickEvents,
       loadCategories,
       loadProducts,
       renderProducts,
@@ -151,6 +169,7 @@ export const HomePage = createComponent({
       });
 
       ctx.bindFilterEvents();
+      ctx.bindProductCardClickEvents();
 
       subscriptions.push(productFilterStore.subscribe(ctx.renderFilter));
       await ctx.loadCategories();
