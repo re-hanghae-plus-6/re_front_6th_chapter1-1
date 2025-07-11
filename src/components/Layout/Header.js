@@ -1,3 +1,5 @@
+import { getAppPath } from "../../router";
+
 export const renderCartCount = (cartCount) => {
   return cartCount > 0
     ? /* HTML */ `<span
@@ -11,7 +13,7 @@ export const Header = ({ type = "home", cartCount }) => {
   const renderHeaderText = () => {
     return type === "home"
       ? /* HTML */ `<h1 class="text-xl font-bold text-gray-900">
-          <a href="/" data-link="">쇼핑몰</a>
+          <a href="${getAppPath()}" data-link="">쇼핑몰</a>
         </h1>`
       : /* HTML */ `<div class="flex items-center space-x-3">
           <button onclick="window.history.back()" class="p-2 text-gray-700 hover:text-gray-900 transition-colors">

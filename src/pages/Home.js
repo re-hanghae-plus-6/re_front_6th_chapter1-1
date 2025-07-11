@@ -193,7 +193,7 @@ function addEvents() {
   const resetBtn = document.querySelector("[data-breadcrumb='reset']");
   if (resetBtn) {
     resetBtn.onclick = () => {
-      navigate("/");
+      navigate(getAppPath());
 
       store.setState({
         category1: "",
