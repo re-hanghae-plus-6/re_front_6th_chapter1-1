@@ -59,16 +59,20 @@ function main() {
     return matched ? matched.component : null;
   };
 
-  console.log(onChangeUrl.getState(), onChangeUrl.updateState);
   onChangeUrl.onChange(() => {
-    a.updateComponent(getMatchedRouteComponent()).render();
+    // a.updateComponent(getMatchedRouteComponent()).render();
+    const res = getMatchedRouteComponent()();
+    console.log(res);
   });
 
-  const a = renderViewComponent({
-    parent: window.document.body,
-    component: getMatchedRouteComponent(),
-  });
-  a.render();
+  // const a = renderViewComponent({
+  //   parent: window.document.body,
+  //   component: getMatchedRouteComponent(),
+  // });
+  // a.render();
+  const a = getMatchedRouteComponent()();
+  console.log(a);
+  // ListPage();
 }
 
 // 애플리케이션 시작

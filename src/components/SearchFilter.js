@@ -1,5 +1,7 @@
 // components/SearchFilter.js
 export function SearchFilter() {
+
+  
   return `
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
         <!-- 검색창 -->

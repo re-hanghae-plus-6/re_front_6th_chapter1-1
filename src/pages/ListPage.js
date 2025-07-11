@@ -1,28 +1,55 @@
-// import { Header } from "../components/Header.js";
-// import { Footer } from "../components/Footer.js";
+import { Header } from "../components/Header.js";
+import { Footer } from "../components/Footer.js";
 
-// import { SearchFilter } from "../components/SearchFilter.js";
-// import { createElementByString } from "../utils/createViewcomponent.js";
-import navigateTo from "../utils/urlUtils.js";
+import { SearchFilter } from "../components/SearchFilter.js";
+import { createElementByString, renderViewComponent } from "../utils/createViewcomponent.js";
+import createReactiveState from "../utils/reactiveState.js";
+import navigateTo, { onChangeUrl } from "../utils/urlUtils.js";
+import { ProductGrid } from "../components/ProductGrid.js";
+import { getProducts } from "../api/productApi.js";
 
+//container
 export function ListPage() {
-  // const el = createElementByString(`
-  //   <div class="bg-gray-50 min-h-screen">
-  //     ${Header()}
-  //     <main class="max-w-md mx-auto px-4 py-4">
-  //       ${SearchFilter()}
-  //       <button id="gotodetail">상품상세로</button>
-  //     </main>
-  //     ${Footer()}
-  //   </div>
-  // `);
-  const button = document.createElement("button");
-  button.textContent = "상품 상세로";
-  button.onclick = () => {
-    navigateTo("product/123");
-  };
+  const state = createReactiveState({
+    isLoading: false,
+    isError: false,
+    isSuccess: false,
+    res: null,
+  });
+  const renderer = renderViewComponent({
+    parent: window.document.body,
+    component: ListPageView,
+  });
 
-  // button.addEventListener("click", window.alert("!!"));
+  (async function init() {
+    try {
+      const res = await getProducts();
 
-  return button;
+      renderer.render(res.products, 0);
+      parent.addEventListener("click", (e) => {
+        e.preventDefault();
+
+        navigateTo("/product/1234");
+      });
+    } catch (e) {
+      // 토스트를 띄우시웅
+    }
+  })();
+
+  renderer.render();
+}
+
+export function ListPageView(products, cartItemLength) {
+  const el = createElementByString(`
+    <div class="bg-gray-50 min-h-screen">
+      ${Header(cartItemLength)}
+      <main class="max-w-md mx-auto px-4 py-4">
+        ${SearchFilter()}
+        ${ProductGrid(products)}
+      </main>
+      ${Footer()}
+    </div>
+  `);
+
+  return el;
 }

@@ -1,5 +1,6 @@
-import { createElementByString } from "../utils/createViewcomponent";
+import { createElementByString, renderViewComponent } from "../utils/createViewcomponent";
 
 export function DetailPage() {
-  return createElementByString("<p>detailpage</p>");
+  const renderer = renderViewComponent({ component: createElementByString("<p>detailpage</p>") });
+  renderer.render();
 }
