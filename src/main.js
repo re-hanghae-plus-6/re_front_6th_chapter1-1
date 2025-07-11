@@ -5,11 +5,7 @@ import { setupGlobalEventListeners } from "./events/eventListeners.js";
 import { productActions, productStore } from "./store/productStore.js";
 
 const enableMocking = () =>
-  import("./mocks/browser.js").then(({ worker }) =>
-    worker.start({
-      onUnhandledRequest: "bypass",
-    }),
-  );
+  import("./mocks/browser.js").then(({ worker, workerOptions }) => worker.start(workerOptions));
 
 // 전역 router 변수
 let router;

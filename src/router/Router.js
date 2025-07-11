@@ -1,5 +1,26 @@
 // URL 변화를 감지하고 라우팅을 처리하는 함수형 라우터
 
+// GitHub Pages 배포를 위한 BASE_PATH 설정
+const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
+
+/**
+ * 전체 경로에서 앱 경로를 추출하는 함수
+ * @param {string} fullPath - 전체 경로 (기본값: 현재 pathname)
+ * @returns {string} 앱 경로
+ */
+const getAppPath = (fullPath = window.location.pathname) => {
+  return fullPath.startsWith(BASE_PATH) ? fullPath.slice(BASE_PATH.length) || "/" : fullPath;
+};
+
+/**
+ * 앱 경로를 전체 경로로 변환하는 함수
+ * @param {string} appPath - 앱 경로
+ * @returns {string} 전체 경로
+ */
+const getFullPath = (appPath) => {
+  return BASE_PATH + appPath;
+};
+
 /**
  * 라우터 생성 함수
  * @param {Object} config - 라우터 설정
@@ -18,7 +39,7 @@ export function createRouter(config = {}) {
    * URL 변화를 감지하고 처리하는 핵심 함수
    */
   function handleLocationChange() {
-    const newPath = window.location.pathname;
+    const newPath = getAppPath(); // BASE_PATH를 제거한 앱 경로 사용
     const newQuery = new URLSearchParams(window.location.search);
 
     // 경로나 쿼리가 변경된 경우에만 처리 (초기 로드는 항상 처리)
@@ -99,7 +120,8 @@ export function createRouter(config = {}) {
    */
   function navigate(path, query = {}) {
     const queryString = new URLSearchParams(query).toString();
-    const fullPath = queryString ? `${path}?${queryString}` : path;
+    const appPath = queryString ? `${path}?${queryString}` : path;
+    const fullPath = getFullPath(appPath); // BASE_PATH를 포함한 전체 경로 사용
 
     // URL 변경 (히스토리에 추가)
     window.history.pushState({}, "", fullPath);
