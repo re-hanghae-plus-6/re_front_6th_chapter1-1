@@ -7,6 +7,21 @@ configure({
   asyncUtilTimeout: 5000,
 });
 
+global.IntersectionObserver = class {
+  constructor(callback, options) {
+    this.callback = callback;
+    this.options = options;
+  }
+
+  observe(element) {
+    // 무조건 isIntersecting = true
+    this.callback([{ isIntersecting: true, target: element }], this);
+  }
+
+  unobserve() {}
+  disconnect() {}
+};
+
 beforeAll(() => {
   server.listen({ onUnhandledRequest: "error" });
 });

@@ -23,6 +23,18 @@ export async function getProduct(productId) {
   return await response.json();
 }
 
+// 관련 상품 조회 (같은 category2의 다른 상품들)
+export async function getRelatedProducts(category2, currentProductId, limit = 4) {
+  const searchParams = new URLSearchParams({
+    category2,
+    limit: limit.toString(),
+    exclude: currentProductId,
+  });
+
+  const response = await fetch(`/api/products?${searchParams}`);
+  return await response.json();
+}
+
 // 카테고리 목록 조회
 export async function getCategories() {
   const response = await fetch("/api/categories");
