@@ -1,6 +1,6 @@
 import { screen } from "@testing-library/dom";
 import { userEvent } from "@testing-library/user-event";
-import { beforeAll, beforeEach, describe, expect, test } from "vitest";
+import { afterEach, beforeAll, describe, expect, test } from "vitest";
 
 const goTo = (path) => {
   window.history.pushState({}, "", path);
@@ -12,18 +12,12 @@ beforeAll(async () => {
   await import("../main.js");
 });
 
-beforeEach (() => {
+afterEach(() => {
+  // 각 테스트 후 상태 초기화
   goTo("/");
   document.getElementById("root").innerHTML = "";
   localStorage.clear();
 });
-
-// afterEach(() => {
-//   // 각 테스트 후 상태 초기화
-//   goTo("/");
-//   document.getElementById("root").innerHTML = "";
-//   localStorage.clear();
-// });
 
 const 상품_상세페이지_접속 = async () => {
   const productElement = await screen.findByRole("heading", {
@@ -43,7 +37,7 @@ const 상품_상세페이지_접속 = async () => {
   });
 };
 
-describe.only("1. 상품 클릭시 상세 페이지 이동", () => {
+describe("1. 상품 클릭시 상세 페이지 이동", () => {
   test("상품 목록에서 상품 이미지 클릭 시 상세 페이지로 이동되며, 상품 이미지, 설명, 가격 등의 상세 정보가 표시된다", async () => {
     goTo("/");
     await 상품_상세페이지_접속();
