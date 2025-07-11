@@ -152,7 +152,7 @@ export const productListLoaded = (
           <div>
             <!-- 상품 개수 정보 -->
             <div class="mb-4 text-sm text-gray-600">
-              총 <span class="font-medium text-gray-900">${totalProducts}개</span>의 상품
+              ${!!totalProducts && `총 <span class="font-medium text-gray-900">${totalProducts}개</span>의 상품`}
               ${searchTerm ? ` (검색어: "${searchTerm}")` : ""}
               ${selectedCategories.category1 ? ` (카테고리: ${breadcrumbs.slice(1).join(" > ")})` : ""}
             </div>
