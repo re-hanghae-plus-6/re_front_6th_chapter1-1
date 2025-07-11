@@ -1,26 +1,76 @@
+import stateManager from "../state/index.js";
+
 class ProductItem {
   constructor(product) {
     this.product = product;
   }
 
-  // {
-  //   "title": "방충망 미세먼지 롤 창문 모기장 DIY 100cmx10cm",
-  //   "link": "https:\/\/smartstore.naver.com\/main\/products\/668979777",
-  //   "image": "https:\/\/shopping-phinf.pstatic.net\/main_1112415\/11124150101.10.jpg",
-  //   "lprice": "450",
-  //   "hprice": "",
-  //   "mallName": "동백물산",
-  //   "productId": "11124150101",
-  //   "productType": "2",
-  //   "brand": "메쉬코리아",
-  //   "maker": "",
-  //   "category1": "생활\/건강",
-  //   "category2": "생활용품",
-  //   "category3": "생활잡화",
-  //   "category4": "모기장"
-  // }
+  /**
+   * 상품 이미지 클릭 처리 - 상세 페이지로 이동
+   */
+  handleImageClick = (e) => {
+    const productId = e.currentTarget.dataset.productId;
+    // 상세 페이지로 라우팅
+    window.history.pushState({}, "", `/product/${productId}`);
+    window.dispatchEvent(new Event("popstate"));
+  };
+
+  /**
+   * 장바구니 담기 버튼 클릭 처리
+   */
+  handleAddToCart = (e) => {
+    e.stopPropagation();
+    const productData = this.createProductData();
+
+    // 통합 메서드 사용 (장바구니 추가 + 토스트 표시)
+    stateManager.addProductToCart(productData);
+  };
+
+  /**
+   * 상품 데이터 객체를 생성합니다. (단일 책임)
+   */
+  createProductData() {
+    return {
+      id: this.product.productId,
+      title: this.product.title,
+      name: this.product.title,
+      price: parseInt(this.product.lprice),
+      image: this.product.image,
+      quantity: 1,
+    };
+  }
+
+  /**
+   * 컴포넌트가 DOM에 마운트된 후 호출되는 메서드입니다.
+   */
+  mounted() {
+    const productCard = document.querySelector(`.product-card[data-product-id="${this.product.productId}"]`);
+    if (!productCard) return;
+
+    // 이미지 클릭 이벤트
+    const productImage = productCard.querySelector(".product-image");
+    if (productImage) {
+      productImage.addEventListener("click", this.handleImageClick);
+      productImage.dataset.productId = this.product.productId;
+    }
+
+    // 상품 정보 클릭 이벤트 (제목 영역)
+    const productInfo = productCard.querySelector(".product-info");
+    if (productInfo) {
+      productInfo.addEventListener("click", this.handleImageClick);
+      productInfo.dataset.productId = this.product.productId;
+    }
+
+    // 장바구니 버튼 클릭 이벤트
+    const addToCartBtn = productCard.querySelector(".add-to-cart-btn");
+    if (addToCartBtn) {
+      addToCartBtn.addEventListener("click", this.handleAddToCart);
+    }
+  }
 
   render() {
+    const formattedPrice = parseInt(this.product.lprice).toLocaleString();
+
     return /*html*/ `
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
            data-product-id="${this.product.productId}">
@@ -37,9 +87,9 @@ class ProductItem {
             <h3 class="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
               ${this.product.title}
             </h3>
-            <p class="text-xs text-gray-500 mb-2">${this.product.brand}</p>
+            <p class="text-xs text-gray-500 mb-2">${this.product.brand || ""}</p>
             <p class="text-lg font-bold text-gray-900">
-              ${this.product.lprice}
+              ${formattedPrice}원
             </p>
           </div>
           <!-- 장바구니 버튼 -->
