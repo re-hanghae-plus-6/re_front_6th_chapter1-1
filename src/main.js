@@ -103,13 +103,19 @@ async function main() {
       state.selectedLimit = limitMatch[1];
     }
   }
+  if (path.includes("search")) {
+    const searchMatch = path.match(/search=([^&/]+)/);
+    if (searchMatch) {
+      state.searchValue = decodeURIComponent(searchMatch[1]);
+    }
+  }
   const [
     {
       products,
       pagination: { total },
     },
     categories,
-  ] = await Promise.all([getProducts({ sort: state.selectedSort, limit: state.selectedLimit }), getCategories()]);
+  ] = await Promise.all([getProducts({ sort: state.selectedSort, limit: state.selectedLimit, search: state.searchValue }), getCategories()]);
 
   // store.setState({
   //   products,

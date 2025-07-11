@@ -88,7 +88,7 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오", () => {
       await expect(page.locator(".product-card").first()).toMatchAriaSnapshot(`
     - img "ASUS ROG Flow Z13 GZ302EA-RU110W 64GB, 1TB"
     - heading "ASUS ROG Flow Z13 GZ302EA-RU110W 64GB, 1TB" [level=3]
-    - paragraph: ASUS
+    - paragraph: 네이버
     - paragraph: 3,749,000원
     - button "장바구니 담기"
       `);
@@ -106,7 +106,7 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오", () => {
       await expect(page.locator(".product-card").nth(1)).toMatchAriaSnapshot(`
     - img "P&G 다우니 울트라 섬유유연제 에이프릴 프레쉬, 5.03L, 1개"
     - heading "P&G 다우니 울트라 섬유유연제 에이프릴 프레쉬, 5.03L, 1개" [level=3]
-    - paragraph: 다우니
+    - paragraph: 네이버
     - paragraph: 16,610원
     - button "장바구니 담기"
       `);
@@ -116,7 +116,7 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오", () => {
       await expect(page.locator(".product-card").nth(1)).toMatchAriaSnapshot(`
     - img "P&G 다우니 울트라 섬유유연제 에이프릴 프레쉬, 5.03L, 1개"
     - heading "P&G 다우니 울트라 섬유유연제 에이프릴 프레쉬, 5.03L, 1개" [level=3]
-    - paragraph: 다우니
+    - paragraph: 네이버
     - paragraph: 16,610원
     - button "장바구니 담기"
       `);
