@@ -11,6 +11,7 @@ export function createRouter() {
     push: (path) => {
       window.history.pushState(null, "", `${BASE_PATH}${path}`);
       store.setState("mounted", false);
+      window.scrollTo(0, 0);
       render();
     },
   };
