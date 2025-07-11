@@ -1,6 +1,5 @@
 import createState from "./state.js";
 
-// createStore 의 기존 시그니처를 유지하여 외부 코드 변경 없이 새로운 상태 관리 로직을 사용할 수 있도록 한다.
 export default function createStore(initialState) {
   return createState(initialState);
 }
