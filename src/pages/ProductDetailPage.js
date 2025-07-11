@@ -202,7 +202,7 @@ export const ProductDetailPage = (id) =>
         document.querySelector(".responsive-grid").onclick = (e) => {
           const card = e.target.closest(".related-product-card");
           if (card) {
-            navigate(`/products/detail/${card.dataset.productId}`);
+            navigate(`/products/${card.dataset.productId}`);
           }
         };
       }

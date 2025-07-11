@@ -5,7 +5,7 @@ import { ProductDetailPage } from "./pages/ProductDetailPage.js";
 let currentComponent = null;
 const routes = defineRoutes([
   { path: "/", component: () => HomePage },
-  { path: "/products/detail/:id", component: (id) => ProductDetailPage(id) },
+  { path: "/products/:id", component: (id) => ProductDetailPage(id) },
 ]);
 
 export function navigate(url) {

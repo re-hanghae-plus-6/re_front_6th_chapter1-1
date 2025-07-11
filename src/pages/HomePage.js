@@ -64,7 +64,7 @@ export const HomePage = createComponent({
 
         const productId = productCard.dataset.productId;
         if (productId) {
-          navigate(`/products/detail/${productId}`);
+          navigate(`/products/${productId}`);
         }
       });
     }
