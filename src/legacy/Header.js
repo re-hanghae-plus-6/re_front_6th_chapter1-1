@@ -1,8 +1,8 @@
-import Component from "../core/component";
+const Header = (parentEl) => {
+  const parent = document.querySelector(`[data-component="${parentEl}"]`);
 
-class Header extends Component {
-  template() {
-    return `      
+  const render = () => {
+    parent.innerHTML = `      
 			<header class="bg-white shadow-sm sticky top-0 z-40">
 				<div class="max-w-md mx-auto px-4 py-4">
 					<div class="flex items-center justify-between">
@@ -18,11 +18,12 @@ class Header extends Component {
 								<span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">4</span>
 							</button>
 						</div>
+						</div>
 					</div>
-				</div>
-			</header>
-		`;
-  }
-}
+			</header>`;
+  };
+
+  render();
+};
 
 export default Header;
