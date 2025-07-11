@@ -53,6 +53,10 @@ export class ProductListPage extends Component {
         infinite.destroy();
       }
     });
+
+    this.on(Component.EVENTS.UNMOUNT, () => {
+      infinite.destroy();
+    });
   }
 
   // 초기 데이터 로드 (상품 + 카테고리)
