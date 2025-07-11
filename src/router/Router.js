@@ -13,7 +13,7 @@ export const getFullPath = (appPath) => {
 };
 
 export async function Router() {
-  const path = window.location.pathname;
+  const path = getAppPath(window.location.pathname);
   const detailMatch = path.match(/^\/product\/(.+)$/);
   if (path === "/" || path === "") {
     return await MainPage();
