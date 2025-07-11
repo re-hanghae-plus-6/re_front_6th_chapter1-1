@@ -20,6 +20,7 @@ export const initialState = {
   },
   productDetail: null,
   productDetailLoading: false,
+  cart: [],
 };
 
 // 순수 함수로 구현된 리듀서
@@ -88,6 +89,32 @@ export const appReducer = (state = initialState, action) => {
       return {
         ...state,
         productDetailLoading: action.payload,
+      };
+
+    case ACTION_TYPES.ADD_TO_CART: {
+      const { productId } = action.payload;
+      // 중복 상품 체크 - 이미 있으면 추가하지 않음
+      if (state.cart.includes(productId)) {
+        return state;
+      }
+      return {
+        ...state,
+        cart: [...state.cart, productId],
+      };
+    }
+
+    case ACTION_TYPES.REMOVE_FROM_CART: {
+      const { productId } = action.payload;
+      return {
+        ...state,
+        cart: state.cart.filter((id) => id !== productId),
+      };
+    }
+
+    case ACTION_TYPES.CLEAR_CART:
+      return {
+        ...state,
+        cart: [],
       };
 
     default:
