@@ -5,11 +5,7 @@ import { createRouter } from "./router/index.js";
 import { createRenderer } from "./render.js";
 
 const enableMocking = () =>
-  import("./mocks/browser.js").then(({ worker }) =>
-    worker.start({
-      onUnhandledRequest: "bypass",
-    }),
-  );
+  import("./mocks/browser.js").then(({ worker, workerOptions }) => worker.start(workerOptions));
 
 async function main() {
   const store = createStore(appReducer, initialState);

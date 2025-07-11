@@ -1,5 +1,18 @@
 import { actions } from "../stores/actions.js";
 
+// GitHub Pages 배포 시 서브패스 처리
+const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
+
+// 전체 경로에서 앱 경로 추출
+const getAppPath = (fullPath = window.location.pathname) => {
+  return fullPath.startsWith(BASE_PATH) ? fullPath.slice(BASE_PATH.length) || "/" : fullPath;
+};
+
+// 앱 경로에서 전체 경로 생성
+const getFullPath = (appPath) => {
+  return BASE_PATH + appPath;
+};
+
 export const createRouter = (store, services) => {
   const { dispatch } = store;
   const { productService } = services;
@@ -42,19 +55,20 @@ export const createRouter = (store, services) => {
   };
 
   const updateRoute = async () => {
-    const currentPath = window.location.pathname;
+    // 서브패스 제거한 앱 경로 사용
+    const currentPath = getAppPath();
     const route = matchRoute(currentPath);
 
     // 라우트 상태 업데이트
     dispatch(
       actions.setRoute({
         name: route.name,
-        path: currentPath,
+        path: currentPath, // 앱 경로 저장
         params: route.params,
       }),
     );
 
-    // 데이터 로딩 (여기서 한 번에 처리!)
+    // 데이터 로딩
     if (route.name === "ProductList") {
       await productService.loadCategories();
       await productService.loadProducts();
@@ -64,7 +78,9 @@ export const createRouter = (store, services) => {
   };
 
   const navigate = (path) => {
-    window.history.pushState(null, null, path);
+    // 앱 경로를 전체 경로로 변환하여 history에 추가
+    const fullPath = getFullPath(path);
+    window.history.pushState(null, null, fullPath);
     updateRoute();
   };
 
