@@ -1,5 +1,4 @@
 // 전역 이벤트 위임 방식 이벤트 리스너
-// import { productStore } from "../store/productStore.js";
 
 // 이벤트 위임 설정 - 앱 시작 시 한 번만 호출
 export function setupGlobalEventListeners() {
@@ -179,8 +178,8 @@ function handleSearchInput(e) {
   // 디바운싱을 위한 타이머 처리
   clearTimeout(handleSearchInput.timer);
   handleSearchInput.timer = setTimeout(() => {
-    // TODO: productStore의 filters.search 업데이트
-    // productActions.updateFilters({ search: searchValue });
+    // TODO: 나중에 구현
+    console.log("검색 실행:", searchValue);
   }, 300); // 300ms 후 실행
 }
 
@@ -188,23 +187,19 @@ function handleSortChange(e) {
   const sortValue = e.target.value;
   console.log("정렬 변경:", sortValue);
 
-  // TODO: productStore의 filters.sort 업데이트
-  // productActions.updateFilters({ sort: sortValue });
+  // TODO: 나중에 구현
 }
 
 function handleLimitChange(e) {
   const limitValue = parseInt(e.target.value);
   console.log("개수 변경:", limitValue);
 
-  // TODO: productStore의 filters.limit 업데이트
-  // productActions.updateFilters({ limit: limitValue });
+  // TODO: 나중에 구현 - 새로운 limit으로 상품 다시 로드
 }
 
-// 이벤트 리스너 제거 (필요 시)
+// 전역 이벤트 리스너 제거 (필요시 사용)
 export function removeGlobalEventListeners() {
   document.removeEventListener("click", handleGlobalClick);
   document.removeEventListener("input", handleGlobalInput);
   document.removeEventListener("change", handleGlobalChange);
-
-  console.log("전역 이벤트 리스너 제거 완료");
 }
