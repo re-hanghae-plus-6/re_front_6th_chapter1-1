@@ -167,6 +167,7 @@ export class ProductPage extends Component {
                     <div class="grid grid-cols-2 gap-3 responsive-grid">
                       <div
                         class="bg-gray-50 rounded-lg p-3 related-product-card cursor-pointer"
+                        data-route="/product/86940857379"
                         data-product-id="86940857379"
                       >
                         <div class="aspect-square bg-white rounded-md overflow-hidden mb-2">
@@ -184,6 +185,7 @@ export class ProductPage extends Component {
                       </div>
                       <div
                         class="bg-gray-50 rounded-lg p-3 related-product-card cursor-pointer"
+                        data-route="/product/82094468339"
                         data-product-id="82094468339"
                       >
                         <div class="aspect-square bg-white rounded-md overflow-hidden mb-2">
