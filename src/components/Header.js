@@ -1,5 +1,5 @@
 import { cartStore } from "../store/store.js";
-import { navigate } from "../router/router.js";
+import { navigate, BASE_PATH } from "../router/router.js";
 
 class Header {
   constructor() {
@@ -60,7 +60,7 @@ class Header {
 
   template() {
     const badgeHiddenClass = this.state.cartCount === 0 ? "hidden" : "";
-    const isDetailPage = window.location.pathname.startsWith("/product/");
+    const isDetailPage = window.location.pathname.startsWith(`${BASE_PATH}/product/`);
 
     return `
       <header class="bg-white shadow-sm sticky top-0 z-40">
