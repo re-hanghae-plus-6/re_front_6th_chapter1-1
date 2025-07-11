@@ -18,6 +18,9 @@ class Store {
   }
 
   get computed() {
+    if (!this.#computed.cart) {
+      this.#computed.cart = new CartComputed(this);
+    }
     return this.#computed;
   }
 

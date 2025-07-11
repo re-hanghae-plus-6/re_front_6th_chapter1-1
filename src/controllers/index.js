@@ -94,14 +94,13 @@ class Controller {
         store.reset();
         store.computed.cart.clearCache();
 
-        // store.reset() 후 다시 로딩 상태 설정
-        store.dispatch(actions.loadInitialData());
-
         const rootElement = document.getElementById("root");
         if (rootElement) {
           rootElement.innerHTML = "";
         }
       }
+
+      store.dispatch(actions.loadInitialData());
 
       if (this.controllers.productList) {
         this.controllers.productList.cleanup();
