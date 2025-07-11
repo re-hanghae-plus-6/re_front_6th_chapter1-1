@@ -22,14 +22,13 @@ class Home {
     this.el = null;
     this.state = { ...initialState };
     this.searchFilter = new SearchFilter(this.handleFilterChange.bind(this));
-    this.fetchProductsDebounced = this.debounce(this.fetchProducts.bind(this), 100); // ✅ debounce 적용
+    this.fetchProductsDebounced = this.debounce(this.fetchProducts.bind(this));
 
     window.addEventListener("popstate", (e) => {
       this.setState({ filters: e.state || initialState.filters, loading: true });
       this.fetchProducts();
     });
 
-    // 스크롤 이벤트 리스너 추가
     this.handleScroll = this.handleScroll.bind(this);
   }
 
@@ -207,7 +206,6 @@ class Home {
     newEl.innerHTML = this.template();
 
     const searchFilterContainer = newEl.querySelector("#search-filter-container");
-    // this.state.filters를 SearchFilter의 render 메서드에 전달
     const searchFilterEl = this.searchFilter.render(this.state.filters);
     searchFilterContainer.appendChild(searchFilterEl);
 
@@ -224,8 +222,6 @@ class Home {
         const product = this.state.products.find((p) => p.productId === productId);
         if (product) {
           cartStore.addItem(product);
-
-          // Toast 컴포넌트를 사용하여 성공 메시지 표시
           toast.showSuccess("장바구니에 추가되었습니다");
         }
       });
@@ -260,13 +256,11 @@ class Home {
     this.fetchProducts();
     this.searchFilter.fetchCategories();
 
-    // 스크롤 이벤트 리스너 등록
     window.addEventListener("scroll", this.handleScroll);
 
     return this.el;
   }
 
-  // 컴포넌트 정리 시 스크롤 이벤트 리스너 제거
   destroy() {
     window.removeEventListener("scroll", this.handleScroll);
   }

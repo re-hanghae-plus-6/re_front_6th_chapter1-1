@@ -40,7 +40,6 @@ class Detail {
     try {
       const [fetchedProduct, allProducts] = await Promise.all([getProduct(productId), getProducts()]);
 
-      // API 응답의 속성 이름을 UI에서 사용하는 이름으로 매핑
       const product = {
         productId: fetchedProduct.productId,
         title: fetchedProduct.title,
@@ -50,26 +49,24 @@ class Detail {
         category1: fetchedProduct.category1 || "",
         category2: fetchedProduct.category2 || "",
         category3: fetchedProduct.category3 || "",
-        category4: fetchedProduct.category3 || "",
+        category4: fetchedProduct.category4 || "",
         stock: fetchedProduct.stock || 0,
         reviewCount: fetchedProduct.reviewCount || 0,
         description: fetchedProduct.description || "",
       };
 
-      // 먼저 상품 정보만 설정 (관련 상품은 아직 빈 배열)
       this.setState({
         product,
         loading: false,
-        relatedProducts: [], // 빈 배열로 시작
+        relatedProducts: [],
       });
 
-      // 관련 상품은 비동기적으로 설정 (테스트에서 처음에는 없어야 함)
       this.relatedProductsTimeout = setTimeout(() => {
         const relatedProducts = allProducts.products.filter((p) => p.productId !== productId).slice(0, 19);
         this.setState({
           relatedProducts,
         });
-      }, 10); // 10ms 지연으로 비동기 로딩 시뮬레이션
+      }, 10);
     } catch (error) {
       console.error("Error fetching product details:", error);
       this.setState({ loading: false });
@@ -279,18 +276,14 @@ class Detail {
       });
     }
 
-    // 브레드크럼 링크 클릭 이벤트
     this.el.querySelectorAll(".breadcrumb-link").forEach((link) => {
       link.addEventListener("click", (e) => {
         e.preventDefault();
 
-        // 클릭된 카테고리의 인덱스 가져오기
         const categoryIndex = parseInt(link.dataset.categoryIndex);
 
-        // URL 파라미터 생성
         const params = new URLSearchParams();
 
-        // 클릭된 카테고리까지의 모든 카테고리를 파라미터에 추가
         const categories = [this.state.product.category1, this.state.product.category2].filter(Boolean);
         for (let i = 0; i < categoryIndex; i++) {
           if (categories[i]) {
@@ -298,14 +291,11 @@ class Detail {
           }
         }
 
-        // 홈 페이지로 이동하면서 카테고리 필터 적용
         const url = `/?${params.toString()}`;
         history.pushState({}, "", url);
 
-        // URL 변경 이벤트 발생
         window.dispatchEvent(new CustomEvent("urlchange"));
 
-        // 라우터 호출하여 홈 페이지로 이동
         router();
       });
     });
@@ -348,24 +338,19 @@ class Detail {
           image: this.state.product.image,
         };
 
-        // 수량만큼 상품을 장바구니에 추가
         for (let i = 0; i < this.state.quantity; i++) {
           cartStore.addItem(productToAdd);
         }
 
-        // Toast 컴포넌트를 사용하여 성공 메시지 표시
         toast.showSuccess("장바구니에 추가되었습니다");
       });
     }
 
-    // 관련 상품 클릭 이벤트
     this.el.querySelectorAll(".related-product-card").forEach((card) => {
       card.addEventListener("click", (e) => {
         e.preventDefault();
         const productId = card.dataset.productId;
         history.pushState({}, "", `/product/${productId}`);
-
-        // URL 변경 이벤트 발생
         window.dispatchEvent(new CustomEvent("urlchange"));
 
         router();
@@ -374,12 +359,10 @@ class Detail {
   }
 
   async init() {
-    // 이전의 타임아웃을 정리하여 테스트 간섭을 방지
     if (this.relatedProductsTimeout) {
       clearTimeout(this.relatedProductsTimeout);
       this.relatedProductsTimeout = null;
     }
-    // 컴포넌트 재사용 시 상태 완전 초기화
     this.resetState();
     await this.fetchProductDetails();
     return this.render();
