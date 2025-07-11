@@ -22,7 +22,9 @@ function getToastStyle(type) {
   }[type];
 }
 
-export function toast(type, message, delay = 3_000) {
+export function toast(type, message, delay = 300_000) {
+  clearToast();
+
   const { style } = getToastStyle(type);
 
   let toastContainer = document.querySelector(TOAST_CONTAINER_SELECTOR);
@@ -76,13 +78,20 @@ export function toast(type, message, delay = 3_000) {
   };
 }
 
-function removeToast(toastId, timer, abortController) {
-  const toastContainer = document.querySelector(TOAST_CONTAINER_SELECTOR);
-  const toast = document.getElementById(toastId);
-  toast?.remove();
+function clearToast() {
+  const $toastContainer = document.querySelector(TOAST_CONTAINER_SELECTOR);
+  if ($toastContainer) {
+    $toastContainer.remove();
+  }
+}
 
-  if (toastContainer?.childElementCount === 0) {
-    toastContainer?.remove();
+function removeToast(toastId, timer, abortController) {
+  const $toastContainer = document.querySelector(TOAST_CONTAINER_SELECTOR);
+  const $toast = document.getElementById(toastId);
+  $toast?.remove();
+
+  if ($toastContainer?.childElementCount === 0) {
+    $toastContainer?.remove();
     abortController?.abort();
   }
 
@@ -90,12 +99,12 @@ function removeToast(toastId, timer, abortController) {
 }
 
 function insertAfter(newElement, targetSelector = "main") {
-  const targetElement = document.querySelector(targetSelector);
-  const parentElement = targetElement.parentNode;
+  const $targetElement = document.querySelector(targetSelector);
+  const $parentElement = $targetElement.parentNode;
 
-  if (targetElement.nextSibling) {
-    parentElement.insertBefore(newElement, targetElement.nextSibling);
+  if ($targetElement.nextSibling) {
+    $parentElement.insertBefore(newElement, $targetElement.nextSibling);
   } else {
-    parentElement.appendChild(newElement);
+    $parentElement.appendChild(newElement);
   }
 }
