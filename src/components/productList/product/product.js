@@ -1,19 +1,7 @@
-export const Product = ({
-  //   brand,
-  //   category1,
-  //   category2,
-  //   category3,
-  //   category4,
-  //   hprice,
-  // link,
-  // maker,
-  // mallName,
-  // productType,
-  image,
-  lprice,
-  productId,
-  title,
-}) => `
+export const Product = (product) => {
+  const { image, title, lprice, productId } = product;
+
+  return `
  <div id="product-card" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
         data-product-id="${productId}">
     <!-- 상품 이미지 -->
@@ -42,3 +30,4 @@ export const Product = ({
     </div>
 </div>   
 `;
+};
