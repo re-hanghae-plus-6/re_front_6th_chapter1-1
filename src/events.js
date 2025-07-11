@@ -1,5 +1,8 @@
 import { updateURLParams, getURLParams } from "./utils/urlParams.js";
 
+// Observer 인스턴스를 모듈 레벨에서 관리 (전역 오염 방지)
+let infiniteScrollObserver = null;
+
 /**
  * 상품 목록 페이지 이벤트 등록
  */
@@ -26,6 +29,36 @@ export const registerProductEvents = (productService) => {
 };
 
 /**
+ * 무한스크롤 이벤트 등록
+ */
+export const registerInfiniteScroll = (productService) => {
+  // 기존 observer 정리
+  if (infiniteScrollObserver) {
+    infiniteScrollObserver.disconnect();
+    infiniteScrollObserver = null;
+  }
+
+  const sentinel = document.querySelector("#scroll-sentinel");
+  if (!sentinel) return;
+
+  const options = {
+    root: null,
+    rootMargin: "200px",
+    threshold: 0.01,
+  };
+
+  infiniteScrollObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        productService.loadMoreProducts();
+      }
+    });
+  }, options);
+
+  infiniteScrollObserver.observe(sentinel);
+};
+
+/**
  * 브라우저 이벤트 등록
  */
 export const registerBrowserEvents = (productService) => {
@@ -40,5 +73,6 @@ export const registerBrowserEvents = (productService) => {
  */
 export const registerAllEvents = (store, productService) => {
   registerProductEvents(productService);
+  registerInfiniteScroll(productService);
   registerBrowserEvents(productService);
 };
