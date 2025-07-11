@@ -14,6 +14,14 @@ export default function page(state) {
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M3 3h2l.4 2M7 13h10l4-8H5.4m2.6 8L6 2H3m4 11v6a1 1 0 001 1h1a1 1 0 001-1v-6M13 13v6a1 1 0 001 1h1a1 1 0 001-1v-6"></path>
                 </svg>
+                ${
+                  state.cartNumber != 0
+                    ? `
+                  <span
+                  class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">${state.cartNumber}</span>`
+                    : ""
+                }
+                
               </button>
             </div>
           </div>
@@ -50,6 +58,13 @@ export default function page(state) {
                   `
                     : ""
                 }
+                ${
+                  state.category2
+                    ? `
+                    <span class="text-xs text-gray-500">&gt;</span><span class="text-xs text-gray-600 cursor-default">${state.category2}</span>  
+                  `
+                    : ""
+                }
                 
               </div>
               <!-- 1depth 카테고리 -->
@@ -59,15 +74,27 @@ export default function page(state) {
                   !state.loading
                     ? `<div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>`
                     : `
-                    ${state.categories
-                      .map(
-                        (cat) => `
+                    ${
+                      !state.category1
+                        ? state.categories
+                            .map(
+                              (cat) => `
                                 <button data-category1="${cat.category}" class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
                                   ${cat.category}
                                 </button>
                               `,
-                      )
-                      .join("")}
+                            )
+                            .join("")
+                        : (state.categories.find((cat) => cat.category === state.category1)?.list || [])
+                            .map(
+                              (cat1) => `
+                                <button data-category1="${state.category1}" data-category2="${cat1.category}" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
+                                  ${cat1.category}
+                                </button>
+                              `,
+                            )
+                            .join("")
+                    }
                   `
                 }
                 
@@ -181,9 +208,9 @@ export default function page(state) {
                 .map((product) => {
                   return `
                   <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
-                   data-product-id="85067212996">
+                   data-product-id=${product.productId}>
                 <!-- 상품 이미지 -->
-                <div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image">
+                <div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image" data-product-id=${product.productId}>
                   <img src=${product.image}
                        alt=${product.title}
                        class="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
@@ -202,7 +229,7 @@ export default function page(state) {
                   </div>
                   <!-- 장바구니 버튼 -->
                   <button class="w-full bg-blue-600 text-white text-sm py-2 px-3 rounded-md
-                         hover:bg-blue-700 transition-colors add-to-cart-btn" data-product-id="85067212996">
+                         hover:bg-blue-700 transition-colors add-to-cart-btn" data-product-id=${product.productId}>
                     장바구니 담기
                   </button>
                 </div>
@@ -242,14 +269,4 @@ ${
       </footer>
     </div>
   `;
-
-  // //장바구니 모달 호출
-  // document.getElementById("cart-icon-btn").addEventListener("click", () => {
-  //   document.body.insertAdjacentHTML("beforeend", modal());
-
-  //   //장바구니 모달 닫기
-  //   document.getElementById("cart-modal-close-btn").addEventListener("click", () => {
-  //     document.querySelector(".cart-modal-overlay").remove();
-  //   });
-  // });
 }
