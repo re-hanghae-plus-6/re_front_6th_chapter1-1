@@ -42,7 +42,7 @@ const getDetailBtnAndPid = (e) => {
   return { detailBtn, pid };
 };
 
-// 수량 입력값 추출
+// 수량 입력값 추출.
 const getQuantity = () => {
   const qtyInput = document.querySelector("#quantity-input");
   return qtyInput ? parseInt(qtyInput.value, 10) || 1 : 1;
