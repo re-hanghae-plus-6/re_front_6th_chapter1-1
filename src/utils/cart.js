@@ -52,8 +52,17 @@ export const cartManager = {
 
   toggleSelected(productId) {
     const cart = this.getCart();
-    const targetItem = cart.find((item) => item.productId === productId);
-    targetItem.selected = !targetItem.selected;
+
+    if (productId) {
+      const targetItem = cart.find((item) => item.productId === productId);
+      targetItem.selected = !targetItem.selected;
+    } else {
+      const isAllSelected = cart.every((item) => item.selected);
+      cart.forEach((item) => {
+        item.selected = !isAllSelected;
+      });
+    }
+
     localStorage.setItem("cart", JSON.stringify(cart));
   },
 
