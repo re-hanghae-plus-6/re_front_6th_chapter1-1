@@ -44,7 +44,11 @@ export class Component {
   }
 
   addEvent(eventType, callback) {
-    this.$el.addEventListener(eventType, callback, this.abortController);
+    try {
+      this.$el.addEventListener(eventType, callback, this.abortController);
+    } catch (error) {
+      console.warn(error);
+    }
   }
 
   /** 오버라이드 super 필수 */
@@ -52,6 +56,7 @@ export class Component {
     this.$el = document.querySelector(this.dataAttribute.selector);
     if (!this.$el) {
       // throw new Error(`${this.dataAttribute.selector} not found`);
+      console.warn(`${this.dataAttribute.selector} not found`);
     }
   }
 
