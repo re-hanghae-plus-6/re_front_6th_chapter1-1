@@ -2,6 +2,12 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   base: process.env.NODE_ENV === "production" ? "/front_6th_chapter1-1/" : "/",
+  preview: {
+    // Preview 모드에서 SPA 라우팅 지원
+    historyApiFallback: {
+      index: "/front_6th_chapter1-1/index.html",
+    },
+  },
   test: {
     globals: true,
     environment: "jsdom",

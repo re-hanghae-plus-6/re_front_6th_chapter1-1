@@ -212,13 +212,20 @@ async function main() {
 
 function setupRouter() {
   // 홈 페이지 라우트
-  router.addRoute("/", () => {
+  const homeHandler = () => {
     // 데이터가 이미 로드된 경우 로딩 상태를 false로 설정
     if (state.products.length > 0) {
       state.loading = false;
     }
     render();
-  });
+  };
+
+  router.addRoute("/", homeHandler);
+
+  // Production 환경에서 base path 라우트도 홈으로 처리
+  if (import.meta.env.PROD) {
+    router.addRoute("/front_6th_chapter1-1/", homeHandler);
+  }
 
   // 검색 페이지 라우트
   router.addRoute("/search=:searchTerm", (params) => {

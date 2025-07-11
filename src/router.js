@@ -15,7 +15,9 @@ export class Router {
   // 절대 경로에서 base path를 제거하여 상대 경로 반환
   getRelativePath(absolutePath) {
     if (this.basePath && absolutePath.startsWith(this.basePath)) {
-      return absolutePath.slice(this.basePath.length) || "/";
+      const relativePath = absolutePath.slice(this.basePath.length);
+      // base path 제거 후 빈 문자열이거나 단순히 '/'인 경우 홈 경로로 처리
+      return relativePath === "" || relativePath === "/" ? "/" : relativePath;
     }
     return absolutePath;
   }
