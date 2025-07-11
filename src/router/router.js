@@ -1,6 +1,8 @@
 import Home from "../pages/Home.js";
 import ProductPage from "../pages/ProductPage.js";
 
+const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
+
 export const Router = () => {
   const routes = { "/": Home, "/product/:id": ProductPage };
 
@@ -23,7 +25,6 @@ export const Router = () => {
           const paramsName = route.match(/:\w+/g)?.map((param) => param.slice(1)) || [];
           const params = {};
 
-          console.log(paramsName);
           paramsName.forEach((param, index) => {
             params[param] = match[index + 1];
           });
@@ -37,9 +38,23 @@ export const Router = () => {
     return { component: routes["/"], params: {} };
   };
 
+  // 경로에서 BASE_PATH를 제거하는 함수
+  const removeBasePath = (path) => {
+    if (BASE_PATH && path.startsWith(BASE_PATH)) {
+      return path.slice(BASE_PATH.length) || "/";
+    }
+    return path;
+  };
+
+  // 경로에 BASE_PATH를 추가하는 함수
+  const addBasePath = (path) => {
+    return BASE_PATH + path;
+  };
+
   // 페이지 이동 함수
   function navigate(path) {
-    window.history.pushState({}, "", path);
+    const fullPath = addBasePath(path);
+    window.history.pushState({}, "", fullPath);
 
     const { component, params } = matchRoute(path);
 
@@ -56,13 +71,14 @@ export const Router = () => {
       componentInstance.setup(params);
     }
   }
-  // 매칭 함수
 
   function init() {
     window.addEventListener("popstate", () => {
-      navigate(window.location.pathname);
+      const currentPath = removeBasePath(window.location.pathname);
+      navigate(currentPath);
     });
-    navigate(window.location.pathname);
+    const currentPath = removeBasePath(window.location.pathname);
+    navigate(currentPath);
   }
 
   return {

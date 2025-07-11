@@ -1,12 +1,7 @@
 import { Router } from "./router/router.js";
 // import routes from "./routes.js";
 
-const enableMocking = () =>
-  import("./mocks/browser.js").then(({ worker }) =>
-    worker.start({
-      onUnhandledRequest: "bypass",
-    }),
-  );
+const enableMocking = () => import("./mocks/browser.js").then(({ worker, workOptions }) => worker.start(workOptions));
 
 function main() {
   const router = Router();
