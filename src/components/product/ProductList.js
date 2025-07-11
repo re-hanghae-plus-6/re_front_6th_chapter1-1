@@ -8,11 +8,38 @@ import ProductItem from "./ProductItem";
 
 const INFINITE_SCROLL_THRESHOLD = 10;
 
+// 스크롤 이벤트 최적화를 위한 throttle 함수
+const throttle = (func, delay) => {
+  let timeoutId;
+  let lastExecTime = 0;
+  return function (...args) {
+    const currentTime = Date.now();
+
+    if (currentTime - lastExecTime > delay) {
+      func.apply(this, args);
+      lastExecTime = currentTime;
+    } else {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(
+        () => {
+          func.apply(this, args);
+          lastExecTime = Date.now();
+        },
+        delay - (currentTime - lastExecTime),
+      );
+    }
+  };
+};
+
 export default class ProductList extends Component {
   setup() {
     this.prevFilterState = null;
 
-    this.handleInfiniteScroll = this.handleInfiniteScroll.bind(this);
+    // throttle 적용된 스크롤 핸들러
+    this.throttledScrollHandler = throttle(this.handleInfiniteScroll.bind(this), 100);
+
+    // 스크롤 위치 복원
+    this.restoreScrollPosition = this.restoreScrollPosition.bind(this);
 
     // ! 이벤트 핸들러를 미리 바인딩해서 보관
     // ! this.handleClick이 항상 같은 함수 객체가 되도록
@@ -67,7 +94,7 @@ export default class ProductList extends Component {
     this.handleAddToCart();
 
     window.addEventListener("queryParamsChange", this.handleQueryParamsChange);
-    window.addEventListener("scroll", this.handleInfiniteScroll);
+    window.addEventListener("scroll", this.throttledScrollHandler);
   }
 
   cleanup() {
@@ -77,7 +104,7 @@ export default class ProductList extends Component {
 
     // 쿼리 파라미터 변경 이벤트 리스너 제거
     window.removeEventListener("queryParamsChange", this.handleQueryParamsChange);
-    window.removeEventListener("scroll", this.handleInfiniteScroll);
+    window.removeEventListener("scroll", this.throttledScrollHandler);
 
     // 상태 구독 해제
     if (this.unsubscribe) this.unsubscribe();
@@ -102,7 +129,35 @@ export default class ProductList extends Component {
     const productCard = e.target.closest(".product-card");
     if (productCard) {
       const productId = productCard.dataset.productId;
+      // 스크롤 위치 저장
+      this.saveScrollPosition();
       navigate(`/product/${productId}`);
+    }
+  }
+
+  // 스크롤 위치 저장
+  saveScrollPosition() {
+    const scrollPosition = {
+      scrollTop: window.scrollY,
+      timestamp: Date.now(),
+    };
+    sessionStorage.setItem("productListScrollPosition", JSON.stringify(scrollPosition));
+  }
+
+  // 스크롤 위치 복원
+  restoreScrollPosition() {
+    const savedPosition = sessionStorage.getItem("productListScrollPosition");
+    if (savedPosition) {
+      try {
+        const { scrollTop, timestamp } = JSON.parse(savedPosition);
+        // 30분 이내의 스크롤 위치만 복원
+        if (Date.now() - timestamp < 30 * 60 * 1000) {
+          window.scrollTo(0, scrollTop);
+        }
+        sessionStorage.removeItem("productListScrollPosition");
+      } catch (error) {
+        console.error("스크롤 위치 복원 실패:", error);
+      }
     }
   }
 
@@ -116,34 +171,47 @@ export default class ProductList extends Component {
 
     if (isMoreProductsLoading) return;
 
-    homeStore.setState({
-      products: {
-        ...homeState.products,
-        isMoreProductsLoading: true,
-      },
-    });
-
-    const params = {
-      page: page + 1,
-      limit,
-      search,
-      category1,
-      category2,
-      sort,
-    };
-
-    const { products, pagination } = await getProducts(params);
-
-    homeStore.setState({
-      products: {
-        isMoreProductsLoading: false,
-        list: [...homeState.products.list, ...products],
-        pagination: {
-          ...pagination,
-          page: page + 1,
+    try {
+      homeStore.setState({
+        products: {
+          ...homeState.products,
+          isMoreProductsLoading: true,
         },
-      },
-    });
+      });
+
+      const params = {
+        page: page + 1,
+        limit,
+        search,
+        category1,
+        category2,
+        sort,
+      };
+
+      const { products, pagination } = await getProducts(params);
+
+      homeStore.setState({
+        products: {
+          ...homeStore.getState().products,
+          isMoreProductsLoading: false,
+          list: [...homeStore.getState().products.list, ...products],
+          pagination: {
+            ...pagination,
+            page: page + 1,
+          },
+          productListMode: PRODUCT_LIST_MODE.INFINITE_SCROLL,
+        },
+      });
+    } catch (error) {
+      console.error("상품 추가 로딩 실패:", error);
+      homeStore.setState({
+        products: {
+          ...homeStore.getState().products,
+          isMoreProductsLoading: false,
+        },
+      });
+      throw error;
+    }
   }
 
   async fetchInitialProducts() {
@@ -182,39 +250,47 @@ export default class ProductList extends Component {
   }
 
   async handleInfiniteScroll() {
-    const { isProductsLoading, pagination } = homeStore.getState().products;
+    const { isProductsLoading, isMoreProductsLoading, pagination } = homeStore.getState().products;
 
-    if (isProductsLoading) return;
+    // 로딩 중이면 중복 호출 방지
+    if (isProductsLoading || isMoreProductsLoading) return;
 
     const scrollTop = window.scrollY;
     const scrollHeight = document.body.scrollHeight;
     const clientHeight = window.innerHeight;
-    console.log("scrollTop", scrollTop);
-    // 이미 로딩 중이면 중복 호출 방지
 
-    // 스크롤이 바닥에 도달했는지 확인
-    if (scrollTop + clientHeight >= scrollHeight - INFINITE_SCROLL_THRESHOLD) {
+    // 스크롤이 바닥에 도달했는지 확인 (더 정확한 계산)
+    const scrolledToBottom = scrollTop + clientHeight >= scrollHeight - INFINITE_SCROLL_THRESHOLD;
+
+    if (scrolledToBottom) {
       // 다음 페이지가 있는지 확인
       const { page, total, limit } = pagination;
       const maxPage = Math.ceil(total / limit);
 
       if (page >= maxPage) return;
 
-      // 다음 페이지로 이동
-      homeStore.setState({
-        products: {
-          ...homeStore.getState().products,
-          pagination: {
-            ...pagination,
-            page: page + 1,
+      try {
+        // 추가 상품 불러오기
+        await this.fetchMoreProducts();
+      } catch (error) {
+        console.error("무한스크롤 로딩 에러:", error);
+        // 에러 발생 시 로딩 상태 해제
+        homeStore.setState({
+          products: {
+            ...homeStore.getState().products,
+            isMoreProductsLoading: false,
           },
-          productListMode: PRODUCT_LIST_MODE.INFINITE_SCROLL,
-        },
-      });
-
-      // 추가 상품 불러오기
-      await this.fetchMoreProducts();
+        });
+      }
     }
+  }
+
+  // 컴포넌트 마운트 시 스크롤 위치 복원
+  mounted() {
+    // 스크롤 위치 복원
+    setTimeout(() => {
+      this.restoreScrollPosition();
+    }, 100);
   }
 
   handleAddToCart() {
@@ -313,12 +389,16 @@ export default class ProductList extends Component {
 
   template() {
     const {
-      products: { list, total, isProductsLoading },
+      products: { list, total, isProductsLoading, isMoreProductsLoading, pagination },
     } = homeStore.getState();
 
     if (isProductsLoading) {
       return this.loadingTemplate();
     }
+
+    const { page, limit } = pagination;
+    const maxPage = Math.ceil(total / limit);
+    const hasMoreProducts = page < maxPage;
 
     return /* HTML */ ` <div>
       <!-- 상품 개수 정보 -->
@@ -327,10 +407,37 @@ export default class ProductList extends Component {
       </div>
       <!-- 상품 그리드 -->
       <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
-        ${isProductsLoading ? this.loadingTemplate() : list.map(ProductItem).join("")}
+        ${list.map(ProductItem).join("")}
       </div>
 
-      <div class="text-center py-4 text-sm text-gray-500">모든 상품을 확인했습니다</div>
+      <!-- 무한스크롤 로딩 상태 -->
+      ${isMoreProductsLoading
+        ? `<div class="grid grid-cols-2 gap-4 mb-6">
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
+            <div class="aspect-square bg-gray-200"></div>
+            <div class="p-3">
+              <div class="h-4 bg-gray-200 rounded mb-2"></div>
+              <div class="h-3 bg-gray-200 rounded w-2/3 mb-2"></div>
+              <div class="h-5 bg-gray-200 rounded w-1/2 mb-3"></div>
+              <div class="h-8 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
+            <div class="aspect-square bg-gray-200"></div>
+            <div class="p-3">
+              <div class="h-4 bg-gray-200 rounded mb-2"></div>
+              <div class="h-3 bg-gray-200 rounded w-2/3 mb-2"></div>
+              <div class="h-5 bg-gray-200 rounded w-1/2 mb-3"></div>
+              <div class="h-8 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+        </div>`
+        : ""}
+
+      <!-- 완료 메시지 -->
+      ${!hasMoreProducts
+        ? `<div class="text-center py-4 text-sm text-gray-500">모든 상품을 확인했습니다</div>`
+        : ""}
     </div>`;
   }
 }
