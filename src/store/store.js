@@ -8,10 +8,11 @@ let state = {
   selectedCategory1: "",
   selectedCategory2: "",
   selectedSort: "price_asc",
-  selectedLimit: "20",
+  selectedLimit: 20,
   currentPage: 1,
-  hasMore: true,
-  cartCount: 0
+  isLoadingMore: false,
+  hasNext: true,
+  cartCount: 0,
 };
 
 const listeners = [];

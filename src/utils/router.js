@@ -1,9 +1,7 @@
-import { render as mainRender } from "../main.js";
-import store from "../store/store.js";
+import { state as State, render as mainRender } from "../main.js";
 
 const triggerRender = () => {
-  const state = store.getState();
-  mainRender(state);
+  mainRender(State);
 };
 
 // 특정 id 를 클릭하면, 아래 처럼 어떤 페이지를 불러올것인지 (2번째 인자에)

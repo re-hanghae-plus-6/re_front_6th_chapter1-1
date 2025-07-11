@@ -2,14 +2,13 @@ import FilterSection from "./components/filter/FilterSection.js";
 import MainLayout from "./components/layout/MainLayout.js";
 import ProductGrid from "./components/product/ProductGrid.js";
 import { getProduct, getProducts, getCategories } from "./api/productApi.js";
-import store from "./store/store.js";
 import router from "./utils/router.js";
 import ProductDetail from "./components/detail/ProductDetail.js";
 import { setupInfiniteScroll } from "./utils/infiniteScroll.js";
 
 // const , let 차이점
 // const -> 값을 변경(재할당) 할 수 없음 , let -> 값을 변경(재할당) 할 수 있음.
-const state = {
+export const state = {
   products: [],
   total: 0,
   loading: false,
@@ -106,13 +105,13 @@ async function main() {
     }, 
     categories
   ]
-   = await Promise.all([getProducts({ sort: state.selectedSort, limit: state.selectedLimit }), getCategories() ]);
+   = await Promise.all([ getProducts({ sort: state.selectedSort, limit: state.selectedLimit }), getCategories() ]);
   
-  store.setState({
-    products,
-    total,
-    categories,
-  });
+  // store.setState({
+  //   products,
+  //   total,
+  //   categories,
+  // });
   state.products = products;
   state.total = total;
   state.loading = false;
@@ -197,10 +196,8 @@ function attachEventListeners() {
   if (sortSelect) {
     sortSelect.onchange = (e) => {
       const newSort = e.target.value;
-      fetchProducts({ sort: newSort, page: state.currentPage });
-      
       state.selectedSort = newSort;
-      
+      fetchProducts({ sort: state.selectedSort, page: state.currentPage });
       router.navigateTo(`/sort=${encodeURIComponent(state.selectedSort)}`);
     };
   }
@@ -276,13 +273,18 @@ const fetchProducts = async ({ limit = 20, sort = "price_asc", search = "", page
       search,
       page,
     });
-    state.products = [...state.products, ...products];
+    if (state.currentPage !== currentPage) {
+      state.products = [...state.products, ...products];
+    } else {
+      state.products = products;
+    }
     state.total = total;
     state.loading = false;
     state.currentPage = currentPage;
     state.isLoadingMore = false;
     state.hasNext = hasNext;
-    
+    state.selectedSort = sort;
+    state.selectedLimit = limit;
     render(state);
   } catch (error) {
     state.loading = false;

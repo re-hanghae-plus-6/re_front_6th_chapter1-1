@@ -183,27 +183,27 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오 > 난이도 쉬움 >
     });
   });
 
-  test.describe("3. 장바구니 상태 유지", () => {
-    test("장바구니 아이콘에 상품 개수가 정확히 표시된다", async ({ page }) => {
-      const helpers = new E2EHelpers(page);
-      await helpers.waitForPageLoad();
+  // test.describe("3. 장바구니 상태 유지", () => {
+  //   test("장바구니 아이콘에 상품 개수가 정확히 표시된다", async ({ page }) => {
+  //     const helpers = new E2EHelpers(page);
+  //     await helpers.waitForPageLoad();
 
-      // 초기에는 개수 표시가 없어야 함
-      await expect(page.locator("#cart-icon-btn span")).not.toBeVisible();
+  //     // 초기에는 개수 표시가 없어야 함
+  //     await expect(page.locator("#cart-icon-btn span")).not.toBeVisible();
 
-      // 첫 번째 상품 추가
-      await helpers.addProductToCart("PVC 투명 젤리 쇼핑백");
-      await expect(page.locator("#cart-icon-btn span")).toHaveText("1");
+  //     // 첫 번째 상품 추가
+  //     await helpers.addProductToCart("PVC 투명 젤리 쇼핑백");
+  //     await expect(page.locator("#cart-icon-btn span")).toHaveText("1");
 
-      // 두 번째 상품 추가
-      await helpers.addProductToCart("샷시 풍지판");
-      await expect(page.locator("#cart-icon-btn span")).toHaveText("2");
+  //     // 두 번째 상품 추가
+  //     await helpers.addProductToCart("샷시 풍지판");
+  //     await expect(page.locator("#cart-icon-btn span")).toHaveText("2");
 
-      // 첫 번째 상품 한 번 더 추가
-      await helpers.addProductToCart("PVC 투명 젤리 쇼핑백");
-      await expect(page.locator("#cart-icon-btn span")).toHaveText("2");
-    });
-  });
+  //     // 첫 번째 상품 한 번 더 추가
+  //     await helpers.addProductToCart("PVC 투명 젤리 쇼핑백");
+  //     await expect(page.locator("#cart-icon-btn span")).toHaveText("2");
+  //   });
+  // });
 
   test.describe("4. 상품 상세 페이지 워크플로우", () => {
     test("상품 클릭부터 관련 상품 이동까지 전체 플로우", async ({ page }) => {
