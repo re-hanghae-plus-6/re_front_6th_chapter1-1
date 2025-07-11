@@ -18,7 +18,7 @@ const routes = [
   {
     path: "*",
     handler: (container) => {
-      container.innerHTML = NotFound(); // NotFound는 함수형 컴포넌트라고 가정
+      container.innerHTML = NotFound();
     },
   },
 ];
