@@ -81,9 +81,11 @@ Toast.init = () => {
 
 Toast.mount = (type) => {
   Toast.init();
-  document.body.insertAdjacentHTML("beforeend", Toast(type));
+  document.querySelector("main").insertAdjacentHTML("beforeend", Toast(type));
   const toastCloseBtn = document.getElementById("toast-close-btn");
-  toastCloseBtn.addEventListener("click", handleDeleteToast);
+  toastCloseBtn.addEventListener("click", (event) => {
+    console.log(event.target, "event");
+  });
 };
 
 export default function Toast(type) {
