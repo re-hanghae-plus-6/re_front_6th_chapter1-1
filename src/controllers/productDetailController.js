@@ -5,7 +5,6 @@ import { getProduct, getProducts } from "../api/productApi.js";
 export class ProductDetailController {
   #productId;
   #eventListeners = [];
-  #quantity = 1;
 
   constructor(productId) {
     this.#productId = productId;
@@ -42,7 +41,6 @@ export class ProductDetailController {
     try {
       const product = await getProduct(this.#productId);
       store.dispatch(actions.productDetailLoaded(product));
-      this.#quantity = 1;
 
       await this.#loadRelatedProducts(product);
     } catch (error) {
@@ -79,11 +77,15 @@ export class ProductDetailController {
       }
 
       if (event.target.closest("#quantity-decrease")) {
+        event.preventDefault();
+        event.stopPropagation();
         this.#handleQuantityDecrease();
         return;
       }
 
       if (event.target.closest("#quantity-increase")) {
+        event.preventDefault();
+        event.stopPropagation();
         this.#handleQuantityIncrease();
         return;
       }
@@ -121,66 +123,64 @@ export class ProductDetailController {
       }
     };
 
+    const inputHandler = (event) => {
+      if (event.target.id === "quantity-input") {
+        this.#handleQuantityInput(event);
+      }
+    };
+
     document.addEventListener("click", clickHandler);
     document.addEventListener("change", changeHandler);
+    document.addEventListener("input", inputHandler);
 
     this.#eventListeners.push(
       { element: document, type: "click", handler: clickHandler },
       { element: document, type: "change", handler: changeHandler },
+      { element: document, type: "input", handler: inputHandler },
     );
   }
 
   #handleQuantityDecrease() {
     const quantityInput = document.getElementById("quantity-input");
-    if (quantityInput) {
-      const currentQuantity = parseInt(quantityInput.value) || 1;
-      const newQuantity = Math.max(1, currentQuantity - 1);
-      quantityInput.value = newQuantity;
-      this.#quantity = newQuantity;
-    }
+    if (!quantityInput) return;
+
+    const currentQuantity = parseInt(quantityInput.value) || 1;
+    quantityInput.value = Math.max(1, currentQuantity - 1);
   }
 
   #handleQuantityIncrease() {
-    const state = store.getState();
-    const { productDetail } = state;
-    const product = productDetail?.product;
-    const maxStock = product?.stock || 999;
-
     const quantityInput = document.getElementById("quantity-input");
-    if (quantityInput) {
-      const currentQuantity = parseInt(quantityInput.value) || 1;
-      const newQuantity = Math.min(maxStock, currentQuantity + 1);
-      quantityInput.value = newQuantity;
-      this.#quantity = newQuantity;
-    }
+    if (!quantityInput) return;
+
+    const currentQuantity = parseInt(quantityInput.value) || 1;
+    const maxStock = parseInt(quantityInput.getAttribute("max")) || 999;
+    quantityInput.value = Math.min(maxStock, currentQuantity + 1);
   }
 
   #handleQuantityInput(event) {
-    const state = store.getState();
-    const { productDetail } = state;
-    const product = productDetail?.product;
-    const maxStock = product?.stock || 999;
+    const maxStock = parseInt(event.target.getAttribute("max")) || 999;
     const inputValue = parseInt(event.target.value) || 1;
-    this.#quantity = Math.max(1, Math.min(maxStock, inputValue));
+    const validatedQuantity = Math.max(1, Math.min(maxStock, inputValue));
 
-    if (event.target.value !== this.#quantity.toString()) {
-      const quantityInput = document.getElementById("quantity-input");
-      if (quantityInput) {
-        quantityInput.value = this.#quantity;
-      }
+    if (event.target.value !== validatedQuantity.toString()) {
+      event.target.value = validatedQuantity;
     }
   }
 
   #handleAddToCart() {
-    const { productDetail } = this.state;
-    const { product } = productDetail;
+    const state = store.getState();
+    const { productDetail } = state;
+    const { product } = productDetail || {};
 
-    if (!product) return;
+    if (!product) {
+      console.warn("상품 정보가 아직 로드되지 않았습니다.");
+      return;
+    }
 
     const quantityInput = document.getElementById("quantity-input");
-    const currentQuantity = quantityInput ? parseInt(quantityInput.value) || 1 : 1;
+    const quantity = quantityInput ? parseInt(quantityInput.value) || 1 : 1;
 
-    store.dispatch(actions.addToCart(product.productId, currentQuantity));
+    store.dispatch(actions.addToCart(product.productId, quantity));
     store.dispatch(actions.showToast("장바구니에 추가되었습니다"));
   }
 
