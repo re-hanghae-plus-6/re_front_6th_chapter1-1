@@ -190,7 +190,7 @@ function handleEsc(e) {
   }
 }
 
-function handleModalClick(e) {
+async function handleModalClick(e) {
   // 모달 내부 클릭은 전역(document) 클릭 핸들러로 버블링되지 않도록 차단한다
   e.stopPropagation();
   // 닫기 버튼
@@ -251,26 +251,8 @@ function handleModalClick(e) {
   // 전체 선택 체크박스 클릭
   if (e.target.closest("#cart-modal-select-all-checkbox")) {
     const allChecked = e.target.checked;
-
-    // 1) 즉시 모든 개별 체크박스 UI 상태를 동기화하여 사용자 체감 지연 및
-    //    Playwright 테스트에서의 element detach 오류를 방지한다.
-    document.querySelectorAll(".cart-item-checkbox").forEach((cb) => {
-      cb.checked = allChecked;
-    });
-
-    // 2) 다음 이벤트 루프로 카트 상태를 동기화하고 모달을 재렌더링한다.
-    //    이렇게 하면 클릭 → 체크 반영 과정이 끝난 뒤 DOM 교체가 일어나
-    //    테스트 러너가 요소를 안정적으로 참조할 수 있다.
-    setTimeout(() => {
-      selectAll(allChecked)
-        .then(() => {
-          updateCartBadge();
-        })
-        .catch((error) => {
-          console.error("Failed to select all items:", error);
-        });
-    }, 0);
-
+    await selectAll(allChecked);
+    updateCartBadge();
     return;
   }
 
@@ -287,27 +269,16 @@ function handleModalClick(e) {
       showToast("선택한 상품들이 삭제되었습니다", "info");
 
       // 모든 상품이 삭제되어도 모달을 유지하고 빈 상태 표시
-      renderModalContent()
-        .then(() => {
-          updateCartBadge();
-        })
-        .catch((error) => {
-          console.error("Failed to render modal content:", error);
-          updateCartBadge();
-        });
+      await renderModalContent();
+      updateCartBadge();
     }
     return;
   }
 
   // 전체 비우기 - 장바구니 비우기 후 모달 자동 닫기로 DOM 안정성 보장
   if (e.target.closest("#cart-modal-clear-cart-btn")) {
-    clearCart()
-      .then(() => {
-        updateCartBadge();
-      })
-      .catch((error) => {
-        console.error("Failed to clear cart:", error);
-      });
+    await clearCart();
+    updateCartBadge();
     return;
   }
 }
