@@ -10,6 +10,12 @@ export class Products extends Component {
   #moreStatusId = "more-status";
   #intersectionObserver = null;
   #producrCardSkeletonRepeatCount = 4;
+  #firstRenderData = {
+    total: null,
+    products: [],
+    limit: null,
+    page: null,
+  };
 
   renderContainer() {
     const { isLoading, hasNext } = productsStore;
@@ -28,6 +34,15 @@ export class Products extends Component {
         <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid"></div>
         ${this.#moreStatus({ isLoading, hasNext })}`;
     } else if (page === 1) {
+      if (
+        this.#firstRenderData.total === total &&
+        this.#firstRenderData.limit === limit &&
+        this.#firstRenderData.page === page &&
+        JSON.stringify(this.#firstRenderData.products) === JSON.stringify(products)
+      ) {
+        return;
+      }
+      this.#firstRenderData = { total, limit, page, products };
       const filledProducts = this.#ensureProductsCount({ total, limit, page, products });
 
       this.#renderFirstPage({ total, currentPageProducts: filledProducts, isLoading, hasNext });
