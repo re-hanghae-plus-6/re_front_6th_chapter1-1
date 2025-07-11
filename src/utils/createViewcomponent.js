@@ -5,6 +5,7 @@ export function renderViewComponent({ parent = document.body, component: propsCo
   return {
     unmount() {
       parent.removeChild(currentView);
+      currentView = null;
       component = null;
     },
     render(props) {
@@ -14,12 +15,12 @@ export function renderViewComponent({ parent = document.body, component: propsCo
       } else {
         const newView = component(props);
         parent.replaceChild(newView, currentView);
-        currentView = newView;
+        this.currentView = newView;
       }
     },
-    updateComponent(component) {
+    updateComponent(newComponent) {
       this.unmount();
-      this.component = component;
+      component = newComponent;
       return this;
     },
   };

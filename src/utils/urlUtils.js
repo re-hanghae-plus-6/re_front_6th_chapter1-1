@@ -19,16 +19,16 @@ export default function navigateTo(to, qs) {
 function onSearchParamChange() {
   const state = createReactiveState();
 
-  let runInit = false;
   (function init() {
-    if (!runInit) {
-      window.addEventListener(actions.UPDATE_URL, () => {
-        state.updateState(location);
-      });
-      window.dispatchEvent(new CustomEvent(actions.UPDATE_URL));
+    window.addEventListener(actions.UPDATE_URL, () => {
+      state.updateState(location);
+    });
 
-      runInit = true;
-    }
+    window.addEventListener("popstate", () => {
+      state.updateState(location);
+    });
+
+    window.dispatchEvent(new CustomEvent(actions.UPDATE_URL));
   })();
 
   return state;

@@ -61,13 +61,14 @@ function main() {
 
   console.log(onChangeUrl.getState(), onChangeUrl.updateState);
   onChangeUrl.onChange(() => {
-    // renderViewComponent({ parent: window.document.body, component: getMatchedRouteComponent() }).render();
+    a.updateComponent(getMatchedRouteComponent()).render();
   });
 
-  renderViewComponent({
+  const a = renderViewComponent({
     parent: window.document.body,
     component: getMatchedRouteComponent(),
-  }).render();
+  });
+  a.render();
 }
 
 // 애플리케이션 시작
