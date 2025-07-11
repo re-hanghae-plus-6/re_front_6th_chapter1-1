@@ -1,6 +1,7 @@
 import { Header } from "../components/Header.js";
 import { Footer } from "../components/Footer.js";
 import { productStore } from "../store/productStore.js";
+import { cartStore, cartSelectors } from "../store/cartStore.js";
 import { Home, loadProducts } from "../pages/Home.js";
 
 // 현재 렌더링 상태 추적
@@ -58,8 +59,6 @@ export function render(pageType = "home", params = {}) {
       </main>
       ${Footer()}
     </div>
-    ${renderCartModal()}
-    ${renderToastContainer()}
   `;
 }
 
@@ -183,50 +182,9 @@ function renderRelatedProducts() {
     .join("");
 }
 
-// 장바구니 모달 렌더링
-function renderCartModal() {
-  return `
-    <div class="cart-modal-overlay fixed inset-0 bg-black bg-opacity-50 z-50 hidden" style="display: none;">
-      <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg w-96 max-h-96 overflow-y-auto">
-        <div class="p-4">
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg font-semibold">장바구니</h2>
-            <button id="cart-modal-close-btn" class="text-gray-500 hover:text-gray-700">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
-            </button>
-          </div>
-          
-          <div class="cart-items">
-            <p class="text-center text-gray-500 py-8">장바구니가 비어있습니다</p>
-          </div>
-          
-          <div class="mt-4 border-t pt-4">
-            <div class="flex justify-between items-center">
-              <span class="text-lg font-semibold">총 금액</span>
-              <span class="text-lg font-bold text-blue-600">0원</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-// 토스트 컨테이너 렌더링
-function renderToastContainer() {
-  return `
-    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2">
-      <!-- 토스트 메시지들이 여기에 동적으로 추가됩니다 -->
-    </div>
-  `;
-}
-
-// 장바구니 개수 가져오기 (임시)
+// 장바구니 개수 가져오기
 function getCartCount() {
-  // TODO: 실제 장바구니 스토어에서 가져오기
-  return 0;
+  return cartSelectors.getTotalCount();
 }
 
 // 상태 구독 시스템 - Store 변경 시 자동 리렌더링
@@ -246,6 +204,16 @@ export function subscribeToStore() {
 
     if (shouldRender && !isInfiniteScrollLoading) {
       // 현재 페이지 다시 렌더링
+      render(currentPageType, currentParams);
+    }
+  });
+
+  // 장바구니 상태 구독
+  cartStore.subscribe((newState, prevState) => {
+    // 장바구니 카운트 변경사항이 있으면 리렌더링
+    const shouldRender = newState.productIds.length !== prevState.productIds.length;
+
+    if (shouldRender) {
       render(currentPageType, currentParams);
     }
   });

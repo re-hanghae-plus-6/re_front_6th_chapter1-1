@@ -1,5 +1,6 @@
 // 전역 이벤트 위임 방식 이벤트 리스너
-import { productActions } from "../store/productStore.js";
+import { productActions, productStore } from "../store/productStore.js";
+import { cartActions } from "../store/cartStore.js";
 import { loadProducts, loadMoreProducts } from "../pages/Home.js";
 
 // 이벤트 위임 설정 - 앱 시작 시 한 번만 호출
@@ -21,39 +22,15 @@ export function setupGlobalEventListeners() {
 function handleGlobalClick(e) {
   const target = e.target;
 
-  // 상품 카드 클릭
-  if (target.closest(".product-card")) {
-    handleProductClick(e);
-    return;
-  }
-
-  // 장바구니 담기 버튼 클릭
+  // 장바구니 담기 버튼 클릭 (상품 카드 클릭보다 먼저 처리)
   if (target.closest(".add-to-cart-btn")) {
     handleAddToCart(e);
     return;
   }
 
-  // 장바구니 아이콘 클릭
-  if (target.closest("#cart-icon-btn")) {
-    handleCartIconClick(e);
-    return;
-  }
-
-  // 수량 증가 버튼 클릭
-  if (target.closest(".quantity-increase-btn")) {
-    handleQuantityIncrease(e);
-    return;
-  }
-
-  // 수량 감소 버튼 클릭
-  if (target.closest(".quantity-decrease-btn")) {
-    handleQuantityDecrease(e);
-    return;
-  }
-
-  // 장바구니 모달 닫기
-  if (target.closest(".cart-modal-overlay") && target === target.closest(".cart-modal-overlay")) {
-    handleCartModalClose(e);
+  // 상품 카드 클릭 (단, 장바구니 버튼이 아닌 경우만)
+  if (target.closest(".product-card") && !target.closest(".add-to-cart-btn")) {
+    handleProductClick(e);
     return;
   }
 
@@ -116,51 +93,21 @@ function handleProductClick(e) {
 }
 
 function handleAddToCart(e) {
+  e.preventDefault(); // 기본 동작 방지
   e.stopPropagation(); // 상품 카드 클릭 이벤트 방지
+  e.stopImmediatePropagation(); // 다른 이벤트 리스너 실행 방지
 
   const productCard = e.target.closest(".product-card");
   if (!productCard) return;
 
-  // const productId = productCard.dataset.productId;
+  // 상품 정보 추출
+  const product = extractProductFromCard(productCard);
 
-  // TODO: 장바구니 추가 로직
-  // cartActions.addToCart(productId);
-}
-
-function handleCartIconClick(e) {
-  e.preventDefault();
-
-  // TODO: 장바구니 모달 열기
-  // cartActions.openCartModal();
-}
-
-function handleQuantityIncrease(e) {
-  e.stopPropagation();
-
-  const cartItem = e.target.closest(".cart-item");
-  if (!cartItem) return;
-
-  // const productId = cartItem.dataset.productId;
-
-  // TODO: 장바구니 수량 증가
-  // cartActions.increaseQuantity(productId);
-}
-
-function handleQuantityDecrease(e) {
-  e.stopPropagation();
-
-  const cartItem = e.target.closest(".cart-item");
-  if (!cartItem) return;
-
-  // const productId = cartItem.dataset.productId;
-
-  // TODO: 장바구니 수량 감소
-  // cartActions.decreaseQuantity(productId);
-}
-
-function handleCartModalClose() {
-  // TODO: 장바구니 모달 닫기
-  // cartActions.closeCartModal();
+  if (product) {
+    // 장바구니에 추가
+    cartActions.addToCart(product);
+    console.log("장바구니에 상품 추가:", product.title);
+  }
 }
 
 function handleSpaNavigation(e) {
@@ -191,117 +138,138 @@ function handleSearchInput(e) {
 // Enter 키로 검색 실행
 function handleSearchSubmit(e) {
   e.preventDefault();
+
   const searchValue = e.target.value.trim();
 
-  // 디바운싱 타이머 클리어
+  // 타이머 클리어 후 즉시 검색
   clearTimeout(handleSearchInput.timer);
-
-  // 즉시 검색 실행
   executeSearch(searchValue);
 }
 
-// 검색 실행 함수
+// 검색 실행
 function executeSearch(searchValue) {
-  // 검색어 필터 업데이트
-  productActions.updateFilters({ search: searchValue });
+  const currentFilters = productStore.getState().filters;
 
-  // URL 쿼리 파라미터 업데이트
-  updateUrlWithFilters({ search: searchValue });
-
-  // 상품 재로드
-  loadProducts();
-}
-
-// URL에 필터 상태 반영 (통합 함수)
-function updateUrlWithFilters(filters) {
-  const currentUrl = new URL(window.location);
-
-  // 각 필터의 기본값 정의
-  const defaults = {
-    search: "",
-    sort: "price_asc",
-    limit: 20,
-    category1: "",
-    category2: "",
-  };
-
-  // 각 필터 처리
-  Object.entries(filters).forEach(([key, value]) => {
-    // 기본값과 다른 경우에만 URL에 추가
-    if (value && value !== "" && value !== defaults[key]) {
-      currentUrl.searchParams.set(key, value);
-    } else {
-      // 기본값이거나 빈 값인 경우 URL에서 제거
-      currentUrl.searchParams.delete(key);
-    }
+  // 검색어 업데이트
+  productActions.updateFilters({
+    ...currentFilters,
+    search: searchValue,
   });
 
-  // URL 업데이트 (히스토리에 추가하지 않고 현재 URL 변경)
-  window.history.replaceState({}, "", currentUrl.toString());
-}
+  // URL 업데이트
+  updateUrlWithFilters({ ...currentFilters, search: searchValue });
 
-function handleSortChange(e) {
-  const sortValue = e.target.value;
-
-  // 필터 업데이트
-  productActions.updateFilters({ sort: sortValue });
-
-  // URL 쿼리 파라미터 업데이트
-  updateUrlWithFilters({ sort: sortValue });
-
-  // 새로운 조건으로 상품 다시 로드
+  // 상품 로드
   loadProducts();
 }
 
-function handleLimitChange(e) {
-  const limitValue = parseInt(e.target.value);
+// URL에 필터 상태 반영
+function updateUrlWithFilters(filters) {
+  const url = new URL(window.location);
+  const params = new URLSearchParams();
 
-  // 필터 업데이트
-  productActions.updateFilters({ limit: limitValue });
-
-  // URL 쿼리 파라미터 업데이트
-  updateUrlWithFilters({ limit: limitValue });
-
-  // 새로운 조건으로 상품 다시 로드
-  loadProducts();
-}
-
-function handleScroll() {
-  // 라우터가 초기화되지 않았으면 무시
-  if (!window.router) {
-    return;
+  // 기본값이 아닌 경우에만 URL에 추가
+  if (filters.search && filters.search !== "") {
+    params.set("search", filters.search);
   }
 
-  // 스크롤 이벤트에서는 preventDefault 사용하지 않음
+  if (filters.sort && filters.sort !== "price_asc") {
+    params.set("sort", filters.sort);
+  }
 
-  // 스크롤 이벤트 throttling
-  if (handleScroll.isThrottled) return;
+  if (filters.limit && filters.limit !== 20) {
+    params.set("limit", filters.limit);
+  }
 
-  handleScroll.isThrottled = true;
-  setTimeout(() => {
-    handleScroll.isThrottled = false;
-  }, 100);
+  // URL 업데이트
+  const newUrl = `${url.pathname}${params.toString() ? `?${params.toString()}` : ""}`;
+  window.history.replaceState(null, "", newUrl);
+}
 
-  // 스크롤 위치 확인
-  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-  const windowHeight = window.innerHeight;
-  const documentHeight = document.documentElement.scrollHeight;
+// 정렬 변경 핸들러
+function handleSortChange(e) {
+  const sortValue = e.target.value;
+  const currentFilters = productStore.getState().filters;
 
-  // 하단에서 100px 전에 도달했을 때 트리거
-  const threshold = 100;
+  // 정렬 업데이트
+  productActions.updateFilters({
+    ...currentFilters,
+    sort: sortValue,
+  });
 
-  if (scrollTop + windowHeight >= documentHeight - threshold) {
-    // 홈 페이지에서만 무한 스크롤 동작하고, 상품 그리드가 존재할 때만
-    if (window.location.pathname === "/" && document.getElementById("products-grid")) {
-      // 이미 무한 스크롤 중이면 중복 실행 방지
-      if (!window.isInfiniteScrolling) {
-        loadMoreProducts();
-      }
+  // URL 업데이트
+  updateUrlWithFilters({ ...currentFilters, sort: sortValue });
+
+  // 상품 로드
+  loadProducts();
+}
+
+// 개수 변경 핸들러
+function handleLimitChange(e) {
+  const limitValue = parseInt(e.target.value);
+  const currentFilters = productStore.getState().filters;
+
+  // 개수 업데이트
+  productActions.updateFilters({
+    ...currentFilters,
+    limit: limitValue,
+  });
+
+  // URL 업데이트
+  updateUrlWithFilters({ ...currentFilters, limit: limitValue });
+
+  // 상품 로드
+  loadProducts();
+}
+
+// 스크롤 이벤트 핸들러
+function handleScroll() {
+  const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+
+  // 스크롤이 바닥에 도달했는지 확인 (100px 여유)
+  if (scrollTop + clientHeight >= scrollHeight - 100) {
+    const state = productStore.getState();
+
+    // 무한 스크롤 조건 확인
+    if (!state.isLoading && !state.error && state.products.length < state.total) {
+      // 무한 스크롤 플래그 설정
+      window.isInfiniteScrolling = true;
+
+      // 더 많은 상품 로드
+      loadMoreProducts().finally(() => {
+        // 무한 스크롤 플래그 해제
+        window.isInfiniteScrolling = false;
+      });
     }
   }
 }
 
-// 전역 이벤트 리스너 제거 (필요시 사용)
+// 상품 카드에서 상품 정보 추출
+function extractProductFromCard(productCard) {
+  try {
+    // 실제 DOM 구조에 맞는 선택자 사용
+    const titleElement = productCard.querySelector("h3");
+    const priceElement = productCard.querySelector(".text-lg.font-bold");
+    const imageElement = productCard.querySelector("img");
+
+    if (!titleElement || !priceElement || !imageElement) {
+      console.warn("상품 정보 요소를 찾을 수 없습니다.");
+      return null;
+    }
+
+    return {
+      id: productCard.dataset.productId,
+      title: titleElement.textContent.trim(),
+      lprice: priceElement.textContent.replace(/[^0-9]/g, ""),
+      image: imageElement.src,
+    };
+  } catch (error) {
+    console.error("상품 정보 추출 중 오류 발생:", error);
+    return null;
+  }
+}
+
+// 이벤트 리스너 제거
 export function removeGlobalEventListeners() {
   document.removeEventListener("click", handleGlobalClick);
   document.removeEventListener("input", handleGlobalInput);

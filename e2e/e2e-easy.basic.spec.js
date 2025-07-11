@@ -199,6 +199,9 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오 > 난이도 쉬움 >
       const helpers = new E2EHelpers(page);
       await helpers.waitForPageLoad();
 
+      // 이벤트 리스너 설정 대기 (main.js에서 500ms 지연)
+      await page.waitForTimeout(1000);
+
       // 초기에는 개수 표시가 없어야 함
       await expect(page.locator("#cart-icon-btn span")).not.toBeVisible();
 
