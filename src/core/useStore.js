@@ -18,6 +18,17 @@ const useStore = (() => {
       total: 0,
       totalPages: 0,
     },
+
+    categories: {},
+
+    // cart: (() => {
+    //   try {
+    //     const cart = window.localStorage.getItem("cart");
+    //     return cart ? JSON.parse(cart).length : 0;
+    //   } catch {
+    //     return 0;
+    //   }
+    // })(),
   };
 
   const listener = [];

@@ -1,4 +1,4 @@
-import { store } from "../main";
+import { render, store } from "../main";
 import Loading from "./Loading";
 
 Search.mount = () => {
@@ -39,6 +39,26 @@ Search.mount = () => {
       page: 1,
     });
   });
+
+  const category1Buttons = document.querySelectorAll(".category1-filter-btn");
+  const categoryDefaultStyle = "category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors";
+
+  category1Buttons.forEach((category1) => {
+    category1.addEventListener("click", () => {
+      store.set("params.category1", category1.getAttribute("data-category1"));
+
+      render.draw("#search-container", Search(store.get("categories"), false));
+
+      document.querySelectorAll(".category2-filter-btn").forEach((category2) => {
+        category2.classList = categoryDefaultStyle + " bg-white border-gray-300 text-gray-700 hover:bg-gray-50";
+
+        category2.addEventListener("click", (event) => {
+          event.target.classList = categoryDefaultStyle + " bg-blue-100 border-blue-300 text-blue-800";
+          store.set("params.category2", category2.getAttribute("data-category2"));
+        });
+      });
+    });
+  });
 };
 
 export default function Search(categories = {}, isLoading = true) {
@@ -71,9 +91,10 @@ export default function Search(categories = {}, isLoading = true) {
           ${
             isLoading
               ? Loading({ type: "category" })
-              : Object.keys(categories)
-                  .map(
-                    (category1) => /* html */ `
+              : !store.get("params")["category1"]
+                ? Object.keys(categories)
+                    .map(
+                      (category1) => /* html */ `
                   <button
                   data-category1="${category1}"
                   class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
@@ -82,8 +103,27 @@ export default function Search(categories = {}, isLoading = true) {
                     ${category1}
                   </button>
                   `,
+                    )
+                    .join("")
+                : ""
+          }
+    
+          ${
+            store.get("params")["category1"] && categories[store.get("params")["category1"]]
+              ? Object.keys(categories[store.get("params")["category1"]])
+                  .map(
+                    (category2) => `
+                      <button
+                        data-category2="${category2}"
+                        class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
+                          bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                      >
+                        ${category2}
+                      </button>
+                    `,
                   )
                   .join("")
+              : ""
           }
   
           

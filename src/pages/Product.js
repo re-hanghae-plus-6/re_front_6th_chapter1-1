@@ -50,7 +50,6 @@ const methods = {
       quantity,
     };
     handleAddCart(product);
-    // Toast.mount("addCart");
   },
 };
 

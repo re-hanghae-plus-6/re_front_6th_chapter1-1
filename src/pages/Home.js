@@ -41,31 +41,6 @@ const fetchCategories = async () => {
   state.isLoading = false;
 };
 
-// const fetchMoreProducts = async (io = null) => {
-//   if (typeof IntersectionObserver === "undefined") return;
-//   const trigger = document.querySelector("#scroll-trigger");
-//   if (!trigger) return;
-//   if (io) io.disconnect();
-
-//   io = new IntersectionObserver(
-//     (entries) => {
-//       if (entries[0].isIntersecting) {
-//         if (state.pagination && state.pagination.hasNext) {
-//           const currentPage = store.get("params")["page"];
-//           store.set("params.page", currentPage + 1);
-//         }
-//       }
-//     },
-//     {
-//       root: null,
-//       rootMargin: "0px",
-//       threshold: 1.0,
-//     },
-//   );
-
-//   io.observe(trigger);
-// };
-
 const fetchMoreProductsScroll = () => {
   const triggerHeight = 100;
   let scrollHandler = null;
@@ -93,19 +68,6 @@ const fetchMoreProductsScroll = () => {
   window.addEventListener("scroll", scrollHandler);
 
   return scrollHandler;
-
-  // window.addEventListener("scroll", () => {
-  //   if (currentScroll + viewHeight > bodyHeight - triggerHeight) {
-  //     state.isLoadingMore = true;
-
-  //     store.set("params", {
-  //       ...store.get("params"),
-  //       page: store.get("params")["page"] + 1,
-  //     });
-
-  //     return;
-  //   }
-  // });
 };
 
 const renderHome = () => {
@@ -131,9 +93,12 @@ Home.mount = async () => {
   await fetchProducts();
   await fetchCategories();
   renderHome();
+
   // fetchMoreProducts(io);
   Search.mount();
   ProductCard.mount();
+  store.set("categories", state.categories);
+
   fetchMoreProductsScroll();
 
   store.watch(async (newValue) => {
@@ -163,7 +128,9 @@ Home.mount = async () => {
 
 export default function Home({ products, pagination, isLoading, categories, isLoadingMore }) {
   return /* html */ `
+  <div id="search-container">
     ${Search(categories, isLoading)}
+    </div>
     <!-- 상품 목록 -->
     <div class="mb-6 min-h-dvh">
       <div >
