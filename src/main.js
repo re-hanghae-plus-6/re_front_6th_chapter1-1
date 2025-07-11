@@ -74,8 +74,10 @@ async function main() {
     });
   } catch (err) {
     console.error("상품을 가져오는 중 에러:", err);
-    document.getElementById("root").innerHTML =
-      `<p class="text-center text-red-500">상품을 불러오는 데 실패했습니다.</p>`;
+    document.getElementById("root").innerHTML = `<div class="text-center text-red-500">
+        상품을 불러오는 데 실패했습니다.
+        <button id="retry-btn" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded">재시도</button>
+      </div>`;
   }
 }
 
@@ -293,11 +295,12 @@ root.addEventListener("keydown", async (e) => {
   // 검색어 상태 업데이트
   currentSearch = keyword;
 
-  // URL 쿼리 파라미터 업데이트 (encodeURIComponent 적용)
-  const encodedKeyword = encodeURIComponent(keyword);
-  // 검색어가 있을 때만 붙이고, 없으면 current만 1로 세팅
-  const query = `?search=${encodedKeyword}`;
-  history.pushState({}, "", window.location.pathname + query);
+  // URL 쿼리 파라미터 업데이트 (encodeURIComponent 적용, 기존 params 유지)
+  const url = new URL(window.location);
+  const searchParams = url.searchParams;
+  searchParams.set("search", encodeURIComponent(keyword));
+  searchParams.set("current", "1");
+  history.pushState({}, "", `${url.pathname}?${searchParams.toString()}`);
   // URL 업데이트 끝
 
   // 로딩 표시
@@ -535,6 +538,23 @@ document.addEventListener("click", (e) => {
     history.pushState({}, "", `${url.pathname}?${params.toString()}`);
 
     return main();
+  }
+  // 재시도 버튼 클릭 시 main() 호출
+  if (e.target.id === "retry-btn") {
+    // URL을 그대로 푸시하고 라우트 핸들러로 재실행하여 초기 상태로 복원
+    history.pushState({}, "", window.location.href);
+    return handleRoute();
+  }
+  // 검색 버튼 클릭 시 검색 수행
+  if (e.target.id === "search-btn") {
+    // 검색어 상태 업데이트 및 URL 세팅 후 라우트 핸들러로 재실행
+    const keyword = document.getElementById("search-input").value;
+    currentSearch = keyword;
+    const url = new URL(window.location);
+    url.searchParams.set("search", encodeURIComponent(keyword));
+    url.searchParams.set("current", "1");
+    history.pushState({}, "", url);
+    return handleRoute();
   }
 });
 

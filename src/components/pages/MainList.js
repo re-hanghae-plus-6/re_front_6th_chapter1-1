@@ -44,6 +44,9 @@ function renderLoading() {
                 ></path>
               </svg>
             </div>
+            <button id="search-btn" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700">
+              검색
+            </button>
           </div>
         </div>
         <!-- 필터 옵션 -->
