@@ -99,6 +99,13 @@ export function removeScrollListener() {
 
 async function main() {
   // 라우터 초기화: mainStatus 객체를 라우터에 전달하여 라우터가 상태를 관리하도록 함
+  if (window.location.search) {
+    let array = window.location.search.replace("?", "").split("&");
+    for (const element of array) {
+      let [k, v] = element.split("=");
+      mainStatus.params[k] = v;
+    }
+  }
   appRouter = createRouter(mainStatus);
 
   // 초기 데이터 로드 및 UI 업데이트

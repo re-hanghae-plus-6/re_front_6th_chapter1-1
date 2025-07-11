@@ -4,6 +4,7 @@ import { showToast } from "../template/toast.js";
 
 export function setupCommonEventListeners(mainStatus, appRouter) {
   const currentMainStatus = appRouter.getCurrentState(); // 항상 최신 mainStatus 가져오기
+  const newUrl = new URL("/?", window.location.origin);
   /** change */
   document.body.addEventListener("change", (e) => {
     const target = e.target;
@@ -16,6 +17,16 @@ export function setupCommonEventListeners(mainStatus, appRouter) {
     } else {
       return;
     }
+
+    for (const key of Object.keys(mainStatus.params)) {
+      let value = mainStatus.params[key];
+      if (value) {
+        newUrl.href += `${key}=${value}&`;
+      }
+    }
+    let href = newUrl.href;
+    newUrl.href = href.substring(0, href.lastIndexOf("&"));
+    window.history.replaceState({}, "", newUrl.toString());
     mainStatus.params.page = 1; // 필터 변경 시 첫 페이지로 초기화
     loadProductsAndUpdateUI(mainStatus, appRouter); // mainStatus와 appRouter 전달
   });
