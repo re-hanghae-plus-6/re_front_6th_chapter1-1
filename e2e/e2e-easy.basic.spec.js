@@ -252,8 +252,8 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오 > 난이도 쉬움 >
 
   test.describe("5. 무한 스크롤 기능", () => {
     test("페이지 하단 스크롤 시 추가 상품이 로드된다", async ({ page }) => {
-      const helpers = new E2EHelpers(page);
-      await helpers.waitForPageLoad();
+      // 상품 카드가 로드될 때까지 대기
+      await page.waitForSelector(".product-card");
 
       // 초기 상품 카드 수 확인
       const initialCards = await page.locator(".product-card").count();

@@ -1,6 +1,8 @@
 import { screen } from "@testing-library/dom";
 import { userEvent } from "@testing-library/user-event";
 import { afterEach, beforeAll, describe, expect, test } from "vitest";
+import stateManager from "../state/index.js";
+import { server } from "./mockServerHandler.js";
 
 const goTo = (path) => {
   window.history.pushState({}, "", path);
@@ -13,10 +15,12 @@ beforeAll(async () => {
 });
 
 afterEach(() => {
-  // 각 테스트 후 상태 초기화
-  goTo("/");
   document.getElementById("root").innerHTML = "";
   localStorage.clear();
+  server.resetHandlers();
+
+  stateManager.productDetail.reset();
+  stateManager.productList.reset();
 });
 
 const 상품_상세페이지_접속 = async () => {
@@ -40,6 +44,9 @@ const 상품_상세페이지_접속 = async () => {
 describe("1. 상품 클릭시 상세 페이지 이동", () => {
   test("상품 목록에서 상품 이미지 클릭 시 상세 페이지로 이동되며, 상품 이미지, 설명, 가격 등의 상세 정보가 표시된다", async () => {
     goTo("/");
+
+    await screen.findByText(/총 \d+개의 상품/i);
+
     await 상품_상세페이지_접속();
 
     // 상품 상세 페이지가 로드되었는지 확인
@@ -62,6 +69,10 @@ describe("1. 상품 클릭시 상세 페이지 이동", () => {
 
 describe("2. 상품 상세 - 장바구니 담기", () => {
   test("상품 상세 페이지에서 해당 상품을 장바구니에 추가할 수 있다", async () => {
+    goTo("/");
+
+    await screen.findByText(/총 \d+개의 상품/i);
+
     await 상품_상세페이지_접속();
 
     // 장바구니 담기 버튼 찾기
@@ -74,6 +85,10 @@ describe("2. 상품 상세 - 장바구니 담기", () => {
   });
 
   test("페이지 내에서 수량을 입력 혹은 선택하여 장바구니에 추가할 수 있다", async () => {
+    goTo("/");
+
+    await screen.findByText(/총 \d+개의 상품/i);
+
     await 상품_상세페이지_접속();
 
     document.querySelector("#quantity-increase").click();
@@ -96,6 +111,10 @@ describe("2. 상품 상세 - 장바구니 담기", () => {
 
 describe("3. 관련 상품 기능", () => {
   test("상품 상세 페이지에서 현재 상품을 제외한 관련 상품들이 표시되고, 관련 상품 클릭 시 해당 상품의 상세 페이지로 이동한다", async () => {
+    goTo("/");
+
+    await screen.findByText(/총 \d+개의 상품/i);
+
     await 상품_상세페이지_접속();
 
     // 관련 상품 섹션이 있는지 확인
