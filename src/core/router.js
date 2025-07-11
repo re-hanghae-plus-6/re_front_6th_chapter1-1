@@ -35,9 +35,10 @@ export class Router {
 
   navigate(path) {
     if (this.currentPath === path) return;
+    const cleanPath = path.split("?")[0];
+    window.history.pushState(null, "", cleanPath);
+    this.currentPath = cleanPath;
 
-    window.history.pushState(null, "", path);
-    this.currentPath = path;
     this.handleRoute();
   }
 
@@ -50,10 +51,10 @@ export class Router {
       return;
     }
 
-    const productMatch = path.match(/^\/products\/(.+)$/);
-    if (productMatch && this.routes.has("/products/:id")) {
+    const productMatch = path.match(/^\/product\/(.+)$/);
+    if (productMatch && this.routes.has("/product/:id")) {
       const productId = productMatch[1];
-      await this.routes.get("/products/:id")(productId);
+      await this.routes.get("/product/:id")(productId);
       return;
     }
 

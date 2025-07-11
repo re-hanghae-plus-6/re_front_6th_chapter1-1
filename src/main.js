@@ -232,7 +232,9 @@ async function loadNextPage() {
       category2: appState.filters.category2,
     };
 
-    updateUrl(params);
+    if (appState.currentPage === "home") {
+      updateUrl(params);
+    }
 
     const data = await getProducts(params);
 
@@ -300,7 +302,6 @@ function initRouter() {
       productLoading: false,
       relatedProducts: [],
       filters: urlFilters,
-      loading: true,
     });
 
     await loadInitialData();
@@ -308,14 +309,19 @@ function initRouter() {
     initEventListeners();
   });
 
-  router.addRoute("/products/:id", async (productId) => {
-    setAppState({ currentPage: "product-detail" });
+  router.addRoute("/product/:id", async (productId) => {
+    if (infiniteScroll) {
+      infiniteScroll.destroy();
+      infiniteScroll = null;
+    }
+
+    setAppState({ currentPage: "product-detail", category1: "", category2: "" });
     await loadProductDetail(productId);
     initEventListeners();
   });
 
   router.addRoute("*", () => {
-    setAppState({ currentPage: "404" });
+    setAppState({ currentPage: "404", category1: "", category2: "" });
   });
 }
 
@@ -396,11 +402,9 @@ async function handleRootClick(event) {
 
     if (category1) {
       await applyFilter({ category1, category2: "", search: "" });
-      router.navigate(`/?category1=${category1}`);
     }
     if (category2) {
       await applyFilter({ category1: appState.currentProduct.category1, category2, search: "" });
-      router.navigate(`/?category1=${appState.currentProduct.category1}&category2=${category2}`);
     }
 
     return;
@@ -416,7 +420,7 @@ async function handleRootClick(event) {
     const productCard = target.closest(".product-card");
     const productId = productCard?.dataset.productId || target.dataset.productId;
     if (productId) {
-      router.navigate(`/products/${productId}`);
+      router.navigate(`/product/${productId}`);
     }
     return;
   }
@@ -425,7 +429,7 @@ async function handleRootClick(event) {
     const relatedCard = target.closest(".related-product-card");
     const productId = relatedCard.dataset.productId;
     if (productId) {
-      router.navigate(`/products/${productId}`);
+      router.navigate(`/product/${productId}`);
     }
     return;
   }
@@ -460,23 +464,19 @@ async function handleRootClick(event) {
   if (event.target.dataset.category1) {
     const category1 = event.target.dataset.category1;
     await applyFilter({ category1, category2: "" });
-    router.navigate(`/?category1=${category1}`);
   }
 
   if (event.target.dataset.category2) {
     const category2 = event.target.dataset.category2;
     await applyFilter({ category2 });
-    router.navigate(`/?category2=${category2}`);
   }
 
   if (event.target.dataset.breadcrumb === "reset") {
     await applyFilter({ category1: "", category2: "" });
-    router.navigate("/");
   }
 
   if (event.target.dataset.breadcrumb === "category1") {
     await applyFilter({ category2: "" });
-    router.navigate("/");
   }
 
   if (target.closest(".go-to-product-list")) {
