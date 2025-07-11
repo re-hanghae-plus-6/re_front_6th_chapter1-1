@@ -16,7 +16,6 @@ class Detail {
     this.relatedProductsTimeout = null;
   }
 
-  // 컴포넌트 재사용 시 상태 초기화
   resetState() {
     this.state = {
       product: null,
@@ -31,9 +30,7 @@ class Detail {
 
   async fetchProductDetails() {
     const { productId } = this.state;
-    console.log("Fetching product details for productId:", productId);
     if (!productId) {
-      console.error("Product ID is missing.");
       this.setState({ loading: false });
       return;
     }
@@ -68,7 +65,7 @@ class Detail {
         });
       }, 10);
     } catch (error) {
-      console.error("Error fetching product details:", error);
+      console.error("상품 상세 정보를 가져오는 중 오류가 발생했습니다.", error);
       this.setState({ loading: false });
     }
   }
@@ -359,8 +356,6 @@ class Detail {
   }
 
   async init() {
-    console.log("🔧 Detail init 시작 - 현재 경로:", window.location.pathname);
-
     if (this.relatedProductsTimeout) {
       clearTimeout(this.relatedProductsTimeout);
       this.relatedProductsTimeout = null;
@@ -373,7 +368,6 @@ class Detail {
 
     await this.fetchProductDetails();
 
-    console.log("✅ Detail init 완료");
     return this.render();
   }
 

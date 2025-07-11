@@ -5,24 +5,17 @@ class Cart {
   constructor() {
     this.el = null;
 
-    // cartStore 구독 - 상태 변화를 감지하여 동기화
+    // 스토어 상태 변화 감지
     cartStore.subscribe((storeState) => {
-      console.log("Cart component received store state:", storeState);
-
       const prevIsOpen = this.state?.isOpen || false;
       const currentIsOpen = storeState.isOpen || false;
 
-      // this.state를 storeState로 동기화
       this.state = { ...storeState };
 
-      console.log("Cart component state updated:", this.state);
-
-      // 모달 열기/닫기 상태 변화 처리
       if (currentIsOpen && !prevIsOpen) {
         // 모달 열기
-        console.log("Opening cart modal");
-        this.hide(); // 기존 모달 제거
-        this.render(); // 새 모달 생성
+        this.hide();
+        this.render();
         const root = document.getElementById("root");
         if (root) {
           root.appendChild(this.el);
@@ -32,9 +25,7 @@ class Cart {
         this.show();
       } else if (!currentIsOpen && prevIsOpen) {
         // 모달 닫기
-        console.log("Closing cart modal");
         if (this.el) {
-          // DOM에서 완전히 제거
           if (this.el.parentNode) {
             this.el.parentNode.removeChild(this.el);
           }
@@ -42,28 +33,27 @@ class Cart {
           this.el = null;
         }
       } else if (currentIsOpen && prevIsOpen && this.el) {
-        // 모달이 이미 열려있을 때는 내용만 업데이트
-        console.log("Updating cart modal content");
+        // 내용만 업데이트
         this.update();
-      } else if (!currentIsOpen && !prevIsOpen) {
-        // 모달이 닫혀있을 때는 상태만 업데이트 (렌더링하지 않음)
-        console.log("Cart modal closed, updating state only");
       }
     });
   }
 
+  // 장바구니 내용 업데이트
   update() {
-    if (!this.el) return;
+    if (!this.el) {
+      return;
+    }
 
-    // 헤더의 아이템 개수 업데이트
+    // 헤더에 아이템 개수 표시
     const headerTitle = this.el.querySelector("h2");
     if (headerTitle) {
       const items = this.state?.items || [];
       const itemCount = items.length;
+
       const itemCountText =
         itemCount > 0 ? `<span class="text-sm font-normal text-gray-600 ml-1">(${itemCount})</span>` : "";
 
-      // SVG 아이콘과 "장바구니" 텍스트는 유지하고 아이템 개수만 업데이트
       headerTitle.innerHTML = `
         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m2.6 8L6 2H3m4 11v6a1 1 0 001 1h1a1 1 0 001-1v-6M13 13v6a1 1 0 001 1h1a1 1 0 001-1v-6"></path>
@@ -73,19 +63,19 @@ class Cart {
       `;
     }
 
+    // 내용 새로고침
     const contentContainer = this.el.querySelector(".cart-content");
     if (contentContainer) {
       contentContainer.innerHTML = this.templateContent();
-      // 이벤트 리스너를 다시 바인딩
       this.addEvent();
     }
   }
 
+  // 모달 보이기
   show() {
     if (this.el) {
       this.el.style.display = "block";
     } else {
-      // this.el이 null이면 새로 렌더링
       this.render();
       const root = document.getElementById("root");
       if (root) {
@@ -95,34 +85,31 @@ class Cart {
     }
   }
 
+  // 모달 숨기기
   hide() {
     if (this.el) {
-      // DOM에서 완전히 제거
       if (this.el.parentNode) {
         this.el.parentNode.removeChild(this.el);
       }
-      // display를 none으로 설정하여 숨김
       this.el.style.display = "none";
       this.el = null;
     }
-    // 추가로 DOM에서 cart-modal-overlay가 남아있다면 제거
     const existingOverlay = document.querySelector(".cart-modal-overlay");
     if (existingOverlay && existingOverlay.parentNode) {
       existingOverlay.parentNode.removeChild(existingOverlay);
     }
-    // 이벤트 리스너 정리
     this.removeEventListeners();
   }
 
+  // 이벤트 리스너 정리
   removeEventListeners() {
-    // ESC 키 이벤트 리스너 정리
     if (this.keydownHandler) {
       document.removeEventListener("keydown", this.keydownHandler);
       this.keydownHandler = null;
     }
   }
 
-  // 장바구니 아이템 템플릿
+  // 장바구니 아이템
   templateCartItem(item) {
     return `
       <div class="flex items-center py-3 border-b border-gray-100 cart-item" data-product-id="${item.id}">
@@ -162,7 +149,7 @@ class Cart {
     `;
   }
 
-  // 장바구니 비어있을 때 템플릿
+  // 장바구니 비어있을 때
   templateEmpty() {
     return `
       <div class="flex-1 flex items-center justify-center p-8">
@@ -179,13 +166,15 @@ class Cart {
     `;
   }
 
-  // 장바구니 콘텐츠 부분 템플릿
+  // 장바구니 메인
   templateContent() {
     const items = this.state?.items || [];
+
     if (items.length === 0) {
       return this.templateEmpty();
     }
 
+    // 금액 계산
     const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const selectedItems = items.filter((item) => item.isSelected);
     const selectedItemCount = selectedItems.length;
@@ -245,13 +234,14 @@ class Cart {
       </div>
     `;
   }
+  // 헤더 아이템 개수
   itemCountText() {
     const items = this.state?.items || [];
     const itemCount = items.length;
-    console.log("Cart itemCount", itemCount);
     return itemCount > 0 ? `<span class="text-sm font-normal text-gray-600 ml-1">(${itemCount})</span>` : "";
   }
-  // 전체 모달의 기본 틀
+
+  // 장바구니 모달 전체
   templateShell() {
     return `
       <div class="fixed inset-0 z-50 overflow-y-auto cart-modal" style="display: none;">
@@ -285,10 +275,11 @@ class Cart {
     `;
   }
 
+  // 이벤트 리스너 등록
   addEvent() {
-    // 기존 이벤트 리스너 제거 (중복 방지)
     this.removeEventListeners();
 
+    // 모달 닫기
     this.el.querySelector("#cart-modal-close-btn")?.addEventListener("click", () => cartStore.close());
     this.el.querySelector(".cart-modal-overlay")?.addEventListener("click", (e) => {
       if (e.target === e.currentTarget) {
@@ -296,7 +287,7 @@ class Cart {
       }
     });
 
-    // ESC 키 이벤트 리스너 추가
+    // ESC 키
     const handleKeyDown = (e) => {
       if (e.key === "Escape") {
         cartStore.close();
@@ -304,9 +295,9 @@ class Cart {
     };
     document.addEventListener("keydown", handleKeyDown);
 
-    // 이벤트 리스너 정리를 위해 저장
     this.keydownHandler = handleKeyDown;
 
+    // 삭제 버튼
     this.el.querySelectorAll(".cart-item-remove-btn").forEach((btn) => {
       btn.addEventListener("click", (e) => {
         const productId = e.currentTarget.dataset.productId;
@@ -314,6 +305,7 @@ class Cart {
       });
     });
 
+    // 수량 조절
     this.el.querySelectorAll(".quantity-increase-btn").forEach((btn) => {
       btn.addEventListener("click", (e) => {
         const productId = e.currentTarget.dataset.productId;
@@ -328,7 +320,7 @@ class Cart {
       });
     });
 
-    // 새로 추가된 이벤트 리스너
+    // 체크박스
     this.el.querySelectorAll(".cart-item-checkbox").forEach((checkbox) => {
       checkbox.addEventListener("change", (e) => {
         const productId = e.currentTarget.dataset.productId;
@@ -336,21 +328,25 @@ class Cart {
       });
     });
 
+    // 전체 선택
     this.el.querySelector("#cart-modal-select-all-checkbox")?.addEventListener("change", (e) => {
       cartStore.toggleAllSelection(e.currentTarget.checked);
     });
 
+    // 선택 삭제
     this.el.querySelector("#cart-modal-remove-selected-btn")?.addEventListener("click", () => {
       cartStore.removeSelectedItems();
       toast.showInfo("선택된 상품들이 삭제되었습니다");
     });
 
+    // 전체 비우기
     this.el.querySelector("#cart-modal-clear-cart-btn")?.addEventListener("click", () => {
       cartStore.clearCart();
       toast.showInfo("장바구니가 비워졌습니다");
     });
   }
 
+  // DOM 생성
   render() {
     const template = document.createElement("template");
     template.innerHTML = this.templateShell().trim();

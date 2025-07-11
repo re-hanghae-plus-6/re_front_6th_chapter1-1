@@ -53,7 +53,6 @@ class Home {
     };
   }
 
-  // 스크롤 이벤트 핸들러
   handleScroll() {
     if (this.state.loadingMore || this.state.loading) return;
 
@@ -67,7 +66,6 @@ class Home {
     }
   }
 
-  // 추가 상품 로딩
   async loadMoreProducts() {
     if (this.state.loadingMore) return;
 

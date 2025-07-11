@@ -46,14 +46,10 @@ export const app = () => {
 };
 
 function main() {
-  console.log("🚀 main 함수 시작");
   app(); // 초기 실행
 
   let popstateTimeout = null;
   window.addEventListener("popstate", () => {
-    console.log("📱 popstate 이벤트 발생");
-
-    // 중복 실행 방지
     if (popstateTimeout) {
       clearTimeout(popstateTimeout);
     }
@@ -63,8 +59,6 @@ function main() {
       popstateTimeout = null;
     }, 10);
   });
-
-  console.log("✅ main 함수 완료");
 }
 
 // 애플리케이션 시작
