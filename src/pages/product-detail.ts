@@ -16,6 +16,8 @@ interface Product {
   rating?: number;
   reviewCount?: number;
   stock?: number;
+  category1?: string;
+  category2?: string;
 }
 
 interface State {
@@ -116,7 +118,13 @@ export const detailPage: PageModule = {
         const product = await getProduct(productId);
         setState({ product, loading: false });
 
-        const list = await getProducts({ limit: 20 });
+        const list = await getProducts({
+          limit: 20,
+          category1: product.category1 ?? "",
+          category2: product.category2 ?? "",
+          sort: "price_asc",
+        });
+
         const relatedProducts = (list.products as Product[])
           .filter((p) => p.productId !== productId)
           .slice(0, 19)
