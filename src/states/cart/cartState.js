@@ -1,14 +1,3 @@
-// [
-//   {
-//     productId: 12345,
-//     title: "상품 A",
-//     image: "/img/a.jpg",
-//     lprice: 12000,
-//     quantity: 2
-//     stock: 12
-//   }
-// ]
-
 const CART_KEY = "cartItems";
 
 const getCardStorage = () => {
