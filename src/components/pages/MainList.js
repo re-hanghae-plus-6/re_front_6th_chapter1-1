@@ -3,8 +3,14 @@ import { Cart } from "../Cart";
 import { ItemCard } from "../ItemCard";
 import { Category } from "./../Category";
 
-export const MainList = ({ loading = false, products = [], limit = 20, sort = "price_asc", search = "" } = {}) =>
-  loading ? renderLoading() : renderItems(products, limit, sort, search);
+export const MainList = ({
+  loading = false,
+  products = [],
+  total = 0,
+  limit = 20,
+  sort = "price_asc",
+  search = "",
+} = {}) => (loading ? renderLoading() : renderItems(products, total, limit, sort, search));
 
 function renderLoading() {
   return `
@@ -145,7 +151,7 @@ function renderLoading() {
   </div>`;
 }
 
-function renderItems(products, limit, sort, search) {
+function renderItems(products, total, limit, sort, search) {
   return `
   <div class="min-h-screen bg-gray-50">
     ${MainHeader()}
@@ -154,7 +160,8 @@ function renderItems(products, limit, sort, search) {
       <!-- 상품 목록 -->
       <div class="mb-6">
         <!-- 상품 개수 정보 -->
-        <div class="mb-4 text-sm text-gray-600">총 <span class="font-medium text-gray-900">${products.length}개</span>의 상품</div>
+        <div class="mb-4 text-sm text-gray-600">
+          총 <span class="font-medium text-gray-900">${total}개</span>의 상품</div>
         ${ItemGrid(products)}
       </div>
     </main>
@@ -182,11 +189,8 @@ function MainHeader() {
                 stroke-width="2"
                 d="M3 3h2l.4 2M7 13h10l4-8H5.4m2.6 8L6 2H3m4 11v6a1 1 0 001 1h1a1 1 0 001-1v-6M13 13v6a1 1 0 001 1h1a1 1 0 001-1v-6"
               ></path>
+              ${cart.length > 0 ? `<span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center cart-count-badge">${cart.length}</span>` : ""}
             </svg>
-            <span
-              class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"
-              >${cart.length}</span
-            >
           </button>
         </div>
       </div>

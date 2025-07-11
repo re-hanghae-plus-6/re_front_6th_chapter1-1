@@ -3,17 +3,19 @@ import { cartManager } from "../utils/cart";
 export const Cart = (items = []) => {
   // dimmed + Cart 모달 구조
   return `
-    <div class="cart-modal-overlay"></div>
-    <div class="modal-content">
-      <div
-        class="relative bg-white rounded-t-lg sm:rounded-lg shadow-xl w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-hidden"
-        style="pointer-events: auto;">
-        <!-- 헤더 -->
-        ${CartHeader(items)}
-        <!-- 컨텐츠 -->
-        <div class="flex flex-col max-h-[calc(90vh-120px)]">${CartContents(items)}</div>
-        <!-- 하단 액션 -->
-        ${items.length > 0 ? CartFooter() : ""}
+    <div class="cart-modal">
+      <div class="cart-modal-overlay"></div>
+      <div class="modal-content">
+        <div
+          class="relative bg-white rounded-t-lg sm:rounded-lg shadow-xl w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-hidden"
+          style="pointer-events: auto;">
+          <!-- 헤더 -->
+          ${CartHeader(items)}
+          <!-- 컨텐츠 -->
+          <div class="flex flex-col max-h-[calc(90vh-120px)]">${CartContents(items)}</div>
+          <!-- 하단 액션 -->
+          ${items.length > 0 ? CartFooter() : ""}
+        </div>
       </div>
     </div>
   `;

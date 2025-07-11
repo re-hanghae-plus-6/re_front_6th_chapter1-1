@@ -1,25 +1,26 @@
+const storage = window.localStorage;
+
 export const cartManager = {
   getCart() {
-    return JSON.parse(localStorage.getItem("cart") || "[]");
+    return JSON.parse(storage.getItem("cart") || "[]");
   },
 
   addToCart(product) {
     const cart = this.getCart();
     const existingItem = cart.find((item) => item.productId === product.productId);
-
     if (existingItem) {
       existingItem.quantity += 1;
     } else {
       cart.push({ ...product, quantity: 1, selected: false });
     }
 
-    localStorage.setItem("cart", JSON.stringify(cart));
+    storage.setItem("cart", JSON.stringify(cart));
     this.updateCartCount();
   },
 
   removeFromCart(productId) {
     const cart = this.getCart().filter((item) => item.productId !== productId);
-    localStorage.setItem("cart", JSON.stringify(cart));
+    storage.setItem("cart", JSON.stringify(cart));
     this.updateCartCount();
   },
 
@@ -28,7 +29,7 @@ export const cartManager = {
     const existingItem = cart.find((item) => item.productId === productId);
 
     existingItem.quantity += 1;
-    localStorage.setItem("cart", JSON.stringify(cart));
+    storage.setItem("cart", JSON.stringify(cart));
     this.updateCartCount();
   },
 
@@ -40,7 +41,7 @@ export const cartManager = {
       this.removeFromCart(productId);
     } else {
       existingItem.quantity -= 1;
-      localStorage.setItem("cart", JSON.stringify(cart));
+      storage.setItem("cart", JSON.stringify(cart));
       this.updateCartCount();
     }
   },
@@ -63,27 +64,38 @@ export const cartManager = {
       });
     }
 
-    localStorage.setItem("cart", JSON.stringify(cart));
+    storage.setItem("cart", JSON.stringify(cart));
   },
 
   removeSelectedItems() {
     const cart = this.getCart();
     const updatedCart = cart.filter((item) => !item.selected);
-    localStorage.setItem("cart", JSON.stringify(updatedCart));
+    storage.setItem("cart", JSON.stringify(updatedCart));
     this.updateCartCount();
   },
 
   resetCart() {
-    localStorage.removeItem("cart");
+    storage.removeItem("cart");
     this.updateCartCount();
   },
 
   updateCartCount() {
     const cart = this.getCart();
-    // 장바구니 아이콘의 숫자 업데이트
-    const cartBadge = document.querySelector("#cart-icon-btn span");
-    if (cartBadge) {
-      cartBadge.textContent = cart.length;
+    const cartButton = document.querySelector("#cart-icon-btn");
+    let badge = cartButton.querySelector(".cart-count-badge");
+
+    if (cart.length > 0 && cartButton) {
+      if (!badge) {
+        badge = document.createElement("span");
+        badge.className =
+          "absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center cart-count-badge";
+        cartButton.appendChild(badge);
+      }
+      badge.textContent = cart.length;
+    }
+
+    if (cart.length === 0) {
+      badge.remove();
     }
   },
 };

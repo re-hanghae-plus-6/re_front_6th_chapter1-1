@@ -12,6 +12,7 @@ const enableMocking = () =>
   );
 
 // infinite scroll 상태 관리
+let totalCount = 0;
 let currentPage = 1;
 let currentLimit = 20;
 let currentSort = "price_asc";
@@ -28,11 +29,13 @@ async function main() {
     currentPage = data.pagination.page;
     hasNext = data.pagination.hasNext;
     allProducts = data.products;
+    totalCount = data.pagination.total;
     // 3) 실제 UI 렌더
 
     document.getElementById("root").innerHTML = MainList({
       loading: false,
       products: allProducts,
+      total: totalCount,
       limit: currentLimit,
       sort: currentSort,
     });
@@ -46,9 +49,8 @@ async function main() {
 // 애플리케이션 시작
 if (import.meta.env.MODE !== "test") {
   enableMocking().then(main);
-} else {
-  main();
 }
+// else {main()}을 없애는게 테스트를 통과하는데 매우매우 중요
 
 // limit, sort change 이벤트 위임
 const root = document.getElementById("root");
@@ -62,7 +64,14 @@ root.addEventListener("change", async (e) => {
     currentPage = data.pagination.page;
     hasNext = data.pagination.hasNext;
     allProducts = data.products;
-    root.innerHTML = MainList({ loading: false, products: allProducts, limit: currentLimit, sort: currentSort });
+    totalCount = data.pagination.total;
+    root.innerHTML = MainList({
+      loading: false,
+      products: allProducts,
+      total: totalCount,
+      limit: currentLimit,
+      sort: currentSort,
+    });
   }
 });
 
@@ -78,10 +87,12 @@ root.addEventListener("keydown", async (e) => {
   currentPage = data.pagination.page;
   hasNext = data.pagination.hasNext;
   allProducts = data.products;
+  totalCount = data.pagination.total;
   // 결과 렌더
   root.innerHTML = MainList({
     loading: false,
     products: allProducts,
+    total: totalCount,
     limit: currentLimit,
     sort: currentSort,
     search: keyword,
@@ -103,12 +114,19 @@ window.addEventListener("scroll", async () => {
     hasNext = data.pagination.hasNext;
     // 기존 배열에 추가 후 전체 UI 갱신
     allProducts = allProducts.concat(data.products);
-    root.innerHTML = MainList({ loading: false, products: allProducts, limit: currentLimit, sort: currentSort });
+    totalCount = data.pagination.total;
+    root.innerHTML = MainList({
+      loading: false,
+      products: allProducts,
+      total: totalCount,
+      limit: currentLimit,
+      sort: currentSort,
+    });
   }
 });
 
 // 카트 관련 이벤트 위임
-root.addEventListener("click", (e) => {
+document.addEventListener("click", (e) => {
   // 장바구니 담기 버튼 클릭
   if (e.target.classList.contains("add-to-cart-btn")) {
     const productId = e.target.dataset.productId;
@@ -154,26 +172,49 @@ function setupModalEvents(modalRoot) {
   const modalInner = modalRoot.querySelector('[style*="pointer-events: auto"]');
   if (modalInner) {
     modalInner.addEventListener("click", (e) => {
-      // 장바구나 항목 수량 증가 버튼 클릭
+      // 수량 증가: 전체 재렌더링 대신 input, 가격, 총액만 업데이트
       if (e.target.classList.contains("quantity-increase-btn") || e.target.closest(".quantity-increase-btn")) {
-        const button = e.target.classList.contains("quantity-increase-btn")
-          ? e.target
-          : e.target.closest(".quantity-increase-btn");
-        const productId = button.dataset.productId;
-        cartManager.increaseQuantity(productId);
-        modalRoot.innerHTML = Cart(cartManager.getCart());
-        setupModalEvents(modalRoot);
+        const btn = e.target.closest(".quantity-increase-btn");
+        const pid = btn.dataset.productId;
+        cartManager.increaseQuantity(pid);
+        // input.value 업데이트
+        const input = modalRoot.querySelector(`.quantity-input[data-product-id="${pid}"]`);
+        const item = cartManager.getCart().find((i) => i.productId === pid);
+        input.value = item.quantity;
+        // 개별 아이템 총액 업데이트
+        const priceEl = modalRoot.querySelector(`.cart-item[data-product-id="${pid}"] p.text-sm.font-medium`);
+        priceEl.textContent = `${item.lprice * item.quantity}원`;
+        // footer 총 금액 업데이트
+        const totalEl = modalRoot.querySelector(".sticky.bottom-0 .text-xl.font-bold.text-blue-600");
+        const total = cartManager.getCart().reduce((sum, i) => sum + i.lprice * i.quantity, 0);
+        totalEl.textContent = `${total.toLocaleString()}원`;
+        return;
       }
 
-      // 장바구나 항목 수량 감소 버튼 클릭
+      // 수량 감소: 전체 재렌더링 대신 input, 가격, 총액만 업데이트
       if (e.target.classList.contains("quantity-decrease-btn") || e.target.closest(".quantity-decrease-btn")) {
-        const button = e.target.classList.contains("quantity-decrease-btn")
-          ? e.target
-          : e.target.closest(".quantity-decrease-btn");
-        const productId = button.dataset.productId;
-        cartManager.decreaseQuantity(productId);
-        modalRoot.innerHTML = Cart(cartManager.getCart());
-        setupModalEvents(modalRoot);
+        const btn = e.target.closest(".quantity-decrease-btn");
+        const pid = btn.dataset.productId;
+        cartManager.decreaseQuantity(pid);
+        const cart = cartManager.getCart();
+        const item = cart.find((i) => i.productId === pid);
+
+        if (item) {
+          // 남아 있는 경우만 value, 가격 업데이트
+          const input = modalRoot.querySelector(`.quantity-input[data-product-id="${pid}"]`);
+          input.value = item.quantity;
+          const priceEl = modalRoot.querySelector(`.cart-item[data-product-id="${pid}"] p.text-sm.font-medium`);
+          priceEl.textContent = `${item.lprice * item.quantity}원`;
+        } else {
+          // quantity 1→0 으로 삭제된 경우 DOM에서 제거
+          modalRoot.querySelector(`.cart-item[data-product-id="${pid}"]`).remove();
+        }
+
+        // footer 총 금액 업데이트
+        const totalEl = modalRoot.querySelector(".sticky.bottom-0 .text-xl.font-bold.text-blue-600");
+        const total = cart.reduce((sum, i) => sum + i.lprice * i.quantity, 0);
+        totalEl.textContent = `${total.toLocaleString()}원`;
+        return;
       }
 
       // 장바구니에서 삭제 버튼 클릭
@@ -230,6 +271,9 @@ window.setupModalEvents = setupModalEvents;
 
 // 토스트 메시지 함수
 function showToast(type = "success") {
+  // 새로운 토스트를 추가하기 전에, 이전 토스트는 무조건 제거
+  document.querySelectorAll(".fixed.top-4.right-4.z-\\[1000\\]").forEach((el) => el.remove());
+
   const toastContainer = document.createElement("div");
   toastContainer.className = "fixed top-4 right-4 z-[1000]";
   toastContainer.innerHTML = Toast(type);
@@ -247,3 +291,13 @@ function showToast(type = "success") {
     }
   }, 3000);
 }
+
+window.addEventListener("popstate", () => {
+  // 라우트 변경 시 페이지네이션, 정렬 등 상태 초기화
+  currentPage = 1;
+  currentLimit = 20;
+  currentSort = "price_asc";
+  hasNext = true;
+  allProducts = [];
+  main();
+});
