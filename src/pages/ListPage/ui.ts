@@ -5,8 +5,8 @@ import type { ListPageController } from "./controller";
 /**
  * 순수 렌더링 함수: 상태를 받아서 HTML 문자열만 반환
  */
-const ListPage = ({ products, total, loading, limit, search }: IListPageProps): string => {
-  return loading ? LoadingList(limit, search) : List({ products, total, search });
+const ListPage = ({ products, total, loading, limit, search, sort }: IListPageProps): string => {
+  return loading ? LoadingList(limit, search, sort) : List({ products, total, search, sort });
 };
 
 /**
@@ -32,6 +32,7 @@ const updateListPageUI = (state: IListPageProps, controller?: ListPageController
 const initializeListSearchBox = (controller: ListPageController): void => {
   const limitSelect = document.querySelector("#limit-select") as HTMLSelectElement;
   const searchInput = document.querySelector("#search-input") as HTMLInputElement;
+  const sortSelect = document.querySelector("#sort-select") as HTMLSelectElement;
 
   // Limit Select 이벤트 처리
   if (limitSelect) {
@@ -66,6 +67,22 @@ const initializeListSearchBox = (controller: ListPageController): void => {
           updateListPageUI(updatedState, controller);
         });
       }
+    });
+  }
+
+  // Sort Select 이벤트 처리
+  if (sortSelect) {
+    // 현재 sort 값으로 select 값 설정
+    sortSelect.value = controller.getSort();
+
+    // sort 변경 이벤트 리스너 등록
+    sortSelect.addEventListener("change", (event) => {
+      const target = event.target as HTMLSelectElement;
+      const newSort = target.value;
+
+      controller.setSort(newSort, (updatedState) => {
+        updateListPageUI(updatedState, controller);
+      });
     });
   }
 };

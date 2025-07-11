@@ -2,11 +2,11 @@ import { ListSearchBox } from "./ListSearchBox";
 import { IListProps } from "./type";
 import ListItem from "./ListItem/ui";
 
-const List = ({ products, total, search = "" }: IListProps) => {
+const List = ({ products, total, search = "", sort = "price_asc" }: IListProps) => {
   return `
   <main class="max-w-md mx-auto px-4 py-4">
     <!-- 검색 및 필터 -->
-    ${ListSearchBox(search)}
+    ${ListSearchBox(search, sort)}
     <!-- 상품 목록 -->
     <div class="mb-6">
       <div>
