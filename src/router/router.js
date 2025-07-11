@@ -3,7 +3,7 @@ import Detail from "../pages/Detail.js";
 import NotFound from "../pages/NotFound.js";
 
 // 환경에 따라 BASE_PATH 자동 설정
-const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
+export const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
 
 // 전체 경로에서 앱 경로만 추출
 const getAppPath = (fullPath = window.location.pathname) => {
