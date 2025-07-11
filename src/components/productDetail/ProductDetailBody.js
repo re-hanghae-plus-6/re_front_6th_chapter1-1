@@ -6,9 +6,10 @@ import { ProductDetailLoading } from "./productDetailLoading";
 import { ProductInformation } from "./ProductInformation";
 import { RelatedProducts } from "./RelatedProducts";
 import { ReturnToListBtn } from "./ReturnToListBtn";
+import { getAppPath } from "../../router/Router";
 
 export const ProductDetailBody = async () => {
-  const id = window.location.pathname.split("/product/")[1];
+  const id = getAppPath(window.location.pathname).split("/product/")[1];
   if (id && productDetailStore.state.productDetail.productId !== id && !productDetailStore.state.isLoading) {
     fetchProductDetail(id);
   }

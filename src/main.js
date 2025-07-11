@@ -11,13 +11,6 @@ import { fetchCategories } from "./entities/categories.js";
 
 import { renderHtml } from "./utils/renderHtml.js";
 
-const enableMocking = () =>
-  import("./mocks/browser.js").then(({ worker }) =>
-    worker.start({
-      onUnhandledRequest: "bypass",
-    }),
-  );
-
 window.addEventListener("popstate", renderHtml);
 async function main() {
   const params = new URLSearchParams(window.location.search);
@@ -41,7 +34,9 @@ async function main() {
   renderHtml();
 }
 
-// 애플리케이션 시작
+const enableMocking = () =>
+  import("./mocks/browser.js").then(({ worker, workerOptions }) => worker.start(workerOptions));
+
 if (import.meta.env.MODE !== "test") {
   enableMocking().then(main);
 } else {
