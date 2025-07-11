@@ -2,6 +2,7 @@ export const store = {
   state: {
     mounted: false,
     cartItems: [],
+    isCartModalOpen: false,
   },
   getState: (key) => {
     if (localStorage.getItem(key)) {
