@@ -9,9 +9,13 @@ class CartService {
   // 로컬스토리지에서 장바구니 불러오기
   loadFromStorage() {
     try {
-      this.cart = JSON.parse(localStorage.getItem("shopping_cart") || "{}");
+      const stored = JSON.parse(localStorage.getItem("shopping_cart") || "{}");
+      // 기존 객체 내용을 모두 제거하고, 저장된 데이터를 병합하여
+      // cart 객체의 참조를 유지한다.
+      Object.keys(this.cart).forEach((k) => delete this.cart[k]);
+      Object.assign(this.cart, stored);
     } catch {
-      this.cart = {};
+      Object.keys(this.cart).forEach((k) => delete this.cart[k]);
     }
   }
 
@@ -41,6 +45,8 @@ class CartService {
     const { productId } = product;
     if (this.cart[productId]) this.cart[productId].quantity += qty;
     else this.cart[productId] = { product, quantity: qty };
+
+    // 디버그 로그 제거
 
     this.saveToStorage();
     this.updateBadge();
@@ -83,7 +89,7 @@ class CartService {
 
   // 전체 비우기
   clear() {
-    this.cart = {};
+    Object.keys(this.cart).forEach((k) => delete this.cart[k]);
     this.saveToStorage();
     this.updateBadge();
   }

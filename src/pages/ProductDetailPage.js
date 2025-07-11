@@ -73,6 +73,9 @@ export default function ProductDetailPage({ loading = true, product = null, rela
         </button>
       </div>
 
+      ${
+        related && related.length
+          ? `
       <!-- 관련 상품 -->
       <div class="bg-white rounded-lg shadow-sm">
         <div class="p-4 border-b border-gray-200">
@@ -92,7 +95,9 @@ export default function ProductDetailPage({ loading = true, product = null, rela
             )
             .join("")}
         </div>
-      </div>
+      </div>`
+          : ""
+      }
     </main>
   </div>`;
 }

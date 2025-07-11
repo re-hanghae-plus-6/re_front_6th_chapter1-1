@@ -11,7 +11,15 @@ class ProductDetailController {
   async show(productId) {
     this.rootEl.innerHTML = ProductDetailPage({ loading: true });
 
+    // 1) 상품 기본 정보 로드
     const product = await productService.getProduct(productId);
+
+    // 2) 우선 상품 정보만 렌더링 (관련 상품 제외)
+    this.rootEl.innerHTML = ProductDetailPage({ loading: false, product, related: [] });
+    this.attachEvents(product);
+    updateCartBadge();
+
+    // 3) 관련 상품 비동기 로드 → 준비되면 다시 렌더링
     const { products: all } = await productService.getProducts({ limit: 100 });
     const related = all.filter((p) => p.productId !== productId).slice(0, 19);
 

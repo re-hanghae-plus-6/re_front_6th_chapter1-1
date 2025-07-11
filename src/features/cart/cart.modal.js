@@ -4,7 +4,10 @@ import { showToast } from "../../components/Toast.js";
 const format = (won) => `${Number(won).toLocaleString()}원`;
 
 export function openCartModal() {
-  if (document.querySelector(".cart-modal-overlay")) return;
+  const existing = document.querySelector(".cart-modal-overlay");
+  if (existing) {
+    existing.remove();
+  }
 
   const overlay = document.createElement("div");
   overlay.className =
@@ -31,6 +34,8 @@ export function openCartModal() {
     overlay.innerHTML = "";
 
     const cartItems = Object.values(cart);
+    // 디버그 로그 제거
+
     if (cartItems.length === 0) {
       overlay.innerHTML = `
           <div class="cart-modal relative bg-white rounded-t-lg sm:rounded-lg shadow-xl w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-hidden">

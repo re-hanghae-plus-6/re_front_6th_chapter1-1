@@ -11,8 +11,10 @@ const COLORS = {
  * @param {number} duration
  */
 export function showToast(message, type = "success", duration = 3000) {
+  // 이미 표시중인 토스트가 있다면 제거 (동일/다른 메시지 구분 X, 한 번에 하나만 표시)
+  document.querySelectorAll(".toast-notification").forEach((el) => el.remove());
   const wrapper = document.createElement("div");
-  wrapper.className = "fixed bottom-6 left-1/2 -translate-x-1/2 z-[60]";
+  wrapper.className = "toast-notification fixed bottom-6 left-1/2 -translate-x-1/2 z-[60]";
 
   wrapper.innerHTML = `
     <div class="${COLORS[type]} text-white px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2 max-w-sm">

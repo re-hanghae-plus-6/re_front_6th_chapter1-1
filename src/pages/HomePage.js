@@ -122,8 +122,7 @@ const 상품목록_레이아웃_로딩 = (products, total, loading, loadingMore,
                 ? ""
                 : `
             <div class="mb-4 text-sm text-gray-600">
-              <span>총 의 상품</span>
-              <span class="font-medium text-gray-900">${total}개</span>
+              <span>총 </span><span class="font-medium text-gray-900">${total}</span><span>개의 상품</span>
             </div>
             `
             }

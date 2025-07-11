@@ -5,6 +5,7 @@ import router from "./router/Router.js";
 import InfiniteScrollManager from "./services/InfiniteScrollManager.js";
 import homePageController from "./controllers/HomePageController.js";
 import productDetailController from "./controllers/ProductDetailController.js";
+import NotFoundPage from "./pages/NotFoundPage.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -182,4 +183,6 @@ router.add("/", () => {
 router.add("/product/:id", async ({ id }) => {
   await productDetailController.show(id);
 });
-router.setNotFound(() => homePageController.init());
+router.setNotFound(() => {
+  document.querySelector("#root").innerHTML = NotFoundPage();
+});
