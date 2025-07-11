@@ -1,3 +1,5 @@
+import { cartManager } from "../../utils/cart";
+import { Cart } from "../Cart";
 import { ItemCard } from "../ItemCard";
 import { Category } from "./../Category";
 
@@ -161,6 +163,8 @@ function renderItems(products, limit, sort, search) {
 }
 
 function MainHeader() {
+  const cart = cartManager.getCart();
+
   return `
   <header class="bg-white shadow-sm sticky top-0 z-40">
     <div class="max-w-md mx-auto px-4 py-4">
@@ -181,7 +185,7 @@ function MainHeader() {
             </svg>
             <span
               class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"
-              >4</span
+              >${cart.length}</span
             >
           </button>
         </div>
@@ -211,3 +215,27 @@ const MainFooter = () => {
     </div>
   </footer>`;
 };
+
+function openCartModal(items = []) {
+  let modalRoot = document.getElementById("modal-root");
+
+  if (!modalRoot) {
+    modalRoot = document.createElement("div");
+    modalRoot.id = "modal-root";
+    document.body.appendChild(modalRoot);
+  }
+
+  modalRoot.innerHTML = `${Cart(items)}`;
+
+  // 모달 이벤트 설정 (main.js의 setupModalEvents 함수 사용)
+  if (window.setupModalEvents) {
+    window.setupModalEvents(modalRoot);
+  }
+}
+
+document.addEventListener("click", (e) => {
+  if (e.target.closest("#cart-icon-btn")) {
+    // 실제 장바구니 아이템 배열을 넘겨야 함
+    openCartModal(cartManager.getCart());
+  }
+});
