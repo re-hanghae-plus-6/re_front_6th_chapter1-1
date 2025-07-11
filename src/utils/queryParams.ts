@@ -38,7 +38,9 @@ export function createQueryParams<S extends SimpleSchema>(schema: S) {
       const codec = schema[key as keyof S];
       const val = partial[key as keyof Result] as any;
 
-      if (val === codec.default || val === null || val === undefined) search.delete(key);
+      // 초기로드시 기본값 쿼리파라미터는 url에 포함하지않음
+      // 필터 등 인터랙션을 통한 쿼리파람 변경시 url에 포함함
+      if (val == null) search.delete(key);
       else search.set(key, codec.serialize ? codec.serialize(val) : String(val));
     }
 
