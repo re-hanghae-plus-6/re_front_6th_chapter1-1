@@ -32,7 +32,12 @@ const SearchEmptyState = ({ searchTerm }) => {
 };
 
 /** 무한스크롤 로딩 인디케이터 */
-const InfiniteScrollLoader = ({ isLoadingMore, hasNext }) => {
+const InfiniteScrollLoader = ({ isLoadingMore, hasNext, isInitialLoad }) => {
+  // 초기 로드 중에는 센티넬 렌더링하지 않음
+  if (isInitialLoad) {
+    return "";
+  }
+
   // 더 이상 로드할 상품이 없으면 완료 메시지
   if (!hasNext && !isLoadingMore) {
     return /*html*/ `
@@ -71,6 +76,7 @@ export const ProductListPage = ({
   categories = {},
   isLoadingMore = false,
   pagination = { hasNext: true },
+  isInitialLoad = false, // 초기 로드 상태 추가
 }) => {
   const categoryList = Object.keys(categories);
   const currentParams = getURLParams();
@@ -189,7 +195,7 @@ export const ProductListPage = ({
               </div>
               
               <!-- 무한스크롤 로더 또는 센티넬 -->
-              ${!loading ? InfiniteScrollLoader({ isLoadingMore, hasNext: pagination.hasNext }) : ""}
+              ${!loading ? InfiniteScrollLoader({ isLoadingMore, hasNext: pagination.hasNext, isInitialLoad }) : ""}
             `
           }
         </div>
