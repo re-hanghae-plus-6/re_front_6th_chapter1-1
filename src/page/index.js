@@ -33,7 +33,7 @@ export default function page(state) {
           <!-- 검색창 -->
           <div class="mb-4">
             <div class="relative">
-              <input type="text" id="search-input" placeholder="상품명을 검색해보세요..." value="" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
+              <input type="text" id="search-input" placeholder="상품명을 검색해보세요..." value="${state.search}" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -208,11 +208,11 @@ export default function page(state) {
                 .map((product) => {
                   return `
                   <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
-                   data-product-id=${product.productId}>
+                   data-product-id="${product.productId}">
                 <!-- 상품 이미지 -->
-                <div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image" data-product-id=${product.productId}>
-                  <img src=${product.image}
-                       alt=${product.title}
+                <div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image" data-product-id="${product.productId}">
+                  <img src="${product.image}"
+                       alt="${product.title}"
                        class="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
                        loading="lazy">
                 </div>
@@ -222,14 +222,14 @@ export default function page(state) {
                     <h3 class="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
                       ${product.title}
                     </h3>
-                    <p class="text-xs text-gray-500 mb-2"></p>
+                    <p class="text-xs text-gray-500 mb-2">${product.brand}</p>
                     <p class="text-lg font-bold text-gray-900">
-                      ${product.lprice}원
+                      ${Number(product.lprice).toLocaleString("ko-KR")}원
                     </p>
                   </div>
                   <!-- 장바구니 버튼 -->
                   <button class="w-full bg-blue-600 text-white text-sm py-2 px-3 rounded-md
-                         hover:bg-blue-700 transition-colors add-to-cart-btn" data-product-id=${product.productId}>
+                         hover:bg-blue-700 transition-colors add-to-cart-btn" data-product-id="${product.productId}">
                     장바구니 담기
                   </button>
                 </div>
