@@ -3,28 +3,21 @@ import { ProductDetail } from "./pages/ProductDetail.js";
 import { NotFound } from "./pages/NotFound.js";
 import { addScrollListener, removeScrollListener } from "./main.js";
 
-const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
-
-const getAppPath = (fullPath = window.location.pathname) => {
-  return fullPath.startsWith(BASE_PATH) ? fullPath.slice(BASE_PATH.length) || "/" : fullPath;
-};
-
-const getFullPath = (appPath) => {
-  return BASE_PATH + appPath;
-};
-
-const routes = [
-  { path: "/", component: home, isDetail: false },
-  { path: "/product/:id", component: ProductDetail, isDetail: true },
-  // { path: "/?", component: Breadcrumb, isBreadcrumb: true },
-];
-
 class Router {
   constructor(initialMainStatus) {
     this.routes = routes;
     this.mainStatus = structuredClone(initialMainStatus);
     this.appRoot = document.querySelector("#root");
+    this.BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
     this.initEventListeners();
+  }
+
+  getAppPath(fullPath = window.location.pathname) {
+    return fullPath.startsWith(this.BASE_PATH) ? fullPath.slice(this.BASE_PATH.length) || "/" : fullPath;
+  }
+
+  getFullPath(appPath) {
+    return this.BASE_PATH + appPath;
   }
 
   initEventListeners() {
