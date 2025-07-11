@@ -7,6 +7,8 @@ let infiniteScrollObserver = null;
  * 상품 목록 페이지 이벤트 등록
  */
 export const registerProductEvents = (productService) => {
+  const currentParams = getURLParams();
+
   // 페이지당 상품 수 선택
   const limitSelect = document.querySelector("#limit-select");
   if (!limitSelect) return;
@@ -26,6 +28,22 @@ export const registerProductEvents = (productService) => {
     updateURLParams({ sort: e.target.value, page: 1 });
     productService.loadProducts();
   };
+
+  // 검색 이벤트
+  const searchInput = document.querySelector("#search-input");
+  if (searchInput) {
+    // 현재 검색어 표시
+    searchInput.value = currentParams.search;
+
+    // Enter 키 이벤트
+    searchInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        const searchTerm = e.target.value.trim();
+        updateURLParams({ search: searchTerm, page: 1 });
+        productService.loadProducts();
+      }
+    });
+  }
 };
 
 /**

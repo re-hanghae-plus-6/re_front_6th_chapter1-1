@@ -3,8 +3,9 @@ export function getURLParams() {
   const params = new URLSearchParams(window.location.search);
   return {
     limit: parseInt(params.get("limit")) || 20,
-    page: parseInt(params.get("page")) || 1,
+    current: parseInt(params.get("current")) || 1,
     sort: params.get("sort") || "price_asc",
+    search: params.get("search") || "",
   };
 }
 

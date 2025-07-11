@@ -12,6 +12,25 @@ const CategoryButton = (category) => {
   `;
 };
 
+/** 검색 결과 없을 때 빈 상태 컴포넌트 */
+const SearchEmptyState = ({ searchTerm }) => {
+  return /*html*/ `
+    <div class="text-center py-12">
+      <div class="text-gray-400 mb-4">
+        <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+      </div>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">검색 결과가 없습니다</h3>
+      <p class="text-gray-600 mb-4">"${searchTerm}"에 대한 상품을 찾을 수 없습니다.</p>
+      <button onclick="window.location.href='/'" class="text-blue-600 hover:text-blue-800 text-sm">
+        전체 상품 보기
+      </button>
+    </div>
+  `;
+};
+
 /** 무한스크롤 로딩 인디케이터 */
 const InfiniteScrollLoader = ({ isLoadingMore, hasNext }) => {
   // 더 이상 로드할 상품이 없으면 완료 메시지
@@ -56,6 +75,10 @@ export const ProductListPage = ({
   const categoryList = Object.keys(categories);
   const currentParams = getURLParams();
 
+  // 검색 결과가 없는 경우 체크
+  const hasSearchTerm = currentParams.search.length > 0;
+  const hasNoResults = !loading && hasSearchTerm && products.length === 0;
+
   return /*html*/ `
     <div class="min-h-screen bg-gray-50">
     <header class="bg-white shadow-sm sticky top-0 z-40">
@@ -82,7 +105,9 @@ export const ProductListPage = ({
         <!-- 검색창 -->
         <div class="mb-4">
           <div class="relative">
-            <input type="text" id="search-input" placeholder="상품명을 검색해보세요..." value="" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
+            <input type="text" id="search-input" placeholder="상품명을 검색해보세요..." 
+                   value="${currentParams.search}" 
+                   class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
                         focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -146,17 +171,27 @@ export const ProductListPage = ({
               ? ""
               : `
             <div class="mb-4 text-sm text-gray-600">
-              총 <span class="font-medium text-gray-900">${total}개</span>의 상품
+              ${
+                hasSearchTerm
+                  ? `총 <span class="font-medium text-gray-900">${total}개</span>의 상품`
+                  : `총 <span class="font-medium text-gray-900">${total}개</span>의 상품`
+              }
             </div>
             `
           }
           <!-- 상품 그리드 -->
-          <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
-            ${loading ? LoadingSkeletonList : products.map(ProductItem).join("")}
-          </div>
-          
-          <!-- 무한스크롤 로더 또는 센티넬 -->
-          ${!loading ? InfiniteScrollLoader({ isLoadingMore, hasNext: pagination.hasNext }) : ""}
+          ${
+            hasNoResults
+              ? SearchEmptyState({ searchTerm: currentParams.search })
+              : `
+              <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
+                ${loading ? LoadingSkeletonList : products.map(ProductItem).join("")}
+              </div>
+              
+              <!-- 무한스크롤 로더 또는 센티넬 -->
+              ${!loading ? InfiniteScrollLoader({ isLoadingMore, hasNext: pagination.hasNext }) : ""}
+            `
+          }
         </div>
       </div>
     </main>
