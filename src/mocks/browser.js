@@ -5,7 +5,7 @@ import { handlers } from "./handlers";
 export const worker = setupWorker(...handlers);
 
 const basePath = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
-export const workidrOptions = import.meta.env.PROD
+export const workerOptions = import.meta.env.PROD
   ? {
       serviceWorker: {
         url: `${basePath}/mockServiceWorker.js`,
