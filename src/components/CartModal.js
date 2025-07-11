@@ -45,6 +45,13 @@ export class CartModal extends Component {
         return;
       }
 
+      const $cartItemCheckbox = target.closest(".cart-item-checkbox");
+      if ($cartItemCheckbox) {
+        const productId = $cartItemCheckbox.dataset.productId;
+        cartStore.toggleSelectedItem(productId);
+        return;
+      }
+
       const $quantityIncreaseBtn = target.closest(".quantity-increase-btn");
       const $quantityDecreaseBtn = target.closest(".quantity-decrease-btn");
 
