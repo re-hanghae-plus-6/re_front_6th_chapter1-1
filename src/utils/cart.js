@@ -17,13 +17,14 @@ const saveCart = (cart) => {
 
 export const addCart = (product, quantity = 1) => {
   const cart = getCart();
-  const exisitingItem = cart.find((item) => item.productId === product.productId);
+  const existingItem = cart.find((item) => item.productId === product.productId);
 
-  if (exisitingItem) {
-    exisitingItem.quantity += quantity;
+  if (existingItem) {
+    existingItem.quantity += quantity;
   } else {
     // 새 상품 추가
-    cart.push(product);
+    const newCartItem = { ...product, quantity };
+    cart.push(newCartItem);
   }
   saveCart(cart);
 };

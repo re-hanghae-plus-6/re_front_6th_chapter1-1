@@ -6,6 +6,7 @@ import { addScrollListener, removeScrollListener } from "./main.js";
 const routes = [
   { path: "/", component: home, isDetail: false },
   { path: "/product/:id", component: ProductDetail, isDetail: true },
+  // { path: "/?", component: Breadcrumb, isBreadcrumb: true },
 ];
 
 class Router {
@@ -34,10 +35,12 @@ class Router {
 
   _matchRoute() {
     const path = window.location.pathname;
+    const searchParams = new URLSearchParams(window.location.search);
     let foundComponent = NotFound; // 기본값은 NotFound
     let extractedParams = {};
     let isDetailPage = false;
 
+    // Extract path parameters (e.g., :id)
     for (const route of this.routes) {
       const regex = new RegExp(`^${route.path.replace(/:\w+/g, "([^/]+)")}$`);
       const match = path.match(regex);
@@ -52,6 +55,11 @@ class Router {
         });
         break; // 일치하는 라우트를 찾았으므로 반복 중단
       }
+    }
+
+    // Extract query parameters
+    for (const [key, value] of searchParams.entries()) {
+      extractedParams[key] = value;
     }
 
     return {
@@ -73,7 +81,7 @@ class Router {
   }
 
   navigate(path) {
-    if (window.location.pathname !== path) {
+    if (window.location.pathname + window.location.search !== path) {
       window.history.pushState({}, "", path);
     }
     this.render();
