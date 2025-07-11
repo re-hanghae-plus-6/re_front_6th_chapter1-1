@@ -43,10 +43,14 @@ const fetchCategories = async () => {
 };
 
 const fetchMoreProductsScroll = () => {
+  const location = window.location.pathname;
+  if (location !== "/") return;
   const triggerHeight = 100;
   let scrollHandler = null;
 
   const handleScroll = () => {
+    const location = window.location.pathname;
+    if (location !== "/") return;
     if (state.isLoadingMore || !state.pagination?.hasNext) return;
     const currentScroll = window.scrollY;
     const viewHeight = document.documentElement.clientHeight;
