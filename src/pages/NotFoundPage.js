@@ -3,7 +3,7 @@ import { Footer } from "../app/components/Footer.js";
 
 export const NotFoundPage = () => `
 <div class="min-h-screen bg-gray-50">
-  ${Header({ title: "404 페이지", showBackButton: false })}
+  ${Header({ title: "쇼핑몰", showBackButton: false })}
 <main class="max-w-md mx-auto px-4 py-4">
   <div class="text-center my-4 py-20 shadow-md p-6 bg-white rounded-lg">
   <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
