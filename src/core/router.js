@@ -4,6 +4,8 @@
  * 를 지원하도록 전체 구현을 교체합니다.
  * -------------------------------------------------------------------------- */
 
+import createObserver from "./observer.js";
+
 // BASE_PATH 는 Vite 미리보기/배포 경로에 맞게 설정
 const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
 
@@ -75,7 +77,8 @@ function matchRouteRecursive(pathSegments, routes, params = {}) {
  * -------------------------------------------------------------------------- */
 function createRouterInstance() {
   const routes = [];
-  const listeners = new Set();
+  // Observer를 이용해 라우트 변경을 publish
+  const { subscribe: obsSubscribe, notify: obsNotify } = createObserver();
   let currentRoute = null;
   let isDestroyed = false;
 
@@ -107,14 +110,9 @@ function createRouterInstance() {
   };
 
   /* -------------------------- notify subscribers ------------------------- */
-  const notify = () => {
-    listeners.forEach((fn) => {
-      try {
-        fn(currentRoute);
-      } catch (err) {
-        console.error("[Router] listener error", err);
-      }
-    });
+  const notifyRouteChange = () => {
+    // Observer 기반 알림
+    obsNotify(currentRoute);
   };
 
   /* -------------------------- render pipeline ---------------------------- */
@@ -152,7 +150,7 @@ function createRouterInstance() {
       };
     }
 
-    notify();
+    notifyRouteChange();
   };
 
   /* --------------------------- history helpers --------------------------- */
@@ -180,8 +178,7 @@ function createRouterInstance() {
 
   const subscribe = (listener) => {
     if (isDestroyed) return () => {};
-    listeners.add(listener);
-    return () => listeners.delete(listener);
+    return obsSubscribe(listener);
   };
 
   const init = () => handleRouteChange();
@@ -190,7 +187,7 @@ function createRouterInstance() {
     isDestroyed = true;
     routerApi._isDestroyed = true;
     window.removeEventListener("popstate", onPopState);
-    listeners.clear();
+    // Observer 내부 listener 는 가비지 컬렉션 대상으로 두기 때문에 별도 clear 필요 없음
     routes.length = 0;
     currentRoute = null;
   };
@@ -203,6 +200,7 @@ function createRouterInstance() {
     subscribe,
     init,
     destroy,
+    routes, // 외부 helper(useParams 등)에서 경로 정의 접근 가능
     _isDestroyed: false,
   };
 
@@ -278,3 +276,49 @@ export const updateQueryParams = (params, { replace = false } = {}) => {
   if (replace) window.history.replaceState({}, "", newUrl);
   else window.history.pushState({}, "", newUrl);
 };
+
+export function navigate(path, options = {}) {
+  const r = getRouter();
+  if (r && !r._isDestroyed) {
+    r.navigate(path, options);
+  }
+}
+
+/**
+ * 현재 URL의 동적 세그먼트 파라미터를 반환한다.
+ * 예) /product/:id → { id: "101" }
+ */
+export function useParams() {
+  const r = getRouter();
+  if (!r || !r.routes) return {};
+  const currentPath = getAppPath();
+  const currentParts = currentPath.split("/").filter(Boolean);
+
+  for (const route of r.routes) {
+    const routePath = route.path;
+    if (!routePath.includes(":")) continue;
+    const pathParts = routePath.split("/").filter(Boolean);
+    if (pathParts.length !== currentParts.length) continue;
+
+    let matched = true;
+    const params = {};
+    for (let i = 0; i < pathParts.length; i++) {
+      const part = pathParts[i];
+      if (part.startsWith(":")) {
+        params[part.slice(1)] = currentParts[i];
+      } else if (part !== currentParts[i]) {
+        matched = false;
+        break;
+      }
+    }
+    if (matched) return params;
+  }
+  return {};
+}
+
+export function useLocation() {
+  return {
+    pathname: getAppPath(),
+    state: window.history.state,
+  };
+}
