@@ -3,6 +3,38 @@ import { afterEach, beforeAll, beforeEach, describe, expect, test } from "vitest
 import { server } from "./mockServerHandler.js";
 import { userEvent } from "@testing-library/user-event";
 
+// IntersectionObserver Mock 추가
+global.IntersectionObserver = class IntersectionObserver {
+  constructor(callback) {
+    this.callback = callback;
+    this.elements = new Set();
+  }
+
+  observe(element) {
+    this.elements.add(element);
+    // 테스트용으로 observer를 전역에서 접근 가능하게 설정
+    window.testIntersectionObserver = this;
+  }
+
+  unobserve(element) {
+    this.elements.delete(element);
+  }
+
+  disconnect() {
+    this.elements.clear();
+  }
+
+  // 테스트용 헬퍼 메서드
+  trigger(element, isIntersecting = true) {
+    this.callback([
+      {
+        isIntersecting,
+        target: element,
+      },
+    ]);
+  }
+};
+
 const goTo = (path) => {
   window.history.pushState({}, "", path);
   window.dispatchEvent(new Event("popstate"));
@@ -174,8 +206,14 @@ describe("5. 무한 스크롤 페이지네이션", () => {
     const initialCards = document.querySelectorAll(".product-card").length;
     expect(initialCards).toBe(20);
 
-    // 페이지 하단으로 스크롤
-    window.dispatchEvent(new Event("scroll"));
+    // 센티넬 요소 찾기
+    const sentinel = document.querySelector("#scroll-sentinel");
+    expect(sentinel).toBeInTheDocument();
+
+    // Mock IntersectionObserver를 통해 센티넬 트리거
+    if (window.testIntersectionObserver) {
+      window.testIntersectionObserver.trigger(sentinel, true);
+    }
 
     expect(await screen.findByText("상품을 불러오는 중...")).toBeInTheDocument();
     expect(
