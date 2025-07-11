@@ -22,6 +22,32 @@ function updateTotalPrice(state) {
   }
 }
 
+// 헤더의 장바구니 카운트를 업데이트하는 함수
+function updateCartCount(state) {
+  const cartCountElement = document.querySelector("#cart-icon-btn span");
+
+  if (state.cart.length > 0) {
+    if (cartCountElement) {
+      cartCountElement.textContent = state.cart.length;
+    } else {
+      // 카운트 요소가 없으면 생성
+      const cartButton = document.querySelector("#cart-icon-btn");
+      if (cartButton) {
+        const countSpan = document.createElement("span");
+        countSpan.className =
+          "absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center";
+        countSpan.textContent = state.cart.length;
+        cartButton.appendChild(countSpan);
+      }
+    }
+  } else {
+    // 장바구니가 비어있으면 카운트 요소 제거
+    if (cartCountElement) {
+      cartCountElement.remove();
+    }
+  }
+}
+
 export function renderCartModal(state, showToast) {
   // 기존 이벤트 리스너 정리
   if (modalClickHandler) {
@@ -78,6 +104,9 @@ export function removeFromCart(productId, state, { renderCartModal, showToast })
       saveCartToStorage(state.cart, state.selectedCartItems);
     }
 
+    // 헤더의 장바구니 카운트 업데이트
+    updateCartCount(state);
+
     // 모달이 열려있다면 모달만 다시 렌더링
     if (document.querySelector(".cart-modal")) {
       renderCartModal(state, showToast);
@@ -114,6 +143,9 @@ export function increaseCartItemQuantity(productId, state) {
 
       // 총 금액 업데이트
       updateTotalPrice(state);
+
+      // 헤더의 장바구니 카운트 업데이트
+      updateCartCount(state);
     }
   }
 }
@@ -149,6 +181,9 @@ export function decreaseCartItemQuantity(productId, state, { renderCartModal, sh
 
         // 총 금액 업데이트
         updateTotalPrice(state);
+
+        // 헤더의 장바구니 카운트 업데이트
+        updateCartCount(state);
       } else {
         // 수량이 0이 되면 전체 모달 다시 렌더링 (상품 제거)
         renderCartModal(state, showToast);
@@ -289,6 +324,9 @@ export function setupModalEvents(state, { renderCartModal, showToast }) {
       if (import.meta.env.MODE !== "test") {
         saveCartToStorage(state.cart, state.selectedCartItems);
       }
+
+      // 헤더의 장바구니 카운트 업데이트
+      updateCartCount(state);
 
       renderCartModal(state, showToast);
       return;
