@@ -52,8 +52,9 @@ describe("1. 장바구니 모달", () => {
     const cartIcon = document.querySelector("#cart-icon-btn");
     await userEvent.click(cartIcon);
 
-    // X 버튼 클릭
-    const closeButton = document.querySelector("#cart-modal-close-btn");
+    // 모달이 열릴 때까지 기다린 후 X 버튼 찾기
+    await screen.findByText("장바구니");
+    const closeButton = document.querySelector(".modal-close-btn");
     expect(closeButton).toBeInTheDocument();
     await userEvent.click(closeButton);
 
