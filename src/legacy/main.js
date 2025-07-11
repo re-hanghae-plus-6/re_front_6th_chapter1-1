@@ -1,4 +1,5 @@
-import MainPage from "./pages/MainPage.js";
+import routes from "./core/router/routes.js";
+import createRouter from "./core/router/index.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -8,7 +9,7 @@ const enableMocking = () =>
   );
 
 function main() {
-  new MainPage({ target: document.body.querySelector("#root") });
+  createRouter({ routes });
 }
 
 // 애플리케이션 시작
