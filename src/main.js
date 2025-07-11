@@ -3,14 +3,14 @@ import { ProductDetailPage } from "./pages/productDetailPage.js";
 import { render } from "./render.js";
 import { router } from "./router.js";
 import { store } from "./store.js";
-import { BASE_URL } from "./constants.js";
+import { BASE_PATH } from "./constants.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
     worker.start({
       onUnhandledRequest: "bypass",
       serviceWorker: {
-        url: `${BASE_URL}/mockServiceWorker.js`,
+        url: `${BASE_PATH}/mockServiceWorker.js`,
       },
     }),
   );
@@ -23,11 +23,11 @@ function main() {
   });
 
   router.addRoute("/", {
-    regex: new RegExp(`^${BASE_URL}/?$`),
+    regex: new RegExp(`^${BASE_PATH}/?$`),
     page: ProductListPage,
   });
   router.addRoute("/product/:id", {
-    regex: new RegExp(`^${BASE_URL}/product/\\d+$`),
+    regex: new RegExp(`^${BASE_PATH}/product/\\d+$`),
     page: ProductDetailPage,
   });
 
