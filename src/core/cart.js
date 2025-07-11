@@ -1,5 +1,6 @@
 import CartModal from "../components/cart/CartModal.js";
 import { getProduct } from "../api/productApi.js";
+import Toast from "../components/ui/Toast.js";
 
 // LocalStorage key 상수화
 const STORAGE_KEY = "shopping_cart";
@@ -110,6 +111,9 @@ export async function clearCart() {
   // 장바구니 비우기 후 안정적으로 빈 상태 렌더링
   // 모달을 닫지 않고 빈 장바구니 상태를 표시하여 테스트 기대와 일치
   await renderModalContent();
+
+  // 장바구니 비우기 완료 토스트 메시지 표시
+  showToast("장바구니가 비워졌습니다", "info");
 }
 
 export function toggleSelect(productId) {
@@ -141,15 +145,17 @@ function syncFromStorage() {
 }
 
 // 토스트 헬퍼
-export function showToast(message) {
+export function showToast(message, type = "success") {
   // remove existing
   const prev = document.querySelector(".toast-message");
   if (prev) prev.remove();
 
   const el = document.createElement("div");
-  el.className =
-    "toast-message fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-green-600 text-white px-4 py-3 rounded-lg shadow-lg";
-  el.textContent = message;
+  el.className = "toast-message fixed top-4 left-1/2 -translate-x-1/2 z-50";
+
+  // Toast 컴포넌트 사용
+  el.innerHTML = Toast({ type, message, showCloseButton: false });
+
   document.body.appendChild(el);
   setTimeout(() => {
     el.remove();
@@ -259,6 +265,9 @@ function handleModalClick(e) {
       // 배치로 삭제하여 DOM 렌더링을 한 번만 수행
       cart = cart.filter((item) => !selectedIds.includes(item.product.productId));
       persist();
+
+      // 선택 삭제 완료 토스트 메시지 표시
+      showToast("선택한 상품들이 삭제되었습니다", "info");
 
       // 모든 상품이 삭제되어도 모달을 유지하고 빈 상태 표시
       renderModalContent()
