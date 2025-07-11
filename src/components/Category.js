@@ -1,6 +1,6 @@
 import Component from "../core/component";
 import { getCategories } from "../api/productApi";
-import { getProductParams } from "../pages/Main";
+import { getProductParams } from "../legacy/_Main";
 import urlSearchParamsStore from "../core/store/urlSearchParamsStore";
 
 class Category extends Component {

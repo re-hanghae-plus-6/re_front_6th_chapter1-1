@@ -3,7 +3,7 @@ import ProductCard from "./ProductCard";
 import ProductSkeleton from "./ProductSkeleton";
 import { getProducts } from "../api/productApi";
 import urlSearchParamsStore from "../core/store/urlSearchParamsStore";
-import { getProductParams } from "../pages/Main";
+import { getProductParams } from "../legacy/_Main";
 
 class ProductList extends Component {
   async setup() {

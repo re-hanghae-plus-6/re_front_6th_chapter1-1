@@ -1,5 +1,5 @@
 import urlSearchParamsStore from "../core/store/urlSearchParamsStore";
-import { getProductParams } from "../pages/Main";
+import { getProductParams } from "../legacy/_Main";
 import Component from "../core/component";
 import Category from "./Category";
 
