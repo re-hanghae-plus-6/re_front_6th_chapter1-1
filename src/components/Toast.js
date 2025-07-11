@@ -55,7 +55,6 @@ class Toast {
       this.hide();
     }, 3000);
   }
-  s;
 
   // 토스트 메시지 숨기기
   hide() {

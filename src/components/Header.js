@@ -4,12 +4,16 @@ class Header {
   constructor() {
     this.el = null;
     this.state = {
-      cartCount: 0, // 초기값. 스토어 구독 후 업데이트됨
+      cartCount: 0,
     };
 
-    // URL 변경 감지를 위한 바인딩
     this.handlePopstate = this.handlePopstate.bind(this);
     this.handleUrlChange = this.handleUrlChange.bind(this);
+
+    cartStore.subscribe((storeState) => {
+      const newCount = storeState.items ? storeState.items.length : 0;
+      this.setState({ cartCount: newCount });
+    });
   }
 
   handlePopstate() {
@@ -28,6 +32,28 @@ class Header {
         oldEl.parentNode.replaceChild(newEl, oldEl);
       }
       this.el = newEl;
+    }
+  }
+
+  badgeTemplate() {
+    // 뱃지 span 찾기
+    let cartCountBadge = this.el.querySelector("#cart-count-badge");
+
+    if (this.state.cartCount === 0) {
+      // 0개면 뱃지 제거
+      if (cartCountBadge) cartCountBadge.remove();
+    } else {
+      // 1개 이상이면 뱃지가 없으면 새로 생성
+      if (!cartCountBadge) {
+        const btn = this.el.querySelector("#cart-icon-btn");
+        cartCountBadge = document.createElement("span");
+        cartCountBadge.id = "cart-count-badge";
+        cartCountBadge.className =
+          "absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center";
+        btn.appendChild(cartCountBadge);
+      }
+      cartCountBadge.textContent = this.state.cartCount;
+      cartCountBadge.classList.remove("hidden");
     }
   }
 
@@ -63,11 +89,15 @@ class Header {
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M3 3h2l.4 2M7 13h10l4-8H5.4m2.6 8L6 2H3m4 11v6a1 1 0 001 1h1a1 1 0 001-1v-6M13 13v6a1 1 0 001 1h1a1 1 0 001-1v-6">
                   </path>
-                </svg>
+                </svg>${
+                  this.state.cartCount > 0
+                    ? `
                 <span id="cart-count-badge"
                   class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center ${badgeHiddenClass}">
                   ${this.state.cartCount}
-                </span>
+                </span>`
+                    : ""
+                }
               </button>
             </div>
           </div>
@@ -84,15 +114,7 @@ class Header {
   update() {
     if (!this.el) return;
 
-    const cartCountBadge = this.el.querySelector("#cart-count-badge");
-    if (cartCountBadge) {
-      cartCountBadge.textContent = this.state.cartCount;
-      if (this.state.cartCount === 0) {
-        cartCountBadge.classList.add("hidden");
-      } else {
-        cartCountBadge.classList.remove("hidden");
-      }
-    }
+    this.badgeTemplate();
   }
 
   render() {
@@ -109,11 +131,6 @@ class Header {
     const btn = this.el.querySelector("#cart-icon-btn");
     btn.addEventListener("click", () => {
       cartStore.setState({ isOpen: true });
-    });
-
-    cartStore.subscribe((storeState) => {
-      const newCount = storeState.items ? storeState.items.length : 0;
-      this.setState({ cartCount: newCount });
     });
 
     // popstate 이벤트 리스너 추가 (한 번만 추가되도록)
