@@ -1,4 +1,4 @@
-import createReactiveState from "./renderer/reactiveState.js";
+import createReactiveState from "./utils/reactiveState.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
