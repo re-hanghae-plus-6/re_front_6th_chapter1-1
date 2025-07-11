@@ -1,4 +1,5 @@
 import { CART_ACTIONS } from "../actions/cartActions.js";
+import { clearCartStorage } from "../utils/storage.js";
 
 export function cartReducer(state, action) {
   switch (action.type) {
@@ -104,6 +105,7 @@ export function cartReducer(state, action) {
     }
 
     case CART_ACTIONS.CLEAR_CART:
+      clearCartStorage();
       return {
         ...state,
         cart: {

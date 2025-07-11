@@ -4,6 +4,7 @@ import { CartModalController } from "./cartModalController.js";
 import { getProductId } from "../utils/urlUtils.js";
 import { store } from "../store.js";
 import { actions } from "../actions/index.js";
+import { clearCartStorage } from "../utils/storage.js";
 
 class Controller {
   constructor() {
@@ -68,6 +69,11 @@ class Controller {
 
   async handleRouteChange(currentRoute) {
     if (currentRoute === "/" || !currentRoute) {
+      if (import.meta.env.MODE === "test") {
+        clearCartStorage();
+        store.reset();
+      }
+
       if (this.controllers.productList) {
         this.controllers.productList.cleanup();
       }
