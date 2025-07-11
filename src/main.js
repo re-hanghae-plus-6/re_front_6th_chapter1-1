@@ -1,7 +1,7 @@
 import { DetailPage } from "./pages/DetailPage.js";
 import { ListPage } from "./pages/ListPage.js";
 import { NotFoundPage } from "./pages/NotFoundPage.js";
-import { renderViewComponent } from "./utils/createViewcomponent.js";
+// import { renderViewComponent } from "./utils/createViewcomponent.js";
 import { onChangeUrl } from "./utils/urlUtils.js";
 
 const enableMocking = () =>
