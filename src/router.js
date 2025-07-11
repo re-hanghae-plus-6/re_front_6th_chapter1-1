@@ -12,7 +12,7 @@ class Router {
     this.routes = routes;
     this.mainStatus = structuredClone(initialMainStatus);
     this.appRoot = document.querySelector("#root");
-    this.BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "/";
+    this.BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1/" : "/";
     this.initEventListeners();
   }
 
