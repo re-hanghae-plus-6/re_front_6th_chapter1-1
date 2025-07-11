@@ -46,7 +46,7 @@ class Router {
   #setEvents() {
     window.addEventListener("popstate", () => {
       const params = this.#getSearchParams();
-      this.#navigateTo(location.pathname, params);
+      this.#navigateTo({ pathname: location.pathname, params });
     });
     document.addEventListener("click", (e) => {
       const $link = e.target.closest("[data-link]");
