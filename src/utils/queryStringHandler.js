@@ -1,3 +1,11 @@
+/**
+ * URL 쿼리 스트링을 관리하는 유틸리티 함수들
+ */
+
+/**
+ * 현재 URL의 쿼리 파라미터를 객체로 반환합니다.
+ * @returns {Object} 쿼리 파라미터 객체
+ */
 export const getQueryParams = () => {
   const urlParams = new URLSearchParams(window.location.search);
   const params = {};
@@ -9,6 +17,11 @@ export const getQueryParams = () => {
   return params;
 };
 
+/**
+ * 쿼리 파라미터를 URL에 업데이트합니다.
+ * @param {Object} newParams - 업데이트할 파라미터들
+ * @param {boolean} replace - true면 현재 히스토리를 교체, false면 새 히스토리 추가
+ */
 export const updateQueryParams = (newParams, replace = true) => {
   const currentParams = getQueryParams();
   const updatedParams = { ...currentParams, ...newParams };
@@ -30,6 +43,10 @@ export const updateQueryParams = (newParams, replace = true) => {
   }
 };
 
+/**
+ * 특정 쿼리 파라미터를 제거합니다.
+ * @param {string|Array} paramsToRemove - 제거할 파라미터명 또는 파라미터명 배열
+ */
 export const removeQueryParams = (paramsToRemove) => {
   const currentParams = getQueryParams();
   const paramsArray = Array.isArray(paramsToRemove) ? paramsToRemove : [paramsToRemove];
@@ -44,6 +61,11 @@ export const removeQueryParams = (paramsToRemove) => {
   window.history.replaceState({}, "", newUrl);
 };
 
+/**
+ * URL의 쿼리 파라미터를 state 객체로 동기화합니다.
+ * @param {Object} state - 동기화할 state 객체
+ * @returns {Object} 업데이트된 state 객체
+ */
 export const syncStateFromQuery = (state) => {
   const params = getQueryParams();
 
