@@ -1,0 +1,34 @@
+# deploy 를 해주는 workflow
+name: Deploy
+on:
+  push:
+    branches:
+      - main
+      - release
+      - develop
+
+jobs:
+  deploy:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: |
+          pnpm install
+          pnpm run build
+
+      # 빌드를 한 다음에, 빌드한 결과물에 대해 배포하기
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        if: github.ref == 'refs/heads/main'
+        with:
+          github_token: ${{ secrets.ACCESS_TOKEN }}
+          publish_dir: ./dist
