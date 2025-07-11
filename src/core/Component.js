@@ -9,7 +9,7 @@ export class Component {
 
   constructor(props) {
     this.props = props;
-    this.id = `${this.constructor.name}-component-${window.crypto.randomUUID()}`;
+    this.id = `${this.constructor.name}-component-${crypto.randomUUID()}`;
     this.dataAttribute = createDataAttribute(this.id);
     this.abortController = null;
   }

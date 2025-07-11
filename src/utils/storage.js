@@ -1,5 +1,5 @@
 export class WebStorage {
-  constructor(key, storage = window.localStorage) {
+  constructor(key, storage = localStorage) {
     this.storage = storage;
     this.key = key;
   }

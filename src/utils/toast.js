@@ -47,7 +47,7 @@ export function toast(type, message, delay = 3_000) {
     );
   }
 
-  const toastId = window.crypto.randomUUID();
+  const toastId = crypto.randomUUID();
   const timer = setTimeout(() => {
     removeToast(toastId, timer, abortController);
   }, delay);

@@ -41,6 +41,8 @@ export const createProductsStore = () => {
     },
     initSearchParams() {
       const params = { ...defaultParams, ...router.getParams(), page: defaultParams.page };
+      console.log(router.getParams());
+      console.log(params);
       for (const [key, value] of Object.entries(params)) {
         productsStore[key] = value;
       }

@@ -16,7 +16,7 @@ class Router {
     this._404 = _404;
     this.#setEvents();
     const params = this.#getSearchParams();
-    this.#navigateTo({ pathname: window.location.pathname, params });
+    this.#navigateTo({ pathname: location.pathname, params });
   }
 
   push({ pathname = location.pathname, params = {} } = {}) {
