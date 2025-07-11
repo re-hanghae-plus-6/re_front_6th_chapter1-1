@@ -2,6 +2,7 @@ import { Component } from "../core/Component";
 import { router } from "../core/router";
 import { cartStore } from "../store/cart";
 import { productDetailStore } from "../store/product-detail";
+import { priceFormat } from "../utils/format";
 import { html } from "../utils/html";
 
 export class ProductDetail extends Component {
@@ -146,7 +147,7 @@ export class ProductDetail extends Component {
           <img src="${image}" alt="${title}" class="w-full h-full object-cover" loading="lazy" />
         </div>
         <h3 class="text-sm font-medium text-gray-900 mb-1 line-clamp-2">${title}</h3>
-        <p class="text-sm font-bold text-blue-600">${(+lprice).toLocaleString()}원</p>
+        <p class="text-sm font-bold text-blue-600">${priceFormat(lprice)}원</p>
       </div>
     `;
   }
@@ -224,7 +225,7 @@ export class ProductDetail extends Component {
         ${this.#ProductReview({ rating, reviewCount })}
         <!-- 가격 -->
         <div class="mb-4">
-          <span class="text-2xl font-bold text-blue-600">${(+lprice).toLocaleString()}원</span>
+          <span class="text-2xl font-bold text-blue-600">${priceFormat(lprice)}원</span>
         </div>
         <!-- 재고 -->
         <div class="text-sm text-gray-600 mb-4">재고 ${(+stock).toLocaleString()}개</div>

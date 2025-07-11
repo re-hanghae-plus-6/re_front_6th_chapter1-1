@@ -1,5 +1,6 @@
 import { Component } from "../core/Component";
 import { cartStore } from "../store/cart";
+import { priceFormat } from "../utils/format";
 import { html } from "../utils/html";
 
 export class CartModal extends Component {
@@ -113,7 +114,7 @@ export class CartModal extends Component {
                     <!-- 총 금액 -->
                     <div class="flex justify-between items-center mb-4">
                       <span class="text-lg font-bold text-gray-900">총 금액</span>
-                      <span class="text-xl font-bold text-blue-600">${totalPrice}원</span>
+                      <span class="text-xl font-bold text-blue-600">${priceFormat(totalPrice)}원</span>
                     </div>
                     <!-- 액션 버튼들 -->
                     <div class="space-y-2">
@@ -187,7 +188,7 @@ export class CartModal extends Component {
         >
           ${title}
         </h4>
-        <p class="text-sm text-gray-600 mt-1">${lprice}원</p>
+        <p class="text-sm text-gray-600 mt-1">${priceFormat(lprice)}원</p>
         <!-- 수량 조절 -->
         <div class="flex items-center mt-2">
           <button
@@ -221,7 +222,7 @@ export class CartModal extends Component {
       </div>
       <!-- 가격 및 삭제 -->
       <div class="text-right ml-3">
-        <p class="text-sm font-medium text-gray-900">${+lprice * +quantity}원</p>
+        <p class="text-sm font-medium text-gray-900">${priceFormat(+lprice * +quantity)}원</p>
         <button
           class="cart-item-remove-btn mt-1 text-xs text-red-600 hover:text-red-800"
           data-product-id="${productId}"
