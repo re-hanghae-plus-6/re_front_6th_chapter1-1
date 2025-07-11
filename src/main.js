@@ -26,7 +26,8 @@ const state = {
 export let render = async function (state) {
   const rootDOM = document.body.querySelector("#root");
   const path = window.location.pathname;
-  const detailPage = path.match(/^\/product=(.+)$/);
+  // 정규식: /product=... 또는 /front_6th_chapter1-1/product=... 모두 매치
+  const detailPage = path.match(/(?:\/front_6th_chapter1-1)?\/product=([^/]+)/);
   let html;
 
   if (
@@ -34,8 +35,8 @@ export let render = async function (state) {
     path === "" ||
     path.includes("limit") ||
     path.includes("sort") ||
-    path.includes("searchValue") ||
-    path.includes("front_6th_chapter1") ||
+    path.includes("search") ||
+    (path.includes("front_6th_chapter1") && detailPage === null) ||
     path.includes("category")
   ) {
     html = MainLayout({
@@ -82,15 +83,22 @@ async function main() {
   state.categoriesLoading = true;
   state.cartCount = localStorage.getItem("cartCount");
   render(state);
-
+  const path = window.location.pathname;
+  if (path.includes("sort")) {
+    const sortMatch = path.match(/sort=([^&/]+)/);
+    if (sortMatch) {
+      state.sort = sortMatch[1];
+    }
+  }
   const [
     {
       products,
       pagination: { total },
-    },
-    categories,
-  ] = await Promise.all([getProducts({}), getCategories()]);
-
+    }, 
+    categories
+  ]
+   = await Promise.all([getProducts({ sort: state.sort }), getCategories]);
+  
   store.setState({
     products,
     total,
