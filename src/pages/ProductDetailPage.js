@@ -289,7 +289,6 @@ const setupEventHandlers = () => {
     const state = productDetailStore.getState();
     const newQuantity = Math.max(1, state.quantity - 1);
     productDetailStore.setState({ quantity: newQuantity });
-    document.getElementById("quantity-input").value = newQuantity;
   });
 
   addEvent("click", "#quantity-increase", () => {
@@ -297,7 +296,6 @@ const setupEventHandlers = () => {
     const maxQuantity = state.product?.stock || 1;
     const newQuantity = Math.min(maxQuantity, state.quantity + 1);
     productDetailStore.setState({ quantity: newQuantity });
-    document.getElementById("quantity-input").value = newQuantity;
   });
 
   addEvent("change", "#quantity-input", (event) => {
@@ -305,7 +303,6 @@ const setupEventHandlers = () => {
     const maxQuantity = state.product?.stock || 1;
     const newQuantity = Math.min(maxQuantity, Math.max(1, parseInt(event.target.value) || 1));
     productDetailStore.setState({ quantity: newQuantity });
-    event.target.value = newQuantity;
   });
 
   addEvent("click", ".go-to-product-list", () => {
@@ -384,9 +381,8 @@ const setupStateSubscriptions = () => {
     }
 
     if (!newState.isLoading && (!prevState || newState.quantity !== prevState.quantity)) {
-      const $quantityInput = document.querySelector("#quantity-input");
-      if ($quantityInput) {
-        $quantityInput.value = newState.quantity;
+      if (newState.product) {
+        updateElement("#quantity-section", renderQuantitySection(newState.product, newState.quantity));
       }
     }
   });

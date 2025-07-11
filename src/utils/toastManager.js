@@ -7,7 +7,6 @@ const createToast = (message, type, duration) => {
   const toastElement = Toast.create({ message, type });
 
   toastElement.id = toastId;
-  toastElement.className += " mb-2";
 
   if (duration > 0) {
     setTimeout(() => toastElement.remove(), duration);

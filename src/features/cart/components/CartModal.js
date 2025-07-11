@@ -238,16 +238,20 @@ const CartModalComponent = createComponent(
 
       addEvent("click", ".quantity-increase-btn", (e) => {
         const productId = e.target.closest("button").dataset.productId;
-        const quantityInput = document.querySelector(`.quantity-input[data-product-id="${productId}"]`);
-        const newQuantity = parseInt(quantityInput.value) + 1;
-        updateItemQuantity(productId, newQuantity);
+        const { items } = cartStore.getState();
+        const item = items.find((item) => item.id === productId);
+        if (item) {
+          updateItemQuantity(productId, item.quantity + 1);
+        }
       });
 
       addEvent("click", ".quantity-decrease-btn", (e) => {
         const productId = e.target.closest("button").dataset.productId;
-        const quantityInput = document.querySelector(`.quantity-input[data-product-id="${productId}"]`);
-        const newQuantity = Math.max(1, parseInt(quantityInput.value) - 1);
-        updateItemQuantity(productId, newQuantity);
+        const { items } = cartStore.getState();
+        const item = items.find((item) => item.id === productId);
+        if (item) {
+          updateItemQuantity(productId, Math.max(1, item.quantity - 1));
+        }
       });
 
       addEvent("click", ".cart-item-remove-btn", (e) => {
@@ -319,9 +323,15 @@ const renderModal = () => {
   const { items, selectedItems, isModalOpen } = cartStore.getState();
 
   if (isModalOpen) {
-    createModalContainer();
-    updateElement("#cart-modal-container", CartModal({ items, selectedItems }));
-    CartModal.mount();
+    const existingContainer = document.getElementById("cart-modal-container");
+
+    if (!existingContainer) {
+      createModalContainer();
+      updateElement("#cart-modal-container", CartModal({ items, selectedItems }));
+      CartModal.mount();
+    } else {
+      updateElement("#cart-modal-container", CartModal({ items, selectedItems }));
+    }
   } else {
     cleanupModal();
   }
@@ -338,6 +348,5 @@ const syncToLocalStorage = (state) => {
 
 export const initCartModal = () => {
   cartStore.subscribe(renderModal);
-
   cartStore.subscribe(syncToLocalStorage);
 };

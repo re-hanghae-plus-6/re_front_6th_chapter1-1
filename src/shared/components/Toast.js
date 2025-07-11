@@ -28,7 +28,7 @@ const getToastColor = (type) => {
 };
 
 const renderToast = ({ message, type = "info" }) => `
-  <div class="${getToastColor(type)} text-white px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2 max-w-sm animate-slide-up">
+  <div class="${getToastColor(type)} text-white px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2 max-w-sm animate-slide-up mb-2">
     <div class="flex-shrink-0">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         ${getToastIcon(type)}

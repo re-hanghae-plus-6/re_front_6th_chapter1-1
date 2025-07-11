@@ -3,29 +3,6 @@ import { addEvent } from "../../utils/eventManager.js";
 import { openCartModal } from "../../features/cart/services/cartService.js";
 import { createComponent } from "../../utils/domUtils.js";
 
-const updateCartIcon = () => {
-  const { itemCount } = cartStore.getState();
-  const cartIconBtn = document.querySelector("#cart-icon-btn");
-
-  if (cartIconBtn) {
-    const countSpan = cartIconBtn.querySelector("span");
-
-    if (itemCount > 0) {
-      if (!countSpan) {
-        const span = document.createElement("span");
-        span.className =
-          "absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center";
-        cartIconBtn.appendChild(span);
-      }
-      cartIconBtn.querySelector("span").textContent = itemCount;
-    } else {
-      if (countSpan) {
-        countSpan.remove();
-      }
-    }
-  }
-};
-
 const handleCartIconClick = () => {
   openCartModal();
 };
@@ -78,21 +55,12 @@ const renderHeader = ({ title = "쇼핑몰", showBackButton = false } = {}) => {
   `;
 };
 
-let cartStoreUnsubscribe = null;
-
 const HeaderComponent = createComponent(
   renderHeader,
   { title: "쇼핑몰", showBackButton: false },
   {
     mount: () => {
       addEvent("click", "#cart-icon-btn", handleCartIconClick);
-      cartStoreUnsubscribe = cartStore.subscribe(updateCartIcon);
-    },
-    unmount: () => {
-      if (cartStoreUnsubscribe) {
-        cartStoreUnsubscribe();
-        cartStoreUnsubscribe = null;
-      }
     },
   },
 );
