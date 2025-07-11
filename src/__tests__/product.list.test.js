@@ -36,8 +36,8 @@ describe("1. 상품 목록 로딩", () => {
     ).toBeInTheDocument();
 
     // NOTE 총 340개의 상품 과 총 340개 를 함께 찾을 수 없어서 아래와 같이 수정하였습니다.
-    expect(screen.getByText(/총.*개의 상품/i)).toBeInTheDocument();
-    expect(screen.getByText("340")).toBeInTheDocument();
+    expect(screen.getByText(/총 의 상품/i)).toBeInTheDocument();
+    expect(screen.getByText("340개")).toBeInTheDocument();
   });
 });
 
@@ -73,7 +73,7 @@ describe("2. 상품 목록 조회", () => {
 describe("3. 페이지당 상품 수 선택", () => {
   test("드롭다운에서 10, 20, 50, 100개 중 선택할 수 있으며 기본값은 20개이다", async () => {
     // 상품이 로드될 때까지 대기
-    await screen.findByText(/총.*개의 상품/i);
+    await screen.findByText(/총 의 상품/i);
 
     // 페이지당 상품 수 선택 드롭다운 찾기
     const limitSelect = document.querySelector("#limit-select");
@@ -91,7 +91,7 @@ describe("3. 페이지당 상품 수 선택", () => {
   });
 
   test("선택 변경 시 즉시 목록에 반영된다", async () => {
-    await screen.findByText(/총.*개의 상품/i);
+    await screen.findByText(/총 의 상품/i);
 
     expect(
       await screen.findByRole("heading", {
@@ -118,7 +118,7 @@ describe("3. 페이지당 상품 수 선택", () => {
 
 describe("4. 상품 정렬 기능", () => {
   test("상품을 가격순/인기순으로 정렬할 수 있다", async () => {
-    await screen.findByText(/총.*개의 상품/i);
+    await screen.findByText(/총 의 상품/i);
 
     // 정렬 드롭다운 찾기
     const sortSelect = document.querySelector("#sort-select");
@@ -133,7 +133,7 @@ describe("4. 상품 정렬 기능", () => {
   });
 
   test("정렬 변경 시 목록에 반영된다", async () => {
-    await screen.findByText(/총.*개의 상품/i);
+    await screen.findByText(/총 의 상품/i);
 
     const expectProduct = (name, index = 0) => {
       const product = [...document.querySelectorAll(".product-card")][index];
@@ -164,7 +164,7 @@ describe("4. 상품 정렬 기능", () => {
 
 describe("5. 무한 스크롤 페이지네이션", () => {
   test("페이지 하단 스크롤 시 추가 상품이 로드된다", async () => {
-    await screen.findByText(/총.*개의 상품/i);
+    await screen.findByText(/총 의 상품/i);
 
     // 초기 상품 카드 수 확인
     const initialCards = document.querySelectorAll(".product-card").length;
@@ -182,7 +182,7 @@ describe("5. 무한 스크롤 페이지네이션", () => {
 
 describe("6. 상품 검색", () => {
   test("상품명 기반 검색을 위한 텍스트 입력 필드가 있다", async () => {
-    await screen.findByText(/총.*개의 상품/i);
+    await screen.findByText(/총 의 상품/i);
 
     // 검색 입력 필드 확인
     const searchInput = document.querySelector("#search-input");
@@ -191,7 +191,7 @@ describe("6. 상품 검색", () => {
   });
 
   test("Enter 키로 검색이 수행할 수 있으며, 검색어와 일치하는 상품들만 목록에 표시된다", async () => {
-    await screen.findByText(/총.*개의 상품/i);
+    await screen.findByText(/총 의 상품/i);
 
     const searchInput = document.querySelector("#search-input");
 
@@ -199,7 +199,7 @@ describe("6. 상품 검색", () => {
     await userEvent.keyboard("{Enter}");
 
     // 검색 결과: "총 3개의 상품" 형태로 표시되므로 "3"을 찾음
-    await screen.findByText("3");
+    await screen.findByText("3개");
 
     const productCards = [...document.querySelectorAll(".product-card")];
     expect(getByRole(productCards[0], "heading", { level: 3, name: /젤리/i })).toBeInTheDocument();
