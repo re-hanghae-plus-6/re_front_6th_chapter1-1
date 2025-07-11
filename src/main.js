@@ -40,7 +40,7 @@ function updateURL() {
   if (state.category1) params.set('category1', state.category1);
   if (state.category2) params.set('category2', state.category2);
   if (state.sort !== 'price_asc') params.set('sort', state.sort);
-  if (state.limit !== 20) params.set('limit', state.limit.toString());
+  params.set('limit', state.limit.toString());
 
   const newURL = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
   window.history.replaceState({}, '', newURL);
@@ -374,13 +374,16 @@ function setUpEventListeners() {
 
   window.addEventListener('scroll', handleScroll);
 
-  // popstate 이벤트 리스너 추가
-  window.addEventListener('popstate', renderPage);
+  // popstate 이벤트 리스너는 main 함수에서 전역으로 설정
+  // window.addEventListener('popstate', renderPage);
 
   isEventListenerSetUp = true;
 }
 
 export async function main() {
+  // popstate 이벤트 리스너를 전역으로 설정
+  window.addEventListener('popstate', renderPage);
+
   await renderPage();
 }
 

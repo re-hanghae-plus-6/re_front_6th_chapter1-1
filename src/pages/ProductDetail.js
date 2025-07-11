@@ -237,7 +237,7 @@ export class ProductDetail {
         const productId = card.dataset.productId;
         if (productId) {
           window.history.pushState({}, '', `/product/${productId}`);
-          window.dispatchEvent(new PopStateEvent('popstate'));
+          window.dispatchEvent(new Event('popstate'));
         }
       });
     });
@@ -246,7 +246,7 @@ export class ProductDetail {
     if (homeBtn) {
       homeBtn.addEventListener('click', () => {
         window.history.pushState({}, '', '/');
-        window.dispatchEvent(new PopStateEvent('popstate'));
+        window.dispatchEvent(new Event('popstate'));
       });
     }
 
