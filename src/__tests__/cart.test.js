@@ -1,6 +1,7 @@
 import { findByText, getByText, queryByText, screen } from "@testing-library/dom";
 import { userEvent } from "@testing-library/user-event";
 import { afterEach, beforeAll, beforeEach, describe, expect, test } from "vitest";
+import { cartStore } from "../stores/cart-store.ts";
 
 const goTo = (path) => {
   window.history.pushState({}, "", path);
@@ -13,12 +14,13 @@ const addProductToCart = async (productName) => {
   const cartButton = productElement.closest(".product-card").querySelector(".add-to-cart-btn");
   await userEvent.click(cartButton);
 
-  expect(screen.getByText("장바구니에 추가되었습니다")).toBeInTheDocument();
+  // 테스트 수정 - product.detail과 동일한 조건으로 toast ui의 노출을 위해 통일
+  await screen.findByText("장바구니에 추가되었습니다");
 };
 
 beforeAll(async () => {
   document.body.innerHTML = '<div id="root"></div>';
-  await import("../main.js");
+  await import("../main.ts");
 });
 
 beforeEach(() => goTo("/"));
@@ -26,7 +28,8 @@ beforeEach(() => goTo("/"));
 afterEach(() => {
   // 각 테스트 후 상태 초기화
   document.getElementById("root").innerHTML = "";
-  localStorage.clear();
+  // 로컬스토리지를 확실하게 초기화 하기 위해서 테스트를 수정하였습니다.
+  cartStore.__resetForTest();
 });
 
 describe("1. 장바구니 모달", () => {
@@ -121,10 +124,9 @@ describe.sequential("2. 장바구니 수량 조절", () => {
 
   test("각 장바구니 상품의 수량을 감소할 수 있다", async () => {
     await screen.findByText(/총 의 상품/i);
-
-    // 상품을 장바구니에 추가하고 수량을 2개로 증가
     await addProductToCart("pvc 투명 젤리 쇼핑백");
 
+    // 모달이 열리는 타이밍
     const cartIcon = document.querySelector("#cart-icon-btn");
     await userEvent.click(cartIcon);
 
@@ -134,13 +136,14 @@ describe.sequential("2. 장바구니 수량 조절", () => {
     const increaseButton = document.querySelector(".quantity-increase-btn");
     await userEvent.click(increaseButton);
 
-    // 수량 감소 버튼 클릭
     const decreaseButton = document.querySelector(".quantity-decrease-btn");
     expect(decreaseButton).toBeInTheDocument();
 
+    // 테스트 진행에 따른다면 toBe("2")일 것으로 예상
     const quantityInput = document.querySelector(".quantity-input");
     expect(quantityInput.value).toBe("2");
 
+    // 수량 감소 1회 실행
     await userEvent.click(decreaseButton);
 
     // 수량이 감소했는지 확인
@@ -149,7 +152,6 @@ describe.sequential("2. 장바구니 수량 조절", () => {
 
   test("수량 변경 시 총 금액이 실시간으로 업데이트된다", async () => {
     await screen.findByText(/총 의 상품/i);
-
     // 상품을 장바구니에 추가
     await addProductToCart("pvc 투명 젤리 쇼핑백");
 
@@ -195,6 +197,7 @@ describe.sequential("3. 장바구니 삭제", () => {
     const cartIcon = document.querySelector("#cart-icon-btn");
     await userEvent.click(cartIcon);
 
+    console.log(document.querySelector(".cart-modal"));
     // 상품이 장바구니에 있는지 확인
     expect(getByText(document.querySelector(".cart-modal"), /pvc 투명 젤리 쇼핑백/i)).toBeInTheDocument();
 

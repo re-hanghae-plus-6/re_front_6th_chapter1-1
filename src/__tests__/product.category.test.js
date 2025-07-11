@@ -9,7 +9,7 @@ const goTo = (path) => {
 
 beforeAll(async () => {
   document.body.innerHTML = '<div id="root"></div>';
-  await import("../main.js");
+  await import("../main.ts");
 });
 
 beforeEach(() => goTo("/"));
