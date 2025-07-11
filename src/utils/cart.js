@@ -2,7 +2,7 @@ const storage = window.localStorage;
 
 export const cartManager = {
   getCart() {
-    return JSON.parse(storage.getItem("cart") || "[]");
+    return JSON.parse(storage.getItem("shopping_cart") || "[]");
   },
 
   addToCart(product, cnt = 1) {
@@ -14,13 +14,13 @@ export const cartManager = {
       cart.push({ ...product, quantity: cnt, selected: false });
     }
 
-    storage.setItem("cart", JSON.stringify(cart));
+    storage.setItem("shopping_cart", JSON.stringify(cart));
     this.updateCartCount();
   },
 
   removeFromCart(productId) {
     const cart = this.getCart().filter((item) => item.productId !== productId);
-    storage.setItem("cart", JSON.stringify(cart));
+    storage.setItem("shopping_cart", JSON.stringify(cart));
     this.updateCartCount();
   },
 
@@ -29,7 +29,7 @@ export const cartManager = {
     const existingItem = cart.find((item) => item.productId === productId);
 
     existingItem.quantity += 1;
-    storage.setItem("cart", JSON.stringify(cart));
+    storage.setItem("shopping_cart", JSON.stringify(cart));
     this.updateCartCount();
   },
 
@@ -41,7 +41,7 @@ export const cartManager = {
       this.removeFromCart(productId);
     } else {
       existingItem.quantity -= 1;
-      storage.setItem("cart", JSON.stringify(cart));
+      storage.setItem("shopping_cart", JSON.stringify(cart));
       this.updateCartCount();
     }
   },
@@ -64,18 +64,18 @@ export const cartManager = {
       });
     }
 
-    storage.setItem("cart", JSON.stringify(cart));
+    storage.setItem("shopping_cart", JSON.stringify(cart));
   },
 
   removeSelectedItems() {
     const cart = this.getCart();
     const updatedCart = cart.filter((item) => !item.selected);
-    storage.setItem("cart", JSON.stringify(updatedCart));
+    storage.setItem("shopping_cart", JSON.stringify(updatedCart));
     this.updateCartCount();
   },
 
   resetCart() {
-    storage.removeItem("cart");
+    storage.removeItem("shopping_cart");
     this.updateCartCount();
   },
 

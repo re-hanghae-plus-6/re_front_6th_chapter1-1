@@ -120,21 +120,17 @@ describe.sequential("2. 장바구니 수량 조절", () => {
   });
 
   test("각 장바구니 상품의 수량을 감소할 수 있다", async () => {
-    /**
-    유닛테스트의 테스트끼리는 상태 공유를 지양하라고 하는데.. 증가테스트에서 이어지는게 맞나?
-    좀 더 알아봐야해서, 독립적으로 실행하기 위해 코드 일부 수정함.
-    */
     await screen.findByText(/총 의 상품/i);
 
-    // 상품을 장바구니에 추가
+    // 상품을 장바구니에 추가하고 수량을 2개로 증가
     await addProductToCart("pvc 투명 젤리 쇼핑백");
-
-    expect(document.querySelector(".quantity-input").value).toBe("1");
 
     const cartIcon = document.querySelector("#cart-icon-btn");
     await userEvent.click(cartIcon);
 
-    // 수량을 2개로 증가
+    expect(document.querySelector(".quantity-input").value).toBe("1");
+
+    // 수량을 먼저 2개로 증가
     const increaseButton = document.querySelector(".quantity-increase-btn");
     await userEvent.click(increaseButton);
 
@@ -152,9 +148,6 @@ describe.sequential("2. 장바구니 수량 조절", () => {
   });
 
   test("수량 변경 시 총 금액이 실시간으로 업데이트된다", async () => {
-    /**
-    감소테스트와 마찬가지로 독립적으로 실행하기 위해 코드 일부 수정함.
-    */
     await screen.findByText(/총 의 상품/i);
 
     // 상품을 장바구니에 추가
@@ -166,7 +159,6 @@ describe.sequential("2. 장바구니 수량 조절", () => {
     // 초기 총 금액 확인
     const getTotalAmountElement = () => screen.getByText("총 금액").parentNode.querySelector("span:last-child");
     const initialAmount = getTotalAmountElement().textContent;
-
     expect(initialAmount).toBe("220원");
 
     // 수량 증가
@@ -295,17 +287,12 @@ describe.sequential("5. 장바구니 전체 선택", () => {
     const cartIcon = document.querySelector("#cart-icon-btn");
     await userEvent.click(cartIcon);
 
-    const selectAllCheckbox = document.querySelector("#cart-modal-select-all-checkbox");
-
     // 전체 선택 후 전체 해제
-    await userEvent.click(selectAllCheckbox);
-    await userEvent.click(selectAllCheckbox);
+    await userEvent.click(document.querySelector("#cart-modal-select-all-checkbox"));
+    expect([...document.querySelectorAll(".cart-item-checkbox")].map((v) => v.checked)).toEqual([true, true]);
 
-    // 모든 상품의 체크박스가 해제되었는지 확인
-    const itemCheckboxes = document.querySelectorAll(".cart-item-checkbox");
-    itemCheckboxes.forEach((checkbox) => {
-      expect(checkbox.checked).toBe(false);
-    });
+    await userEvent.click(document.querySelector("#cart-modal-select-all-checkbox"));
+    expect([...document.querySelectorAll(".cart-item-checkbox")].map((v) => v.checked)).toEqual([false, false]);
   });
 });
 

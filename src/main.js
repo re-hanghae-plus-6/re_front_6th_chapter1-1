@@ -98,6 +98,9 @@ async function renderDetail(productId) {
     });
     const related = relatedData.products.filter((p) => p.productId !== productId);
     root.innerHTML = ItemDetail({ loading: false, product, related });
+
+    // 상세 페이지 수량 조절 이벤트 리스너 직접 추가
+    setupDetailQuantityEvents();
   } catch (err) {
     console.error("상품 상세 로드 실패:", err);
     root.innerHTML = `<p class="text-center text-red-500">상품 상세를 불러오는 데 실패했습니다.</p>`;
@@ -108,6 +111,12 @@ async function renderDetail(productId) {
 function handleRoute() {
   const path = window.location.pathname;
   console.log("path", path);
+
+  // 테스트 환경에서는 매번 전역 상태 초기화
+  if (window.navigator.userAgent.includes("jsdom")) {
+    resetGlobalState();
+  }
+
   if (path === "/") {
     // URL 쿼리 파라미터에서 상태 복원
     const params = new URL(window.location).searchParams;
@@ -129,10 +138,34 @@ function handleRoute() {
   root.innerHTML = NotFound;
 }
 
+// 테스트 환경을 위한 전역 변수 초기화 함수
+function resetGlobalState() {
+  currentSearch = "";
+  currentCategory1 = "";
+  currentCategory2 = "";
+  currentSort = "price_asc";
+  currentLimit = 20;
+  currentPage = 1;
+  hasNext = true;
+  allProducts = [];
+  totalCount = 0;
+  currentDetailProduct = null;
+  loadingNextPage = false;
+
+  // DOM 초기화 (테스트 환경에서만)
+  const rootElement = document.getElementById("root");
+  if (rootElement && window.navigator.userAgent.includes("jsdom")) {
+    rootElement.innerHTML = "";
+  }
+}
+
 // 애플리케이션 시작
 // 초기 실행 및 popstate 라우팅
 enableMocking().then(handleRoute);
 window.addEventListener("popstate", handleRoute);
+
+// 테스트 환경에서 전역 상태 초기화를 위한 전역 함수
+window.resetGlobalState = resetGlobalState;
 
 // limit, sort change 이벤트 위임 (카테고리, 검색 유지)
 const root = document.getElementById("root");
@@ -294,16 +327,40 @@ document.addEventListener("click", (e) => {
     history.pushState({}, "", link.getAttribute("href"));
     return handleRoute();
   }
-  // 상세 페이지 수량 증가
-  if (e.target.matches("#quantity-increase")) {
+  // 상세 페이지 수량 증가 (이벤트 위임으로 처리)
+  if (e.target.matches("#quantity-increase") || e.target.closest("#quantity-increase")) {
+    console.log("수량 증가 버튼 클릭됨 (이벤트 위임)");
     const input = document.querySelector("#quantity-input");
-    input.value = String(Math.min(parseInt(input.value) + 1, parseInt(input.max)));
+    console.log("input 요소:", input);
+    if (input) {
+      const currentValue = parseInt(input.value) || 1;
+      const maxValue = parseInt(input.max) || 999;
+      console.log("현재 값:", currentValue, "최대값:", maxValue);
+      const newValue = Math.min(currentValue + 1, maxValue);
+      console.log("새로운 값:", newValue);
+      input.value = String(newValue);
+      console.log("input.value 설정 후:", input.value);
+    } else {
+      console.log("input 요소를 찾을 수 없음");
+    }
     return;
   }
-  // 상세 페이지 수량 감소
-  if (e.target.matches("#quantity-decrease")) {
+  // 상세 페이지 수량 감소 (이벤트 위임으로 처리)
+  if (e.target.matches("#quantity-decrease") || e.target.closest("#quantity-decrease")) {
+    console.log("수량 감소 버튼 클릭됨 (이벤트 위임)");
     const input = document.querySelector("#quantity-input");
-    input.value = String(Math.max(parseInt(input.value) - 1, parseInt(input.min)));
+    if (input) {
+      const currentValue = parseInt(input.value) || 1;
+      const minValue = parseInt(input.min) || 1;
+      const newValue = Math.max(currentValue - 1, minValue);
+      input.value = String(newValue);
+      console.log("수량 감소 완료:", newValue);
+    }
+    return;
+  }
+  // 장바구니 아이콘 클릭
+  if (e.target.matches("#cart-icon-btn") || e.target.closest("#cart-icon-btn")) {
+    window.openCartModal(cartManager.getCart());
     return;
   }
   // 상세 페이지 장바구니 담기 버튼 클릭
@@ -329,7 +386,6 @@ document.addEventListener("click", (e) => {
     const prod = allProducts.find((p) => p.productId === pid);
     if (prod) {
       cartManager.addToCart(prod);
-      window.openCartModal(cartManager.getCart());
       showToast("success");
     }
     return;
@@ -393,6 +449,50 @@ document.addEventListener("click", (e) => {
     return main();
   }
 });
+
+// 상세 페이지 수량 조절 이벤트 설정 함수
+function setupDetailQuantityEvents() {
+  const increaseBtn = document.querySelector("#quantity-increase");
+  const decreaseBtn = document.querySelector("#quantity-decrease");
+
+  if (increaseBtn) {
+    // 기존 이벤트 리스너 제거 (중복 방지)
+    increaseBtn.removeEventListener("click", handleQuantityIncrease);
+    increaseBtn.addEventListener("click", handleQuantityIncrease);
+  }
+
+  if (decreaseBtn) {
+    // 기존 이벤트 리스너 제거 (중복 방지)
+    decreaseBtn.removeEventListener("click", handleQuantityDecrease);
+    decreaseBtn.addEventListener("click", handleQuantityDecrease);
+  }
+}
+
+// 수량 증가 핸들러
+function handleQuantityIncrease() {
+  console.log("수량 증가 버튼 클릭됨 (직접 이벤트)");
+  const quantityInput = document.querySelector("#quantity-input");
+  if (quantityInput) {
+    const currentValue = parseInt(quantityInput.value) || 1;
+    const maxValue = parseInt(quantityInput.max) || 999;
+    const newValue = Math.min(currentValue + 1, maxValue);
+    quantityInput.value = String(newValue);
+    console.log("수량 증가 완료:", newValue);
+  }
+}
+
+// 수량 감소 핸들러
+function handleQuantityDecrease() {
+  console.log("수량 감소 버튼 클릭됨 (직접 이벤트)");
+  const quantityInput = document.querySelector("#quantity-input");
+  if (quantityInput) {
+    const currentValue = parseInt(quantityInput.value) || 1;
+    const minValue = parseInt(quantityInput.min) || 1;
+    const newValue = Math.max(currentValue - 1, minValue);
+    quantityInput.value = String(newValue);
+    console.log("수량 감소 완료:", newValue);
+  }
+}
 
 // 모달 이벤트 설정 함수
 function setupModalEvents(modalRoot) {
