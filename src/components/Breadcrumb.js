@@ -10,7 +10,7 @@ Breadcrumb.mount = () => {
   });
 
   category1Btn?.addEventListener("click", () => {
-    store.set("params.category2", "");
+    store.set("params.category2", null);
   });
 };
 

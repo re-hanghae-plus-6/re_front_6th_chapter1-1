@@ -3,12 +3,18 @@ import Breadcrumb from "./Breadcrumb";
 import Loading from "./Loading";
 
 Search.mount = () => {
+  const params = new URLSearchParams(window.location.search);
+  const paramObj = {};
+  for (const [key, value] of params.entries()) {
+    paramObj[key] = value;
+  }
+
   const limitSelect = document.querySelector("#limit-select");
   const sortSelect = document.querySelector("#sort-select");
   const searchInput = document.querySelector("#search-input");
-  const limit = store.get("params")["limit"];
-  const sort = store.get("params")["sort"];
-  const search = store.get("params")["search"];
+  const limit = paramObj.limit || store.get("params")["limit"];
+  const sort = paramObj.sort || store.get("params")["sort"];
+  const search = paramObj.search || store.get("params")["search"];
 
   limitSelect.value = limit;
   sortSelect.value = sort;
@@ -114,6 +120,7 @@ export default function Search(categories = {}, isLoading = true) {
                 : ""
           }
         <!-- 2depth 카테고리 -->
+        
           ${
             store.get("params")["category1"] && categories[store.get("params")["category1"]]
               ? Object.keys(categories[store.get("params")["category1"]])

@@ -89,9 +89,13 @@ Home.init = () => {
 };
 
 Home.mount = async () => {
-  // let io;
+  const params = new URLSearchParams(window.location.search);
+  const paramObj = {};
+  for (const [key, value] of params.entries()) {
+    paramObj[key] = value;
+  }
 
-  await fetchProducts();
+  await fetchProducts(paramObj);
   await fetchCategories();
   renderHome();
 
@@ -115,7 +119,13 @@ Home.mount = async () => {
 
     await fetchProducts(newValue);
     state.isLoadingMore = false;
-    // fetchMoreProducts(io);
+
+    render.draw("#search-container", Search(store.get("categories"), false));
+    Search.mount();
+
+    render.draw("#breadcrumb-container", Breadcrumb());
+    Breadcrumb.mount();
+
     render.draw(
       "#product-list",
       ProductList({
@@ -123,11 +133,6 @@ Home.mount = async () => {
         pagination: state.pagination,
       }),
     );
-    render.draw("#search-container", Search(store.get("categories"), false));
-    Search.mount();
-
-    render.draw("#breadcrumb-container", Breadcrumb());
-    Breadcrumb.mount();
 
     ProductCard.mount();
   }, "params");

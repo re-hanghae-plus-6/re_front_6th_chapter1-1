@@ -6,6 +6,7 @@ const useRender = () => {
     document.querySelector("#root").innerHTML = Layout();
   };
   const draw = (tag, html) => {
+    if (!tag) return;
     document.querySelector(tag).innerHTML = html;
   };
 
