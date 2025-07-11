@@ -21,8 +21,3 @@ export const state = {
   relatedProducts: [],
   selectProduct: null,
 };
-
-// 여러 key를 한 번에 수정할 수 있는 setState 함수
-export function setState(updates) {
-  Object.assign(state, updates);
-}
