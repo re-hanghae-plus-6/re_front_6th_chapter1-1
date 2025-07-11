@@ -1,4 +1,4 @@
-import { getProducts, getCategories } from "../api/productApi.js";
+import { getProducts, getCategories, getProduct } from "../api/productApi.js";
 import { getURLParams, updateSingleParam } from "../utils/urlParams.js";
 import { actions } from "../stores/actions.js";
 
@@ -58,6 +58,22 @@ export const createProductService = (store) => {
     }
   };
 
+  /** 상품 상세 로드 */
+  const loadProductDetail = async (productId) => {
+    const { dispatch } = store;
+
+    try {
+      dispatch(actions.setProductDetailLoading(true));
+
+      const product = await getProduct(productId);
+
+      dispatch(actions.setProductDetail(product));
+    } catch (error) {
+      console.error("상품 상세 로딩 실패:", error);
+      dispatch(actions.setProductDetailLoading(false));
+    }
+  };
+
   /** 카테고리 로드 */
   const loadCategories = async () => {
     const { dispatch } = store;
@@ -70,5 +86,5 @@ export const createProductService = (store) => {
     }
   };
 
-  return { loadProducts, loadMoreProducts, loadCategories };
+  return { loadProducts, loadMoreProducts, loadCategories, loadProductDetail };
 };
