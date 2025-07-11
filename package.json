@@ -13,6 +13,7 @@
 		"test": "vitest",
 		"test:hard:basic": "vitest --run",
 		"test:hard:advanced": "playwright test e2e-hard",
+		"test:hard:advanced:ui": "playwright test e2e-hard --ui",
 		"test:easy:basic": "playwright test e2e-easy.basic",
 		"test:easy:basic:ui": "playwright test e2e-easy.basic --ui",
 		"test:easy:advanced": "playwright test e2e-easy.advanced",
