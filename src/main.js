@@ -1,4 +1,4 @@
-import { App } from "./App.js";
+import { App } from "./app.js";
 import { store } from "./store.js";
 import { actions } from "./actions/index.js";
 import { controller } from "./controllers";
