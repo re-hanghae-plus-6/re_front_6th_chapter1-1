@@ -33,6 +33,12 @@ async function main() {
 
   let lastRoute = null;
 
+  if (import.meta.env.MODE === "test") {
+    controller.resetLastRoute = () => {
+      lastRoute = null;
+    };
+  }
+
   store.subscribe((state) => {
     if (state.currentRoute !== lastRoute) {
       lastRoute = state.currentRoute;

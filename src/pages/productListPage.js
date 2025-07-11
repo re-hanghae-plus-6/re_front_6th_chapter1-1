@@ -29,7 +29,6 @@ export const ProductListPage = () => {
   } = state;
   const renderProductCards = () => {
     if (error) {
-      console.log(error);
       return `<p class="text-red-600">에러</p>`;
     }
 

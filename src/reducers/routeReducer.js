@@ -3,7 +3,7 @@ import { ROUTE_ACTIONS } from "../actions/routeActions.js";
 export function routeReducer(state, action) {
   switch (action.type) {
     case ROUTE_ACTIONS.SET_PAGE_LOADING: {
-      return {
+      const newState = {
         ...state,
         ...action.payload,
         ...(action.payload.productDetail && {
@@ -13,6 +13,7 @@ export function routeReducer(state, action) {
           },
         }),
       };
+      return newState;
     }
 
     case ROUTE_ACTIONS.CHANGE_ROUTE: {

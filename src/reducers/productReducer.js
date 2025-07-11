@@ -2,7 +2,7 @@ import { PRODUCT_ACTIONS } from "../actions/productActions.js";
 
 export function productReducer(state, action) {
   switch (action.type) {
-    case PRODUCT_ACTIONS.LOAD_INITIAL_DATA:
+    case PRODUCT_ACTIONS.LOAD_INITIAL_DATA: {
       return {
         ...state,
         loading: true,
@@ -10,6 +10,7 @@ export function productReducer(state, action) {
         error: null,
         categoriesError: null,
       };
+    }
 
     case PRODUCT_ACTIONS.INITIAL_DATA_LOADED: {
       const { categories, products, pagination } = action.payload;

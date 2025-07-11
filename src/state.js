@@ -2,11 +2,9 @@ import { getCartFromStorage } from "./utils/storage.js";
 
 export const initialState = {
   products: [],
-  loading: false,
   error: null,
 
   categories: {},
-  loadingCategories: false,
   categoriesError: null,
 
   pagination: {

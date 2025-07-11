@@ -53,10 +53,8 @@ class Controller {
         currentPath = currentPath.slice(basePath.length) || "/";
       }
 
-      if (import.meta.env.MODE === "test" && currentPath === "/") {
-        clearCartStorage();
-        store.reset();
-        store.computed.cart.clearCache();
+      if (import.meta.env.MODE === "test" && currentPath === "/" && this.resetLastRoute) {
+        this.resetLastRoute();
       }
 
       store.dispatch(actions.navigate(currentPath));
@@ -96,6 +94,9 @@ class Controller {
         store.reset();
         store.computed.cart.clearCache();
 
+        // store.reset() 후 다시 로딩 상태 설정
+        store.dispatch(actions.loadInitialData());
+
         const rootElement = document.getElementById("root");
         if (rootElement) {
           rootElement.innerHTML = "";
@@ -107,7 +108,7 @@ class Controller {
       }
       this.controllers.productList = new ProductListController();
       this.controllers.productList.setupEventListeners();
-      this.controllers.productList.loadData();
+      await this.controllers.productList.loadData();
     } else if (currentRoute.startsWith("/product/")) {
       const productId = getProductId(currentRoute);
       if (productId) {

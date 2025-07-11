@@ -235,7 +235,6 @@ export class ProductListController {
       };
 
       const data = await getProducts(params);
-      console.log("데이터 부름", data);
       store.dispatch(
         actions.productsLoaded({
           products: data.products,
