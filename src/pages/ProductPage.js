@@ -27,11 +27,13 @@ const StarImage = () => {
 };
 export const ProductPage = async (productId) => {
   const { cartItemCount } = store.getState();
+
   let product = null;
   let loading = true;
 
   try {
     product = await getProduct(productId);
+    store.dispatch({ type: "SET_CURRENT_DETAIL_PRODUCT", payload: { currentDetailProduct: product } });
   } catch (error) {
     console.error(error);
   } finally {
@@ -45,31 +47,6 @@ export const ProductPage = async (productId) => {
     ${Footer()}
     `;
   }
-  //   {
-  //     "title": "PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장",
-  //     "link": "https://smartstore.naver.com/main/products/7522712674",
-  //     "image": "https://shopping-phinf.pstatic.net/main_8506721/85067212996.1.jpg",
-  //     "lprice": "220",
-  //     "hprice": "",
-  //     "mallName": "기브N기브",
-  //     "productId": "85067212996",
-  //     "productType": "2",
-  //     "brand": "",
-  //     "maker": "",
-  //     "category1": "생활/건강",
-  //     "category2": "생활용품",
-  //     "category3": "생활잡화",
-  //     "category4": "쇼핑백",
-  //     "description": "PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장에 대한 상세 설명입니다.  브랜드의 우수한 품질을 자랑하는 상품으로, 고객 만족도가 높은 제품입니다.",
-  //     "rating": 4,
-  //     "reviewCount": 144,
-  //     "stock": 65,
-  //     "images": [
-  //         "https://shopping-phinf.pstatic.net/main_8506721/85067212996.1.jpg",
-  //         "https://shopping-phinf.pstatic.net/main_8506721/85067212996.1_2.jpg",
-  //         "https://shopping-phinf.pstatic.net/main_8506721/85067212996.1_3.jpg"
-  //     ]
-  // }
 
   return `
     <div class="min-h-screen bg-gray-50">
@@ -140,8 +117,8 @@ export const ProductPage = async (productId) => {
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
                   </svg>
                 </button>
-                <input type="number" id="quantity-input" value="1" min="1" max="107" class="w-16 h-8 text-center text-sm border-t border-b border-gray-300 
-                  focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+
+                <input type="number" id="quantity-input" value="1" min="1" max="${product.stock > 0 ? product.stock : 1}" class="w-16 h-8 text-center text-sm border-t border-b border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                 <button id="quantity-increase" class="w-8 h-8 flex items-center justify-center border border-gray-300 
                    rounded-r-md bg-gray-50 hover:bg-gray-100">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -151,7 +128,7 @@ export const ProductPage = async (productId) => {
               </div>
             </div>
             <!-- 액션 버튼 -->
-            <button id="add-to-cart-btn" data-product-id="85067212996" class="w-full bg-blue-600 text-white py-3 px-4 rounded-md 
+            <button id="add-to-cart-btn" data-product-id="${product.productId}" class="w-full bg-blue-600 text-white py-3 px-4 rounded-md 
                  hover:bg-blue-700 transition-colors font-medium">
               장바구니 담기
             </button>

@@ -147,58 +147,45 @@ const handleCategoryFilter = (event) => {
   fetchAndRenderHomepageData(false);
 };
 
-const routes = [
-  { path: /^\/$/, view: () => HomePage(store.getState()) },
-  { path: /^\/product\/([\w-]+)$/, view: (productId) => ProductPage(productId) },
-];
+const attachProductPageEventListeners = () => {
+  const quantityInput = document.getElementById("quantity-input");
+  const decreaseBtn = document.getElementById("quantity-decrease");
+  const increaseBtn = document.getElementById("quantity-increase");
 
-const router = async () => {
-  const currentPath = window.location.pathname;
-  const root = document.body.querySelector("#root");
+  if (quantityInput && decreaseBtn && increaseBtn) {
+    const MAX_QUANTITY = parseInt(quantityInput.max, 10);
 
-  const match = routes
-    .map((route) => {
-      const match = currentPath.match(route.path);
-      if (match) {
-        return {
-          route,
-          result: match,
-        };
+    decreaseBtn.addEventListener("click", () => {
+      let value = parseInt(quantityInput.value, 10);
+      if (value > 1) {
+        quantityInput.value = value - 1;
       }
-      return null;
-    })
-    .find((match) => match !== null);
+    });
 
-  if (!match) {
-    root.innerHTML = EmptyPage();
-    return;
+    increaseBtn.addEventListener("click", () => {
+      let value = parseInt(quantityInput.value, 10);
+      if (value < MAX_QUANTITY) {
+        quantityInput.value = value + 1;
+      }
+    });
+
+    quantityInput.addEventListener("change", () => {
+      let value = parseInt(quantityInput.value, 10);
+      if (isNaN(value) || value < 1) {
+        quantityInput.value = 1;
+      } else if (value > MAX_QUANTITY) {
+        quantityInput.value = MAX_QUANTITY;
+      }
+    });
   }
-
-  const params = match.result.slice(1);
-  let pageContent;
-
-  if (match.route.path === "/") {
-    pageContent = await match.route.view(store.getState());
-  } else {
-    pageContent = await match.route.view(...params);
-  }
-
-  if (root) {
-    root.innerHTML = pageContent;
-  }
-
-  updateCurrentPageUI();
-  attachEventListeners();
-};
-
-const navigateTo = (url) => {
-  window.history.pushState(null, null, url);
-  router();
 };
 
 const attachEventListeners = () => {
   document.body.removeEventListener("click", handleAddToCart);
   document.body.addEventListener("click", handleAddToCart);
+
+  document.body.removeEventListener("click", handleAddToCartFromDetail);
+  document.body.addEventListener("click", handleAddToCartFromDetail);
 
   document.body.removeEventListener("click", handleLinkClick);
   document.body.addEventListener("click", handleLinkClick);
@@ -278,6 +265,8 @@ const handleAddToCart = (event) => {
     return;
   }
 
+  let quantityToAdd = 1;
+
   const productToAdd = store.getState().products.find((p) => p.productId === productId);
 
   let cart = JSON.parse(localStorage.getItem("cart") || "[]");
@@ -285,10 +274,10 @@ const handleAddToCart = (event) => {
   const existingItemIndex = cart.findIndex((item) => item.productId === productId);
 
   if (existingItemIndex > -1) {
-    cart[existingItemIndex].quantity += 1;
+    cart[existingItemIndex].quantity += quantityToAdd;
     window.alert(`${productToAdd.title} 상품의 수량이 ${cart[existingItemIndex].quantity}개로 변경되었습니다~!`);
   } else {
-    cart.push({ ...productToAdd, quantity: 1 });
+    cart.push({ ...productToAdd, quantity: quantityToAdd });
     window.alert(`${productToAdd.title} 상품이 장바구니에 추가되었습니다!`);
   }
 
@@ -298,6 +287,99 @@ const handleAddToCart = (event) => {
     type: "UPDATE_CART_COUNT",
     payload: { cartItemCount: cart.length },
   });
+};
+
+const handleAddToCartFromDetail = async (event) => {
+  const targetButton = event.target.closest("#add-to-cart-btn");
+  if (!targetButton) return;
+
+  const productId = targetButton.dataset.productId;
+  if (!productId) {
+    console.warn("장바구니에 추가할 상품의 ID를 찾을 수 없습니다.");
+    return;
+  }
+
+  const quantityInput = document.getElementById("quantity-input");
+  let quantityToAdd = 1;
+  if (quantityInput) {
+    quantityToAdd = parseInt(quantityInput.value, 10);
+    if (isNaN(quantityToAdd) || quantityToAdd < 1) {
+      quantityToAdd = 1;
+    }
+  }
+
+  const productToAdd = store.getState().currentDetailProduct;
+
+  let cart = JSON.parse(localStorage.getItem("cart") || "[]");
+  const existingItemIndex = cart.findIndex((item) => item.productId === productId);
+
+  if (existingItemIndex > -1) {
+    cart[existingItemIndex].quantity += quantityToAdd;
+    window.alert(`${productToAdd.title} 상품의 수량이 ${cart[existingItemIndex].quantity}개로 변경되었습니다~!`);
+  } else {
+    cart.push({ ...productToAdd, quantity: quantityToAdd });
+    window.alert(`${productToAdd.title} 상품이 장바구니에 추가되었습니다!`);
+  }
+
+  localStorage.setItem("cart", JSON.stringify(cart));
+
+  store.dispatch({
+    type: "UPDATE_CART_COUNT",
+    payload: { cartItemCount: cart.length },
+  });
+};
+
+const routes = [
+  { path: /^\/$/, view: () => HomePage(store.getState()) },
+  { path: /^\/product\/([\w-]+)$/, view: (productId) => ProductPage(productId) },
+];
+
+const router = async () => {
+  const currentPath = window.location.pathname;
+  const root = document.body.querySelector("#root");
+
+  const match = routes
+    .map((route) => {
+      const match = currentPath.match(route.path);
+      if (match) {
+        return {
+          route,
+          result: match,
+        };
+      }
+      return null;
+    })
+    .find((match) => match !== null);
+
+  if (!match) {
+    root.innerHTML = EmptyPage();
+    return;
+  }
+
+  const params = match.result.slice(1);
+  let pageContent;
+
+  if (match.route.path === "/") {
+    pageContent = await match.route.view(store.getState());
+  } else {
+    pageContent = await match.route.view(...params);
+  }
+
+  if (root) {
+    root.innerHTML = pageContent;
+  }
+
+  updateCurrentPageUI();
+  attachEventListeners();
+
+  if (currentPath.startsWith("/product/")) {
+    attachProductPageEventListeners();
+  }
+};
+
+const navigateTo = (url) => {
+  window.history.pushState(null, null, url);
+  router();
 };
 
 function main() {

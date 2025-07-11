@@ -44,6 +44,7 @@ const loadStateFromLocalStorage = () => {
       currentSort: sort,
       currentSearch: "",
       currentPage: 1,
+      currentDetailProduct: {},
     };
   } catch (error) {
     console.log("로컬 스토리지 오류 : ", error);
@@ -61,6 +62,7 @@ const loadStateFromLocalStorage = () => {
       currentSort: "price_asc",
       currentSearch: "",
       currentPage: 1,
+      currentDetailProduct: {},
     };
   }
 };
