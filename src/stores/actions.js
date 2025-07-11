@@ -1,6 +1,8 @@
 export const ACTION_TYPES = {
   SET_LOADING: "SET_LOADING",
   SET_PRODUCTS: "SET_PRODUCTS",
+  SET_LOADING_MORE: "SET_LOADING_MORE",
+  APPEND_PRODUCTS: "APPEND_PRODUCTS",
   SET_CATEGORIES: "SET_CATEGORIES",
 };
 
@@ -14,6 +16,16 @@ export const actions = {
   setProducts: (products, total) => ({
     type: ACTION_TYPES.SET_PRODUCTS,
     payload: { products, total },
+  }),
+
+  setLoadingMore: (isLoadingMore) => ({
+    type: ACTION_TYPES.SET_LOADING_MORE,
+    payload: isLoadingMore,
+  }),
+
+  appendProducts: (products, pagination) => ({
+    type: ACTION_TYPES.APPEND_PRODUCTS,
+    payload: { products, pagination },
   }),
 
   setCategories: (categories) => ({
