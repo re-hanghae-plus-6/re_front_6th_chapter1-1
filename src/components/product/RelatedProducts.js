@@ -1,4 +1,8 @@
 export const RelatedProducts = ({ relatedProducts }) => {
+  if (!relatedProducts || relatedProducts.length === 0) {
+    return "";
+  }
+
   return /* html */ `
   <div class="bg-white rounded-lg shadow-sm">
   <div class="p-4 border-b border-gray-200">
@@ -12,10 +16,10 @@ export const RelatedProducts = ({ relatedProducts }) => {
           (product) => `
         <div class="bg-gray-50 rounded-lg p-3 related-product-card cursor-pointer" data-product-id="${product.productId}">
           <div class="aspect-square bg-white rounded-md overflow-hidden mb-2">
-            <img src="${product.image}" alt="${product.title}" class="w-full h-full object-cover" loading="lazy">
+            <img src="${product.image || ""}" alt="${product.title || ""}" class="w-full h-full object-cover" loading="lazy">
           </div>
-          <h3 class="text-sm font-medium text-gray-900 mb-1 line-clamp-2">${product.title}</h3>
-          <p class="text-sm font-bold text-blue-600">${parseInt(product.lprice).toLocaleString()}원</p>
+          <h3 class="text-sm font-medium text-gray-900 mb-1 line-clamp-2">${product.title || ""}</h3>
+          <p class="text-sm font-bold text-blue-600">${parseInt(product.lprice || 0).toLocaleString()}원</p>
         </div>
       `,
         )
