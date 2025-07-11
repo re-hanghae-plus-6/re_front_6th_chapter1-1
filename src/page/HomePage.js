@@ -6,6 +6,7 @@ import { getProducts, getCategories } from "../api/productApi.js";
 import createStore from "../core/store.js";
 import { getQueryParams, updateQueryParams } from "../core/router.js";
 import { stateToQueryParams, queryParamsToState } from "../utils/urlStateUtils.js";
+import { getAppPath } from "../core/router.js";
 
 const initialState = {
   products: [],
@@ -37,7 +38,7 @@ export default function HomePage({ cartCount = 0 }) {
         fetchProducts();
       }
       // 렌더링 (라우터에서 직접 호출 시 중복 렌더 방지)
-      if (window.location.pathname === "/") {
+      if (getAppPath() === "/") {
         render(state, cartCount);
       }
       prevState = { ...state };
@@ -127,7 +128,7 @@ function shouldRefetchProducts(current, prev) {
 // URL 쿼리스트링 동기화
 function syncUrlWithState(state) {
   // 홈 페이지가 아닌 경우(URL 이동 후 HomePage의 비동기 로직이 늦게 도착한 경우)에는 URL을 건드리지 않는다.
-  if (window.location.pathname !== "/") return;
+  if (getAppPath() !== "/") return;
   const queryParams = stateToQueryParams(state);
   updateQueryParams(queryParams, { replace: true });
 }
@@ -203,7 +204,7 @@ async function fetchProducts() {
 
 // popstate 이벤트 핸들러..
 function handlePopState() {
-  if (window.location.pathname === "/") {
+  if (getAppPath() === "/") {
     const urlState = queryParamsToState(getQueryParams());
     store.setState({ ...urlState, loading: false });
     // 검색 입력 필드 값 동기화

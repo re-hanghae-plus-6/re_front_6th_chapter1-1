@@ -3,6 +3,7 @@ import RelatedProducts from "../components/product/RelatedProducts.js";
 import { getProducts } from "../api/productApi.js";
 import createStore from "../core/store.js";
 import { getCartCount, updateCartBadge } from "../core/cart.js";
+import { getAppPath } from "../core/router.js";
 
 // 상품 상세 페이지 초기 상태
 const initialState = {
@@ -24,7 +25,7 @@ export default function ProductDetailPage({ product, cartCount = 0 }) {
 
     store.subscribe(() => {
       const state = store.getState();
-      if (window.location.pathname.startsWith("/product/")) {
+      if (getAppPath().startsWith("/product/")) {
         render(state, cartCount);
       }
     });
