@@ -115,6 +115,17 @@ class DetailPage extends Component {
         router.push(`/detail/${productId}`);
       }
     });
+
+    this.addEventListener(this.element, 'change', (event) => {
+      const quantityInput = event.target.closest('#quantity-input');
+      if (quantityInput) {
+        console.log(quantityInput.value);
+        this.setState({
+          ...this.state,
+          quantity: quantityInput.value,
+        });
+      }
+    });
   }
 
   renderLoadingUI() {
