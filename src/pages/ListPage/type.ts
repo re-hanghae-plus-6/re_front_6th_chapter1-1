@@ -5,6 +5,7 @@ interface IListPageProps extends IListProps {
   limit: number;
   search: string;
   sort: string;
+  loadingMore?: boolean;
 }
 
 export type { IListPageProps };
