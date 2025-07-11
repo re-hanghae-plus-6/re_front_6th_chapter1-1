@@ -11,6 +11,7 @@ export const Router = () => {
     routes[path] = component;
   }
 
+  // 경로를 정규식으로 변환하는 함수
   const pathToRegex = (path) => new RegExp("^" + path.replace(/\//g, "\\/").replace(/:\w+/g, "(.+)") + "$");
 
   const matchRoute = (path) => {
