@@ -16,6 +16,7 @@
 		"test:easy:basic": "playwright test e2e-easy.basic",
 		"test:easy:basic:ui": "playwright test e2e-easy.basic --ui",
 		"test:easy:advanced": "playwright test e2e-easy.advanced",
+		"test:easy:advanced:ui": "playwright test e2e-easy.advanced --ui",
 		"test:ui": "vitest --ui",
 		"test:e2e": "playwright test",
 		"test:e2e:ui": "playwright test --ui",
