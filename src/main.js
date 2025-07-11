@@ -1,10 +1,10 @@
-import { HomePage } from "./pages/Homepage.js";
-import { ProductPage } from "./pages/ProductPage.js";
-import { EmptyPage } from "./pages/EmptyPage.js";
-import { getProducts, getCategories } from "./api/productApi.js";
-import { store, resetStoreState } from "./store.js";
+import { HomePage } from "@/pages/Homepage.js";
+import { ProductPage } from "@/pages/ProductPage.js";
+import { EmptyPage } from "@/pages/EmptyPage.js";
+import { getProducts, getCategories } from "@/api/productApi.js";
+import { store, resetStoreState } from "@/store.js";
 
-import ProductItem from "./components/ProductItem.js";
+import ProductItem from "@/components/ProductItem.js";
 
 const BASE_URL = "/front_6th_chapter1-1";
 
@@ -13,6 +13,7 @@ const enableMocking = () =>
     worker.start({
       serviceWorker: {
         url: `${BASE_URL}/mockServiceWorker.js`,
+        scope: `${BASE_URL}/`,
       },
       onUnhandledRequest: "bypass",
     }),
@@ -395,17 +396,23 @@ const router = async () => {
 
 const navigateTo = (url) => {
   let targetUrl = BASE_URL + url;
-  if (window.location.href !== targetUrl) {
-    window.history.pushState({ isPopstate: false }, null, targetUrl);
+  if (window.location.pathname !== targetUrl) {
+    window.history.pushState(null, null, targetUrl);
+    router();
   }
 };
 
 function main() {
-  const currentPath = window.location.pathname;
-  window.addEventListener("popstate", (event) => {
-    const newState = event.state || {};
-    newState.isPopstate = true;
-    window.history.replaceState(newState, "", window.location.href);
+  let currentPath = window.location.pathname;
+
+  if (currentPath.startsWith(BASE_URL)) {
+    currentPath = currentPath.substring(BASE_URL.length);
+  }
+  if (currentPath === "" || currentPath === "/") {
+    currentPath = "/";
+  }
+
+  window.addEventListener("popstate", () => {
     router();
   });
 
