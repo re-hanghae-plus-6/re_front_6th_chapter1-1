@@ -1,5 +1,6 @@
 import { HomePage } from './pages/HomePage.js';
 import { ProductDetail } from './pages/ProductDetail.js';
+import { NotFound } from './pages/404.js';
 import { getProducts, getCategories } from './api/productApi.js';
 import { cart } from './pages/Cart.js';
 
@@ -13,6 +14,7 @@ let state = {
   categories: [],
   total: 0,
   loading: false,
+  error: null,
   limit: 20,
   sort: 'price_asc',
   page: 1,
@@ -82,17 +84,9 @@ async function renderPage() {
     currentPage = null;
     await renderHomePage();
   } else {
-    document.querySelector('#root').innerHTML = `
-      <main class="max-w-md mx-auto px-4 py-4">
-        <div class="text-center my-4 py-20 shadow-md p-6 bg-white rounded-lg">
-          <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" class="mx-auto mb-4">
-            <text x="160" y="85" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="48" font-weight="600" fill="#4285f4" text-anchor="middle">404</text>
-            <text x="160" y="110" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="400" fill="#5f6368" text-anchor="middle">페이지를 찾을 수 없습니다</text>
-          </svg>
-          <a href="/" class="inline-block px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">홈으로</a>
-        </div>
-      </main>
-    `;
+    // 404 페이지
+    currentPage = new NotFound();
+    await currentPage.render();
   }
 }
 
@@ -101,29 +95,44 @@ async function renderHomePage() {
   state = { ...state, ...urlState };
 
   state.loading = true;
+  state.error = null;
   render();
 
-  const data = await getProducts({
-    page: 1,
-    limit: state.limit,
-    search: state.search,
-    sort: state.sort,
-    category1: state.category1,
-    category2: state.category2,
-  });
+  try {
+    const data = await getProducts({
+      page: 1,
+      limit: state.limit,
+      search: state.search,
+      sort: state.sort,
+      category1: state.category1,
+      category2: state.category2,
+    });
 
-  const categories = await getCategories();
+    const categories = await getCategories();
 
-  state.products = data.products;
-  state.categories = categories;
-  state.total = data.pagination.total;
-  state.page = 1;
-  state.hasMore = data.products.length === state.limit;
-  state.loading = false;
-  render();
+    state.products = data.products;
+    state.categories = categories;
+    state.total = data.pagination.total;
+    state.page = 1;
+    state.hasMore = data.products.length === state.limit;
+    state.loading = false;
+    state.error = null;
+    render();
 
-  setUpEventListeners();
-  cart.init();
+    setUpEventListeners();
+    cart.init();
+  } catch (error) {
+    console.error('데이터 로드 실패:', error);
+    state.loading = false;
+    state.error = '데이터를 불러오는 중 오류가 발생했습니다.';
+    render();
+    setUpEventListeners();
+    cart.init();
+  }
+}
+
+async function retryLoadData() {
+  await renderHomePage();
 }
 
 function render() {
@@ -134,6 +143,7 @@ async function loadMoreProducts() {
   if (state.loading || !state.hasMore) return;
 
   state.loading = true;
+  state.error = null;
   render();
 
   try {
@@ -150,10 +160,12 @@ async function loadMoreProducts() {
     state.page += 1;
     state.hasMore = data.products.length === state.limit;
     state.loading = false;
+    state.error = null;
     render();
   } catch (error) {
     console.error('추가 상품 로드 실패:', error);
     state.loading = false;
+    state.error = '추가 상품을 불러오는 중 오류가 발생했습니다.';
     render();
   }
 }
@@ -175,26 +187,40 @@ function setUpEventListeners() {
         state.search = searchValue;
         state.page = 1;
         state.loading = true;
+        state.error = null;
         updateURL();
         render();
 
-        const data = await getProducts({
-          search: searchValue,
-          page: 1,
-          limit: state.limit,
-          sort: state.sort,
-          category1: state.category1,
-          category2: state.category2,
-        });
-        state.products = data.products;
-        state.total = data.pagination.total;
-        state.hasMore = data.products.length === state.limit;
-        state.loading = false;
-        render();
+        try {
+          const data = await getProducts({
+            search: searchValue,
+            page: 1,
+            limit: state.limit,
+            sort: state.sort,
+            category1: state.category1,
+            category2: state.category2,
+          });
+          state.products = data.products;
+          state.total = data.pagination.total;
+          state.hasMore = data.products.length === state.limit;
+          state.loading = false;
+          state.error = null;
+          render();
+        } catch (error) {
+          console.error('검색 실패:', error);
+          state.loading = false;
+          state.error = '검색 중 오류가 발생했습니다.';
+          render();
+        }
       }
     });
 
   document.body.querySelector('#root').addEventListener('click', async (e) => {
+    if (e.target.id === 'retry-btn') {
+      await retryLoadData();
+      return;
+    }
+
     if (
       e.target.matches('.product-image img') ||
       e.target.closest('.product-image')
@@ -240,21 +266,30 @@ function setUpEventListeners() {
       state.category2 = ''; // 2depth 초기화
       state.page = 1;
       state.loading = true;
+      state.error = null;
       updateURL();
       render();
 
-      const data = await getProducts({
-        category1: selectedCategory1,
-        page: 1,
-        limit: state.limit,
-        sort: state.sort,
-        search: state.search,
-      });
-      state.products = data.products;
-      state.total = data.pagination.total;
-      state.hasMore = data.products.length === state.limit;
-      state.loading = false;
-      render();
+      try {
+        const data = await getProducts({
+          category1: selectedCategory1,
+          page: 1,
+          limit: state.limit,
+          sort: state.sort,
+          search: state.search,
+        });
+        state.products = data.products;
+        state.total = data.pagination.total;
+        state.hasMore = data.products.length === state.limit;
+        state.loading = false;
+        state.error = null;
+        render();
+      } catch (error) {
+        console.error('카테고리 1depth 로드 실패:', error);
+        state.loading = false;
+        state.error = '카테고리를 불러오는 중 오류가 발생했습니다.';
+        render();
+      }
     }
 
     // 카테고리 2depth 선택
@@ -263,22 +298,31 @@ function setUpEventListeners() {
       state.category2 = selectedCategory2;
       state.page = 1;
       state.loading = true;
+      state.error = null;
       updateURL();
       render();
 
-      const data = await getProducts({
-        category1: state.category1,
-        category2: selectedCategory2,
-        page: 1,
-        limit: state.limit,
-        sort: state.sort,
-        search: state.search,
-      });
-      state.products = data.products;
-      state.total = data.pagination.total;
-      state.hasMore = data.products.length === state.limit;
-      state.loading = false;
-      render();
+      try {
+        const data = await getProducts({
+          category1: state.category1,
+          category2: selectedCategory2,
+          page: 1,
+          limit: state.limit,
+          sort: state.sort,
+          search: state.search,
+        });
+        state.products = data.products;
+        state.total = data.pagination.total;
+        state.hasMore = data.products.length === state.limit;
+        state.loading = false;
+        state.error = null;
+        render();
+      } catch (error) {
+        console.error('카테고리 2depth 로드 실패:', error);
+        state.loading = false;
+        state.error = '카테고리를 불러오는 중 오류가 발생했습니다.';
+        render();
+      }
     }
 
     // 브레드크럼 클릭
@@ -287,41 +331,59 @@ function setUpEventListeners() {
       state.category2 = '';
       state.page = 1;
       state.loading = true;
+      state.error = null;
       updateURL();
       render();
 
-      const data = await getProducts({
-        page: 1,
-        limit: state.limit,
-        sort: state.sort,
-        search: state.search,
-      });
-      state.products = data.products;
-      state.total = data.pagination.total;
-      state.hasMore = data.products.length === state.limit;
-      state.loading = false;
-      render();
+      try {
+        const data = await getProducts({
+          page: 1,
+          limit: state.limit,
+          sort: state.sort,
+          search: state.search,
+        });
+        state.products = data.products;
+        state.total = data.pagination.total;
+        state.hasMore = data.products.length === state.limit;
+        state.loading = false;
+        state.error = null;
+        render();
+      } catch (error) {
+        console.error('브레드크럼 리셋 로드 실패:', error);
+        state.loading = false;
+        state.error = '브레드크럼을 불러오는 중 오류가 발생했습니다.';
+        render();
+      }
     }
 
     if (e.target.dataset.breadcrumb === 'category1') {
       state.category2 = ''; // 2depth만 초기화
       state.page = 1;
       state.loading = true;
+      state.error = null;
       updateURL();
       render();
 
-      const data = await getProducts({
-        category1: state.category1,
-        page: 1,
-        limit: state.limit,
-        sort: state.sort,
-        search: state.search,
-      });
-      state.products = data.products;
-      state.total = data.pagination.total;
-      state.hasMore = data.products.length === state.limit;
-      state.loading = false;
-      render();
+      try {
+        const data = await getProducts({
+          category1: state.category1,
+          page: 1,
+          limit: state.limit,
+          sort: state.sort,
+          search: state.search,
+        });
+        state.products = data.products;
+        state.total = data.pagination.total;
+        state.hasMore = data.products.length === state.limit;
+        state.loading = false;
+        state.error = null;
+        render();
+      } catch (error) {
+        console.error('카테고리 1depth 로드 실패:', error);
+        state.loading = false;
+        state.error = '카테고리를 불러오는 중 오류가 발생했습니다.';
+        render();
+      }
     }
   });
 
@@ -331,44 +393,62 @@ function setUpEventListeners() {
       state.limit = newLimit;
       state.page = 1;
       state.loading = true;
+      state.error = null;
       updateURL();
       render();
 
-      const data = await getProducts({
-        limit: newLimit,
-        page: 1,
-        search: state.search,
-        sort: state.sort,
-        category1: state.category1,
-        category2: state.category2,
-      });
-      state.products = data.products;
-      state.total = data.pagination.total;
-      state.hasMore = data.products.length === newLimit;
-      state.loading = false;
-      render();
+      try {
+        const data = await getProducts({
+          limit: newLimit,
+          page: 1,
+          search: state.search,
+          sort: state.sort,
+          category1: state.category1,
+          category2: state.category2,
+        });
+        state.products = data.products;
+        state.total = data.pagination.total;
+        state.hasMore = data.products.length === newLimit;
+        state.loading = false;
+        state.error = null;
+        render();
+      } catch (error) {
+        console.error('제한 로드 실패:', error);
+        state.loading = false;
+        state.error = '제한을 불러오는 중 오류가 발생했습니다.';
+        render();
+      }
     }
     if (e.target.id === 'sort-select') {
       const newSort = e.target.value;
       state.sort = newSort;
       state.page = 1;
       state.loading = true;
+      state.error = null;
       updateURL();
       render();
 
-      const data = await getProducts({
-        sort: newSort,
-        page: 1,
-        search: state.search,
-        limit: state.limit,
-        category1: state.category1,
-        category2: state.category2,
-      });
-      state.products = data.products;
-      state.total = data.pagination.total;
-      state.hasMore = data.products.length === state.limit;
-      state.loading = false;
-      render();
+      try {
+        const data = await getProducts({
+          sort: newSort,
+          page: 1,
+          search: state.search,
+          limit: state.limit,
+          category1: state.category1,
+          category2: state.category2,
+        });
+        state.products = data.products;
+        state.total = data.pagination.total;
+        state.hasMore = data.products.length === state.limit;
+        state.loading = false;
+        state.error = null;
+        render();
+      } catch (error) {
+        console.error('정렬 로드 실패:', error);
+        state.loading = false;
+        state.error = '정렬을 불러오는 중 오류가 발생했습니다.';
+        render();
+      }
     }
   });
 
