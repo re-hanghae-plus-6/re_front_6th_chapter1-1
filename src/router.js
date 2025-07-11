@@ -49,7 +49,7 @@ class Router {
 
     // Extract path parameters (e.g., :id)
     for (const route of this.routes) {
-      const regex = new RegExp(`^${route.path.replace(/:\w+/g, "([^/]+)")}$`);
+      const regex = new RegExp(`^${this.BASE_PATH}${route.path.replace(/:\w+/g, "([^/]+)")}$`);
       const match = path.match(regex);
 
       if (match) {
