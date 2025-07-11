@@ -1,7 +1,5 @@
 import type { CartItem } from "../types/cart.ts";
 
-// 테스트 스펙에서 localStorage.getItem("shopping_cart") 로 확인하기 때문에
-// 저장 키를 스펙에 맞춰 "shopping_cart" 로 통일한다.
 const CART_KEY = "shopping_cart";
 
 let items: CartItem[] = loadFromStorage();
@@ -89,11 +87,6 @@ export const cartStore = {
     localStorage.clear();
   },
 } as const;
-
-// -----------------------------------------------------------------
-// localStorage.clear() 가 호출될 때 in-memory 상태까지 초기화하여
-// 테스트 간 데이터 누적을 방지합니다.
-// -----------------------------------------------------------------
 
 if (typeof window !== "undefined" && window.localStorage) {
   const originalClear = window.localStorage.clear.bind(window.localStorage);

@@ -1,10 +1,6 @@
 // 페이지 모듈: HTML 문자열을 반환하는 render와 선택적인 mount 훅으로 구성됩니다.
 export interface PageModule {
   render: (pathParams?: Record<string, string>, queryParams?: Record<string, string>) => string;
-  /**
-   * DOM 이 실제로 삽입된 뒤 호출됩니다.
-   * 반환값이 함수라면 언마운트 시(cleanup) 호출됩니다.
-   */
   mount?: (root: HTMLElement) => void | (() => void);
 }
 
@@ -61,9 +57,11 @@ function render(urlStr: string) {
   navigate("/404", true);
 }
 
-// GitHub Pages 하위 경로 배포를 위해 BASE 경로를 추출합니다.
+// local: ''
+// deploy: '/front_6th_chapter1-1'
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
+// 배포환경의 경우 /front_6th_chapter1-1을 제거합니다.
 function normalize(pathname: string) {
   if (BASE && pathname.startsWith(BASE)) {
     const sliced = pathname.slice(BASE.length);

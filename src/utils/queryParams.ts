@@ -1,6 +1,3 @@
-// 훨씬 단순한 제네릭 타입 -----------------------------
-// 기본값 타입 하나만 알면 나머지는 unknown 으로 둡니다.
-
 export interface SimpleCodec<T> {
   default: T;
   parse?: (raw: string) => T;
@@ -9,13 +6,7 @@ export interface SimpleCodec<T> {
 
 export type SimpleSchema = Record<string, SimpleCodec<any>>;
 
-/**
- * createQueryParams
- *  - read():  URL -> object
- *  - push():  object -> URL (pushState)
- */
 export function createQueryParams<S extends SimpleSchema>(schema: S) {
-  // Result 타입: 각 키의 default 타입을 그대로 사용
   type Result = { [K in keyof S]: S[K]["default"] };
 
   const read = (): Result => {

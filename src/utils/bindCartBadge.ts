@@ -12,7 +12,7 @@ export function bindCartBadge(buttonSelector: string = "#cart-icon-btn") {
     if (!btn) return;
 
     let badge = btn.querySelector<HTMLSpanElement>("[data-cart-badge]");
-    // 고유 상품 개수로 배지를 표시합니다. 동일 상품을 여러 번 담아도 1로 집계합니다.
+    // 담은 상품 총 갯수가 아닌 상품 종류의 갯수로 뱃지 넘버를 표시
     const count = items.length;
 
     if (count === 0) {
