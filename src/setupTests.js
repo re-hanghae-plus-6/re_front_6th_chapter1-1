@@ -7,6 +7,10 @@ configure({
   asyncUtilTimeout: 1000,
 });
 
+// beforeEach(() => {
+//   document.body.innerHTML = '<div id="root"></div>';
+// });
+
 beforeAll(() => {
   server.listen({ onUnhandledRequest: "error" });
 });
