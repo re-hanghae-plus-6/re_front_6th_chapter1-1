@@ -40,6 +40,8 @@ export const Home = () => {
   }
 
   init();
+
+  //배포 테스트
 };
 
 function render() {
