@@ -83,7 +83,8 @@ class Router {
 
     if (isDetail) {
       // ProductDetail 페이지인 경우, 데이터를 미리 가져옵니다.
-      this.appRoot.innerHTML = /* html */ `
+      // 로딩 UI를 먼저 설정합니다.
+      this.appRoot.innerHTML = `
         <header class="bg-white shadow-sm sticky top-0 z-40">
           <div class="max-w-md mx-auto px-4 py-4">
             <div class="flex items-center justify-between">
@@ -115,7 +116,7 @@ class Router {
           </div>
         </main>
         <footer></footer>
-      `; // 로딩 스피너 표시
+      `;
 
       try {
         const product = await getProduct(params.id);
@@ -124,20 +125,23 @@ class Router {
           category2: product.category2,
         });
         const relatedProducts = relatedProductsData.products.filter((item) => item.productId !== product.productId);
-        renderedHtml = await component({
+        renderedHtml = component({
           ...this.mainStatus,
           urlParams: params,
           isDetail: isDetail,
           product: product,
           relatedProducts: relatedProducts,
+          router: this,
         });
       } catch (error) {
         console.error("Error fetching product details or related products:", error);
         renderedHtml = NotFound();
       }
     } else {
-      renderedHtml = await component({ ...this.mainStatus, urlParams: params, isDetail: isDetail });
+      renderedHtml = component({ ...this.mainStatus, urlParams: params, isDetail: isDetail, router: this });
     }
+
+    this.appRoot.innerHTML = renderedHtml;
 
     this.appRoot.innerHTML = renderedHtml;
     this.setCurrentState({ ...this.mainStatus, urlParams: params, isDetail: isDetail });
