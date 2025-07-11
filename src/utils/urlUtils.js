@@ -1,3 +1,4 @@
+import { BASE_PATH } from "../config/path";
 import createReactiveState from "./reactiveState";
 
 const actions = { UPDATE_URL: "UPDATE_URL" };
@@ -5,7 +6,7 @@ const actions = { UPDATE_URL: "UPDATE_URL" };
 export default function navigateTo(to, qs) {
   const currentUrl = new URL(location.href);
   if (to.startsWith("/")) {
-    currentUrl.pathname = to;
+    currentUrl.pathname = `${BASE_PATH}${to}`;
   } else {
     currentUrl.pathname += to;
   }
