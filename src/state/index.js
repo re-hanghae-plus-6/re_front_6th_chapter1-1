@@ -1,4 +1,5 @@
-import ProductManager from "./ProductManager.js";
+import ProductListManager from "./ProductListManager.js";
+import ProductDetailManager from "./ProductDetailManager.js";
 import CartManager from "./CartManager.js";
 import UIManager from "./UIManager.js";
 
@@ -20,8 +21,11 @@ import UIManager from "./UIManager.js";
  */
 class AppStateManager {
   constructor() {
-    /** @type {ProductManager} 상품 관련 상태 관리자 */
-    this.product = new ProductManager();
+    /** @type {ProductListManager} 상품 목록 관련 상태 관리자 */
+    this.productList = new ProductListManager();
+
+    /** @type {ProductDetailManager} 상품 상세 관련 상태 관리자 */
+    this.productDetail = new ProductDetailManager();
 
     /** @type {CartManager} 장바구니 관련 상태 관리자 */
     this.cart = new CartManager();
@@ -32,7 +36,7 @@ class AppStateManager {
 
   /**
    * 애플리케이션을 초기화합니다.
-   * 로컬스토리지에서 저장된 데이터를 복원하고 필요한 초기 설정을 수행합니다.
+   * 로컬스토리지에서 저장된 데이터를 복원합니다.
    *
    * @example
    * // 애플리케이션 시작 시 자동으로 호출됨
@@ -63,28 +67,7 @@ class AppStateManager {
    */
   addProductToCart(product, quantity = 1) {
     this.cart.addToCart(product, quantity);
-    this.ui.showToast(`${product.name}이(가) 장바구니에 추가되었습니다.`, "success");
-  }
-
-  /**
-   * 상품 목록을 로드하고 로딩 상태를 완료로 설정하는 통합 메서드입니다.
-   * API 호출 성공 시 사용되며, 상품 데이터 설정과 로딩 상태 관리를 함께 처리합니다.
-   *
-   * @param {Array} products - 상품 배열
-   * @param {number} totalProducts - 전체 상품 수
-   *
-   * @example
-   * // API 호출 성공 시
-   * try {
-   *   const response = await fetchProducts();
-   *   stateManager.loadProducts(response.products, response.total);
-   * } catch (error) {
-   *   stateManager.loadProductsError(error.message);
-   * }
-   */
-  loadProducts(products, totalProducts) {
-    this.product.setProducts(products, totalProducts);
-    this.product.setLoading(false);
+    this.ui.showToast(`장바구니에 추가되었습니다`, "success");
   }
 
   /**
@@ -96,13 +79,13 @@ class AppStateManager {
    * // API 호출 실패 시
    * try {
    *   const products = await fetchProducts();
-   *   stateManager.loadProducts(products);
+   *   stateManager.loadProductList(products);
    * } catch (error) {
-   *   stateManager.loadProductsError('상품을 불러올 수 없습니다.');
+   *   stateManager.loadProductListError('상품을 불러올 수 없습니다.');
    * }
    */
-  loadProductsError(error) {
-    this.product.setError(error);
+  loadProductListError(error) {
+    this.productList.setError(error);
     this.ui.showToast("상품을 불러오는데 실패했습니다.", "error");
   }
 }
@@ -123,25 +106,26 @@ stateManager.initialize();
 export default stateManager;
 
 /**
- * StateManager 사용 가이드
+ * StateManager 사용 가이드 (URL-driven 방식)
  *
- * 이 파일에서 export되는 stateManager는 전체 애플리케이션의 상태를 관리하는
- * 싱글톤 인스턴스입니다. 다음과 같이 사용할 수 있습니다:
+ * 이 시스템은 URL을 검색 조건의 진실의 원천으로 사용하고,
+ * 상태는 실제 데이터(상품 목록, 장바구니 등)만 관리합니다.
  *
  * @example
  * import stateManager from './state/index.js';
+ * import router from './router.js';
  *
- * // ===== 1. 상태 구독 (StateManager 베이스 클래스 기능) =====
- *
- * // 상품 로딩 상태 구독
- * stateManager.product.subscribe('loading', (isLoading) => {
- *   if (isLoading) showLoadingSpinner();
- *   else hideLoadingSpinner();
- * });
+ * // ===== 1. 상태 구독 (실제 데이터만) =====
  *
  * // 상품 목록 구독
  * stateManager.product.subscribe('products', (products) => {
  *   renderProductList(products);
+ * });
+ *
+ * // 로딩 상태 구독
+ * stateManager.product.subscribe('loading', (isLoading) => {
+ *   if (isLoading) showLoadingSpinner();
+ *   else hideLoadingSpinner();
  * });
  *
  * // 장바구니 변경 구독
@@ -156,36 +140,39 @@ export default stateManager;
  *   else hideToastMessage();
  * });
  *
- * // 여러 상태 동시 구독
- * stateManager.product.subscribe(['products', 'loading', 'error'], (value, key) => {
- *   switch(key) {
- *     case 'products': renderProducts(value); break;
- *     case 'loading': toggleLoading(value); break;
- *     case 'error': showError(value); break;
- *   }
- * });
+ * // ===== 2. 검색 조건 변경 (URL 기반) =====
  *
- * // ===== 2. 개별 상태 변경 (각 도메인 매니저 기능) =====
+ * // 검색어 변경
+ * router.updateUrlParams({ search: '노트북', current: '1' });
+ *
+ * // 카테고리 변경
+ * router.updateUrlParams({ category1: '전자제품', category2: null, current: '1' });
+ *
+ * // 정렬 변경
+ * router.updateUrlParams({ sort: 'price_desc', current: '1' });
+ *
+ * // 페이지 사이즈 변경
+ * router.updateUrlParams({ limit: '50', current: '1' });
+ *
+ * // ===== 3. 실제 데이터 상태 변경 =====
  *
  * // 상품 관련
  * stateManager.product.setLoading(true);
  * stateManager.product.setProducts([...products], 100);
+ * stateManager.product.appendProducts([...moreProducts], 100);
  * stateManager.product.setError('오류 메시지');
- * stateManager.product.setFilters({ searchQuery: '노트북', category: 'electronics' });
  *
  * // 장바구니 관련
  * stateManager.cart.addToCart(product, 2);
  * stateManager.cart.updateQuantity(productId, 5);
  * stateManager.cart.removeFromCart(productId);
  * stateManager.cart.clearCart();
- * stateManager.cart.openModal();
  *
  * // UI 관련
  * stateManager.ui.showToast('성공!', 'success');
  * stateManager.ui.showToast('오류!', 'error', 5000);
- * stateManager.ui.hideToast();
  *
- * // ===== 3. 통합 헬퍼 메서드 (AppStateManager 기능) =====
+ * // ===== 4. 통합 헬퍼 메서드 =====
  *
  * // 상품을 장바구니에 추가하면서 토스트도 표시
  * stateManager.addProductToCart(product, 1);
@@ -196,19 +183,25 @@ export default stateManager;
  * // 상품 로딩 실패 처리
  * stateManager.loadProductsError('네트워크 오류');
  *
- * // ===== 4. 상태 조회 =====
+ * // ===== 5. URL 파라미터 조회 =====
  *
- * // 특정 상태 조회
+ * // 현재 검색 조건 조회
+ * const searchQuery = router.getUrlParams('search');
+ * const category1 = router.getUrlParams('category1');
+ * const allParams = router.getUrlParams();
+ *
+ * // 상품 필터 조건 파싱
+ * const filters = router.parseFiltersFromUrl();
+ *
+ * // ===== 6. 상태 조회 =====
+ *
+ * // 실제 데이터 상태 조회
+ * const products = stateManager.product.getState('products');
  * const isLoading = stateManager.product.getState('loading');
  * const cartItems = stateManager.cart.getState('cart');
  * const currentToast = stateManager.ui.getState('toast');
  *
- * // 도메인별 전체 상태 조회
- * const productState = stateManager.product.getState();
- * const cartState = stateManager.cart.getState();
- * const uiState = stateManager.ui.getState();
- *
- * // ===== 5. 계산 메서드 활용 =====
+ * // ===== 7. 계산 메서드 활용 =====
  *
  * // 장바구니 총 가격 계산
  * const totalPrice = stateManager.cart.getTotalPrice();
