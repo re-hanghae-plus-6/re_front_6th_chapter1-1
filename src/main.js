@@ -1,10 +1,10 @@
-import { HomePage } from "@/pages/Homepage.js";
-import { ProductPage } from "@/pages/ProductPage.js";
-import { EmptyPage } from "@/pages/EmptyPage.js";
-import { getProducts, getCategories } from "@/api/productApi.js";
-import { store, resetStoreState } from "@/store.js";
+import { HomePage } from "./pages/Homepage.js";
+import { ProductPage } from "./pages/ProductPage.js";
+import { EmptyPage } from "./pages/EmptyPage.js";
+import { getProducts, getCategories } from "./api/productApi.js";
+import { store, resetStoreState } from "./store.js";
 
-import ProductItem from "@/components/ProductItem.js";
+import ProductItem from "./components/ProductItem.js";
 
 const BASE_URL = "/front_6th_chapter1-1";
 
