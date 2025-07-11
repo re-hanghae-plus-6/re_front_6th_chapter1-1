@@ -14,7 +14,6 @@ Search.mount = () => {
   searchInput.value = search;
 
   const handleKeyup = (event) => {
-    console.log({ key: event.key, en: event.isComposing });
     if (event.key !== "Enter") return;
     store.set("params", {
       ...store.get("params"),
@@ -34,7 +33,6 @@ Search.mount = () => {
   });
 
   document.querySelector("#sort-select").addEventListener("change", (event) => {
-    console.log("test");
     store.set("params", {
       ...store.get("params"),
       sort: event.target.value,

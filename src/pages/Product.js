@@ -1,6 +1,8 @@
 import { getProduct, getProducts } from "../api/productApi";
+import Header from "../components/Header.js";
 import Loading from "../components/Loading";
-import { render } from "../main.js";
+import { handleAddCart } from "../js/cart.js";
+import { navigate, render } from "../main.js";
 
 const state = {
   isLoading: true,
@@ -17,22 +19,54 @@ const methods = {
     state.relatedProducts = products.products.filter((product) => product.productId !== state.product.productId);
   },
 
-  goToProductList: () => window.history.pushState.push({}, "", "/"),
+  goToRelatedProducts: async (productId) => {
+    Product.init();
+    navigate.push({}, `/product/${productId}`);
+    // Product.mount();
+  },
 
-  handleAddCard: (productId) => {
-    console.log("test", productId);
+  goToProductList: async () => {
+    navigate.push({}, "/");
+    Header.init();
+    render.draw("header", Header());
+    Header.mount();
+    await render.view();
+  },
+
+  handleUpQuantity: () => {
+    const input = document.querySelector("#quantity-input");
+    input.value++;
+  },
+
+  handleDownQuantity: () => {
+    const input = document.querySelector("#quantity-input");
+    if (input.value === "1") return;
+    input.value--;
+  },
+
+  handleAddCard: (quantity) => {
+    const product = {
+      ...state.product,
+      quantity,
+    };
+    handleAddCart(product);
+    // Toast.mount("addCart");
   },
 };
 
-Product.init = () => {
+Product.init = async () => {
   state.isLoading = true;
+  Header.init();
+  render.draw("header", Header());
 };
 
 Product.mount = async () => {
   const productId = window.location.pathname.match(/\d+/)[0];
+  render.draw("main", Product());
   await methods.fetchProduct(productId);
   await methods.fetchRelatedProducts(state.product.category1, state.product.category);
   state.isLoading = false;
+
   render.draw("main", Product());
 
   const goToProductListBtn = document.querySelector(".go-to-product-list");
@@ -40,14 +74,43 @@ Product.mount = async () => {
     methods.goToProductList();
   });
 
-  // const cartBtn = document.getElementById("add-to-cart-btn");
-  // cartBtn.addEventListener("click", () => {
-  //   methods.handleAddCard(productId);
-  // });
+  const homeLink = document.querySelector("a");
+  homeLink.addEventListener("click", (event) => {
+    event.preventDefault();
+    methods.goToProductList();
+  });
 
-  // .go-to-product-list ->상품 목록 돌아가기
-  // #add-to-cart-btn -> 장바구니 담기
-  // .related-product-card 관련 상품
+  const quantityInput = document.querySelector("#quantity-input");
+  const quantityIncrease = document.querySelector("#quantity-increase");
+  const quantityDecrease = document.querySelector("#quantity-decrease");
+  const cartBtn = document.getElementById("add-to-cart-btn");
+  cartBtn.addEventListener("click", () => {
+    methods.handleAddCard(quantityInput.value);
+  });
+
+  quantityInput.addEventListener("change", (event) => {
+    if (event.target.value < 1) event.target.value = 1;
+  });
+
+  quantityIncrease.addEventListener("click", methods.handleUpQuantity);
+  quantityDecrease.addEventListener("click", methods.handleDownQuantity);
+
+  const relatedProductList = document.querySelectorAll(".related-product-card");
+  relatedProductList.forEach((product) => {
+    const productId = product.getAttribute("data-product-id");
+    product.addEventListener("click", () => {
+      methods.goToRelatedProducts(productId);
+    });
+  });
+
+  // const breadcrumbBtn = document.querySelectorAll(".breadcrumb-link");
+  // breadcrumbBtn.forEach((btn) => {
+  // btn.addEventListener("click", (event) => {
+  //   // if (btn.getAttribute("data-category2")) {
+  //   //   history.pushState({}, "", `/?category1=${}`)
+  //   // }
+  // });
+  // });
 };
 
 export default function Product() {
@@ -60,7 +123,7 @@ export default function Product() {
         <!-- 브레드크럼 -->
         <nav class="mb-4">
           <div class="flex items-center space-x-2 text-sm text-gray-600">
-            <a href="/" data-link="" class="hover:text-blue-600 transition-colors">홈</a>
+            <a href="/" data-link="home" class="hover:text-blue-600 transition-colors">홈</a>
             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
             </svg>
