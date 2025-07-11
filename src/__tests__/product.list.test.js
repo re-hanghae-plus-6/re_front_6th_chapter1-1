@@ -166,6 +166,13 @@ describe("5. 무한 스크롤 페이지네이션", () => {
   test("페이지 하단 스크롤 시 추가 상품이 로드된다", async () => {
     await screen.findByText(/총 의 상품/i);
 
+    // 이전 테스트에서 limit이 변경되었을 수 있으므로 20으로 명시적으로 설정
+    const limitSelect = document.querySelector("#limit-select");
+    if (limitSelect && limitSelect.value !== "20") {
+      await userEvent.selectOptions(limitSelect, "20");
+      await screen.findByText(/총 의 상품/i); // 변경 후 렌더링 대기
+    }
+
     // 초기 상품 카드 수 확인
     const initialCards = document.querySelectorAll(".product-card").length;
     expect(initialCards).toBe(20);
