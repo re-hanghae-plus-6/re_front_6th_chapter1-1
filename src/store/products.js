@@ -2,26 +2,31 @@ import { getCategories, getProducts } from "../api/productApi";
 import { observable } from "../core/observer";
 import { router } from "../core/router";
 
-const LOAD_DEFAULT_PAGE = 1;
 const defaultParams = {
   limit: 20,
   search: "",
   category1: "",
   category2: "",
   sort: "price_asc",
+  page: 1,
 };
 
-export const productsStore = observable({
-  ...defaultParams,
-
+const defaultData = {
   isLoading: true,
   isFetching: false,
   products: [],
   currentPageProducts: [],
-  categories: null,
   page: null,
   total: null,
-  hasNext: null,
+  hasNext: true,
+};
+
+const defaultCategories = null;
+
+export const productsStore = observable({
+  ...defaultParams,
+  data: defaultData,
+  categories: defaultCategories,
 
   getParams() {
     return {
@@ -34,8 +39,7 @@ export const productsStore = observable({
     };
   },
   initSearchParams() {
-    const params = { ...defaultParams, ...router.getParams() };
-    params.page = LOAD_DEFAULT_PAGE;
+    const params = { ...defaultParams, ...router.getParams(), page: defaultParams.page };
     for (const [key, value] of Object.entries(params)) {
       productsStore[key] = value;
     }
@@ -51,51 +55,55 @@ export const productsStore = observable({
     }
     router.updateParams(filteredParams);
   },
+  setParams(params) {
+    for (const [key, value] of Object.entries(params)) {
+      productsStore[key] = value;
+    }
+  },
   setLimit(limit) {
-    productsStore.limit = limit;
+    productsStore.loadProducts({ limit });
     productsStore.updateParams("limit", limit);
-    productsStore.loadProducts();
   },
   setSearch(search) {
-    productsStore.search = search;
+    productsStore.loadProducts({ search });
     productsStore.updateParams("search", search);
-    productsStore.loadProducts();
   },
   setCategory1(category1) {
-    productsStore.category1 = category1;
+    productsStore.loadProducts({ category1 });
     productsStore.updateParams("category1", category1);
-    productsStore.loadProducts();
   },
   setCategory2(category2) {
-    productsStore.category2 = category2;
+    productsStore.loadProducts({ category2 });
     productsStore.updateParams("category2", category2);
-    productsStore.loadProducts();
   },
   setSort(sort) {
-    productsStore.sort = sort;
+    productsStore.loadProducts({ sort });
     productsStore.updateParams("sort", sort);
-    productsStore.loadProducts();
   },
-  async loadProducts() {
-    productsStore.page = LOAD_DEFAULT_PAGE;
-    const data = await productsStore.fetchProducts();
-    productsStore.products = data.products;
-    productsStore.isLoading = false;
+  setData(data) {
+    productsStore.data = {
+      isLoading: false,
+      isFetching: false,
+      products: data.pagination.page === 1 ? data.products : [...productsStore.data.products, ...data.products],
+      currentPageProducts: data.products,
+      page: data.pagination.page,
+      total: data.pagination.total,
+      hasNext: data.pagination.hasNext,
+    };
+  },
+  async loadProducts(params = {}) {
+    const data = await productsStore.fetchProducts({ ...productsStore.getParams(), ...params, page: 1 });
+    productsStore.setData(data);
+    productsStore.setParams({ ...params, page: 1 });
   },
   async loadNextPage() {
-    productsStore.page = productsStore.page + 1;
-    const data = await productsStore.fetchProducts();
-    productsStore.products = [...productsStore.products, ...data.products];
+    const data = await productsStore.fetchProducts({ ...productsStore.getParams(), page: productsStore.data.page + 1 });
+    productsStore.setData(data);
+    productsStore.setParams({ page: productsStore.data.page + 1 });
   },
-  async fetchProducts() {
+  async fetchProducts(params) {
     productsStore.isFetching = true;
-    const data = await getProducts(productsStore.getParams());
-
-    productsStore.currentPageProducts = data.products;
-    productsStore.page = data.pagination.page;
-    productsStore.hasNext = data.pagination.hasNext;
-    productsStore.total = data.pagination.total;
-    productsStore.isFetching = false;
+    const data = await getProducts(params);
 
     return data;
   },

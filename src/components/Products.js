@@ -21,10 +21,12 @@ export class Products extends Component {
   }
 
   render() {
-    const { limit, page, total, products, currentPageProducts, isLoading, hasNext, isFetching } = productsStore;
-
+    const { limit, data } = productsStore;
+    const { page, total, products, currentPageProducts, isLoading, hasNext, isFetching } = data;
     if (isLoading) {
-      return;
+      this.$el.innerHTML = html`<!-- 상품 그리드 -->
+        <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid"></div>
+        ${this.#moreStatus({ isLoading, hasNext })}`;
     } else if (page === 1) {
       const filledProducts = this.#ensureProductsCount({ total, limit, page, products });
 
@@ -43,12 +45,11 @@ export class Products extends Component {
       const $addCartBtn = target.closest("button[data-product-id]");
       if ($addCartBtn) {
         const { productId } = $addCartBtn.dataset;
-        const item = productsStore.products.find((p) => p.productId === productId);
+        const item = productsStore.data.products.find((p) => p.productId === productId);
 
         if (!item) {
           throw new Error(`${productId} is not in products`);
         }
-        console.log(item);
         cartStore.addItem(item);
         return;
       }
@@ -163,7 +164,7 @@ export class Products extends Component {
     return hasNext ? this.#hasMoreStatus() : this.#noMoreStatus();
   }
 
-  #productCard({ productId, image, lprice, title }) {
+  #productCard({ productId, image, lprice, title, brand }) {
     return html`<div
       class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
       data-product-id="${productId}"
