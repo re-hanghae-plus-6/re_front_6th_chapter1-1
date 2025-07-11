@@ -13,8 +13,6 @@ const routes = {
 let currentCleanup = null;
 
 export function router() {
-  console.log("router 실행됨");
-
   const path = window.location.pathname;
   const query = getQueryParams();
 

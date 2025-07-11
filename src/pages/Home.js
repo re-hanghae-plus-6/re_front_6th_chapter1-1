@@ -6,7 +6,7 @@ import { getProducts, getCategories } from "../api/productApi.js";
 import { productStore } from "../store/productStore.js";
 import { cartStore } from "../store/cartStore.js";
 import ProductFilter from "../components/product/ProductFilter.js";
-import { registerHomeEventListeners } from "../utils/eventHandlers.js";
+import { registerHomeEventListeners, removeHomeEventListeners } from "../utils/eventHandlers.js";
 import { CartIcon } from "../components/common/Header.js";
 
 // 상품 목록
@@ -124,12 +124,23 @@ export default function Home() {
     ${Footer()}
   `;
 
+  let firstLoad = false;
+  let observer;
+
   async function mount() {
-    // window.scrollTo(0, 0);
+    window.scrollTo(0, 0);
+
+    // 상품 스토어 구독
+    const unsubscribe = productStore.subscribe(() => {
+      renderProducts();
+      renderFilter();
+    });
+
+    productStore.setLoading(true);
+    renderProducts();
 
     updateCartCount();
     renderFilter();
-    renderProducts();
 
     const categories = await getCategories();
     productStore.setCategories(categories);
@@ -139,13 +150,16 @@ export default function Home() {
 
     await loadProducts({ append: false });
 
+    firstLoad = true;
+
     // 무한 스크롤 처리
     const observerTarget = document.getElementById("observer-target");
-    const observer = new IntersectionObserver(
+    observer = new IntersectionObserver(
       async (entries) => {
         const entry = entries[0];
         const state = productStore.getState();
-        if (entry.isIntersecting && !state.loading && state.hasMore) {
+
+        if (firstLoad && entry.isIntersecting && !state.loading && state.hasMore) {
           await loadProducts({ append: true });
         }
       },
@@ -159,12 +173,6 @@ export default function Home() {
       observer.observe(observerTarget);
     }
 
-    // 상품 스토어 구독
-    const unsubscribe = productStore.subscribe(() => {
-      renderProducts();
-      renderFilter();
-    });
-
     // 장바구니 스토어 구독
     const cartUnsubscribe = cartStore.subscribe(() => {
       updateCartCount();
@@ -174,6 +182,7 @@ export default function Home() {
       observer.disconnect();
       unsubscribe();
       cartUnsubscribe();
+      removeHomeEventListeners();
     };
   }
 
