@@ -83,8 +83,23 @@ class Controller {
   async handleRouteChange(currentRoute) {
     if (currentRoute === "/" || !currentRoute) {
       if (import.meta.env.MODE === "test") {
+        if (this.controllers.productList) {
+          this.controllers.productList.cleanup();
+          this.controllers.productList = null;
+        }
+        if (this.controllers.productDetail) {
+          this.controllers.productDetail.cleanup();
+          this.controllers.productDetail = null;
+        }
+
         clearCartStorage();
         store.reset();
+        store.computed.cart.clearCache();
+
+        const rootElement = document.getElementById("root");
+        if (rootElement) {
+          rootElement.innerHTML = "";
+        }
       }
 
       if (this.controllers.productList) {
@@ -104,7 +119,6 @@ class Controller {
       }
     }
 
-    // 카트 모달은 항상 유지
     if (!this.controllers.cartModal) {
       this.controllers.cartModal = new CartModalController();
       this.controllers.cartModal.setupEventListeners();
@@ -112,7 +126,6 @@ class Controller {
   }
 
   cleanupCurrentControllers() {
-    // productList와 productDetail만 cleanup (페이지별 컨트롤러)
     if (this.controllers.productList) {
       this.controllers.productList.cleanup();
       this.controllers.productList = null;
