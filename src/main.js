@@ -108,7 +108,7 @@ const fetchAndRenderHomepageData = async (isInfiniteScroll = false) => {
 };
 
 const handleScroll = () => {
-  if (window.location.pathname !== "/") return;
+  if (window.location.pathname !== `${BASE_URL}/`) return;
 
   if (isThrottled) return;
 
