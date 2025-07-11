@@ -7,6 +7,9 @@ export const ACTION_TYPES = {
   SET_ROUTE: "SET_ROUTE",
   SET_PRODUCT_DETAIL: "SET_PRODUCT_DETAIL",
   SET_PRODUCT_DETAIL_LOADING: "SET_PRODUCT_DETAIL_LOADING",
+  ADD_TO_CART: "ADD_TO_CART",
+  REMOVE_FROM_CART: "REMOVE_FROM_CART",
+  CLEAR_CART: "CLEAR_CART",
 };
 
 // 액션 생성자 함수들 - 일관된 액션 객체 생성
@@ -49,5 +52,20 @@ export const actions = {
   setProductDetailLoading: (isLoading) => ({
     type: ACTION_TYPES.SET_PRODUCT_DETAIL_LOADING,
     payload: isLoading,
+  }),
+
+  addToCart: (productId) => ({
+    type: ACTION_TYPES.ADD_TO_CART,
+    payload: { productId },
+  }),
+
+  removeFromCart: (productId) => ({
+    type: ACTION_TYPES.REMOVE_FROM_CART,
+    payload: { productId },
+  }),
+
+  clearCart: () => ({
+    type: ACTION_TYPES.CLEAR_CART,
+    payload: {},
   }),
 };
