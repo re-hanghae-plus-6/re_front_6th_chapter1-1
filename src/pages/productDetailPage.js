@@ -1,5 +1,5 @@
-import { getProduct } from "../api/productApi";
-import { setupCartEventListeners, updateCartCount } from "../utils/cartHandler.js";
+import { getProduct, getRelatedProducts } from "../api/productApi";
+import { setupCartEventListeners, updateCartCount, addToCart } from "../utils/cartHandler.js";
 import { renderProductDetailLoading } from "../utils/loadingHandler.js";
 
 const root = document.getElementById("root");
@@ -48,8 +48,33 @@ const renderStars = (rating) => {
   return starsHTML;
 };
 
+// 관련 상품 렌더링
+const renderRelatedProducts = (relatedProducts) => {
+  if (!relatedProducts || relatedProducts.length === 0) {
+    return `
+      <div class="text-center text-gray-500 py-8">
+        <p>관련 상품이 없습니다.</p>
+      </div>
+    `;
+  }
+
+  return relatedProducts
+    .map(
+      (product) => `
+        <div class="related-product-card cursor-pointer" data-product-id="${product.productId}">
+          <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-2">
+            <img src="${product.image}" alt="${product.title}" class="w-full h-full object-cover">
+          </div>
+          <h3 class="text-sm font-medium text-gray-900 truncate mb-1">${product.title}</h3>
+          <p class="text-sm text-gray-600">${product.lprice}원</p>
+        </div>
+      `,
+    )
+    .join("");
+};
+
 // 상품 상세 페이지 렌더링
-const renderProductDetail = (product) => {
+const renderProductDetail = (product, relatedProducts = []) => {
   const { productId, title, image, lprice, brand, category1, category2, description, rating, reviewCount, stock } =
     product;
 
@@ -72,6 +97,7 @@ const renderProductDetail = (product) => {
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m2.6 8L6 2H3m4 11v6a1 1 0 001 1h1a1 1 0 001-1v-6M13 13v6a1 1 0 001 1h1a1 1 0 001-1v-6"></path>
                 </svg>
+                <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center" style="display: none;"></span>
               </button>
             </div>
           </div>
@@ -183,10 +209,7 @@ const renderProductDetail = (product) => {
           </div>
           <div class="p-4">
             <div class="grid grid-cols-2 gap-3 responsive-grid">
-              <!-- 관련 상품들은 동적으로 로드될 예정 -->
-              <div class="text-center text-gray-500 py-8">
-                <p>관련 상품을 불러오는 중...</p>
-              </div>
+              ${renderRelatedProducts(relatedProducts)}
             </div>
           </div>
         </div>
@@ -254,10 +277,8 @@ const setupEventListeners = (product) => {
         quantity: quantity,
       };
 
-      // 장바구니에 추가 (cartHandler의 addToCart 함수 사용)
-      import("../utils/cartHandler.js").then(({ addToCart }) => {
-        addToCart(productData);
-      });
+      // 장바구니에 추가
+      addToCart(productData);
     });
   }
 
@@ -286,6 +307,18 @@ const setupEventListeners = (product) => {
       window.dispatchEvent(new PopStateEvent("popstate"));
     });
   });
+
+  // 관련 상품 클릭 이벤트
+  const relatedProductCards = document.querySelectorAll(".related-product-card");
+  relatedProductCards.forEach((card) => {
+    card.addEventListener("click", () => {
+      const productId = card.getAttribute("data-product-id");
+      if (productId) {
+        window.history.pushState({}, "", `/product/${productId}`);
+        window.dispatchEvent(new PopStateEvent("popstate"));
+      }
+    });
+  });
 };
 
 // 상품 상세 페이지 메인 함수
@@ -299,7 +332,18 @@ export const productDetailPage = async (productId) => {
       throw new Error("상품을 찾을 수 없습니다.");
     }
 
-    renderProductDetail(product);
+    // 관련 상품 가져오기
+    let relatedProducts = [];
+    if (product.category2) {
+      try {
+        const relatedData = await getRelatedProducts(product.category2, productId, 4);
+        relatedProducts = relatedData.products || relatedData || [];
+      } catch (error) {
+        console.error("관련 상품 로딩 실패:", error);
+      }
+    }
+
+    renderProductDetail(product, relatedProducts);
   } catch (error) {
     console.error("상품 상세 로딩 실패:", error);
     root.innerHTML = `

@@ -147,6 +147,10 @@ const setupInfiniteScroll = (loadMoreProducts) => {
   const throttleDelay = 100;
 
   const handleScroll = () => {
+    // 상품 목록 페이지에서만 무한 스크롤 활성화
+    const isProductListPage = window.location.pathname === "/" || window.location.pathname === "";
+    if (!isProductListPage) return;
+
     if (isThrottled) return;
 
     isThrottled = true;

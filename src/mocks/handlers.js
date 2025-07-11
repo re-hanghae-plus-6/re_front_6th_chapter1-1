@@ -38,6 +38,11 @@ function filterProducts(products, query) {
     filtered = filtered.filter((item) => item.category2 === query.category2);
   }
 
+  // 현재 상품 제외 (관련 상품용)
+  if (query.exclude) {
+    filtered = filtered.filter((item) => item.productId !== query.exclude);
+  }
+
   // 정렬
   if (query.sort) {
     switch (query.sort) {
@@ -72,6 +77,7 @@ export const handlers = [
     const category1 = url.searchParams.get("category1") || "";
     const category2 = url.searchParams.get("category2") || "";
     const sort = url.searchParams.get("sort") || "price_asc";
+    const exclude = url.searchParams.get("exclude") || "";
 
     // 필터링된 상품들
     const filteredProducts = filterProducts(items, {
@@ -79,6 +85,7 @@ export const handlers = [
       category1,
       category2,
       sort,
+      exclude,
     });
 
     // 페이지네이션
