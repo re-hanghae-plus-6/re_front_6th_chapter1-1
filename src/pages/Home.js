@@ -6,18 +6,23 @@ import { SearchInput } from "../components/filter/SearchInput.js";
 import { CategoryFilter } from "../components/filter/CategoryFilter.js";
 import { SortFilter } from "../components/filter/SortFilter.js";
 import { ProductList } from "../components/product/ProductList.js";
-import { addToCart } from "../store/cart.js";
 import { showToast } from "../components/common/Toast.js";
+import { getRouter } from "../core/router.js";
+import { getCart } from "../core/cart.js";
 
 export default class Home extends Component {
   setup() {
+    // 싱글톤 인스턴스 가져오기
+    this.router = getRouter();
+    this.cart = getCart();
+
     this.productsHook = useProducts();
 
     this.unsubscribe = this.productsHook.subscribe(() => {
       this.render();
     });
 
-    const { query } = window.router.getQueryParams();
+    const { query } = this.router.getQueryParams();
     this.productsHook.loadInitialData(query);
 
     this.setupEvents();
@@ -25,7 +30,7 @@ export default class Home extends Component {
 
   template() {
     const { products, categories, isLoading, isLoadingMore, pagination } = this.productsHook.getState();
-    const { query } = window.router.getQueryParams();
+    const { query } = this.router.getQueryParams();
 
     return Layout(
       `
@@ -55,60 +60,60 @@ export default class Home extends Component {
     }
 
     this.addEvent("click", "[data-breadcrumb='reset']", () => {
-      window.router.updateQuery("category1", null, { rerender: false });
-      window.router.updateQuery("category2", null, { rerender: false });
-      window.router.updateQuery("page", "1", { rerender: false });
+      this.router.updateQuery("category1", null, { rerender: false });
+      this.router.updateQuery("category2", null, { rerender: false });
+      this.router.updateQuery("page", "1", { rerender: false });
 
-      const { query } = window.router.getQueryParams();
+      const { query } = this.router.getQueryParams();
       this.productsHook.loadProducts(query);
     });
 
     this.addEvent("click", "[data-breadcrumb='category1']", () => {
-      window.router.updateQuery("category2", null, { rerender: false });
-      window.router.updateQuery("page", "1", { rerender: false });
+      this.router.updateQuery("category2", null, { rerender: false });
+      this.router.updateQuery("page", "1", { rerender: false });
 
-      const { query } = window.router.getQueryParams();
+      const { query } = this.router.getQueryParams();
       this.productsHook.loadProducts(query);
     });
 
     this.addEvent("click", ".category1-filter-btn", (e) => {
       const category1 = e.target.dataset.category1;
 
-      window.router.updateQuery("category1", category1, { rerender: false });
-      window.router.updateQuery("category2", null, { rerender: false });
-      window.router.updateQuery("page", "1", { rerender: false });
+      this.router.updateQuery("category1", category1, { rerender: false });
+      this.router.updateQuery("category2", null, { rerender: false });
+      this.router.updateQuery("page", "1", { rerender: false });
 
-      const { query } = window.router.getQueryParams();
+      const { query } = this.router.getQueryParams();
       this.productsHook.loadProducts(query);
     });
 
     this.addEvent("click", ".category2-filter-btn", (e) => {
       const category2 = e.target.dataset.category2;
 
-      window.router.updateQuery("category2", category2, { rerender: false });
-      window.router.updateQuery("page", "1", { rerender: false });
+      this.router.updateQuery("category2", category2, { rerender: false });
+      this.router.updateQuery("page", "1", { rerender: false });
 
-      const { query } = window.router.getQueryParams();
+      const { query } = this.router.getQueryParams();
       this.productsHook.loadProducts(query);
     });
 
     this.addEvent("change", "#limit-select", (e) => {
       const limit = e.target.value;
 
-      window.router.updateQuery("limit", limit, { rerender: false });
-      window.router.updateQuery("page", "1", { rerender: false });
+      this.router.updateQuery("limit", limit, { rerender: false });
+      this.router.updateQuery("page", "1", { rerender: false });
 
-      const { query } = window.router.getQueryParams();
+      const { query } = this.router.getQueryParams();
       this.productsHook.loadProducts(query);
     });
 
     this.addEvent("change", "#sort-select", (e) => {
       const sort = e.target.value;
 
-      window.router.updateQuery("sort", sort, { rerender: false });
-      window.router.updateQuery("page", "1", { rerender: false });
+      this.router.updateQuery("sort", sort, { rerender: false });
+      this.router.updateQuery("page", "1", { rerender: false });
 
-      const { query } = window.router.getQueryParams();
+      const { query } = this.router.getQueryParams();
       this.productsHook.loadProducts(query);
     });
 
@@ -117,13 +122,13 @@ export default class Home extends Component {
         const search = e.target.value;
 
         if (search) {
-          window.router.updateQuery("search", search, { rerender: false });
+          this.router.updateQuery("search", search, { rerender: false });
         } else {
-          window.router.updateQuery("search", null, { rerender: false });
+          this.router.updateQuery("search", null, { rerender: false });
         }
-        window.router.updateQuery("page", "1", { rerender: false });
+        this.router.updateQuery("page", "1", { rerender: false });
 
-        const { query } = window.router.getQueryParams();
+        const { query } = this.router.getQueryParams();
         this.productsHook.loadProducts(query);
       }
     });
@@ -132,7 +137,7 @@ export default class Home extends Component {
       const productCard = e.target.closest(".product-card");
       if (productCard) {
         const productId = productCard.dataset.productId;
-        window.router.navigate(`/product/${productId}`);
+        this.router.navigate(`/product/${productId}`);
       }
     });
 
@@ -147,7 +152,7 @@ export default class Home extends Component {
         const product = products.find((p) => p.productId === productId);
 
         if (product) {
-          addToCart(product, 1);
+          this.cart.addToCart(product, 1);
           showToast("장바구니에 추가되었습니다", "success");
         }
       }
@@ -159,7 +164,7 @@ export default class Home extends Component {
       const documentHeight = document.documentElement.scrollHeight;
 
       if (scrollTop + windowHeight >= documentHeight - 100) {
-        const { query } = window.router.getQueryParams();
+        const { query } = this.router.getQueryParams();
         this.productsHook.loadMoreProducts(query);
       }
     };

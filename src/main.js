@@ -1,5 +1,5 @@
-import Router from "./router/Router.js";
-import { CartModalController } from "./controllers/CartModalController.js";
+import { initRouter } from "./core/router.js";
+import { initCart } from "./core/cart.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -9,13 +9,9 @@ const enableMocking = () =>
   );
 
 function main() {
-  const router = new Router(document.getElementById("root"));
-  window.router = router;
-  router.init();
-
-  // 장바구니 모달 컨트롤러 초기화
-  const cartModalController = new CartModalController();
-  window.cartModalController = cartModalController;
+  // 각 도메인별 싱글톤 초기화
+  initRouter();
+  initCart();
 }
 
 // 애플리케이션 시작

@@ -2,12 +2,17 @@ import Component from "../core/Component.js";
 import { useProduct } from "../hooks/useProduct.js";
 import { Layout } from "../components/layout/Layout.js";
 import { BreadCrumb } from "../components/filter/BreadCrumb.js";
-import { addToCart } from "../store/cart.js";
 import { RelatedProducts } from "../components/product/RelatedProducts.js";
 import { showToast } from "../components/common/Toast.js";
+import { getRouter } from "../core/router.js";
+import { getCart } from "../core/cart.js";
 
 export default class ProductDetail extends Component {
   setup() {
+    // 싱글톤 인스턴스 가져오기
+    this.router = getRouter();
+    this.cart = getCart();
+
     this.productHook = useProduct();
 
     this.unsubscribe = this.productHook.subscribe(() => {
@@ -132,7 +137,7 @@ export default class ProductDetail extends Component {
       const { product, quantity } = this.productHook.getState();
 
       if (product) {
-        addToCart(product, quantity);
+        this.cart.addToCart(product, quantity);
         showToast("장바구니에 추가되었습니다", "success");
       }
     });
@@ -144,7 +149,7 @@ export default class ProductDetail extends Component {
 
       if (productId) {
         // 라우터를 통해 상품 상세 페이지로 이동
-        window.router.navigate(`/product/${productId}`);
+        this.router.navigate(`/product/${productId}`);
       }
     });
 
