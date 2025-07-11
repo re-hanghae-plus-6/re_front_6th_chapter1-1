@@ -242,7 +242,7 @@ async function loadMoreProducts() {
       hasMore,
     });
 
-    // URL 쿼리스트링 동기화 (current 페이지 반영)
+    // URL 쿼리스트링 동기화
     syncUrlWithState(storeRef.getState(), { replace: true });
   } catch (e) {
     console.error("추가 상품 로딩 실패:", e);
