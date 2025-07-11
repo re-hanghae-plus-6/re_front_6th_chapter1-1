@@ -1,4 +1,6 @@
+import cart from "../@store/cart";
 import { navigateTo } from "../router/router";
+import { showAddToCartToast, updateCartCount } from "./cartHandlers";
 
 /** 브레드크럼 선택시 카테고리별 상품 목록 이동 */
 export function setupBreadcrumbCategoryHandlers() {
@@ -29,4 +31,58 @@ export function setupRelatedProductCardHandler() {
       }
     });
   }
+}
+
+// 상세 페이지 수량 증감 및 장바구니 담기 통합 핸들러
+export function setupDetailAndCartHandler(state) {
+  const increaseBtn = document.getElementById("quantity-increase");
+  const decreaseBtn = document.getElementById("quantity-decrease");
+  const input = document.getElementById("quantity-input");
+  const btn = document.getElementById("add-to-cart-btn");
+
+  if (!decreaseBtn || !increaseBtn || !input || !btn || !state.product) return;
+
+  // 상세 진입 시 input을 항상 1로 초기화
+  input.value = 1;
+
+  // 기존 이벤트 핸들러 제거 (중복 방지)
+  increaseBtn.onclick = null;
+  decreaseBtn.onclick = null;
+  btn.onclick = null;
+
+  // 수량 증가
+  increaseBtn.addEventListener("click", () => {
+    let value = parseInt(input.value);
+    if (!isNaN(value)) {
+      input.value = value + 1;
+    }
+  });
+
+  // 수량 감소
+  decreaseBtn.addEventListener("click", () => {
+    let value = parseInt(input.value);
+    if (!isNaN(value) && value > 1) {
+      input.value = value - 1;
+    }
+  });
+
+  // 장바구니 담기
+  btn.addEventListener("click", () => {
+    const quantity = parseInt(input.value) || 1;
+    const productId = state.product.productId;
+    const exists = cart.state.find((item) => item.productId === productId);
+
+    if (exists) {
+      cart.setState(
+        cart.state.map((item) =>
+          item.productId === productId ? { ...item, quantity: item.quantity + quantity } : item,
+        ),
+      );
+    } else {
+      cart.setState([...cart.state, { ...state.product, quantity }]);
+    }
+    localStorage.setItem("cart", JSON.stringify(cart.state));
+    updateCartCount(cart.state);
+    showAddToCartToast();
+  });
 }

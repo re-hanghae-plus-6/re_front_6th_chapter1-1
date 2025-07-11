@@ -5,6 +5,8 @@ const cart = {
 
     cart.state = __state ? JSON.parse(__state) : [];
 
+    console.log(cart.state);
+
     if (!__state) {
       localStorage.setItem("cart", JSON.stringify(cart.state));
     }

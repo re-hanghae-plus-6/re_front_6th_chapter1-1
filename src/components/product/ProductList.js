@@ -18,10 +18,6 @@ export const ProductList = ({ products = [], total = 0, isLoading = false }) => 
         ${products.map((product) => ProductItem({ product })).join("")}
         ${isLoading ? ProductSkeleton() : ""}
       </div>
-
-      <!-- observer: 감시할 빈 div -->
-      <div id="observer" class="h-6"></div>
-
       ${
         isLoading
           ? `

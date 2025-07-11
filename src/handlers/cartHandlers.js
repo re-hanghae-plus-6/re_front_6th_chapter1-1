@@ -7,11 +7,11 @@ import { CartModal } from "../components/cart/CartModal";
 export function viewCartHandler(state) {
   const cartIcon = document.getElementById("cart-icon-btn");
   if (!cartIcon) return;
-  cartIcon.addEventListener("click", () => {
+  cartIcon.onclick = () => {
     CartModal(state);
     setupQuantityButtons(state);
     closeCartModal();
-  });
+  };
 }
 
 // 장바구니 모달 닫기 핸들러
@@ -21,17 +21,17 @@ export function closeCartModal() {
   const cartModalBackground = document.querySelector(".cart-modal-overlay");
 
   if (cartModalCloseBtn) {
-    cartModalCloseBtn.addEventListener("click", () => {
+    cartModalCloseBtn.onclick = () => {
       if (modalPortal) modalPortal.innerHTML = "";
-    });
+    };
   }
 
   if (cartModalBackground) {
-    cartModalBackground.addEventListener("click", (e) => {
+    cartModalBackground.onclick = (e) => {
       if (e.target === cartModalBackground && modalPortal) {
         modalPortal.innerHTML = "";
       }
-    });
+    };
   }
 
   const escListener = (e) => {
@@ -110,7 +110,7 @@ export function updateTotal(itemMap) {
 }
 
 // 장바구니 수량 상태 반영 함수
-function updateCartStateQuantity(state, productId, quantity) {
+export function updateCartStateQuantity(state, productId, quantity) {
   // cart.state에서 productId에 해당하는 아이템 수량 업데이트
   cart.setState(cart.state.map((item) => (item.productId === productId ? { ...item, quantity } : item)));
   // 수량 변경에 따른 카운트 업데이트
@@ -120,7 +120,7 @@ function updateCartStateQuantity(state, productId, quantity) {
 // 장바구니 아이콘 숫자 업데이트
 export function updateCartCount() {
   const countEl = document.getElementById("cart-count");
-  if (!countEl) return;
+  // if (!countEl) return;
 
   const total = cart.state.length;
   countEl.textContent = total;
@@ -130,25 +130,6 @@ export function updateCartCount() {
   } else {
     countEl.classList.remove("hidden");
   }
-}
-
-/** 장바구니 담기 */
-export function addToCart(productId, state) {
-  const product = state.products.find((p) => p.productId === productId);
-  if (!product) return;
-
-  const exists = cart.state.some((item) => item.productId === productId);
-  if (!exists) {
-    cart.setState([...cart.state, { ...product, quantity: 1 }]);
-  } else {
-    cart.setState(
-      cart.state.map((item) => (item.productId === productId ? { ...item, quantity: item.quantity + 1 } : item)),
-    );
-  }
-
-  localStorage.setItem("cart", JSON.stringify(cart.state));
-  updateCartCount(cart.state);
-  showAddToCartToast();
 }
 
 // 장바구니 담기 버튼 핸들러

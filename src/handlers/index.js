@@ -27,6 +27,7 @@ export default function initializeHandlers(state, render) {
   // 상품 디테일
   productDetailHandlers.setupBreadcrumbCategoryHandlers(state, render);
   productDetailHandlers.setupRelatedProductCardHandler(state, render);
+  productDetailHandlers.setupDetailAndCartHandler(state);
 
   // 검색 입력 엔터 핸들러
   const searchInput = document.getElementById("search-input");

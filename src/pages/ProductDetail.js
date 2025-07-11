@@ -1,6 +1,7 @@
 import { getProduct, getProducts } from "../api/productApi";
 import { state } from "../@store/store";
 import initializeHandlers from "../handlers";
+import cart from "../@store/cart";
 
 export function ProductDetail(productId) {
   async function init() {
@@ -101,10 +102,13 @@ function render() {
                   ></path>
                 </svg>
                 <span
-                  class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"
+                  id="cart-count"
+                  class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center ${cart
+                    .state.length === 0
+                    ? "hidden"
+                    : ""}"
+                  >${cart.state.length}</span
                 >
-                  1
-                </span>
               </button>
             </div>
           </div>
@@ -282,6 +286,7 @@ function render() {
     </div>
   `}
       </main>
+      <div id="modal-portal"></div>
     </div>`;
   })();
 }

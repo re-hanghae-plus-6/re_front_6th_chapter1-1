@@ -6,7 +6,7 @@ import initializeHandlers from "../handlers/index.js";
 import { state } from "../@store/store.js";
 
 export const Home = () => {
-  // ✅ 새로고침해도 유지되게 URL 쿼리에서 상태 초기화
+  // 새로고침해도 유지되게 URL 쿼리에서 상태 초기화
   const params = new URLSearchParams(window.location.search);
 
   state.selectedLimit = params.get("limit") || "10";
@@ -51,10 +51,7 @@ function render() {
   });
   const productSection = ProductList({ products: state.products, total: state.total, isLoading: state.isLoading });
   document.body.querySelector("#root").innerHTML = Layout({
-    children: `
-      ${filterSection}
-      ${productSection}
-    `,
+    children: /* HTML */ ` ${filterSection} ${productSection} `,
   });
 
   initializeHandlers(state, render);

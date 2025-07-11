@@ -7,16 +7,17 @@ export const CartModal = (state) => {
 
     // productId로 중복 제거 및 수량 집계
     const uniqueItemsMap = new Map();
-
     cart.state.forEach((item) => {
       if (uniqueItemsMap.has(item.productId)) {
-        uniqueItemsMap.get(item.productId).quantity += 1;
+        uniqueItemsMap.get(item.productId).quantity += item.quantity;
       } else {
-        uniqueItemsMap.set(item.productId, { ...item, quantity: 1 });
+        uniqueItemsMap.set(item.productId, { ...item });
       }
     });
-
+    console.log("CartModal", cart.state);
+    // 중복 제거된 아이템 목록
     const uniqueCartItems = Array.from(uniqueItemsMap.values());
+
     const totalQuantity = uniqueCartItems.reduce((sum, item) => sum + item.quantity, 0);
     const totalPrice = uniqueCartItems.reduce((sum, item) => sum + item.lprice * item.quantity, 0);
 
