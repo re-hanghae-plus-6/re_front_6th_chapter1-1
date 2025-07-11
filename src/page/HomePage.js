@@ -54,9 +54,7 @@ export default function HomePage({ cartCount = 0 }) {
   // HTML과 cleanup 함수를 함께 반환
   return {
     html: render(store.getState(), cartCount),
-    cleanup: () => {
-      cleanup();
-    },
+    cleanup,
   };
 }
 
@@ -66,6 +64,7 @@ function cleanup() {
     window.removeEventListener("popstate", handlePopState);
 
     // 스토어 정리
+    store.unsubscribeAll();
     store = null;
     prevState = { ...initialState };
 
@@ -244,7 +243,7 @@ async function loadMoreProducts() {
     });
 
     // URL 쿼리스트링 동기화 (current 페이지 반영)
-    syncUrlWithState(storeRef.getState());
+    syncUrlWithState(storeRef.getState(), { replace: true });
   } catch (e) {
     console.error("추가 상품 로딩 실패:", e);
     if (store === storeRef) storeRef.setState({ loading: false });
@@ -261,7 +260,6 @@ function attachEventListeners() {
     // onKeydown 이벤트로 검색 입력 처리
     searchInput.onkeydown = (e) => {
       if (e.key === "Enter") {
-        // 기본 제출 동작 방지
         e.preventDefault();
         store.setState({ searchValue: e.target.value, currentPage: 1 });
       }
@@ -270,13 +268,12 @@ function attachEventListeners() {
     // onKeyup 이벤트로 검색 입력 처리
     searchInput.onkeyup = (e) => {
       if (e.key === "Enter") {
-        // 기본 제출 동작 방지
         e.preventDefault();
         store.setState({ searchValue: e.target.value, currentPage: 1 });
       }
     };
 
-    // onChange 이벤트로 검색 입력 처리 (Enter 누르지 않아도 검색 동작)
+    // onChange 이벤트로 검색 입력 처리
     searchInput.onchange = (e) => {
       store.setState({ searchValue: e.target.value, currentPage: 1 });
     };
@@ -339,7 +336,6 @@ function attachEventListeners() {
   const bcCategory1Btn = document.querySelector("[data-breadcrumb='category1']");
   if (bcCategory1Btn) {
     bcCategory1Btn.onclick = (e) => {
-      console.log("bcCategory1Btn.onclick", e.target.getAttribute("data-category1"));
       store.setState({
         selectedCategory1: e.target.getAttribute("data-category1"),
         selectedCategory2: "",
@@ -361,8 +357,7 @@ function attachEventListeners() {
     const { loading, hasMore } = store.getState();
     if (loading || !hasMore) return;
 
-    // 현재 스크롤 위치가 문서 하단(THRESHOLD) 이내인지 확인
-    const THRESHOLD = 150; // 150px 이내일 때 추가 상품 로드
+    const THRESHOLD = 150;
     const scrolledHeight = window.innerHeight + window.scrollY;
     const documentHeight = document.body.offsetHeight;
 
@@ -372,7 +367,5 @@ function attachEventListeners() {
   };
 
   window.addEventListener("scroll", onScroll);
-
-  // 클린업 시 스크롤 이벤트 제거를 위해 반환
   attachEventListeners.onScroll = onScroll;
 }

@@ -111,13 +111,13 @@ export function toggleSelect(productId) {
   renderModalContent(); // 비동기 처리하지만 대기하지 않음
 }
 
-export async function selectAll(selected) {
+export function selectAll(selected) {
   syncFromStorage();
   cart.forEach((i) => {
     i.selected = selected;
   });
   persist();
-  await renderModalContent();
+  renderModalContent();
 }
 
 // Helper to keep in-memory cart in sync with localStorage (important for test isolation)
