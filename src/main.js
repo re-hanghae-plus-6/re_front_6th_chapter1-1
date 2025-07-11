@@ -14,6 +14,7 @@ import { NotFound } from './components/NotFound.js';
 import { ProductService } from './services/ProductService.js';
 import { CartModal } from './components/CartModal.js';
 import { ToastManager } from './components/Toast.js';
+import { ProductDetailContainer } from './components/ProductDetailContainer.js';
 
 // 라우터 인스턴스 생성
 const router = new Router();
@@ -24,8 +25,28 @@ const cartModal = new CartModal(store);
 // 토스트 매니저 인스턴스 생성
 const toastManager = new ToastManager();
 
+// 상품 상세 컨테이너 인스턴스 생성
+const productDetailContainer = new ProductDetailContainer();
+
+// 상품 상세 페이지 컴포넌트 함수
+function ProductDetailPage(params) {
+  // 비동기적으로 상품 상세 페이지를 렌더링
+  productDetailContainer.render(params.id);
+
+  // 즉시 로딩 상태를 반환하여 Router가 올바른 Layout을 렌더링하도록 함
+  return `
+    <div class="py-20 bg-gray-50 flex items-center justify-center">
+      <div class="text-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p class="text-gray-600">상품 정보를 불러오는 중...</p>
+      </div>
+    </div>
+  `;
+}
+
 // 라우트 등록
 router.addRoute('/', ProductList);
+router.addRoute('/product/:id', ProductDetailPage);
 router.addRoute('404', NotFound);
 
 // URL 파라미터 관리 유틸리티
@@ -77,6 +98,36 @@ function updateURLParams(updates) {
 // Store에서 사용할 수 있도록 전역으로 노출
 window.updateURLParams = updateURLParams;
 window.toastManager = toastManager;
+window.router = router;
+window.productDetailContainer = productDetailContainer;
+
+// 헤더의 장바구니 카운트만 업데이트하는 함수
+function updateCartCount() {
+  const cartCountElement = document.querySelector('#cart-icon-btn span');
+  const cartCount = store.getCartCount();
+
+  if (cartCount > 0) {
+    if (cartCountElement) {
+      // 기존 카운트 업데이트
+      cartCountElement.textContent = cartCount;
+    } else {
+      // 카운트 엘리먼트가 없으면 새로 생성
+      const cartButton = document.getElementById('cart-icon-btn');
+      if (cartButton) {
+        const countElement = document.createElement('span');
+        countElement.className =
+          'absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center';
+        countElement.textContent = cartCount;
+        cartButton.appendChild(countElement);
+      }
+    }
+  } else {
+    // 카운트가 0이면 카운트 엘리먼트 제거
+    if (cartCountElement) {
+      cartCountElement.remove();
+    }
+  }
+}
 
 // 장바구니 모달 렌더링 함수
 function renderCartModal() {
@@ -124,7 +175,19 @@ function setupEventHandlers() {
   let lastRenderState = null;
 
   store.subscribe((state) => {
-    // 렌더링에 영향을 주는 상태만 확인
+    const currentPath = router.getCurrentPath();
+    const isProductDetailPage = currentPath.startsWith('/product/');
+
+    // 상품 상세 페이지인 경우 특정 상태 변경에 대해서만 리렌더링
+    if (isProductDetailPage) {
+      // 상품 상세 페이지에서는 라우트 변경이나 에러 상태만 리렌더링 필요
+      // 장바구니나 UI 상태 변경은 리렌더링하지 않음
+      updateCartCount(); // 헤더의 장바구니 카운트만 업데이트
+      renderCartModal(); // 장바구니 모달만 업데이트
+      return;
+    }
+
+    // 상품 목록 페이지나 기타 페이지에서는 기존 로직 유지
     const renderRelevantState = {
       products: state.products,
       cart: state.cart,
@@ -156,6 +219,8 @@ function handleGlobalClick(e) {
     e.preventDefault();
     // 모든 필터와 검색 상태를 초기화
     store.resetToInitialState();
+    // ProductDetailContainer 상태 리셋
+    productDetailContainer.reset();
     // URL도 초기화
     updateURLParams({
       current: 0,
@@ -194,6 +259,7 @@ function handleGlobalClick(e) {
     const productCard = target.closest('.product-card');
     if (productCard) {
       const productId = productCard.dataset.productId;
+      // 상품 상세 페이지로 이동
       router.navigate(`/product/${productId}`);
     }
     return;
@@ -264,6 +330,15 @@ function handleGlobalKeydown(e) {
 
 // 스크롤 이벤트 핸들러 (무한 스크롤)
 function handleScroll() {
+  // 현재 경로가 상품 상세 페이지인지 확인
+  const currentPath = router.getCurrentPath();
+  const isProductDetailPage = currentPath.startsWith('/product/');
+
+  // 상품 상세 페이지에서는 무한 스크롤 비활성화
+  if (isProductDetailPage) {
+    return;
+  }
+
   const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
   const { pagination, loading } = store.state;
 
@@ -278,8 +353,14 @@ function handleScroll() {
 
 // 브라우저 뒤로가기/앞으로가기 이벤트 핸들러
 function handlePopState() {
-  // URL이 변경되었을 때 해당 페이지까지 다시 로드
-  loadProducts();
+  // 현재 경로가 상품 상세 페이지인지 확인
+  const currentPath = router.getCurrentPath();
+  const isProductDetailPage = currentPath.startsWith('/product/');
+
+  // 상품 상세 페이지가 아닐 때만 상품 목록 로드
+  if (!isProductDetailPage) {
+    loadProductsFromURL();
+  }
 }
 
 // 상품 데이터 로딩 (URL 파라미터 기반)
@@ -401,6 +482,15 @@ function observeFilters() {
   let loadingTimeout = null;
 
   store.subscribe((state) => {
+    // 현재 경로가 상품 상세 페이지인지 확인
+    const currentPath = router.getCurrentPath();
+    const isProductDetailPage = currentPath.startsWith('/product/');
+
+    // 상품 상세 페이지에서는 필터 감지하지 않음
+    if (isProductDetailPage) {
+      return;
+    }
+
     const currentFilters = state.filters;
 
     // 필터가 변경되었는지 확인 (로딩 상태 변경은 무시)
@@ -448,6 +538,71 @@ function observeFilters() {
   });
 }
 
+// 카테고리 데이터 로딩
+async function loadCategories() {
+  try {
+    store.setState({
+      loading: { ...store.state.loading, categories: true },
+    });
+
+    const categories = await ProductService.fetchCategories();
+    store.setCategories(categories);
+
+    store.setState({
+      loading: { ...store.state.loading, categories: false },
+    });
+  } catch (error) {
+    console.error('Failed to load categories:', error);
+    store.setState({
+      loading: { ...store.state.loading, categories: false },
+    });
+  }
+}
+
+// URL 파라미터 기반으로 상품 로딩 (Router에서 호출)
+async function loadProductsFromURL() {
+  try {
+    const urlParams = getURLParams();
+
+    // 현재 Store의 필터와 URL 파라미터 비교
+    const currentFilters = store.state.filters;
+    const urlFiltersComparison = {
+      search: urlParams.search || '',
+      category1: urlParams.category1 || '',
+      category2: urlParams.category2 || '',
+      sort: urlParams.sort || 'price_asc',
+      limit: parseInt(urlParams.limit) || 20,
+    };
+
+    // 필터가 변경된 경우에만 새로 로드
+    const filtersChanged =
+      currentFilters.search !== urlFiltersComparison.search ||
+      currentFilters.category1 !== urlFiltersComparison.category1 ||
+      currentFilters.category2 !== urlFiltersComparison.category2 ||
+      currentFilters.sort !== urlFiltersComparison.sort ||
+      currentFilters.limit !== urlFiltersComparison.limit;
+
+    if (filtersChanged) {
+      // Store 필터 상태 업데이트
+      store.setState({
+        filters: {
+          ...store.state.filters,
+          ...urlFiltersComparison,
+          page: 1,
+        },
+        loading: { ...store.state.loading, products: true },
+        allProducts: [],
+        pagination: null,
+      });
+
+      // 상품 로드
+      await loadProducts();
+    }
+  } catch (error) {
+    console.error('Failed to load products from URL:', error);
+  }
+}
+
 // 앱 초기화
 async function initializeApp() {
   try {
@@ -460,8 +615,25 @@ async function initializeApp() {
     // 필터 변경 감지 시작
     observeFilters();
 
-    // 초기 상품 로딩
-    await loadProducts();
+    // 카테고리 데이터 로딩 (병렬 처리)
+    const categoryPromise = loadCategories();
+
+    // 전역 함수 노출
+    window.updateURLParams = updateURLParams;
+    window.updateCartCount = updateCartCount;
+    window.loadProductsFromURL = loadProductsFromURL;
+
+    // 현재 경로가 상품 상세 페이지가 아닐 때만 상품 목록 로드
+    const currentPath = router.getCurrentPath();
+    const isProductDetailPage = currentPath.startsWith('/product/');
+
+    if (!isProductDetailPage) {
+      // 초기 상품 로딩 (카테고리와 병렬 처리)
+      await Promise.all([loadProducts(), categoryPromise]);
+    } else {
+      // 상품 상세 페이지인 경우 카테고리만 로드
+      await categoryPromise;
+    }
 
     // 라우터 초기 렌더링
     router.render();

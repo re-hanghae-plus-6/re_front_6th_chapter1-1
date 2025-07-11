@@ -3,6 +3,9 @@ export class Store {
     this.state = {
       products: [],
       allProducts: [], // 무한 스크롤을 위한 누적 상품 목록
+      currentProduct: null, // 현재 보고 있는 상품 상세
+      relatedProducts: [], // 관련 상품 목록
+      categories: {}, // 카테고리 구조 (API에서 가져온 데이터)
       cart: [],
       pagination: null, // 페이지네이션 정보
       filters: {
@@ -17,6 +20,7 @@ export class Store {
         products: false,
         productDetail: false,
         loadingMore: false, // 추가 로딩 상태
+        categories: false, // 카테고리 로딩 상태
       },
       ui: {
         showCart: false,
@@ -201,5 +205,24 @@ export class Store {
       (total, item) => total + item.price * item.quantity,
       0,
     );
+  }
+
+  // 카테고리 관련 메서드들
+  setCategories(categories) {
+    this.setState({ categories });
+  }
+
+  getCategoriesForCategory1(category1) {
+    if (!this.state.categories || !this.state.categories[category1]) {
+      return [];
+    }
+    return Object.keys(this.state.categories[category1]);
+  }
+
+  getAllCategory1() {
+    if (!this.state.categories) {
+      return [];
+    }
+    return Object.keys(this.state.categories);
   }
 }
