@@ -33,7 +33,6 @@ class HomePage extends Component {
   }
 
   async onMount() {
-    console.log('asd', this.state.query);
     const [products, categories] = await Promise.all([
       getProducts(this.state.query),
       getCategories(),
