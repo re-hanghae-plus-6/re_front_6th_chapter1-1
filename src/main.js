@@ -1,6 +1,7 @@
 import { getCategories, getProducts, getProduct, getRelatedProducts } from "./api/productApi.js";
 import { HomePage } from "./pages/HomePage.js";
 import { ProductDetailPage } from "./pages/ProductDetailPage.js";
+import { NotFoundPage } from "./pages/NotFoundPage.js";
 import { showCartModal, renderCartModal } from "./handlers/cart.js";
 import { router } from "./router.js";
 import { loadCartFromStorage, saveCartToStorage } from "./utils/cartStorage.js";
@@ -223,6 +224,13 @@ function setupRouter() {
   router.addRoute("/product/:productId", async (params) => {
     await renderProductDetail(params.productId);
   });
+
+  // 404 페이지 라우트
+  router.addRoute("404", () => {
+    document.body.querySelector("#root").innerHTML = NotFoundPage({
+      cart: state.cart,
+    });
+  });
 }
 
 function setupEventListeners() {
@@ -322,6 +330,13 @@ function setupProductDetailEventListeners() {
 
     // 홈으로 돌아가기 버튼
     if (event.target.matches(".breadcrumb-home") || event.target.matches(".go-to-product-list")) {
+      router.navigate("/");
+      return;
+    }
+
+    // 404 페이지의 홈으로 링크
+    if (event.target.matches('a[href="/"]')) {
+      event.preventDefault();
       router.navigate("/");
       return;
     }

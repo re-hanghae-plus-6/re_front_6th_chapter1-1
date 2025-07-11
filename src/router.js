@@ -23,7 +23,7 @@ export class Router {
   }
 
   // 라우트 변경 처리
-  handleRouteChange(path) {
+  handleRouteChange(path, pushState = true) {
     this.currentRoute = path;
 
     // 정확히 매칭되는 라우트 찾기
@@ -41,7 +41,16 @@ export class Router {
       }
     }
 
-    // 404 처리
+    // 404 처리 - 404 라우트가 등록되어 있는지 확인
+    if (this.routes.has("404")) {
+      if (pushState) {
+        history.pushState(null, "", path);
+      }
+      this.routes.get("404")();
+      return;
+    }
+
+    // 404 라우트가 없으면 홈으로 리다이렉트
     console.warn("Route not found:", path);
     this.navigate("/", false);
   }
