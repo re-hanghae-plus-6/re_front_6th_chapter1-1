@@ -81,8 +81,22 @@ class Router {
   }
 
   navigate(path) {
-    if (window.location.pathname + window.location.search !== path) {
-      window.history.pushState({}, "", path);
+    const currentPath = window.location.pathname + window.location.search;
+    const newUrl = new URL(path, window.location.origin);
+
+    // 홈 페이지로 이동하거나, 현재 경로가 홈 페이지인 경우에만 쿼리 파라미터를 추가합니다.
+    if (newUrl.pathname === "/" || currentPath.startsWith("/?")) {
+      const currentParams = this.getCurrentState().params;
+      for (const key in currentParams) {
+        if (currentParams[key]) {
+          newUrl.searchParams.set(key, currentParams[key]);
+        } else {
+          newUrl.searchParams.delete(key);
+        }
+      }
+    }
+    if (currentPath !== newUrl.pathname + newUrl.search) {
+      window.history.replaceState({}, "", newUrl.toString());
     }
     this.render();
   }
