@@ -16,10 +16,12 @@ export default defineConfig({
     rollupOptions: {
       input: path.resolve(__dirname, "src/main.js"),
       output: {
+        entryFileNames: "assets/main-[hash].js",
         manualChunks: undefined,
       },
     },
   },
+
   test: {
     globals: true,
     environment: "jsdom",
