@@ -55,7 +55,7 @@ export function useCart() {
 
   const removeFromCart = (productId) => {
     const currentState = cartState.getState();
-    const newItems = currentState.items.filter((item) => item.productId !== productId);
+    const newItems = currentState.items.filter((item) => item.id !== productId);
     const newItemCount = newItems.length;
 
     const newState = {
@@ -75,7 +75,7 @@ export function useCart() {
     }
 
     const currentState = cartState.getState();
-    const newItems = currentState.items.map((item) => (item.productId === productId ? { ...item, quantity } : item));
+    const newItems = currentState.items.map((item) => (item.id === productId ? { ...item, quantity } : item));
     const newItemCount = newItems.length;
 
     const newState = {
@@ -117,7 +117,7 @@ export function useCart() {
 
     if (isModalOpen) {
       modalContainer.innerHTML = `
-        <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity">
+        <div class="cart-modal-overlay fixed inset-0 bg-black bg-opacity-50 transition-opacity">
           ${CartModal({ items, selectedItems })}
         </div>
       `;
@@ -144,23 +144,47 @@ export function useCart() {
 
   const updateCartBadge = () => {
     const cartIconBtn = document.querySelector("#cart-icon-btn");
-    if (cartIconBtn) {
-      const state = cartState.getState();
-      const cartItemCount = state.itemCount;
+    if (!cartIconBtn) return;
 
-      const existingBadge = cartIconBtn.querySelector(".cart-badge");
-      if (existingBadge) {
-        existingBadge.remove();
-      }
+    const state = cartState.getState();
+    const cartItemCount = state.itemCount;
 
-      if (cartItemCount > 0) {
-        const badge = document.createElement("span");
-        badge.className =
-          "cart-badge absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center";
-        badge.textContent = cartItemCount > 99 ? "99+" : cartItemCount;
-        cartIconBtn.appendChild(badge);
-      }
+    const existingBadge = cartIconBtn.querySelector(".cart-badge");
+    if (existingBadge) {
+      existingBadge.remove();
     }
+
+    if (cartItemCount > 0) {
+      const badge = document.createElement("span");
+      badge.className =
+        "cart-badge absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center";
+      badge.textContent = cartItemCount > 99 ? "99+" : cartItemCount;
+      cartIconBtn.appendChild(badge);
+    }
+  };
+
+  // DOM 변경 감지해서 cart-icon-btn이 추가될 때마다 뱃지 업데이트
+  const observeCartIcon = () => {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === "childList") {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === 1) {
+              if (node.id === "cart-icon-btn" || node.querySelector?.("#cart-icon-btn")) {
+                setTimeout(updateCartBadge, 10);
+              }
+            }
+          });
+        }
+      });
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
+    return observer;
   };
 
   const setupEventListeners = () => {
@@ -176,8 +200,11 @@ export function useCart() {
         closeModal();
       }
 
-      if (e.target.classList.contains("quantity-increase-btn")) {
-        const productId = e.target.getAttribute("data-product-id");
+      if (e.target.classList.contains("quantity-increase-btn") || e.target.closest(".quantity-increase-btn")) {
+        const button = e.target.classList.contains("quantity-increase-btn")
+          ? e.target
+          : e.target.closest(".quantity-increase-btn");
+        const productId = button.getAttribute("data-product-id");
         const currentState = cartState.getState();
         const item = currentState.items.find((item) => item.id === productId);
         if (item) {
@@ -186,8 +213,11 @@ export function useCart() {
         }
       }
 
-      if (e.target.classList.contains("quantity-decrease-btn")) {
-        const productId = e.target.getAttribute("data-product-id");
+      if (e.target.classList.contains("quantity-decrease-btn") || e.target.closest(".quantity-decrease-btn")) {
+        const button = e.target.classList.contains("quantity-decrease-btn")
+          ? e.target
+          : e.target.closest(".quantity-decrease-btn");
+        const productId = button.getAttribute("data-product-id");
         const currentState = cartState.getState();
         const item = currentState.items.find((item) => item.id === productId);
         if (item && item.quantity > 1) {
@@ -219,13 +249,10 @@ export function useCart() {
     createModalContainer();
     setupEventListeners();
 
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", updateCartBadge);
-    } else {
-      updateCartBadge();
-    }
+    observeCartIcon();
 
     cartState.subscribe(updateCartBadge);
+    setTimeout(updateCartBadge, 50);
   };
 
   return {

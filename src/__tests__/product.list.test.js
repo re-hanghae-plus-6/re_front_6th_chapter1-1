@@ -140,6 +140,7 @@ describe("4. 상품 정렬 기능", () => {
     };
 
     await userEvent.selectOptions(document.querySelector("#sort-select"), "price_desc");
+
     await waitFor(() => {
       expectProduct("ASUS ROG Flow Z13 GZ302EA-RU110W 64GB, 1TB");
     });
