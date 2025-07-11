@@ -2,6 +2,7 @@ import { DetailPage } from "./pages/DetailPage.js";
 import { ListPage } from "./pages/ListPage.js";
 import { NotFoundPage } from "./pages/NotFoundPage.js";
 import { renderViewComponent } from "./utils/createViewcomponent.js";
+import { onChangeUrl } from "./utils/urlUtils.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -58,9 +59,15 @@ function main() {
     return matched ? matched.component : null;
   };
 
-  console.log("getMatchedRoute()", getMatchedRouteComponent());
+  console.log(onChangeUrl.getState(), onChangeUrl.updateState);
+  onChangeUrl.onChange(() => {
+    // renderViewComponent({ parent: window.document.body, component: getMatchedRouteComponent() }).render();
+  });
 
-  renderViewComponent({ parent: window.document.body, component: getMatchedRouteComponent() }).render();
+  renderViewComponent({
+    parent: window.document.body,
+    component: getMatchedRouteComponent(),
+  }).render();
 }
 
 // 애플리케이션 시작
