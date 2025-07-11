@@ -1,4 +1,5 @@
 import { getProducts, getCategories } from "../api/productApi";
+import { router } from "../main";
 import { Main } from "./Main";
 
 let state = {
@@ -25,6 +26,8 @@ export const HomePage = async () => {
   }
 
   document.body.querySelector("#root").innerHTML = Main(state);
+
+  bindCardClickHandlers();
 };
 
 const handleSelect = async function (e, key) {
@@ -111,18 +114,18 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-window.handleClick = async (e) => {
-  const projectId = e.dataset.productId;
-
-  history.pushState(null, "", `/product/${projectId}`);
-  window.dispatchEvent(new Event("popstate"));
-};
-
-document.addEventListener("click", (e) => {
-  if (e.target.closest(".product-card")) {
-    window.handleClick(e.target.closest(".product-card"));
-  }
-});
+function bindCardClickHandlers() {
+  const cards = document.querySelectorAll(".product-card");
+  cards.forEach((card) => {
+    // 기존에 붙어 있던 핸들러를 덮어씌우기 위해 onclick 직접 설정
+    card.onclick = () => {
+      const projectId = card.dataset.productId;
+      history.pushState({}, "", `/product/${projectId}`);
+      // router 호출: popstate 없이 직접
+      router();
+    };
+  });
+}
 
 let lastScrollY = window.scrollY;
 

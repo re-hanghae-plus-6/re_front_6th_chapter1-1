@@ -8,7 +8,7 @@ let projectDetailState = {
   otherProducts: [],
 };
 
-export const ProjectDetailPage = async () => {
+export const ProjectDetailPage = () => {
   const [, _link, id] = location.pathname.split("/");
   console.log(_link);
 
@@ -19,21 +19,23 @@ export const ProjectDetailPage = async () => {
   }
 };
 
-export const fetchProjectDetailData = async (id) => {
+export const fetchProjectDetailData = (id) => {
   projectDetailState.loading = true;
 
   document.body.querySelector("#root").innerHTML = ProjectDetail(projectDetailState);
 
-  const projectData = await getProduct(id);
+  (async () => {
+    const projectData = await getProduct(id);
 
-  const category = projectData.category1;
-  const products = await getProducts({ category1: category });
-  const otherProducts = products.products.filter(({ productId }) => productId !== id);
+    const category = projectData.category1;
+    const products = await getProducts({ category1: category });
+    const otherProducts = products.products.filter(({ productId }) => productId !== id);
 
-  projectDetailState.loading = false;
-  projectDetailState.projectDetail = projectData;
-  projectDetailState.otherProducts = otherProducts;
-  document.body.querySelector("#root").innerHTML = ProjectDetail(projectDetailState);
+    projectDetailState.loading = false;
+    projectDetailState.projectDetail = projectData;
+    projectDetailState.otherProducts = otherProducts;
+    document.body.querySelector("#root").innerHTML = ProjectDetail(projectDetailState);
+  })();
 };
 
 const handleClick = (e) => {

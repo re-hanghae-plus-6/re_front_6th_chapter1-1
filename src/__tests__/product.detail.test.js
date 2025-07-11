@@ -29,12 +29,9 @@ const 상품_상세페이지_접속 = async () => {
   const productImage = productCard.querySelector("img");
 
   expect(productImage).toBeInTheDocument();
-  console.log(screen.logTestingPlaygroundURL());
 
   // 상품 이미지 클릭
   await userEvent.click(productImage);
-  screen.logTestingPlaygroundURL();
-
   await screen.findByRole("heading", {
     level: 1,
     name: "PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장",
@@ -57,7 +54,7 @@ describe("1. 상품 클릭시 상세 페이지 이동", () => {
 
     // 상품 이미지 확인
     expect(
-      screen.getByAltText("PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장"),
+      await screen.findByText("PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장"),
     ).toBeInTheDocument();
 
     // 가격 정보 확인
@@ -101,11 +98,9 @@ describe("2. 상품 상세 - 장바구니 담기", () => {
 
 describe("3. 관련 상품 기능", () => {
   test("상품 상세 페이지에서 현재 상품을 제외한 관련 상품들이 표시되고, 관련 상품 클릭 시 해당 상품의 상세 페이지로 이동한다", async () => {
-    console.log("a");
-
     await 상품_상세페이지_접속();
 
-    console.log("b");
+    expect(await screen.findByText("상품 상세")).toBeInTheDocument();
 
     // 관련 상품 섹션이 있는지 확인
     expect(screen.queryByText("관련 상품")).not.toBeInTheDocument();

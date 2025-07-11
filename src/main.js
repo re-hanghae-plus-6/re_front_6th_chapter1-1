@@ -11,14 +11,14 @@ const enableMocking = () =>
 window.addEventListener("popstate", router);
 window.addEventListener("hashchange", router);
 
-export async function router() {
+export function router() {
   const [, route, id] = location.pathname.split("/");
 
   if (route === "product" && id) {
     console.log("project detail page");
-    return await ProjectDetailPage(id);
+    return ProjectDetailPage(id);
   } else {
-    return await HomePage();
+    return HomePage();
   }
 }
 
