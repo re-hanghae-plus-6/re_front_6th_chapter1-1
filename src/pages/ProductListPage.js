@@ -12,7 +12,47 @@ const CategoryButton = (category) => {
   `;
 };
 
-export const ProductListPage = ({ products = [], total = 0, loading = false, categories }) => {
+/** 무한스크롤 로딩 인디케이터 */
+const InfiniteScrollLoader = ({ isLoadingMore, hasNext }) => {
+  // 더 이상 로드할 상품이 없으면 완료 메시지
+  if (!hasNext && !isLoadingMore) {
+    return /*html*/ `
+      <div class="text-center py-8 text-sm text-gray-500">
+        모든 상품을 확인했습니다
+      </div>
+    `;
+  }
+
+  // 로딩 중일 때만 인디케이터 표시
+  if (isLoadingMore) {
+    return /*html*/ `
+      <div class="text-center py-4">
+        <div class="inline-flex items-center">
+          <svg class="animate-spin h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" 
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span class="text-sm text-gray-600">상품을 불러오는 중...</span>
+        </div>
+      </div>
+    `;
+  }
+
+  // 센티넬 요소 (보이지 않는 감시 요소)
+  return /*html*/ `
+    <div id="scroll-sentinel" style="height: 1px; margin-top: -1px;"></div>
+  `;
+};
+
+export const ProductListPage = ({
+  products = [],
+  total = 0,
+  loading = false,
+  categories = {},
+  isLoadingMore = false,
+  pagination = { hasNext: true },
+}) => {
   const categoryList = Object.keys(categories);
   const currentParams = getURLParams();
 
@@ -77,18 +117,10 @@ export const ProductListPage = ({ products = [], total = 0, loading = false, cat
               <label class="text-sm text-gray-600">개수:</label>
               <select id="limit-select"
                       class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-                <option value="10" ${currentParams.limit === 10 ? "selected" : ""}>
-                  10개
-                </option>
-                <option value="20" ${currentParams.limit === 20 ? "selected" : ""}>
-                  20개
-                </option>
-                <option value="50" ${currentParams.limit === 50 ? "selected" : ""}>
-                  50개
-                </option>
-                <option value="100" ${currentParams.limit === 100 ? "selected" : ""}>
-                  100개
-                </option>
+                <option value="10" ${currentParams.limit === 10 ? "selected" : ""}>10개</option>
+                <option value="20" ${currentParams.limit === 20 ? "selected" : ""}>20개</option>
+                <option value="50" ${currentParams.limit === 50 ? "selected" : ""}>50개</option>
+                <option value="100" ${currentParams.limit === 100 ? "selected" : ""}>100개</option>
               </select>
             </div>
             <!-- 정렬 -->
@@ -120,26 +152,11 @@ export const ProductListPage = ({ products = [], total = 0, loading = false, cat
           }
           <!-- 상품 그리드 -->
           <div class="grid grid-cols-2 gap-4 mb-6" id="products-grid">
-            <!-- 로딩 스켈레톤 -->
-            ${
-              loading
-                ? LoadingSkeletonList
-                : `
-                ${products.map(ProductItem).join("")}
-            `
-            }
+            ${loading ? LoadingSkeletonList : products.map(ProductItem).join("")}
           </div>
           
-          <div class="text-center py-4">
-            <div class="inline-flex items-center">
-              <svg class="animate-spin h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" 
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              <span class="text-sm text-gray-600">상품을 불러오는 중...</span>
-            </div>
-          </div>
+          <!-- 무한스크롤 로더 또는 센티넬 -->
+          ${!loading ? InfiniteScrollLoader({ isLoadingMore, hasNext: pagination.hasNext }) : ""}
         </div>
       </div>
     </main>
