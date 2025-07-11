@@ -4,35 +4,28 @@ import { showToast } from "../template/toast.js";
 
 export function setupCommonEventListeners(mainStatus, appRouter) {
   /** change */
-  let shouldUpdate = false;
   document.body.addEventListener("change", (e) => {
     const target = e.target;
 
     if (target.id === "limit-select") {
       mainStatus.params.limit = parseInt(target.value, 10);
-      shouldUpdate = true;
     } else if (target.id === "sort-select") {
       mainStatus.params.sort = target.value;
-      mainStatus.params.limit = 20;
-      shouldUpdate = true;
+      mainStatus.params.limit = 20; // 정렬 변경 시 limit도 초기화
+    } else {
+      return;
     }
-
-    if (shouldUpdate) {
-      mainStatus.params.page = 1; // 필터 변경 시 첫 페이지로 초기화
-      loadProductsAndUpdateUI(mainStatus, appRouter); // mainStatus와 appRouter 전달
-    }
+    mainStatus.params.page = 1; // 필터 변경 시 첫 페이지로 초기화
+    loadProductsAndUpdateUI(mainStatus, appRouter); // mainStatus와 appRouter 전달
   });
 
   document.body.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && e.target.id === "search-input") {
       mainStatus.params.search = e.target.value;
-      shouldUpdate = true;
-    } else {
-      return;
-    }
-    if (shouldUpdate) {
       mainStatus.params.page = 1; // 필터 변경 시 첫 페이지로 초기화
       loadProductsAndUpdateUI(mainStatus, appRouter); // mainStatus와 appRouter 전달
+    } else {
+      return;
     }
   });
   // 상품 카드 클릭 이벤트 (이벤트 위임)
