@@ -2,7 +2,6 @@ import CartModal from "../components/cart/CartModal.js";
 import { getProduct } from "../api/productApi.js";
 import Toast from "../components/ui/Toast.js";
 
-// LocalStorage key 상수화
 const STORAGE_KEY = "shopping_cart";
 
 let cart = [];
