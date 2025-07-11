@@ -359,12 +359,21 @@ class Detail {
   }
 
   async init() {
+    console.log("🔧 Detail init 시작 - 현재 경로:", window.location.pathname);
+
     if (this.relatedProductsTimeout) {
       clearTimeout(this.relatedProductsTimeout);
       this.relatedProductsTimeout = null;
     }
+
     this.resetState();
+
+    // 라우터가 안정화될 때까지 대기
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
     await this.fetchProductDetails();
+
+    console.log("✅ Detail init 완료");
     return this.render();
   }
 
