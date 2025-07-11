@@ -62,18 +62,20 @@ class Controller {
       store.dispatch(actions.navigate(currentPath));
     };
 
-    document.addEventListener("click", clickHandler);
+    document.addEventListener("click", clickHandler, true);
+    document.addEventListener("click", clickHandler, false);
     window.addEventListener("popstate", popstateHandler);
 
     this.globalEventListeners.push(
-      { element: document, type: "click", handler: clickHandler },
+      { element: document, type: "click", handler: clickHandler, useCapture: true },
+      { element: document, type: "click", handler: clickHandler, useCapture: false },
       { element: window, type: "popstate", handler: popstateHandler },
     );
   }
 
   cleanupGlobalEventListeners() {
-    this.globalEventListeners.forEach(({ element, type, handler }) => {
-      element.removeEventListener(type, handler);
+    this.globalEventListeners.forEach(({ element, type, handler, useCapture }) => {
+      element.removeEventListener(type, handler, useCapture);
     });
     this.globalEventListeners = [];
   }
