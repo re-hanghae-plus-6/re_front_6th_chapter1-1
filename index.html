@@ -18,31 +18,23 @@
         },
       };
     </script>
-    <script>
-      (function (pathSegmentsToKeep) {
-        var l = window.location;
-        // 이미 '/?/' 형태로 리다이렉트된 경우, 재실행 금지
-        if (l.search.indexOf("/?/") === 0) return;
-
-        var protocolAndHost = l.protocol + "//" + l.hostname + (l.port ? ":" + l.port : "");
-        // 보존할 첫 번째 세그먼트(리포지토리명 등) 추출
-        var basePath = l.pathname
-          .split("/")
-          .slice(0, 1 + pathSegmentsToKeep)
-          .join("/");
-        // 나머지 경로
-        var restPath = l.pathname
-          .split("/")
-          .slice(1 + pathSegmentsToKeep)
-          .join("/");
-        // 원본 쿼리와 해시 그대로 붙이기
-        var queryAndHash = (l.search || "") + (l.hash || "");
-
-        // 최종 리다이렉트 URL
-        var newUrl = protocolAndHost + basePath + "/?/" + restPath + queryAndHash;
-
-        l.replace(newUrl);
-      })(1);
+    <script type="text/javascript">
+      var pathSegmentsToKeep = 1;
+      var l = window.location;
+      l.replace(
+        l.protocol +
+          "//" +
+          l.hostname +
+          (l.port ? ":" + l.port : "") +
+          l.pathname
+            .split("/")
+            .slice(0, 1 + pathSegmentsToKeep)
+            .join("/") +
+          "/?/" +
+          l.pathname.slice(1).split("/").slice(pathSegmentsToKeep).join("/").replace(/&/g, "~and~") +
+          (l.search ? "&" + l.search.slice(1).replace(/&/g, "~and~") : "") +
+          l.hash,
+      );
     </script>
     <script type="text/javascript">
       // 404.html에서 리다이렉트된 URL을 원래 경로로 복원
