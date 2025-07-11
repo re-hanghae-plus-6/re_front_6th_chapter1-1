@@ -2,7 +2,7 @@ import Component from '../../../../../core/Component.js';
 import { numberUtils } from '../../../../../utils/numberUtils.js';
 import cartLocalStorage from '../../../../../store/cartLocalStorage.js';
 import { toastSuccess } from '../../../../../store/toastStore.js';
-import { router } from '../../../../../utils/router.js';
+import { getFullPath, router } from '../../../../../utils/router.js';
 
 class ProductItem extends Component {
   constructor(element, props) {
@@ -41,7 +41,7 @@ class ProductItem extends Component {
       const card = event.target.closest('.product-card');
       if (card) {
         const productId = card.dataset.productId;
-        router.push(`/detail/${productId}`);
+        router.push(getFullPath(`/detail/${productId}`));
       }
     });
   }

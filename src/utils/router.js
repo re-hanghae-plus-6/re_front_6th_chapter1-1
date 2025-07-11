@@ -1,3 +1,13 @@
+const BASE_PATH = import.meta.env.PROD ? '/front_6th_chapter1-1' : '';
+
+const getAppPath = (fullPath = window.location.pathname) => {
+  return fullPath.startsWith(BASE_PATH) ? fullPath.slice(BASE_PATH.length) || '/' : fullPath;
+};
+
+export const getFullPath = (appPath) => {
+  return BASE_PATH + appPath;
+};
+
 /**
  * React Router에서 영감을 받은 간단한 중첩 라우터 구현체입니다.
  *
@@ -222,20 +232,20 @@ export function createRouter(routes) {
       e.preventDefault();
       const href = link.getAttribute('href');
       window.history.pushState({}, '', href);
-      renderRoute(window.location.pathname);
+      renderRoute(getAppPath(window.location.pathname));
     }
   };
 
   // 브라우저 뒤로/앞으로 가기 시 view 갱신
   window.addEventListener('popstate', () => {
-    renderRoute(window.location.pathname);
+    renderRoute(getAppPath(window.location.pathname));
   });
 
   // 링크 클릭 시 이벤트를 가로채서 네비게이션 처리
   document.body.addEventListener('click', handleLink);
 
   // 최초 진입 시 경로에 맞는 화면 렌더링
-  renderRoute(window.location.pathname);
+  renderRoute(getAppPath(window.location.pathname));
 
   return { renderRoute };
 }

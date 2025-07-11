@@ -1,7 +1,7 @@
 import Component from '../../../core/Component.js';
 import { getProduct, getProducts } from '../../../api/productApi.js';
 import { numberUtils } from '../../../utils/numberUtils.js';
-import { router } from '../../../utils/router.js';
+import { getFullPath, router } from '../../../utils/router.js';
 import cartLocalStorage from '../../../store/cartLocalStorage.js';
 import { toastSuccess } from '../../../store/toastStore.js';
 
@@ -82,7 +82,7 @@ class DetailPage extends Component {
     this.addEventListener(this.element, 'click', (event) => {
       const goToProductListBtn = event.target.closest('.go-to-product-list');
       if (goToProductListBtn) {
-        router.push('/');
+        router.push(getFullPath('/'));
         return;
       }
 
@@ -113,7 +113,7 @@ class DetailPage extends Component {
       const relatedProductCard = event.target.closest('.related-product-card');
       if (relatedProductCard) {
         const productId = relatedProductCard.dataset.productId;
-        router.push(`/detail/${productId}`);
+        router.push(getFullPath(`/detail/${productId}`));
         return;
       }
 
@@ -122,7 +122,7 @@ class DetailPage extends Component {
         const params = breadcrumbLink.dataset.category1
           ? `?category1=${this.state.product.category1}`
           : `?category1=${this.state.product.category1}&category2=${this.state.product.category2}`;
-        router.push(`/${params}`);
+        router.push(getFullPath(`/${params}`));
       }
     });
 
