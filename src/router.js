@@ -10,7 +10,11 @@ const routes = {
   "*": NotFound,
 };
 
+let currentCleanup = null;
+
 export function router() {
+  console.log("router 실행됨");
+
   const path = window.location.pathname;
   const query = getQueryParams();
 
@@ -42,9 +46,22 @@ export function router() {
   const root = document.getElementById("root");
   if (!root) return;
 
+  if (typeof currentCleanup === "function") {
+    currentCleanup();
+    currentCleanup = null;
+  }
+
   if (component && component.template && component.mount) {
     root.innerHTML = component.template;
-    component.mount();
+    const cleanupResult = component.mount();
+    if (cleanupResult instanceof Promise) {
+      cleanupResult.then((fn) => {
+        if (typeof fn === "function") currentCleanup = fn;
+        else currentCleanup = null;
+      });
+    } else {
+      currentCleanup = cleanupResult;
+    }
   } else {
     root.innerHTML = component;
   }

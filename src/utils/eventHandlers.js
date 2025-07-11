@@ -111,7 +111,13 @@ function handleClick(e, loadProducts) {
     e.preventDefault();
     e.stopPropagation();
 
-    cartStore.addToCart({}, 1);
+    // 상품 정보 가져오기
+    const productCard = target.closest(".product-card");
+    const productId = productCard?.dataset.productId;
+
+    if (productId) {
+      cartStore.addToCart(productId, 1);
+    }
 
     return;
   }

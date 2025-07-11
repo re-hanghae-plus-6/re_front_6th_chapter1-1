@@ -1,5 +1,6 @@
 export const createCartStore = (initialState = {}) => {
   let state = {
+    items: [],
     totalCount: 0,
     ...initialState,
   };
@@ -25,10 +26,18 @@ export const createCartStore = (initialState = {}) => {
     notify();
   };
 
-  // 장바구니에 상품 추가
-  const addToCart = (product, quantity = 1) => {
-    const newTotalCount = state.totalCount + quantity;
-    setState({ totalCount: newTotalCount });
+  const addToCart = (productId, quantity = 1) => {
+    if (state.items[productId]) {
+      return;
+    }
+
+    const newItems = { ...state.items, [productId]: quantity };
+    const newTotalCount = Object.values(newItems).reduce((sum, count) => sum + count, 0);
+
+    setState({
+      items: newItems,
+      totalCount: newTotalCount,
+    });
   };
 
   return {
