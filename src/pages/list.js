@@ -41,17 +41,17 @@ ListPage.mount = function () {
 
   fetchAndRender();
 
-  document.addEventListener("changeLimit", (e) => {
+  window.addEventListener("changeLimit", (e) => {
     store.setLimit(e.detail.limit);
     fetchAndRender();
   });
 
-  document.addEventListener("changeSort", (e) => {
+  window.addEventListener("changeSort", (e) => {
     store.setSort(e.detail.sort);
     fetchAndRender();
   });
 
-  document.addEventListener("changeSearch", (e) => {
+  window.addEventListener("changeSearch", (e) => {
     store.setSearch(e.detail.search);
     fetchAndRender();
   });

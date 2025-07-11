@@ -4,7 +4,7 @@ import NotFoundPage from "./pages/404.js";
 
 export function getPageComponentByPath(path) {
   if (path === "/") return ListPage;
-  if (path === "/detail") return DetailPage;
+  if (path.startsWith("/detail")) return DetailPage;
   return NotFoundPage;
 }
 

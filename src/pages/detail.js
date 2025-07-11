@@ -17,7 +17,7 @@ function DetailPage({ isLoading = true, fetchData } = {}) {
 
 // mount 함수 추가
 DetailPage.mount = function () {
-  const productId = window.location.search.split("productId=")[1];
+  const productId = window.location.pathname.split("/")[2];
   // const store = new DetailStore();
   // const storeState = store.getState();
 

@@ -16,7 +16,7 @@ function main() {
     const productCard = event.target.closest(".product-card");
     if (productCard) {
       const productId = productCard.dataset.productId;
-      window.history.pushState({ productId }, "상품 상세", `/detail?productId=${productId}`);
+      window.history.pushState({ productId }, "상품 상세", `/detail/${productId}`);
       renderRoute();
     }
   });

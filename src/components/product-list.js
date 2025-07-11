@@ -39,7 +39,7 @@ export default function ProductList({ isLoading, fetchData }) {
                 <p class="text-xs text-gray-500 mb-2">${product.brand || ""}</p>
                 <p class="text-lg font-bold text-gray-900">${product.lprice}원</p>
               </div>
-              <button class="w-full bg-blue-600 text-white text-sm py-2 px-3 rounded-md hover:bg-blue-700 transition-colors add-to-cart-btn" data-product-id="${product.productId}">
+              <button class="w-full bg-blue-600 text-white text-sm py-2 px-3 rounded-md hover:bg-blue-700 transition-colors add-to-cart-btn">
                 장바구니 담기
               </button>
             </div>
