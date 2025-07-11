@@ -1,3 +1,14 @@
+// 경로 처리 유틸리티
+const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
+
+const getAppPath = (fullPath = window.location.pathname) => {
+  return fullPath.startsWith(BASE_PATH) ? fullPath.slice(BASE_PATH.length) || "/" : fullPath;
+};
+
+const getFullPath = (appPath) => {
+  return BASE_PATH + appPath;
+};
+
 // 라우터 클래스
 class Router {
   constructor() {
@@ -7,7 +18,8 @@ class Router {
 
     // 브라우저 뒤로가기/앞으로가기 이벤트 처리
     window.addEventListener("popstate", () => {
-      this.navigate(window.location.pathname, false);
+      const appPath = getAppPath(window.location.pathname);
+      this.navigate(appPath, false);
     });
   }
 
@@ -15,8 +27,9 @@ class Router {
   init() {
     if (!this.initialized) {
       this.initialized = true;
-      // 초기 라우트 설정
-      this.navigate(window.location.pathname, false);
+      // 초기 라우트 설정 - 현재 URL에서 앱 경로 추출
+      const appPath = getAppPath(window.location.pathname);
+      this.navigate(appPath, false);
     }
   }
 
@@ -26,16 +39,17 @@ class Router {
   }
 
   // 페이지 이동
-  navigate(path, pushState = true) {
-    // URL 업데이트 (history API 사용)
+  navigate(appPath, pushState = true) {
+    // URL 업데이트 (history API 사용) - 전체 경로로 변환
     if (pushState) {
-      window.history.pushState({}, "", path);
+      const fullPath = getFullPath(appPath);
+      window.history.pushState({}, "", fullPath);
     }
 
-    this.currentRoute = path;
+    this.currentRoute = appPath;
 
     // 패턴 매칭으로 라우트 찾기
-    const route = this.findRoute(path);
+    const route = this.findRoute(appPath);
     if (route) {
       route.handler(route.params);
     } else {
@@ -102,3 +116,6 @@ class Router {
 
 // 라우터 인스턴스 생성 및 내보내기
 export const router = new Router();
+
+// 경로 처리 유틸리티 함수들도 export
+export { getAppPath, getFullPath, BASE_PATH };
