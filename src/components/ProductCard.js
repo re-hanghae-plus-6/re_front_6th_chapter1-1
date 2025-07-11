@@ -12,6 +12,10 @@ ProductCard.mount = () => {
 };
 
 export default function ProductCard(product) {
+  const formatPrice = (price) => {
+    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
+
   return /* html */ `
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
     data-product-id="${product.productId}">
@@ -28,9 +32,9 @@ export default function ProductCard(product) {
           <h3 class="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
             ${product.title}
           </h3>
-          <p class="text-xs text-gray-500 mb-2"></p>
+          <p class="text-xs text-gray-500 mb-2">${product.brand ? product.brand : product.maker ? product.maker : product.mallName}</p>
           <p class="text-lg font-bold text-gray-900">
-            ${product.lprice}원
+            ${formatPrice(product.lprice)}원
           </p>
         </div>
         <!-- 장바구니 버튼 -->
