@@ -3,12 +3,19 @@ import { store } from "./store.js";
 import { actions } from "./actions/index.js";
 import { controller } from "./controllers";
 
-const enableMocking = () =>
-  import("./mocks/browser.js").then(({ worker }) =>
-    worker.start({
+const enableMocking = async () => {
+  try {
+    const { worker } = await import("./mocks/browser.js");
+    await worker.start({
       onUnhandledRequest: "bypass",
-    }),
-  );
+      serviceWorker: {
+        url: "/front_6th_chapter1-1/mockServiceWorker.js",
+      },
+    });
+  } catch (error) {
+    console.warn("MSW를 시작할 수 없습니다:", error);
+  }
+};
 
 function render() {
   const rootElement = document.body.querySelector("#root");
