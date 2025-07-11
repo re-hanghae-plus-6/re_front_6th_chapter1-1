@@ -12,6 +12,9 @@ class Router {
     this.pathMatcher = options.pathMatcher || pathMatcher;
     this.parameterExtractor = options.parameterExtractor || parameterExtractor;
 
+    // fallback 페이지 설정 (매칭되는 라우트가 없을 때 사용)
+    this.fallback = options.fallback || null;
+
     // SearchParamsManager 인스턴스 참조
     this.searchParams = searchParamsManager;
 
@@ -36,7 +39,11 @@ class Router {
       return this.#routes[matchedPattern];
     }
 
-    return null;
+    // 매칭되는 라우트가 없을 때 fallback 반환
+    return {
+      path: null,
+      view: this.fallback,
+    };
   }
 
   addRoute({ path, view, children }) {
@@ -107,6 +114,13 @@ class Router {
       // TODO: root와의 강결합 끊기, 렌더 로직을 component로 넘기기
       const container = document.getElementById("root");
       container.innerHTML = route.view();
+    } else if (this.fallback) {
+      // 매칭되는 라우트가 없을 때 fallback 페이지 렌더링
+      this.currentPath = null;
+      this.currentParams = {};
+
+      const container = document.getElementById("root");
+      container.innerHTML = this.fallback.view();
     }
   }
 
