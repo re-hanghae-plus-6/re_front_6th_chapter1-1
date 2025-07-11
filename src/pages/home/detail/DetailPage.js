@@ -120,8 +120,8 @@ class DetailPage extends Component {
       const breadcrumbLink = event.target.closest('.breadcrumb-link');
       if (breadcrumbLink) {
         const params = breadcrumbLink.dataset.category1
-          ? `?category1=${breadcrumbLink.dataset.category1}`
-          : `?category2=${breadcrumbLink.dataset.category2}`;
+          ? `?category1=${this.state.product.category1}`
+          : `?category1=${this.state.product.category1}&category2=${this.state.product.category2}`;
         router.push(`/${params}`);
       }
     });
