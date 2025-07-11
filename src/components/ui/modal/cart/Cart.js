@@ -18,14 +18,15 @@ class Cart extends Component {
 
   onUnmount() {
     // 구독 해제
-    if (this.unsubscribeCartStorage) this.unsubscribeCartStorage();
+    if (this.unsubscribeCartStorage) {
+      this.unsubscribeCartStorage();
+    }
   }
 
   closeCartModal() {
     cartStore.setState({
       isOpen: false,
     });
-    this.unmount();
   }
 
   handleSelectAllItems(items) {
@@ -90,13 +91,15 @@ class Cart extends Component {
 
   attachEventListeners() {
     this.addEventListener(this.element, 'click', (event) => {
-      if (event.target.closest('#cart-modal-close-btn')) {
+      const cartModalCloseBtn = event.target.closest('#cart-modal-close-btn');
+      if (cartModalCloseBtn) {
         this.closeCartModal();
         return;
       }
 
       const cartState = cartStore.getState();
-      if (!event.target.closest('#cart-content') && cartState.isOpen) {
+      const cartContent = event.target.closest('#cart-content');
+      if (!cartContent && cartState.isOpen) {
         this.closeCartModal();
         return;
       }
