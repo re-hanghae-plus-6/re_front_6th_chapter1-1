@@ -179,7 +179,11 @@ describe.sequential('2. 장바구니 수량 조절', () => {
 
     // 총 금액이 업데이트되었는지 확인
     const updatedAmount = getTotalAmountElement().textContent;
-    expect(updatedAmount).toBe('440원');
+    // 렌더 타이밍 이슈로 즉시 검증이 실패할 수 있기 때문에 waitFor로 비동기 처리
+    await waitFor(() => {
+      expect(updatedAmount).toBe('440원');
+    });
+    // expect(updatedAmount).toBe('440원');
   });
 });
 
