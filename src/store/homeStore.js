@@ -23,8 +23,8 @@ const homeState = {
 
   // 장바구니 상태
   cart: {
-    items: [],
-    selectedItems: [],
+    items: [], // 상품 객체 목록
+    selectedItems: [], // id목록
   },
 };
 

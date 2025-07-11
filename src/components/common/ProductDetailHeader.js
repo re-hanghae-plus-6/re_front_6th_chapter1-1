@@ -2,10 +2,19 @@ import Component from "../../lib/Component";
 import { homeStore } from "../../store/homeStore";
 
 export default class ProductDetailHeader extends Component {
+  setup() {
+    this.unsubscribe = homeStore.subscribe(() => {
+      this.render();
+      this.setEvent();
+      this.mounted();
+    });
+  }
+
   template() {
     const { items } = homeStore.getState().cart;
 
-    const isCartEmpty = items.length === 0;
+    const totalQuantity = items.reduce((acc, item) => acc + item.quantity, 0);
+    const isCartEmpty = items.length === 0 || totalQuantity === 0;
 
     return /* HTML */ `
       <header class="bg-white shadow-sm sticky top-0 z-40">
@@ -45,7 +54,7 @@ export default class ProductDetailHeader extends Component {
                   ? `<span
                   class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"
                 >
-                  ${items.length}
+                  ${totalQuantity}
                 </span>`
                   : ""}
               </button>

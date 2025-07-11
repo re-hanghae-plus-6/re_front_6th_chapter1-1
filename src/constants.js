@@ -1,5 +1,6 @@
 export const DEFAULT_LIMIT = 20;
 export const DEFAULT_PAGE = 1;
+export const MIN_QUANTITY = 1;
 
 export const SORT_OPTIONS = {
   PRICE_ASC: "price_asc",

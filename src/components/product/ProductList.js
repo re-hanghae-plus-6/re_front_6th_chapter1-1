@@ -59,7 +59,7 @@ export default class ProductList extends Component {
 
   setEvent() {
     this.$target.addEventListener("click", this.handleProductClick);
-    this.selectProduct();
+    this.handleAddToCart();
   }
 
   cleanup() {
@@ -84,6 +84,8 @@ export default class ProductList extends Component {
   }
 
   handleProductClick(e) {
+    e.stopPropagation();
+
     const { navigate } = useNavigate();
 
     const productCard = e.target.closest(".product-card");
@@ -131,7 +133,7 @@ export default class ProductList extends Component {
     });
   }
 
-  selectProduct() {
+  handleAddToCart() {
     const { cart, products } = homeStore.getState();
 
     const $cartButton = document.querySelectorAll(".add-to-cart-btn");
@@ -142,10 +144,13 @@ export default class ProductList extends Component {
         e.stopPropagation();
         const productId = e.target.dataset.productId;
         const product = products.list.find((product) => product.productId === productId);
+        const isExist = cart.items.some((item) => item.productId === productId);
+
+        if (isExist) return;
 
         homeStore.setState({
           cart: {
-            items: [...cart.items, product],
+            items: [...cart.items, { ...product, quantity: 1 }],
           },
         });
       });

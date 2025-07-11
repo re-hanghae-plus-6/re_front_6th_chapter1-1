@@ -6,8 +6,10 @@ import MinusIcon from "../components/icon/MinusIcon";
 import PlusIcon from "../components/icon/PlusIcon";
 import StarEmpty from "../components/icon/StarEmpty";
 import StarFilled from "../components/icon/StarFilled";
+import { DEFAULT_LIMIT, DEFAULT_PAGE, MIN_QUANTITY } from "../constants";
 import { useNavigate, useParam } from "../hook/useRouter";
 import Component from "../lib/Component";
+import { homeStore } from "../store/homeStore";
 import { formatPrice } from "../utils/formatNumber";
 import getFilter from "../utils/getFilter";
 
@@ -17,8 +19,6 @@ const CHILD_COMPONENT = {
 
 export default class ProductDetailPage extends Component {
   setup() {
-    this.handleProductClick = this.handleProductClick.bind(this);
-
     const [param] = useParam("id");
 
     this.state = {
@@ -26,6 +26,8 @@ export default class ProductDetailPage extends Component {
       product: {},
       relatedProducts: [],
       isLoading: false,
+      isRelatedProductsLoading: false,
+      quantity: MIN_QUANTITY,
     };
 
     this.fetchProduct();
@@ -50,11 +52,15 @@ export default class ProductDetailPage extends Component {
   async fetchRelatedProducts() {
     const { category1, category2 } = getFilter();
 
-    if (this.stateisLoading) return;
+    if (this.state.isRelatedProductsLoading) return;
+
+    this.setState({
+      isLoading: true,
+    });
 
     const params = {
-      page: 1,
-      limit: 20,
+      page: DEFAULT_PAGE,
+      limit: DEFAULT_LIMIT,
       search: "",
       category1,
       category2,
@@ -64,27 +70,81 @@ export default class ProductDetailPage extends Component {
     const filteredProducts = products.filter(
       (product) => product.productId !== this.state.productId,
     );
+
     this.setState({
       relatedProducts: filteredProducts,
+      isRelatedProductsLoading: false,
     });
   }
 
-  handleProductClick(e) {
+  handleRelatedProductClick(e) {
+    e.stopPropagation();
     const { navigate } = useNavigate();
 
-    const relatedProductCard = e.target.closest(".related-product-card");
-    if (relatedProductCard) {
-      const productId = relatedProductCard.dataset["productId"];
+    const $relatedProductCard = e.target.closest(".related-product-card");
+    if ($relatedProductCard) {
+      const productId = $relatedProductCard.dataset["productId"];
       navigate(`/product/${productId}`);
     }
   }
 
+  handleAddToCart() {
+    if (this.state.isLoading) return;
+
+    const $cartButton = document.querySelector("#add-to-cart-btn");
+    if (!$cartButton) return;
+
+    $cartButton.addEventListener("click", (e) => {
+      e.stopPropagation();
+
+      homeStore.setState({
+        cart: {
+          items: [
+            ...homeStore.getState().cart.items,
+            { ...this.state.product, quantity: this.state.quantity },
+          ],
+        },
+      });
+    });
+  }
+
+  handleClickIncrease() {
+    const $quantityInput = document.querySelector("#quantity-input");
+    const $increateButton = document.querySelector("#quantity-increase");
+    if (!$quantityInput || !$increateButton) return;
+
+    $increateButton.addEventListener("click", (e) => {
+      e.stopPropagation();
+      this.setState({
+        quantity: Math.min(this.state.quantity + 1, this.state.product.stock),
+      });
+    });
+  }
+
+  handleClickDecreate() {
+    const $quantityInput = document.querySelector("#quantity-input");
+    const $decreaseButton = document.querySelector("#quantity-decrease");
+    if (!$quantityInput || !$decreaseButton) return;
+
+    $decreaseButton.addEventListener("click", (e) => {
+      e.stopPropagation();
+      this.setState({
+        quantity: Math.max(this.state.quantity - 1, MIN_QUANTITY),
+      });
+    });
+  }
+
   setEvent() {
-    this.$target.addEventListener("click", this.handleProductClick);
+    if (this.state.isLoading) return;
+
+    this.$target.addEventListener("click", this.handleRelatedProductClick);
+    this.handleAddToCart();
+    this.handleClickIncrease();
+    this.handleClickDecreate();
   }
 
   cleanup() {
-    this.$target.removeEventListener("click", this.handleProductClick);
+    this.$target.addEventListener("click", this.handleRelatedProductClick);
   }
 
   starTemplate() {
@@ -106,21 +166,6 @@ export default class ProductDetailPage extends Component {
     return /* HTML */ `<div class="flex items-center">${starsHTML}</div>`;
   }
 
-  relatedProductTemplate(product) {
-    const { productId, image, title, lprice } = product;
-
-    return /* HTML */ `<div
-      class="bg-gray-50 rounded-lg p-3 related-product-card cursor-pointer"
-      data-product-id="${productId}"
-    >
-      <div class="aspect-square bg-white rounded-md overflow-hidden mb-2">
-        <img src="${image}" alt="${title}" class="w-full h-full object-cover" loading="lazy" />
-      </div>
-      <h3 class="text-sm font-medium text-gray-900 mb-1 line-clamp-2">${title}</h3>
-      <p class="text-sm font-bold text-blue-600">${formatPrice(lprice)}원</p>
-    </div>`;
-  }
-
   mounted() {
     if (this.state.isLoading) return;
 
@@ -136,11 +181,26 @@ export default class ProductDetailPage extends Component {
     }
   }
 
+  relatedProductTemplate(product) {
+    const { productId, image, title, lprice } = product;
+
+    return /* HTML */ `<div
+      class="bg-gray-50 rounded-lg p-3 related-product-card cursor-pointer"
+      data-product-id="${productId}"
+    >
+      <div class="aspect-square bg-white rounded-md overflow-hidden mb-2">
+        <img src="${image}" alt="${title}" class="w-full h-full object-cover" loading="lazy" />
+      </div>
+      <h3 class="text-sm font-medium text-gray-900 mb-1 line-clamp-2">${title}</h3>
+      <p class="text-sm font-bold text-blue-600">${lprice}원</p>
+    </div>`;
+  }
+
   template() {
-    const { product, relatedProducts, isLoading } = this.state;
+    const { product, relatedProducts, isLoading, isRelatedProductsLoading } = this.state;
     const { productId, image, title, lprice, stock, description, rating, reviewCount } = product;
 
-    if (isLoading) {
+    if (isLoading || isRelatedProductsLoading) {
       return Loading();
     }
 
@@ -195,9 +255,9 @@ export default class ProductDetailPage extends Component {
                 <input
                   type="number"
                   id="quantity-input"
-                  value="1"
+                  value="${this.state.quantity}"
                   min="1"
-                  max="107"
+                  max="${stock}"
                   class="w-16 h-8 text-center text-sm border-t border-b border-gray-300 
                     focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 />
