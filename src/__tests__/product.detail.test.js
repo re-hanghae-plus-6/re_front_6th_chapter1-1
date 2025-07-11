@@ -20,23 +20,24 @@ afterEach(() => {
 });
 
 const 상품_상세페이지_접속 = async () => {
+  console.log("1. 상품 상세 페이지 접속 시작");
   const productElement = await screen.findByRole("heading", {
     level: 3,
     name: /pvc 투명 젤리 쇼핑백/i,
   });
-  console.log("1. 상품 상세 페이지 접속 후");
+
   const productCard = productElement.closest(".product-card");
   const productImage = productCard.querySelector("img");
   expect(productImage).toBeInTheDocument();
-  console.log("2. 상품 이미지 확인 후");
 
+  console.log("1-1. 상품 상세 페이지 접속 시작");
   // 상품 이미지 클릭
   await userEvent.click(productImage);
+  console.log("1-2. 상품 상세 페이지 접속 시작");
   await screen.findByRole("heading", {
     level: 1,
     name: "PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장",
   });
-  console.log("3. 상품 이미지 클릭 후");
 };
 
 describe("1. 상품 클릭시 상세 페이지 이동", () => {
@@ -45,26 +46,21 @@ describe("1. 상품 클릭시 상세 페이지 이동", () => {
 
     await 상품_상세페이지_접속();
 
-    console.log("4. 상품 상세 페이지 접속 후");
     // 상품 상세 페이지가 로드되었는지 확인
     expect(await screen.findByText("상품 상세")).toBeInTheDocument();
 
-    console.log("5. 상품 상세 페이지 접속 후");
     // 상품 제목 확인
     expect(
       await screen.findByText("PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장"),
     ).toBeInTheDocument();
 
-    console.log("6. 상품 상세 페이지 접속 후");
     // 상품 이미지 확인
     expect(
       screen.getByAltText("PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장"),
     ).toBeInTheDocument();
 
-    console.log("7. 상품 상세 페이지 접속 후");
     // 가격 정보 확인
     expect(screen.getByText("220원")).toBeInTheDocument();
-    console.log("8. 상품 상세 페이지 접속 후");
   });
 });
 
@@ -105,18 +101,22 @@ describe("2. 상품 상세 - 장바구니 담기", () => {
 
 describe("3. 관련 상품 기능", () => {
   test("상품 상세 페이지에서 현재 상품을 제외한 관련 상품들이 표시되고, 관련 상품 클릭 시 해당 상품의 상세 페이지로 이동한다", async () => {
+    console.log("1. 상품 상세 페이지 접속 후");
     await 상품_상세페이지_접속();
+    console.log("2. 상품 상세 페이지 접속 후");
 
     // 관련 상품 섹션이 있는지 확인
     expect(screen.queryByText("관련 상품")).not.toBeInTheDocument();
     expect(await screen.findByText("관련 상품")).toBeInTheDocument();
+    console.log("3. 상품 상세 페이지 접속 후");
 
     // 관련 상품 카드들이 있는지 확인
     const relatedProductCards = [...document.querySelectorAll(".related-product-card")];
     expect(relatedProductCards.length).toBe(19);
+    console.log("4. 상품 상세 페이지 접속 후");
 
     expect(document.querySelector(".related-product-card [data-product-id='85067212996']")).toBe(null);
-
+    console.log("5. 상품 상세 페이지 접속 후");
     // 관련 상품 클릭
     await userEvent.click(relatedProductCards[0]);
     await screen.findByRole("heading", {

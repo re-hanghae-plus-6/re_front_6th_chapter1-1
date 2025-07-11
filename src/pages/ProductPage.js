@@ -141,11 +141,11 @@ const starUI = (rating) => {
 const loadRelatedData = async (product) => {
   try {
     const relatedProducts = await getRelatedProducts(product.category1, product.category2);
-    console.log(relatedProducts);
+    // console.log(relatedProducts);
     const filteredProducts = relatedProducts.products.filter(
       (relatedProduct) => relatedProduct.productId !== product.productId,
     );
-    console.log(filteredProducts);
+    // console.log(filteredProducts);
     const relatedContainer = document.querySelector("#related-products-container");
 
     if (relatedContainer && filteredProducts.length > 0) {

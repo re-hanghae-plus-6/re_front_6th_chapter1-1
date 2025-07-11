@@ -173,7 +173,7 @@ describe("5. 무한 스크롤 페이지네이션", () => {
     // 초기 상품 카드 수 확인
     const initialCards = document.querySelectorAll(".product-card").length;
 
-    screen.logTestingPlaygroundURL();
+    // screen.logTestingPlaygroundURL();
     expect(initialCards).toBe(20);
 
     // 페이지 하단으로 스크롤

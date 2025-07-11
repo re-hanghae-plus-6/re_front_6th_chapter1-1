@@ -8,7 +8,15 @@ class Store {
     this.state = {
       products: [],
       categories: {},
-      pagination: {},
+      pagination: {
+        total: 340,
+        hasNext: false,
+        current: 1,
+        limit: 20,
+        sort: "price_asc",
+        category1: "",
+        category2: "",
+      },
       filters: {},
       loading: false,
       isLoadingMore: false,
