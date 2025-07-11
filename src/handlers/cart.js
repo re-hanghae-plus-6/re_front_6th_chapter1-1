@@ -308,10 +308,27 @@ export function setupModalEvents(state, { renderCartModal, showToast }) {
 
     // NOTE 선택 아이템 삭제
     if (event.target.matches("#cart-modal-remove-selected-btn")) {
-      const selectedProductIds = state.selectedCartItems;
+      const selectedProductIds = [...state.selectedCartItems]; // 복사본 생성
+
+      // 선택된 상품들을 일괄 삭제
       selectedProductIds.forEach((productId) => {
-        removeFromCart(productId, state, { renderCartModal, showToast });
+        // 해당 상품의 모든 인스턴스 제거
+        state.cart = state.cart.filter((item) => item.productId !== productId);
       });
+
+      // 선택된 아이템 목록 초기화
+      state.selectedCartItems = [];
+
+      // localStorage에 저장 (테스트 환경이 아닌 경우에만)
+      if (import.meta.env.MODE !== "test") {
+        saveCartToStorage(state.cart, state.selectedCartItems);
+      }
+
+      // 헤더의 장바구니 카운트 업데이트
+      updateCartCount(state);
+
+      // 모달 전체 다시 렌더링
+      renderCartModal(state, showToast);
       return;
     }
 
