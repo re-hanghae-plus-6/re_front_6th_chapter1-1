@@ -58,6 +58,12 @@ export class CartModal extends Component {
         return;
       }
 
+      const $clearCartBtn = target.closest("#cart-modal-clear-cart-btn");
+      if ($clearCartBtn) {
+        cartStore.clearCart();
+        return;
+      }
+
       const $quantityIncreaseBtn = target.closest(".quantity-increase-btn");
       const $quantityDecreaseBtn = target.closest(".quantity-decrease-btn");
 

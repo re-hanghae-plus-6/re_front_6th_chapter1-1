@@ -50,6 +50,10 @@ export const cartStore = observable({
   closeModal() {
     cartStore.open = false;
   },
+  clearCart() {
+    cartStore.items = new Map();
+    cartStore.count = 0;
+  },
   hasItem(productId) {
     return cartStore.items.has(productId);
   },
