@@ -1,20 +1,16 @@
 let currentObserver = null;
 const observerToObservableMap = new Map();
 
-// const debounceFrame = (callback) => {
-//   let currentCallback = -1;
-//   const debounced = () => {
-//     // 예약된 함수가 있다면 취소
-//     cancelAnimationFrame(currentCallback);
-//     // 다음 프레임에 실행
-//     currentCallback = requestAnimationFrame(callback);
-//   };
-//   debounced.cancel = () => cancelAnimationFrame(currentCallback);
-//   return debounced;
-// };
+const scheduleMicrotask = (callback) => {
+  const scheduled = () => {
+    queueMicrotask(callback);
+  };
+
+  return scheduled;
+};
 
 export const observe = (componentId, fn) => {
-  currentObserver = { componentId, fn: fn };
+  currentObserver = { componentId, fn: scheduleMicrotask(fn) };
   try {
     fn();
   } finally {
@@ -38,8 +34,6 @@ export const observe = (componentId, fn) => {
       }
       observerToObservableMap.delete(componentId);
     }
-
-    currentObserver?.fn?.cancel();
   };
 };
 
