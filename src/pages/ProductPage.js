@@ -1,6 +1,7 @@
-import { getProduct } from "../api/productApi.js";
+import { getProduct, getProducts } from "../api/productApi.js";
 import Header from "../components/Header.js";
 import Footer from "../components/Footer";
+import RelatedProductCard from "../components/RelatedProductCard.js";
 import { store } from "../store.js";
 
 const LoadingUI = () => {
@@ -36,6 +37,28 @@ export const ProductPage = async (productId) => {
     store.dispatch({ type: "SET_CURRENT_DETAIL_PRODUCT", payload: { currentDetailProduct: product } });
   } catch (error) {
     console.error(error);
+  } finally {
+    loading = false;
+  }
+
+  let relatedProducts = [];
+
+  try {
+    product = await getProduct(productId);
+    store.dispatch({ type: "SET_CURRENT_DETAIL_PRODUCT", payload: { currentDetailProduct: product } });
+
+    if (product) {
+      const relatedProductsResponse = await getProducts({
+        category1: product.category1,
+        category2: product.category2,
+        limit: 3,
+      });
+
+      relatedProducts = relatedProductsResponse.products.filter((p) => p.productId !== product.productId).slice(0, 2);
+    }
+  } catch (error) {
+    console.error("상품 또는 관련 상품 정보를 불러오는 중 오류 발생:", error);
+    store.dispatch({ type: "SET_CURRENT_DETAIL_PRODUCT", payload: { currentDetailProduct: null } });
   } finally {
     loading = false;
   }
@@ -112,7 +135,7 @@ export const ProductPage = async (productId) => {
               <span class="text-sm font-medium text-gray-900">수량</span>
               <div class="flex items-center">
                 <button id="quantity-decrease" class="w-8 h-8 flex items-center justify-center border border-gray-300 
-                   rounded-l-md bg-gray-50 hover:bg-gray-100">
+                    rounded-l-md bg-gray-50 hover:bg-gray-100">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
                   </svg>
@@ -120,7 +143,7 @@ export const ProductPage = async (productId) => {
 
                 <input type="number" id="quantity-input" value="1" min="1" max="${product.stock > 0 ? product.stock : 1}" class="w-16 h-8 text-center text-sm border-t border-b border-gray-300 focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                 <button id="quantity-increase" class="w-8 h-8 flex items-center justify-center border border-gray-300 
-                   rounded-r-md bg-gray-50 hover:bg-gray-100">
+                  rounded-r-md bg-gray-50 hover:bg-gray-100">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                   </svg>
@@ -129,7 +152,7 @@ export const ProductPage = async (productId) => {
             </div>
             <!-- 액션 버튼 -->
             <button id="add-to-cart-btn" data-product-id="${product.productId}" class="w-full bg-blue-600 text-white py-3 px-4 rounded-md 
-                 hover:bg-blue-700 transition-colors font-medium">
+                hover:bg-blue-700 transition-colors font-medium">
               장바구니 담기
             </button>
           </div>
@@ -149,20 +172,7 @@ export const ProductPage = async (productId) => {
           </div>
           <div class="p-4">
             <div class="grid grid-cols-2 gap-3 responsive-grid">
-              <div class="bg-gray-50 rounded-lg p-3 related-product-card cursor-pointer" data-product-id="86940857379">
-                <div class="aspect-square bg-white rounded-md overflow-hidden mb-2">
-                  <img src="https://shopping-phinf.pstatic.net/main_8694085/86940857379.1.jpg" alt="샷시 풍지판 창문 바람막이 베란다 문 틈막이 창틀 벌레 차단 샤시 방충망 틈새막이" class="w-full h-full object-cover" loading="lazy">
-                </div>
-                <h3 class="text-sm font-medium text-gray-900 mb-1 line-clamp-2">샷시 풍지판 창문 바람막이 베란다 문 틈막이 창틀 벌레 차단 샤시 방충망 틈새막이</h3>
-                <p class="text-sm font-bold text-blue-600">230원</p>
-              </div>
-              <div class="bg-gray-50 rounded-lg p-3 related-product-card cursor-pointer" data-product-id="82094468339">
-                <div class="aspect-square bg-white rounded-md overflow-hidden mb-2">
-                  <img src="https://shopping-phinf.pstatic.net/main_8209446/82094468339.4.jpg" alt="실리카겔 50g 습기제거제 제품 /산업 신발 의류 방습제" class="w-full h-full object-cover" loading="lazy">
-                </div>
-                <h3 class="text-sm font-medium text-gray-900 mb-1 line-clamp-2">실리카겔 50g 습기제거제 제품 /산업 신발 의류 방습제</h3>
-                <p class="text-sm font-bold text-blue-600">280원</p>
-              </div>
+            ${relatedProducts.map((product) => RelatedProductCard(product)).join("")}
             </div>
           </div>
         </div>

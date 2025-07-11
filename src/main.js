@@ -239,7 +239,7 @@ const attachEventListeners = () => {
 };
 
 const handleProductCardClick = (event) => {
-  const productCard = event.target.closest(".product-card");
+  const productCard = event.target.closest(".product-card, .related-product-card");
   if (productCard) {
     const productId = productCard.dataset.productId;
     if (productId) {
