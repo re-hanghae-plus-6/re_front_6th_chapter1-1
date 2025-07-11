@@ -26,21 +26,10 @@ class E2EHelpers {
     await this.page.waitForSelector("text=장바구니에 추가되었습니다", { timeout: 5000 });
   }
 
-  // 토스트 메시지가 사라질 때까지 대기
-  async waitForToastToDisappear() {
-    await this.page.waitForSelector("text=장바구니에 추가되었습니다", { state: "hidden", timeout: 5000 });
-  }
-
   // 장바구니 모달 열기
   async openCartModal() {
     await this.page.click("#cart-icon-btn");
     await this.page.waitForSelector(".cart-modal-overlay", { timeout: 5000 });
-  }
-
-  // 현재 상품 개수 가져오기
-  async getCurrentProductCount() {
-    const countText = await this.page.textContent('[data-testid="product-count"]');
-    return countText ? parseInt(countText.replace(/[^\d]/g, "")) : 0;
   }
 }
 
@@ -493,7 +482,7 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오", () => {
       // 장바구니 비우기
       await page.click("#cart-modal-clear-cart-btn");
 
-      // 장바구니가 비어있는지 확인
+      // 장바구니가 비어있는지 확인.
       await expect(page.locator("text=장바구니가 비어있습니다")).toBeVisible();
 
       // 장바구니 아이콘에서 개수 표시가 사라졌는지 확인
