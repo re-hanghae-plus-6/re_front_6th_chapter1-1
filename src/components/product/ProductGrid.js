@@ -2,7 +2,7 @@ import ProductItem from "./ProductItem.js";
 import ProductSkeleton from "./ProductSkeleton.js";
 import { LoadingSpinner } from "./Loading.js";
 
-export default function ProductGrid({ products = [], total = 0, loading = false, hasMore = true }) {
+export default function ProductGrid({ products = [], total = 0, loading = false, hasNext = true }) {
   const renderProducts = () => {
     if (loading && products.length === 0) {
       return ProductSkeleton({ count: 4 });
@@ -20,7 +20,7 @@ export default function ProductGrid({ products = [], total = 0, loading = false,
       return LoadingSpinner();
     }
 
-    if (!hasMore && products.length > 0) {
+    if (!hasNext && products.length > 0) {
       return `
                 <div class="text-center py-4 text-sm text-gray-500">
                     모든 상품을 확인했습니다
