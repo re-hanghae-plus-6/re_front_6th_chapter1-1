@@ -1,41 +1,60 @@
 import Component from "../core/component";
 import { getCategories } from "../api/productApi";
-// import { getProductParams } from "../pages/Main";
+import { getProductParams } from "../pages/Main";
+import urlSearchParamsStore from "../core/store/urlSearchParamsStore";
 
 class Category extends Component {
   async setup() {
     this.state = {
       isLoading: true,
-      category1: null,
+      category1: [],
+      category2: [],
     };
 
-    const categoryList = await getCategories();
-    const oneDepth = categoryList ? Object.keys(categoryList) : [];
+    const categoryObject = await getCategories();
+    const { category1 } = getProductParams();
+    const oneDepth = categoryObject ? Object.keys(categoryObject) : [];
+    const twoDepth = categoryObject?.[category1] ? Object.keys(categoryObject?.[category1]) : [];
 
-    const category1Children = oneDepth?.reduce((acc, category, index) => {
+    const category1Children = oneDepth?.reduce((acc, category1, index) => {
       acc[`category1_${index}`] = {
         component: Category1Button,
-        props: { name1: category },
+        props: { name1: category1 },
       };
 
       return acc;
     }, {});
 
+    const category2Children = twoDepth?.reduce((acc, category2, index) => {
+      acc[`category2_${index}`] = {
+        component: Category2Button,
+        props: {
+          name1: category1,
+          name2: category2,
+        },
+      };
+
+      return acc;
+    }, {});
+
+    const categoryChildren = twoDepth?.length === 0 ? category1Children : category2Children;
+
     this.children = {
-      ...category1Children,
+      ...categoryChildren,
     };
 
     this.setState({
       isLoading: false,
       category1: oneDepth,
+      category2: twoDepth,
     });
   }
 
   template() {
     const isLoading = this.state?.isLoading;
     const category1List = this.state?.category1 ?? [];
-    const category1 = 1;
-    const category2 = 1;
+    const category2List = this.state?.category2 ?? [];
+    const { category1, category2 } = getProductParams();
 
     return `      
 			<div id="category-select" class="space-y-2">
@@ -50,14 +69,61 @@ class Category extends Component {
 					${
             isLoading
               ? `<div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>`
-              : `${category1List.map((_, index) => this.createBoxlessContainer(`category1_${index}`)).join("\n")}`
+              : category1
+                ? `${category2List.map((_, index) => this.createBoxlessContainer(`category2_${index}`)).join("\n")}`
+                : `${category1List.map((_, index) => this.createBoxlessContainer(`category1_${index}`)).join("\n")}`
           }
 				</div>
 			</div>
 		`;
   }
 
-  setEvent() {}
+  setEvent() {
+    document.querySelector(".breadcrumb-container").addEventListener("click", (e) => {
+      const target = e.target?.dataset?.breadcrumb;
+
+      if (target === "reset") {
+        urlSearchParamsStore.setParams({
+          category1: null,
+          category2: null,
+        });
+
+        return;
+      }
+
+      if (target === "category1") {
+        urlSearchParamsStore.setParams({
+          category2: null,
+        });
+
+        return;
+      }
+    });
+
+    document.querySelector("#category-select")?.addEventListener("click", (e) => {
+      const target = e.target;
+
+      if (target.classList.contains("category1-filter-btn")) {
+        const category1 = target.dataset.category1;
+
+        urlSearchParamsStore.setParams({
+          category1,
+        });
+
+        return;
+      }
+
+      if (target.classList.contains("category2-filter-btn")) {
+        const category2 = target.dataset.category2;
+
+        urlSearchParamsStore.setParams({
+          category2,
+        });
+
+        return;
+      }
+    });
+  }
 }
 
 class Category1Button extends Component {
@@ -74,28 +140,27 @@ class Category1Button extends Component {
   }
 }
 
-// class Category2Button extends Component {
-//   template() {
-//     const name1 = this.props?.name1 ?? "";
-//     const name2 = this.props?.name2 ?? "";
+class Category2Button extends Component {
+  template() {
+    const name1 = this.props?.name1 ?? "";
+    const name2 = this.props?.name2 ?? "";
 
-//     const productParams = getProductParams();
-//     console.log(productParams());
-//     const isSelected = productParams?.category2 === name2;
+    const productParams = getProductParams();
+    const isSelected = productParams?.category2 === name2;
 
-//     const defaultColor = `bg-white border-gray-300 text-gray-700 hover:bg-gray-50`;
-//     const selectedColor = `bg-blue-100 border-blue-300 text-blue-800`;
+    const defaultColor = `bg-white border-gray-300 text-gray-700 hover:bg-gray-50`;
+    const selectedColor = `bg-blue-100 border-blue-300 text-blue-800`;
 
-//     return `
-//       <button
-//         data-category1=${name1}
-//         data-category2=${name2}
-//         class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors ${isSelected ? selectedColor : defaultColor}"
-//       >
-//         ${name2}
-//       </button>
-//     `;
-//   }
-// }
+    return `
+      <button
+        data-category1=${name1}
+        data-category2=${name2}
+        class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors ${isSelected ? selectedColor : defaultColor}"
+      >
+        ${name2}
+      </button>
+    `;
+  }
+}
 
 export default Category;
