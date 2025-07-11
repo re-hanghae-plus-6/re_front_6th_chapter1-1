@@ -1,3 +1,4 @@
+import { BASE } from "../../main";
 import { navigate } from "../../utils/navigate";
 
 export const RelatedProductItem = (product) => {
@@ -17,6 +18,6 @@ document.addEventListener("click", (e) => {
   const card = e.target.closest(".related-product-card");
   if (card) {
     const productId = card.dataset.productId;
-    navigate(`/product/${productId}`);
+    navigate(`${BASE}product/${productId}`);
   }
 });
