@@ -8,7 +8,6 @@ const SORT_FILTER_OPTIONS = [
 ];
 
 export const searchNcategoriesComp = (props) => {
-  console.log("searchNcategoriesComp", props);
   const isLoading = props.loading || false;
   const params = props.params || {};
   const categories = props.categories || {};
