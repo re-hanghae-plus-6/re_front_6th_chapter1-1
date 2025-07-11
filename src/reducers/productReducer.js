@@ -52,6 +52,7 @@ export function productReducer(state, action) {
     case PRODUCT_ACTIONS.CHANGE_FILTERS:
       return {
         ...state,
+        loading: true,
         filters: { ...state.filters, ...action.payload },
         pagination: {
           ...state.pagination,
@@ -63,6 +64,7 @@ export function productReducer(state, action) {
     case PRODUCT_ACTIONS.CHANGE_LIMIT:
       return {
         ...state,
+        loading: true,
         filters: { ...state.filters, limit: action.payload },
         pagination: {
           ...state.pagination,
@@ -81,12 +83,14 @@ export function productReducer(state, action) {
     case PRODUCT_ACTIONS.CHANGE_SORT:
       return {
         ...state,
+        loading: true,
         filters: { ...state.filters, sort: action.payload },
       };
 
     case PRODUCT_ACTIONS.SEARCH_PRODUCTS:
       return {
         ...state,
+        loading: true,
         filters: { ...state.filters, search: action.payload },
         pagination: {
           ...state.pagination,

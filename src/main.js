@@ -33,10 +33,10 @@ async function main() {
 
   let lastRoute = null;
 
-  store.subscribe(async (state) => {
+  store.subscribe((state) => {
     if (state.currentRoute !== lastRoute) {
       lastRoute = state.currentRoute;
-      await controller.handleRouteChange(state.currentRoute);
+      controller.handleRouteChange(state.currentRoute);
     }
 
     render();

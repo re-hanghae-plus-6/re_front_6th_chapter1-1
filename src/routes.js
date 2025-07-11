@@ -7,16 +7,29 @@ export const ROUTES = {
     path: "/",
     component: ProductListPage,
     headerType: "main",
+    loadingAction: () => ({
+      loading: true,
+      loadingCategories: true,
+      error: null,
+      categoriesError: null,
+    }),
   },
   PRODUCT_DETAIL: {
     path: "/product/:id",
     component: ProductDetailPage,
     headerType: "detail",
+    loadingAction: () => ({
+      productDetail: {
+        loading: true,
+        error: null,
+      },
+    }),
   },
   NOT_FOUND: {
     path: "*",
     component: NotFoundPage,
     headerType: "main",
+    loadingAction: null,
   },
 };
 

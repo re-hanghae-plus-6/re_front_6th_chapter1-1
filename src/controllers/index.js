@@ -107,7 +107,7 @@ class Controller {
       }
       this.controllers.productList = new ProductListController();
       this.controllers.productList.setupEventListeners();
-      await this.controllers.productList.loadInitialData();
+      this.controllers.productList.loadData();
     } else if (currentRoute.startsWith("/product/")) {
       const productId = getProductId(currentRoute);
       if (productId) {

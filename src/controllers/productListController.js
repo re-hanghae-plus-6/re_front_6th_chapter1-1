@@ -23,9 +23,7 @@ export class ProductListController {
     this.#setupEventListeners();
   }
 
-  async loadInitialData() {
-    store.dispatch(actions.loadInitialData());
-
+  async loadData() {
     try {
       const queryParams = getQueryParams();
 
@@ -62,6 +60,11 @@ export class ProductListController {
       console.error("초기 데이터 로딩 실패:", error);
       store.dispatch(actions.loadInitialDataError(error.message));
     }
+  }
+
+  async loadInitialData() {
+    store.dispatch(actions.loadInitialData());
+    await this.loadData();
   }
 
   #setupEventListeners() {
@@ -154,21 +157,21 @@ export class ProductListController {
 
     store.dispatch(actions.changeLimit(newSelectLimit));
     updateQueryParams({ limit: newSelectLimit });
-    this.fetchProducts();
+    this.fetchProducts(1, true);
   }
 
   #handleSortChange(event) {
     const newSelectSort = event.target.value;
     store.dispatch(actions.changeSorts(newSelectSort));
     updateQueryParams({ sort: newSelectSort });
-    this.fetchProducts();
+    this.fetchProducts(1, true);
   }
 
   #handleSearchChange(event) {
     const searchValue = event.target.value.trim();
     store.dispatch(actions.searchProducts(searchValue));
     updateQueryParams({ search: searchValue });
-    this.fetchProducts();
+    this.fetchProducts(1, true);
   }
 
   #handleCategory1Change(event) {
@@ -180,7 +183,7 @@ export class ProductListController {
       }),
     );
     updateQueryParams({ category1, category2: "" });
-    this.fetchProducts();
+    this.fetchProducts(1, true);
   }
 
   #handleCategory2Change(event) {
@@ -188,7 +191,7 @@ export class ProductListController {
     const category2 = event.target.dataset.category2;
     store.dispatch(actions.changeFilters({ category1, category2 }));
     updateQueryParams({ category1, category2 });
-    this.fetchProducts();
+    this.fetchProducts(1, true);
   }
 
   #handleCategoryReset(event) {
@@ -200,7 +203,7 @@ export class ProductListController {
       }),
     );
     updateQueryParams({ category1: "", category2: "" });
-    this.fetchProducts();
+    this.fetchProducts(1, true);
   }
 
   #handleCategory1Breadcrumb(event) {
@@ -211,11 +214,13 @@ export class ProductListController {
       }),
     );
     updateQueryParams({ category2: "" });
-    this.fetchProducts();
+    this.fetchProducts(1, true);
   }
 
-  async fetchProducts(page = 1) {
-    store.dispatch(actions.loadProducts());
+  async fetchProducts(page = 1, skipLoadingAction = false) {
+    if (!skipLoadingAction) {
+      store.dispatch(actions.loadProducts());
+    }
 
     try {
       const { pagination, filters } = this.state;
@@ -230,7 +235,7 @@ export class ProductListController {
       };
 
       const data = await getProducts(params);
-
+      console.log("데이터 부름", data);
       store.dispatch(
         actions.productsLoaded({
           products: data.products,

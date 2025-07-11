@@ -2,11 +2,11 @@ import { getCartFromStorage } from "./utils/storage.js";
 
 export const initialState = {
   products: [],
-  loading: true,
+  loading: false,
   error: null,
 
   categories: {},
-  loadingCategories: true,
+  loadingCategories: false,
   categoriesError: null,
 
   pagination: {
@@ -32,10 +32,10 @@ export const initialState = {
 
   productDetail: {
     product: null,
-    loading: true,
+    loading: false,
     error: null,
     relatedProducts: [],
-    loadingRelatedProducts: true,
+    loadingRelatedProducts: false,
   },
 
   toast: {
