@@ -14,8 +14,8 @@ export class WebStorage {
     }
   }
 
-  setItem(key, value) {
-    this.storage.setItem(key, JSON.stringify(value));
+  setItem(value) {
+    this.storage.setItem(this.key, JSON.stringify(value));
   }
 
   removeItem(key) {
