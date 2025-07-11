@@ -103,7 +103,7 @@ async function main() {
     let array = window.location.search.replace("?", "").split("&");
     for (const element of array) {
       let [k, v] = element.split("=");
-      mainStatus.params[k] = v;
+      mainStatus.params[k] = isNaN(v) ? decodeURI(v) : Number(v);
     }
   }
   appRouter = createRouter(mainStatus);

@@ -30,8 +30,8 @@ export const addCart = (product, quantity = 1) => {
 };
 
 /**
- * 헤더의 장바구니 아이콘 카운트를 업데이트합니다.
- * 페이지를 리렌더링하지 않고, 카운트 뱃지를 직접 생성, 수정, 또는 제거합니다.
+ * 헤더의 장바구니 아이콘 카운트 업데이트
+ * 페이지를 리렌더링하지 않고, 카운트 뱃지를 직접 생성, 수정, 또는 제거
  */
 export const updateHeaderCartCount = () => {
   const cart = getCart();

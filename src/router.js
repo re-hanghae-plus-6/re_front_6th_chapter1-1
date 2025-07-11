@@ -96,7 +96,7 @@ class Router {
       }
     }
     if (currentPath !== newUrl.pathname + newUrl.search) {
-      window.history.replaceState({}, "", newUrl.toString());
+      window.history.pushState({}, "", newUrl.toString());
     }
     this.render();
   }
