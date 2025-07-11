@@ -10,6 +10,7 @@ export class Router {
   #routes = new Map();
   #currentRoute = null;
   #container = null;
+  #currentComponent = null;
   #currentRouteParams = {};
   #currentQueryParams = {};
   #popstateListener = this.#handleRouteChange.bind(this);
@@ -35,6 +36,15 @@ export class Router {
 
   get queryParams() {
     return { ...this.#currentQueryParams };
+  }
+
+  /**
+   * 현재 활성화된 컴포넌트를 반환
+   *
+   * @returns {Component|null} 현재 컴포넌트 인스턴스
+   */
+  get currentComponent() {
+    return this.#currentComponent;
   }
 
   /**
@@ -73,9 +83,13 @@ export class Router {
    * 등록된 모든 라우트를 제거하고 라우터 상태를 초기화합니다.
    */
   clear() {
+    // 현재 컴포넌트가 있다면 언마운트
+    this.#unmountCurrentComponent();
+
     this.#routes.clear();
     this.#currentRoute = null;
     this.#container = null;
+    this.#currentComponent = null;
     window.removeEventListener("popstate", this.#popstateListener);
   }
 
@@ -102,6 +116,22 @@ export class Router {
       window.history.pushState({}, "", fullPath);
       this.#handleRouteChange();
     }
+  }
+
+  /**
+   * 현재 컴포넌트를 언마운트하고 정리하는 메소드
+   *
+   * @private
+   */
+  #unmountCurrentComponent() {
+    if (this.#currentComponent && this.#currentComponent.isMounted) {
+      try {
+        this.#currentComponent.unmount();
+      } catch (error) {
+        console.error("컴포넌트 언마운트 중 오류 발생:", error);
+      }
+    }
+    this.#currentComponent = null;
   }
 
   /**
@@ -261,19 +291,39 @@ export class Router {
 
     if (!matchResult) {
       throw new Error(`매칭되는 라우트가 없음, ${routePath}`);
-    } else {
-      this.#currentRoute = routePath; // 상대 경로로 저장
     }
 
-    // 현재 라우트 파라미터와 쿼리 파라미터를 업데이트
-    this.#currentRouteParams = matchResult.params;
-    this.#currentQueryParams = queryParams;
+    // 같은 라우트로 이동하는 경우 중복 처리 방지
+    if (this.#currentRoute === routePath && this.#currentComponent) {
+      // 라우트 파라미터나 쿼리 파라미터만 업데이트
+      this.#currentRouteParams = matchResult.params;
+      this.#currentQueryParams = queryParams;
+      return;
+    }
 
-    const component = this.#createComponent(matchResult.componentConstructor);
-    component.mount(this.#container);
+    try {
+      // 1. 기존 컴포넌트 언마운트
+      this.#unmountCurrentComponent();
 
-    // 해당 라우터에 대한 컴포넌트 그리기
-    component.render();
+      // 2. 새로운 컴포넌트 생성 및 마운트
+      const component = this.#createComponent(matchResult.componentConstructor);
+
+      // 3. 상태 업데이트
+      this.#currentRoute = routePath;
+      this.#currentRouteParams = matchResult.params;
+      this.#currentQueryParams = queryParams;
+      this.#currentComponent = component;
+
+      // 4. 새 컴포넌트 마운트
+      console.log(`마운트: ${component.constructor.name} (경로: ${routePath})`);
+      component.mount(this.#container);
+    } catch (error) {
+      console.error("라우트 변경 중 오류 발생:", error);
+
+      // 오류 발생 시 정리
+      this.#unmountCurrentComponent();
+      throw error;
+    }
   }
 
   /**
@@ -296,6 +346,7 @@ export class Router {
     } catch (error) {
       if (error instanceof Error) {
         console.error("컴포넌트 인스턴스 생성 실패:", error.message);
+        throw error;
       }
     }
   }
