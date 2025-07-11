@@ -51,7 +51,7 @@ function CartAllDelete() {
   cartState.cartList = [];
 
   // 기존 모달을 제거
-  const existingModal = document.querySelector(".cart-modal-overlay");
+  const existingModal = document.querySelector(".cart-modal");
   if (existingModal) {
     existingModal.remove();
   }
@@ -69,7 +69,7 @@ function selectAllCart(checked) {
     cartState.selectCartItem = [];
   }
   // 기존 모달을 제거
-  const existingModal = document.querySelector(".cart-modal-overlay");
+  const existingModal = document.querySelector(".cart-modal");
   if (existingModal) {
     existingModal.remove();
   }
@@ -84,7 +84,7 @@ function selectCartDelete() {
   cartState.selectCartItem = [];
 
   // 기존 모달을 제거
-  const existingModal = document.querySelector(".cart-modal-overlay");
+  const existingModal = document.querySelector(".cart-modal");
   existingModal.remove();
   // 모달을 다시 렌더링
   cartRender();
@@ -98,7 +98,7 @@ function selectCart(productId) {
   }
 
   // 기존 모달을 제거
-  const existingModal = document.querySelector(".cart-modal-overlay");
+  const existingModal = document.querySelector(".cart-modal");
   existingModal.remove();
   // 모달을 다시 렌더링
   cartRender();
@@ -107,14 +107,15 @@ function selectCart(productId) {
 function deleteCart(productId) {
   // cartState.cartList에서 productId가 같은 요소를 제거
   cartState.cartList = cartState.cartList.filter((cart) => String(cart.productId) !== String(productId));
-
+  console.log("?dsaf", cartState.cartList);
   // 기존 모달을 제거
-  const existingModal = document.querySelector(".cart-modal-overlay");
+  state.cartNumber = cartState.cartList.length;
+
+  render();
+  const existingModal = document.querySelector(".cart-modal");
   existingModal.remove();
   // 모달을 다시 렌더링
   cartRender();
-  state.cartNumber = cartState.cartList.length;
-  render();
 }
 
 function increaseCartQuantity(productId) {
@@ -342,7 +343,7 @@ function cartRender() {
   }
   //장바구니 모달 닫기
   document.getElementById("cart-modal-close-btn").addEventListener("click", () => {
-    document.querySelector(".cart-modal-overlay").remove();
+    document.querySelector(".cart-modal").remove();
   });
 
   //장바구니 수량 증가
@@ -498,7 +499,7 @@ async function render() {
 
   // 배경(오버레이) 클릭 시 모달 닫기
   document.body.addEventListener("click", function (e) {
-    const overlay = document.querySelector(".cart-modal-overlay");
+    const overlay = document.querySelector(".cart-modal");
     if (overlay && e.target === overlay) {
       overlay.remove();
     }
@@ -507,7 +508,7 @@ async function render() {
   // ESC 키로 모달 닫기
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape") {
-      const overlay = document.querySelector(".cart-modal-overlay");
+      const overlay = document.querySelector(".cart-modal");
       if (overlay) {
         overlay.remove();
       }

@@ -1,6 +1,6 @@
 export default function modal(state) {
   const 장바구니_비어있음 = `
-    <div class="cart-modal-overlay fixed inset-0 z-[9999] bg-black bg-opacity-50 flex items-end justify-center p-0 sm:items-center sm:p-4">
+    <div class="cart-modal fixed inset-0 z-[9999] bg-black bg-opacity-50 flex items-end justify-center p-0 sm:items-center sm:p-4">
       <div class="relative bg-white rounded-t-lg sm:rounded-lg shadow-xl w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-hidden">
         <!-- 헤더 -->
         <div class="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
