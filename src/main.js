@@ -7,6 +7,8 @@ import { onChangeUrl } from "./utils/urlUtils.js";
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker, workerOptions }) => worker.start(workerOptions));
 
+const BASE_PATH = import.meta.PROD ? "/front_6th_chapter1-1" : "";
+
 function main() {
   /**TODO :: 규칙에 따라 matchPattern을 만들어내는 함수 추출 */
   // const getMatchPattern = (pattern) => {
@@ -26,20 +28,18 @@ function main() {
     {
       pathname: "/",
       component: ListPage,
-      // matchPattern: /^\/$/,
-      matchPattern: "^/$",
+      // 접두사 BASE_PATH를 동적으로 붙임, $는 경로 끝 표시
+      matchPattern: `^${BASE_PATH}/$`,
     },
     {
       pathname: "/product/:productId",
       component: DetailPage,
-      // matchPattern: getMatchPattern("/product/:productId"),
-      matchPattern: "^/product/[A-Za-z0-9_-]+$",
+      matchPattern: `^${BASE_PATH}/product/[A-Za-z0-9_-]+$`,
     },
     {
       pathname: "*",
       component: NotFoundPage,
-      // matchPattern: getMatchPattern("*"),
-      matchPattern: "^.*$",
+      matchPattern: `^${BASE_PATH}.*$`,
     },
   ];
 
