@@ -64,7 +64,7 @@ export let render = async function (state) {
       title: "쇼핑몰",
     });
   } else if (detailPage) {
-    const productId = path.split("=")[1];
+    const productId = path.split("/")[2];
     const product = await getProduct(productId);
     state.productDetail = product;
 
