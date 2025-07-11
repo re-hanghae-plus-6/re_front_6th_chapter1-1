@@ -108,7 +108,13 @@ export const handlers = [
     };
 
     await delay();
-
+    // return HttpResponse.json(
+    //   {
+    //     error: 'INTERNAL_SERVER_ERROR',
+    //     message: '알 수 없는 서버 오류가 발생했습니다.',
+    //   },
+    //   { status: 500 },
+    // );
     return HttpResponse.json(response);
   }),
 

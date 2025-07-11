@@ -13,6 +13,11 @@ export async function getProducts(params = {}) {
   });
 
   const response = await fetch(`/api/products?${searchParams}`);
+  if (!response.ok) {
+    const errorData = await response.json();
+    // errorData.message나 errorData.error를 활용해 throw
+    throw new Error(errorData.message || '상품 목록 조회 실패');
+  }
 
   return await response.json();
 }
