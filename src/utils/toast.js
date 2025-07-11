@@ -79,6 +79,7 @@ export function toast(type, message, delay = 3_000) {
 }
 
 function clearToast() {
+  console.log("clearToast");
   const $toastContainer = document.querySelector(TOAST_CONTAINER_SELECTOR);
   if ($toastContainer) {
     $toastContainer.remove();
@@ -102,4 +103,5 @@ function insertBefore(newElement, targetSelector = "footer") {
   const $targetElement = document.querySelector(targetSelector);
   const $parentElement = $targetElement.parentNode;
   $parentElement.insertBefore(newElement, $targetElement);
+  console.log("장바구니 추가");
 }
