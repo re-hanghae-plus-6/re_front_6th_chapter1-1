@@ -1,5 +1,5 @@
 import { getCategories, getProduct, getProducts } from "./api/productApi.js";
-import page from "./page";
+import page from "./page/index.js";
 import detail from "./page/innerText/detail.js";
 import modal from "./page/innerText/modal.js";
 import toast from "./page/innerText/toast.js";
