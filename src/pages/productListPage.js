@@ -119,6 +119,15 @@ ProductListPage.registerEvent = () => {
   const cartItemPrices = document.querySelectorAll(".cart-item-price");
   const cartItemLprices = document.querySelectorAll(".cart-item-lprice");
   const cartItemRemoveBtns = document.querySelectorAll(".cart-item-remove-btn");
+  const cartModalClearCartBtn = document.getElementById("cart-modal-clear-cart-btn");
+
+  if (cartModalClearCartBtn) {
+    cartModalClearCartBtn.addEventListener("click", () => {
+      store.setState("cartItems", [], { persist: true });
+      render();
+      openToast({ message: "장바구니가 비워졌습니다", type: "info" });
+    });
+  }
 
   cartItemRemoveBtns.forEach((cartItemRemoveBtn) => {
     cartItemRemoveBtn.addEventListener("click", (event) => {
