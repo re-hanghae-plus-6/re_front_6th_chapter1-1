@@ -170,7 +170,7 @@ export function setupModalEvents(state, { renderCartModal, showToast }) {
     }
 
     // 배경 클릭으로 닫기
-    if (event.target.matches(".cart-modal")) {
+    if (event.target.matches(".cart-modal-overlay")) {
       closeCartModal({ modalClickHandler, modalKeydownHandler });
     }
   };
