@@ -17,6 +17,8 @@ export const createRouter = (store, services) => {
   const { dispatch } = store;
   const { productService } = services;
 
+  const getPath = () => getAppPath();
+
   const routes = {
     "/": "ProductList",
     "/products": "ProductList",
@@ -24,7 +26,9 @@ export const createRouter = (store, services) => {
     "/cart": "Cart",
   };
 
-  const matchRoute = (currentPath) => {
+  const getTarget = () => {
+    const currentPath = getPath();
+
     if (routes[currentPath]) {
       return { name: routes[currentPath], params: {} };
     }
@@ -55,15 +59,13 @@ export const createRouter = (store, services) => {
   };
 
   const updateRoute = async () => {
-    // 서브패스 제거한 앱 경로 사용
-    const currentPath = getAppPath();
-    const route = matchRoute(currentPath);
+    const route = getTarget();
 
     // 라우트 상태 업데이트
     dispatch(
       actions.setRoute({
         name: route.name,
-        path: currentPath, // 앱 경로 저장
+        path: getPath(), // 현재 경로 저장
         params: route.params,
       }),
     );
@@ -89,5 +91,5 @@ export const createRouter = (store, services) => {
     updateRoute();
   };
 
-  return { navigate, init };
+  return { navigate, init, getPath, getTarget };
 };
