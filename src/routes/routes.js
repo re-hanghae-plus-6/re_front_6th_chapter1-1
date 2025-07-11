@@ -1,5 +1,6 @@
 import { createProductListPage, createProductDetailPage } from "../pages/index.js";
 import { productListService, productDetailService } from "../services/index.js";
+import { getRelativePath } from "../utils/config.js";
 
 /**
  * 상품 목록 페이지 컴포넌트
@@ -14,7 +15,8 @@ const ProductListPageComponent = () => {
  * 상품 상세 페이지 컴포넌트
  */
 const ProductDetailPageComponent = () => {
-  const pathParts = window.location.pathname.split("/");
+  const relativePath = getRelativePath(window.location.pathname);
+  const pathParts = relativePath.split("/");
   const productId = pathParts[2];
 
   if (!productId) {

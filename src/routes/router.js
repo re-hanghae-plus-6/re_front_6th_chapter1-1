@@ -1,3 +1,5 @@
+import { getFullPath, getRelativePath } from "../utils/config.js";
+
 /**
  * React Router와 비슷한 SPA 라우터
  */
@@ -48,8 +50,9 @@ export class Router {
    * 현재 URL과 매칭되는 라우트 찾기
    */
   matchRoute(pathname = window.location.pathname) {
+    const relativePath = getRelativePath(pathname);
     for (const route of this.routes) {
-      if (this.isRouteMatch(pathname, route)) {
+      if (this.isRouteMatch(relativePath, route)) {
         return route;
       }
     }
@@ -73,18 +76,19 @@ export class Router {
     if (this.isNavigating) return;
 
     const { replace = false, state = null } = options;
+    const fullPath = getFullPath(path);
 
     // 현재 경로와 같으면 무시
-    if (window.location.pathname === path) return;
+    if (window.location.pathname === fullPath) return;
 
     this.isNavigating = true;
 
     try {
       // 히스토리 업데이트
       if (replace) {
-        window.history.replaceState(state, "", path);
+        window.history.replaceState(state, "", fullPath);
       } else {
-        window.history.pushState(state, "", path);
+        window.history.pushState(state, "", fullPath);
       }
 
       // 라우트 매칭 및 렌더링
@@ -203,7 +207,7 @@ export class Router {
    * 현재 경로 반환
    */
   getCurrentPath() {
-    return window.location.pathname;
+    return getRelativePath(window.location.pathname);
   }
 }
 

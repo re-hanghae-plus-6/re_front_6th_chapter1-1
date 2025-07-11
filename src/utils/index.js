@@ -6,3 +6,4 @@ export * from "./event-handlers.js";
 
 // 앱 리스너
 export * from "./app-listeners.js";
+export * from "./config.js";

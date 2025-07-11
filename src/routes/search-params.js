@@ -1,3 +1,5 @@
+import { getRelativePath } from "../utils/config.js";
+
 /**
  * URLSearchParams를 기반으로 한 검색 파라미터 관리
  */
@@ -127,9 +129,9 @@ export class SearchParams {
    * URL 업데이트
    */
   updateURL(params, replace = false) {
-    const currentPath = window.location.pathname;
+    const relativePath = getRelativePath(window.location.pathname);
     const newSearch = params.toString();
-    const newURL = newSearch ? `${currentPath}?${newSearch}` : currentPath;
+    const newURL = newSearch ? `${relativePath}?${newSearch}` : relativePath;
 
     if (replace) {
       window.history.replaceState(null, "", newURL);
