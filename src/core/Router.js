@@ -13,12 +13,17 @@ export class Router {
   #currentRouteParams = {};
   #currentQueryParams = {};
   #popstateListener = this.#handleRouteChange.bind(this);
+  #baseUrl = "";
 
   constructor(containerQuerySelector) {
     this.#container = document.querySelector(containerQuerySelector);
     if (!this.#container) {
       throw new Error(`${containerQuerySelector}에 해당되는 엘리먼트를 찾을 수 없습니다.`);
     }
+
+    // baseUrl 설정 - 끝 슬래시 제거하여 정규화
+    const rawBaseUrl = import.meta.env.BASE_URL || "/";
+    this.#baseUrl = rawBaseUrl === "/" ? "" : rawBaseUrl.replace(/\/$/, "");
 
     // popstate 이벤트 리스너를 등록하여 브라우저 뒤로가기/앞으로가기 처리
     window.addEventListener("popstate", this.#popstateListener);
@@ -46,6 +51,7 @@ export class Router {
       throw new Error("경로를 문자열로 입력해주세요");
     }
 
+    // 라우트는 baseUrl 없이 상대 경로로 저장
     this.#routes.set(path, componentConstructor);
   }
 
@@ -89,10 +95,53 @@ export class Router {
       throw new Error("경로를 문자열로 입력해주세요");
     }
 
+    // baseUrl과 path를 올바르게 결합
+    const fullPath = this.#buildFullPath(path);
+
     if (this.#currentRoute !== path) {
-      window.history.pushState({}, "", path);
+      window.history.pushState({}, "", fullPath);
       this.#handleRouteChange();
     }
+  }
+
+  /**
+   * baseUrl과 path를 올바르게 결합하여 전체 경로 생성
+   *
+   * @param {string} path - 상대 경로
+   * @returns {string} 전체 경로
+   *
+   * @private
+   */
+  #buildFullPath(path) {
+    if (!this.#baseUrl) {
+      return path;
+    }
+
+    // path가 '/'로 시작하지 않으면 추가
+    const normalizedPath = path.startsWith("/") ? path : "/" + path;
+    return this.#baseUrl + normalizedPath;
+  }
+
+  /**
+   * 현재 pathname에서 baseUrl을 제거하여 상대 경로 반환
+   *
+   * @param {string} pathname - 전체 pathname
+   * @returns {string} baseUrl이 제거된 상대 경로
+   *
+   * @private
+   */
+  #extractRoutePath(pathname) {
+    if (!this.#baseUrl) {
+      return pathname;
+    }
+
+    if (pathname.startsWith(this.#baseUrl)) {
+      const routePath = pathname.slice(this.#baseUrl.length) || "/";
+      return routePath;
+    }
+
+    // baseUrl로 시작하지 않으면 404 처리를 위해 원본 반환
+    return pathname;
   }
 
   /**
@@ -205,14 +254,15 @@ export class Router {
    * @private
    */
   async #handleRouteChange() {
-    const currentPath = window.location.pathname;
+    // 전체 pathname에서 baseUrl 제거하여 상대 경로 추출
+    const routePath = this.#extractRoutePath(window.location.pathname);
     const queryParams = this.#parseQueryParams(window.location.search);
-    const matchResult = this.#matchRoute(currentPath);
+    const matchResult = this.#matchRoute(routePath);
 
     if (!matchResult) {
-      throw new Error(`매칭되는 라우트가 없음, ${currentPath}`);
+      throw new Error(`매칭되는 라우트가 없음, ${routePath}`);
     } else {
-      this.#currentRoute = currentPath;
+      this.#currentRoute = routePath; // 상대 경로로 저장
     }
 
     // 현재 라우트 파라미터와 쿼리 파라미터를 업데이트
