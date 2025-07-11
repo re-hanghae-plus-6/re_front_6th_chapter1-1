@@ -1,3 +1,4 @@
+import { BASE } from "../../main";
 import { navigate } from "../../utils/navigate";
 import { cartStore } from "../../states/cart/cartStore";
 
@@ -60,6 +61,6 @@ document.addEventListener("click", (e) => {
   const card = e.target.closest(".product-card");
   if (card) {
     const productId = card.dataset.productId;
-    navigate(`/product/${productId}`);
+    navigate(`${BASE}}product/${productId}`);
   }
 });
