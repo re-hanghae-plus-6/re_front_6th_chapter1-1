@@ -1,3 +1,13 @@
+const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
+
+export const getAppPath = (fullPath = window.location.pathname) => {
+  return fullPath.startsWith(BASE_PATH) ? fullPath.slice(BASE_PATH.length) || "/" : fullPath;
+};
+
+export const getFullPath = (appPath) => {
+  return BASE_PATH + appPath;
+};
+
 function pathToRegex(path) {
   const regexPath = path
     .replace(/:\w+/g, "([^/]+)") // :id -> ([^/]+)
@@ -47,7 +57,7 @@ function createRouterInstance() {
   const handleRouteChange = async () => {
     if (isDestroyed) return;
 
-    const pathname = window.location.pathname;
+    const pathname = getAppPath();
     const matched = matchRoute(pathname);
 
     if (matched) {
@@ -110,10 +120,12 @@ function createRouterInstance() {
       return;
     }
 
+    const fullPath = getFullPath(path);
+
     if (replace) {
-      window.history.replaceState({}, "", path);
+      window.history.replaceState({}, "", fullPath);
     } else {
-      window.history.pushState({}, "", path);
+      window.history.pushState({}, "", fullPath);
     }
 
     handleRouteChange();
@@ -221,8 +233,3 @@ export const updateQueryParams = (params, { replace = false } = {}) => {
   if (replace) window.history.replaceState({}, "", newUrl);
   else window.history.pushState({}, "", newUrl);
 };
-
-// 자동 클린업 함수
-window.addEventListener("beforeunload", () => {
-  cleanupRouter();
-});
