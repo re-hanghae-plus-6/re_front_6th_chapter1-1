@@ -129,7 +129,7 @@ ProductDetailPage.registerEvent = () => {
 
       addToCart(state.product, quantity);
 
-      openToast({ message: "장바구니에 추가되었습니다" });
+      openToast({ message: "장바구니에 추가되었습니다", type: "success" });
     });
   }
 

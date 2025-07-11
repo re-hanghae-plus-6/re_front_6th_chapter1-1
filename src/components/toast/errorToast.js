@@ -1,4 +1,5 @@
 export const ErrorToast = ({ message }) => `
+<div id="error-toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-50 opacity-0 transition-opacity duration-300">
       <div class="bg-red-600 text-white px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2 max-w-sm">
         <div class="flex-shrink-0">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -12,4 +13,5 @@ export const ErrorToast = ({ message }) => `
           </svg>
         </button>
       </div>  
+</div>
 `;
