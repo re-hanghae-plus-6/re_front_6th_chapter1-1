@@ -1,4 +1,6 @@
-import loadingUi from "./loadingUi";
+import LoadingListItem from "./loadingUi";
 import ListItems from "./ui";
+import type { IListItemProps } from "./type";
 
-export { loadingUi, ListItems };
+export { LoadingListItem, ListItems };
+export type { IListItemProps };

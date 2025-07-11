@@ -1,4 +1,4 @@
-const loadingUi = `
+const LoadingListItem = `
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
         <div class="aspect-square bg-gray-200"></div>
         <div class="p-3">
@@ -10,4 +10,4 @@ const loadingUi = `
     </div>
 `;
 
-export default loadingUi;
+export default LoadingListItem;
