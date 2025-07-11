@@ -59,19 +59,26 @@ export const cartStore = observable({
     cartStore.count = cartStore.items.size;
   },
   removeSelectedItems() {
-    const prev = cartStore.items;
-    prev.forEach((product, productId) => {
+    const { items } = cartStore;
+    items.forEach((product, productId) => {
       if (product.selected) {
-        prev.delete(productId);
+        items.delete(productId);
       }
     });
-    cartStore.items = new Map([...prev]);
+    cartStore.items = new Map([...items]);
     cartStore.count = cartStore.items.size;
   },
   toggleSelectedItem(productId) {
     const item = cartStore.getItem(productId);
     item.selected = !item.selected;
     cartStore.items = new Map([...cartStore.items]);
+  },
+  selectAllItems() {
+    const { items } = cartStore;
+    items.forEach((item) => {
+      item.selected = true;
+    });
+    cartStore.items = new Map([...items]);
   },
   addItem(product) {
     toast.success("장바구니에 추가되었습니다");

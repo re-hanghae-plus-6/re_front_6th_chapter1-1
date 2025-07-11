@@ -52,6 +52,12 @@ export class CartModal extends Component {
         return;
       }
 
+      const $selectAllCheckbox = target.closest("#cart-modal-select-all-checkbox");
+      if ($selectAllCheckbox) {
+        cartStore.selectAllItems();
+        return;
+      }
+
       const $quantityIncreaseBtn = target.closest(".quantity-increase-btn");
       const $quantityDecreaseBtn = target.closest(".quantity-decrease-btn");
 
@@ -85,6 +91,7 @@ export class CartModal extends Component {
     const selectedCount = arrItems.reduce((acc, item) => {
       return item.selected ? acc + 1 : acc;
     }, 0);
+    const isAllSelected = arrItems.every((item) => item.selected);
 
     return html`
       <!-- 배경 오버레이 -->
@@ -123,6 +130,7 @@ export class CartModal extends Component {
                     <label class="flex items-center text-sm text-gray-700">
                       <input
                         type="checkbox"
+                        ${isAllSelected ? "checked" : ""}
                         id="cart-modal-select-all-checkbox"
                         class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-2"
                       />
