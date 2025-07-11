@@ -6,7 +6,6 @@ const enableMocking = () => import("./mocks/browser.js").then(({ worker, workOpt
 function main() {
   const router = Router();
   window.router = router;
-
   router.init();
 }
 
