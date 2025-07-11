@@ -1,4 +1,4 @@
-const Header = (cartCount = 0) => `
+const Header = (cartCount: number = 0) => `
     <header class="bg-white shadow-sm sticky top-0 z-40">
     <div class="max-w-md mx-auto px-4 py-4">
       <div class="flex items-center justify-between">
@@ -16,7 +16,7 @@ const Header = (cartCount = 0) => `
               cartCount > 0
                 ? `
             <!-- 장바구니 개수 배지 -->
-            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+            <span id="cart-icon-btn" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
               ${cartCount}
             </span>
             `
