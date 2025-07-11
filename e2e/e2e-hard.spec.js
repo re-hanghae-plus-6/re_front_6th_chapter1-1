@@ -26,7 +26,7 @@ class E2EHelpers {
     await this.page.click(
       `text=${productName} >> xpath=ancestor::*[contains(@class, 'product-card')] >> .add-to-cart-btn`,
     );
-    await this.page.waitForSelector('text=장바구니에 추가되었습니다', {
+    await this.page.waitForSelector('text=상품이 장바구니에 추가되었습니다!', {
       timeout: 5000,
     });
   }
@@ -420,7 +420,7 @@ test.describe('E2E: 쇼핑몰 전체 사용자 시나리오', () => {
 
       await page.click('#add-to-cart-btn');
       await expect(
-        page.locator('text=장바구니에 추가되었습니다'),
+        page.locator('text=상품이 장바구니에 추가되었습니다!'),
       ).toBeVisible();
 
       // 관련 상품 섹션 확인
@@ -625,7 +625,7 @@ test.describe('E2E: 쇼핑몰 전체 사용자 시나리오', () => {
 
       // 토스트 메시지 표시 확인
       await expect(
-        page.locator('text=장바구니에 추가되었습니다'),
+        page.locator('text=상품이 장바구니에 추가되었습니다!'),
       ).toBeVisible();
 
       // 닫기 버튼이 있다면 클릭해서 수동으로 닫기 테스트
@@ -633,12 +633,12 @@ test.describe('E2E: 쇼핑몰 전체 사용자 시나리오', () => {
       if (await closeButton.isVisible()) {
         await closeButton.click();
         await expect(
-          page.locator('text=장바구니에 추가되었습니다'),
+          page.locator('text=상품이 장바구니에 추가되었습니다!'),
         ).not.toBeVisible();
       } else {
         // 자동으로 사라지는지 확인
         await expect(
-          page.locator('text=장바구니에 추가되었습니다'),
+          page.locator('text=상품이 장바구니에 추가되었습니다!'),
         ).not.toBeVisible({ timeout: 4000 });
       }
     });

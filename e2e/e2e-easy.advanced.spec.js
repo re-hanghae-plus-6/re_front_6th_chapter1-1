@@ -26,7 +26,7 @@ class E2EHelpers {
     await this.page.click(
       `text=${productName} >> xpath=ancestor::*[contains(@class, 'product-card')] >> .add-to-cart-btn`,
     );
-    await this.page.waitForSelector('text=장바구니에 추가되었습니다', {
+    await this.page.waitForSelector('text=상품이 장바구니에 추가되었습니다!', {
       timeout: 5000,
     });
   }
