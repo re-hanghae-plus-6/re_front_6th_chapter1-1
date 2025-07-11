@@ -42,7 +42,6 @@ const loadStateFromLocalStorage = () => {
       cartItemCount: cartItemCount,
       currentLimit: limit,
       currentSort: sort,
-      currentSearch: "",
       currentPage: 1,
       currentDetailProduct: {},
     };
@@ -60,7 +59,6 @@ const loadStateFromLocalStorage = () => {
       cartItemCount: 0,
       currentLimit: 20,
       currentSort: "price_asc",
-      currentSearch: "",
       currentPage: 1,
       currentDetailProduct: {},
     };

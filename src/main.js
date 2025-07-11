@@ -14,6 +14,7 @@ const enableMocking = () =>
   );
 
 let isThrottled = false;
+let currentSearch = "";
 
 export const resetGlobalState = resetStoreState;
 
@@ -62,8 +63,7 @@ const fetchAndRenderHomepageData = async (isInfiniteScroll = false) => {
   }
 
   try {
-    const { currentLimit, currentSort, currentSearch, currentPage, selectedCategory1, selectedCategory2 } =
-      store.getState();
+    const { currentLimit, currentSort, currentPage, selectedCategory1, selectedCategory2 } = store.getState();
     const [{ products, pagination }, categories] = await Promise.all([
       getProducts({
         limit: currentLimit,
@@ -96,6 +96,8 @@ const fetchAndRenderHomepageData = async (isInfiniteScroll = false) => {
   } finally {
     store.dispatch({ type: "SET_LOADING", payload: { loading: false } });
     store.dispatch({ type: "SET_FETCHING_MORE", payload: { isFetchingMore: false } });
+
+    router();
   }
 };
 
@@ -223,9 +225,9 @@ const attachEventListeners = () => {
 
   const searchInput = document.getElementById("search-input");
   if (searchInput) {
-    searchInput.value = store.getState().currentSearch;
+    searchInput.value = currentSearch;
     searchInput.oninput = (event) => {
-      store.dispatch({ type: "SET_SEARCH_TERM", payload: { currentSearch: event.target.value } });
+      currentSearch = event.target.value;
     };
     searchInput.onkeydown = (event) => {
       if (event.key === "Enter") {
