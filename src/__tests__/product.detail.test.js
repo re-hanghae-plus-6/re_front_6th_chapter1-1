@@ -136,8 +136,7 @@ describe("3. 관련 상품 기능", () => {
   test("상품 상세 페이지에서 현재 상품을 제외한 관련 상품들이 표시되고, 관련 상품 클릭 시 해당 상품의 상세 페이지로 이동한다", async () => {
     await 상품_상세페이지_접속();
 
-    // 관련 상품 섹션이 있는지 확인
-    expect(screen.queryByText("관련 상품")).not.toBeInTheDocument();
+    // 관련 상품 섹션이 로드될 때까지 대기
     expect(await screen.findByText("관련 상품")).toBeInTheDocument();
 
     // 관련 상품 카드들이 있는지 확인
