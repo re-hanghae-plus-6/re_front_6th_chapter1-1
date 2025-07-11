@@ -34,6 +34,24 @@ function handleGlobalClick(e) {
     return;
   }
 
+  // 관련 상품 카드 클릭
+  if (target.closest(".related-product-card")) {
+    handleRelatedProductClick(e);
+    return;
+  }
+
+  // 수량 증가 버튼 클릭 (상품 상세 페이지)
+  if (target.closest("#quantity-increase")) {
+    handleQuantityIncrease(e);
+    return;
+  }
+
+  // 수량 감소 버튼 클릭 (상품 상세 페이지)
+  if (target.closest("#quantity-decrease")) {
+    handleQuantityDecrease(e);
+    return;
+  }
+
   // 링크 클릭 (SPA 네비게이션)
   if (target.closest("[data-link]")) {
     handleSpaNavigation(e);
@@ -87,9 +105,10 @@ function handleProductClick(e) {
 
   const productId = productCard.dataset.productId;
 
-  // 상품 상세 페이지로 이동
-  window.history.pushState(null, "", `/product/${productId}`);
-  // TODO: 라우터를 통한 페이지 렌더링 호출
+  // 라우터를 통해 상품 상세 페이지로 이동
+  if (window.router) {
+    window.router.navigate(`/product/${productId}`);
+  }
 }
 
 function handleAddToCart(e) {
@@ -110,6 +129,39 @@ function handleAddToCart(e) {
   }
 }
 
+function handleQuantityIncrease(e) {
+  e.preventDefault();
+
+  const quantityInput = document.getElementById("quantity-input");
+  if (!quantityInput) return;
+
+  const currentValue = parseInt(quantityInput.value) || 1;
+  quantityInput.value = currentValue + 1;
+}
+
+function handleQuantityDecrease(e) {
+  e.preventDefault();
+
+  const quantityInput = document.getElementById("quantity-input");
+  if (!quantityInput) return;
+
+  const currentValue = parseInt(quantityInput.value) || 1;
+  const newValue = Math.max(1, currentValue - 1); // 최소값 1
+  quantityInput.value = newValue;
+}
+
+function handleRelatedProductClick(e) {
+  const relatedProductCard = e.target.closest(".related-product-card");
+  if (!relatedProductCard) return;
+
+  const productId = relatedProductCard.dataset.productId;
+
+  // 라우터를 통해 상품 상세 페이지로 이동
+  if (window.router) {
+    window.router.navigate(`/product/${productId}`);
+  }
+}
+
 function handleSpaNavigation(e) {
   e.preventDefault();
 
@@ -119,10 +171,10 @@ function handleSpaNavigation(e) {
   const href = link.getAttribute("href");
   if (!href) return;
 
-  // URL 변경
-  window.history.pushState(null, "", href);
-
-  // TODO: 라우터를 통한 페이지 렌더링 호출
+  // 라우터를 통해 페이지 이동
+  if (window.router) {
+    window.router.navigate(href);
+  }
 }
 
 function handleSearchInput(e) {

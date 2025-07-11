@@ -3,6 +3,7 @@ import { Footer } from "../components/Footer.js";
 import { productStore } from "../store/productStore.js";
 import { cartStore, cartSelectors } from "../store/cartStore.js";
 import { Home, loadProducts } from "../pages/Home.js";
+import { getProduct } from "../api/productApi.js";
 
 // 현재 렌더링 상태 추적
 let currentPageType = "home";
@@ -94,20 +95,110 @@ function renderHomeContent() {
 function renderProductDetailContent(params) {
   const { id } = params;
 
+  if (!id) {
+    return `
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="text-center py-8">
+          <p class="text-red-500">상품 ID가 없습니다.</p>
+        </div>
+      </div>
+    `;
+  }
+
+  // 로딩 상태 표시
+  const loadingHtml = `
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <div class="text-center py-8">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p class="text-gray-600">상품 정보를 불러오는 중...</p>
+      </div>
+    </div>
+  `;
+
+  // 비동기적으로 상품 정보를 불러와서 렌더링
+  loadProductDetail(id);
+
+  return loadingHtml;
+}
+
+// 상품 상세 정보 로딩 함수
+async function loadProductDetail(productId) {
+  try {
+    const product = await getProduct(productId);
+
+    // 관련 상품 생성 (같은 카테고리의 다른 상품들)
+    const relatedProducts = await getRelatedProducts(product.category2, productId);
+
+    // 실제 상품 정보로 페이지 업데이트
+    const main = document.querySelector("main");
+    if (main) {
+      main.innerHTML = renderProductDetailHTML(product, relatedProducts);
+    }
+  } catch (error) {
+    console.error("상품 상세 정보 로딩 실패:", error);
+
+    // 에러 상태 표시
+    const main = document.querySelector("main");
+    if (main) {
+      main.innerHTML = `
+        <div class="bg-white rounded-lg shadow-sm p-6">
+          <div class="text-center py-8">
+            <p class="text-red-500 mb-4">상품 정보를 불러오는데 실패했습니다.</p>
+            <button onclick="window.history.back()" class="bg-blue-600 text-white px-4 py-2 rounded">
+              뒤로가기
+            </button>
+          </div>
+        </div>
+      `;
+    }
+  }
+}
+
+// 관련 상품 가져오기 함수
+async function getRelatedProducts(category2, currentProductId) {
+  try {
+    // 같은 카테고리의 상품들을 가져오기
+    const response = await fetch(`/api/products?category2=${category2}&limit=6`);
+    const data = await response.json();
+
+    // 현재 상품 제외하고 최대 4개까지만 반환
+    return data.products.filter((product) => product.productId !== currentProductId).slice(0, 4);
+  } catch (error) {
+    console.error("관련 상품 로딩 실패:", error);
+    return [];
+  }
+}
+
+// 상품 상세 HTML 생성 함수
+function renderProductDetailHTML(product, relatedProducts) {
+  const price = product.lprice ? parseInt(product.lprice) : 0;
+  const rating = product.rating || 4;
+  const reviewCount = product.reviewCount || Math.floor(Math.random() * 1000) + 50;
+  const stock = product.stock || Math.floor(Math.random() * 100) + 10;
+
   return `
     <div class="bg-white rounded-lg shadow-sm p-6">
       <div class="text-center py-8">
-        <h1 class="text-2xl font-bold text-gray-900 mb-4">상품 ID: ${id} - PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장</h1>
+        <h1 class="text-2xl font-bold text-gray-900 mb-4">${product.title}</h1>
         
         <!-- 상품 이미지 -->
         <div class="mb-6">
-          <img src="https://shopping-phinf.pstatic.net/main_8506721/85067212996.1.jpg" 
-               alt="PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장"
+          <img src="${product.image}" 
+               alt="${product.title}"
                class="w-full h-64 object-cover rounded-lg">
         </div>
         
         <!-- 가격 -->
-        <p class="text-2xl font-bold text-gray-900 mb-6">220원</p>
+        <p class="text-2xl font-bold text-gray-900 mb-6">${price.toLocaleString()}원</p>
+        
+        <!-- 상품 정보 -->
+        <div class="text-left mb-6">
+          <p class="text-gray-600 mb-2">브랜드: ${product.brand || "정보없음"}</p>
+          <p class="text-gray-600 mb-2">카테고리: ${product.category1} > ${product.category2}</p>
+          <p class="text-gray-600 mb-2">평점: ${rating}점 (${reviewCount}개 리뷰)</p>
+          <p class="text-gray-600 mb-4">재고: ${stock}개</p>
+          <p class="text-gray-700 text-sm">${product.description || `${product.title}에 대한 상세 설명입니다.`}</p>
+        </div>
         
         <!-- 수량 선택 -->
         <div class="flex items-center justify-center gap-4 mb-6">
@@ -117,7 +208,7 @@ function renderProductDetailContent(params) {
         </div>
         
         <!-- 장바구니 담기 버튼 -->
-        <button id="add-to-cart-btn" class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+        <button id="add-to-cart-btn" data-product-id="${product.productId}" class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors">
           장바구니 담기
         </button>
       </div>
@@ -125,7 +216,7 @@ function renderProductDetailContent(params) {
       <div class="mt-8">
         <h2 class="text-lg font-semibold text-gray-900 mb-4">관련 상품</h2>
         <div class="grid grid-cols-2 gap-4">
-          ${renderRelatedProducts()}
+          ${renderRelatedProducts(relatedProducts)}
         </div>
       </div>
     </div>
@@ -157,28 +248,21 @@ function render404Content() {
 }
 
 // 관련 상품 렌더링 (19개, 현재 상품 제외)
-function renderRelatedProducts() {
-  // 임시 관련 상품 데이터 (19개)
-  const relatedProducts = Array.from({ length: 19 }, (_, i) => ({
-    id: i + 1000,
-    name: `관련 상품 ${i + 1}`,
-    price: (i + 1) * 1000,
-    image: "https://via.placeholder.com/200",
-  }));
-
-  return relatedProducts
-    .map(
-      (product) => `
-    <div class="related-product-card bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden cursor-pointer" 
-         data-product-id="${product.id}">
-      <img src="${product.image}" alt="${product.name}" class="w-full h-20 object-cover">
-      <div class="p-2">
-        <h4 class="text-xs font-medium text-gray-900 mb-1">${product.name}</h4>
-        <p class="text-sm font-bold text-gray-900">${product.price.toLocaleString()}원</p>
+function renderRelatedProducts(products) {
+  return products
+    .map((product) => {
+      const price = product.lprice ? parseInt(product.lprice) : 0;
+      return `
+      <div class="related-product-card bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden cursor-pointer" 
+          data-product-id="${product.productId}">
+       <img src="${product.image}" alt="${product.title}" class="w-full h-20 object-cover">
+       <div class="p-2">
+         <h4 class="text-xs font-medium text-gray-900 mb-1">${product.title}</h4>
+         <p class="text-sm font-bold text-gray-900">${price.toLocaleString()}원</p>
+       </div>
       </div>
-    </div>
-  `,
-    )
+    `;
+    })
     .join("");
 }
 

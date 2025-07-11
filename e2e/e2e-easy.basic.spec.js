@@ -227,6 +227,9 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오 > 난이도 쉬움 >
       });
       await helpers.waitForPageLoad();
 
+      // 이벤트 리스너 설정 대기 (main.js에서 500ms 지연)
+      await page.waitForTimeout(1000);
+
       // 상품 이미지 클릭하여 상세 페이지로 이동
       const productCard = page
         .locator("text=PVC 투명 젤리 쇼핑백")
@@ -247,8 +250,8 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오 > 난이도 쉬움 >
 
       await page.click("#add-to-cart-btn");
 
-      // 관련 상품 섹션 확인
-      await expect(page.locator("text=관련 상품")).toBeVisible();
+      // 관련 상품 섹션 확인 (h2 제목만 선택)
+      await expect(page.locator("h2:has-text('관련 상품')")).toBeVisible();
 
       const relatedProducts = page.locator(".related-product-card");
       await expect(relatedProducts.first()).toBeVisible();
