@@ -21,12 +21,28 @@ export function initRender() {
   };
   window.enableRendering = () => {
     renderingDisabled = false;
+    // render() 호출하지 않음 - 무한 루프 방지
+  };
+  window.enableRenderingAndRender = () => {
+    renderingDisabled = false;
     render();
+  };
+
+  // 상세 페이지 체크 함수
+  const isCurrentlyOnDetailPage = () => {
+    const currentPath = getAppPath();
+    return /^\/product\/\d+$/.test(currentPath);
   };
 
   // ProductStore 변화 시 특별 처리
   productStore.subscribe(() => {
     if (renderingDisabled) return;
+
+    // 상세 페이지에서는 완전히 건너뛰기
+    if (isCurrentlyOnDetailPage()) {
+      console.log("⏭️ Render: 상세 페이지이므로 ProductStore 렌더링 완전 건너뛰기");
+      return;
+    }
 
     const state = productStore.getState();
 
@@ -36,16 +52,30 @@ export function initRender() {
     }
     // 그 외의 경우는 모두 전체 렌더링
     else {
+      console.log("🔄 Render: ProductStore 변화로 인한 렌더링");
       render();
     }
   });
 
   // 다른 store들은 일반 렌더링
-  [cartStore, categoryStore].forEach((store) => {
+  [cartStore, categoryStore].forEach((store, index) => {
+    const storeName = index === 0 ? "CartStore" : "CategoryStore";
     store.subscribe(() => {
-      if (!renderingDisabled) {
-        render();
+      if (renderingDisabled) return;
+
+      // 상세 페이지에서는 CategoryStore는 완전히 건너뛰기, CartStore만 허용
+      if (isCurrentlyOnDetailPage()) {
+        if (storeName === "CategoryStore") {
+          console.log(`⏭️ Render: 상세 페이지이므로 ${storeName} 렌더링 완전 건너뛰기`);
+          return;
+        }
+        // CartStore는 상세 페이지에서도 장바구니 뱃지 업데이트를 위해 허용하지만 render는 호출하지 않음
+        console.log(`⏭️ Render: 상세 페이지에서 ${storeName} 변화 감지했지만 render 건너뛰기`);
+        return;
       }
+
+      console.log(`🔄 Render: ${storeName} 변화로 인한 렌더링`);
+      render();
     });
   });
 }
@@ -57,8 +87,18 @@ export function render() {
   const appPath = getAppPath(); // 배포환경 서브디렉토리 경로 처리
   const root = document.getElementById("root");
 
-  // store에서 현재 상태 가져오기
-  const appState = getAppState();
+  console.log("🎨 Render: 시작", { appPath, timestamp: Date.now() });
+
+  // store에서 현재 상태 가져오기 (상세 페이지에서는 건너뛰기)
+  const isProductDetailPage = /^\/product\/\d+$/.test(appPath);
+  let appState = null;
+
+  if (!isProductDetailPage) {
+    console.log("📦 Render: getAppState 호출");
+    appState = getAppState();
+  } else {
+    console.log("⏭️ Render: 상세 페이지이므로 getAppState 건너뛰기");
+  }
 
   // 페이지별 렌더링
   if (appPath === "/") {
@@ -81,18 +121,24 @@ export function render() {
  */
 function bindEvents() {
   const appPath = getAppPath(); // 배포환경 서브디렉토리 경로 처리
+  const isProductDetailPage = /^\/product\/\d+$/.test(appPath);
 
-  // SPA 내비게이션 처리
+  // SPA 내비게이션 처리 (모든 페이지에서 필요)
   bindNavigationEvents();
+
+  // 장바구니 개수 뱃지 업데이트 (모든 페이지에서 필요)
+  updateCartCountBadge();
+
+  // 장바구니 아이콘 이벤트 (모든 페이지에서 필요)
+  bindCartIconEvent();
+
+  // 상세 페이지에서는 아래 이벤트들 건너뛰기
+  if (isProductDetailPage) {
+    return;
+  }
 
   // 홈 버튼 이벤트
   bindHomeButtonEvent(appPath);
-
-  // 장바구니 개수 뱃지 업데이트
-  updateCartCountBadge();
-
-  // 장바구니 아이콘 이벤트
-  bindCartIconEvent();
 
   // 폼 컨트롤 이벤트
   bindFormEvents();
@@ -115,8 +161,21 @@ function bindNavigationEvents() {
     a.addEventListener("click", (e) => {
       e.preventDefault();
       const href = a.getAttribute("href");
+      const targetPath = href.replace(/^\/[^/]*\//, "/"); // 서브디렉토리 제거한 경로
+      const isTargetDetailPage = /^\/product\/\d+$/.test(targetPath);
+
       window.history.pushState({}, "", getFullPath(href));
-      render();
+
+      // 상세 페이지로 이동하는 경우 렌더링 비활성화 후 라우터 호출
+      if (isTargetDetailPage) {
+        if (window.disableRendering) {
+          window.disableRendering();
+        }
+        router(); // 직접 라우터 호출
+      } else {
+        // 일반 페이지는 기존대로 렌더링
+        render();
+      }
     });
   });
 }
@@ -130,31 +189,38 @@ function bindHomeButtonEvent(appPath) {
     shopTitle.addEventListener("click", async (e) => {
       e.preventDefault();
 
-      // 현재 상태가 이미 초기 상태인지 확인
-      const currentAppState = getAppState();
-      const isAlreadyInitialState =
-        appPath === "/" &&
-        !currentAppState.selectedCategories.category1 &&
-        !currentAppState.selectedCategories.category2 &&
-        !currentAppState.products.search &&
-        currentAppState.products.sort === "price_asc" &&
-        currentAppState.products.limit === 20;
+      try {
+        // 현재 상태가 이미 초기 상태인지 확인 (상세 페이지가 아닐 때만)
+        if (appPath === "/") {
+          const currentAppState = getAppState();
+          const isAlreadyInitialState =
+            !currentAppState.selectedCategories.category1 &&
+            !currentAppState.selectedCategories.category2 &&
+            !currentAppState.products.search &&
+            currentAppState.products.sort === "price_asc" &&
+            currentAppState.products.limit === 20;
 
-      // 이미 초기 상태라면 리셋하지 않음
-      if (isAlreadyInitialState) {
-        // 페이지 최상단으로 스크롤만 수행
+          // 이미 초기 상태라면 리셋하지 않음
+          if (isAlreadyInitialState) {
+            // 페이지 최상단으로 스크롤만 수행
+            window.scrollTo({ top: 0, behavior: "smooth" });
+            return;
+          }
+        }
+
+        // store를 통한 상태 초기화
+        window.disableRendering();
+        storeManager.resetAll();
+        // 새로 데이터 로드
+        await storeManager.initialize();
+        window.enableRenderingAndRender();
+        // 페이지 최상단으로 스크롤
         window.scrollTo({ top: 0, behavior: "smooth" });
-        return;
+      } catch (error) {
+        if (error instanceof Error) {
+          window.enableRenderingAndRender();
+        }
       }
-
-      // store를 통한 상태 초기화
-      window.disableRendering();
-      storeManager.resetAll();
-      // 새로 데이터 로드
-      await storeManager.initialize();
-      window.enableRendering();
-      // 페이지 최상단으로 스크롤
-      window.scrollTo({ top: 0, behavior: "smooth" });
     });
   }
 }
@@ -263,8 +329,19 @@ function bindInfiniteScrollEvent() {
     window.addEventListener("scroll", () => {
       // 메인 페이지가 아니면 무한 스크롤 비활성화
       const appPath = getAppPath(); // 배포환경 서브디렉토리 경로 처리
+
+      // 상세 페이지에서는 무한 스크롤 완전 차단
+      if (/^\/product\/\d+$/.test(appPath)) {
+        return;
+      }
+
+      // 메인 페이지가 아니면 무한 스크롤 비활성화
+      if (appPath !== "/") {
+        return;
+      }
+
       const currentAppState = getAppState();
-      if (appPath !== "/" || currentAppState.products.loading || !currentAppState.products.hasMore) return;
+      if (currentAppState.products.loading || !currentAppState.products.hasMore) return;
 
       const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
       const windowHeight = window.innerHeight;
@@ -309,7 +386,7 @@ export function appendNewProducts() {
   const newProductsHTML = newProducts
     .map(
       (product) => `
-    <a href="/product/${product.productId}" data-link style="display:block;text-decoration:none;color:inherit;">
+    <a href="${getFullPath(`/product/${product.productId}`)}" data-link style="display:block;text-decoration:none;color:inherit;">
       ${ProductItem(product)}
     </a>
   `,

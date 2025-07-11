@@ -5,12 +5,76 @@ import { cartStore } from "../stores/index.js";
 import { formatPrice } from "../utils/formatters.js";
 import { getFullPath } from "../utils/pathUtils.js";
 
+// 중복 호출 방지를 위한 전역 변수
+let isLoadingProduct = false;
+let currentLoadingProductId = null;
+
+// 브레드크럼 이벤트 바인딩 함수
+function bindBreadcrumbEvents(product) {
+  // 홈 링크 이벤트
+  const homeLink = document.querySelector('a[data-link=""]');
+  if (homeLink) {
+    homeLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      window.history.pushState({}, "", getFullPath("/"));
+      window.location.reload(); // 홈으로 이동 시 새로고침으로 깔끔하게 초기화
+    });
+  }
+
+  // 카테고리 1 depth 링크 이벤트
+  const category1Link = document.querySelector(`button[data-category1="${product.category1}"]`);
+  if (category1Link) {
+    category1Link.addEventListener("click", (e) => {
+      e.preventDefault();
+      // 카테고리 1 depth로 이동 (홈으로 이동 후 카테고리 필터링)
+      const targetUrl = getFullPath("/?category1=" + encodeURIComponent(product.category1));
+      window.history.pushState({}, "", targetUrl);
+      window.location.reload(); // 카테고리 필터링된 홈으로 이동
+    });
+  }
+
+  // 카테고리 2 depth 링크 이벤트
+  const category2Link = document.querySelector(`button[data-category2="${product.category2}"]`);
+  if (category2Link) {
+    category2Link.addEventListener("click", (e) => {
+      e.preventDefault();
+      // 카테고리 2 depth로 이동 (홈으로 이동 후 카테고리 필터링)
+      const targetUrl = getFullPath(
+        "/?category1=" + encodeURIComponent(product.category1) + "&category2=" + encodeURIComponent(product.category2),
+      );
+      window.history.pushState({}, "", targetUrl);
+      window.location.reload(); // 카테고리 필터링된 홈으로 이동
+    });
+  }
+}
+
 export async function ProductDetailPage({ productId }) {
+  const callStack = new Error().stack;
+  console.log("🏪 ProductDetailPage: 시작", {
+    productId,
+    timestamp: Date.now(),
+    isLoadingProduct,
+    currentLoadingProductId,
+    callStack: callStack?.split("\n").slice(0, 5).join("\n"), // 호출 스택 상위 5개만
+  });
+
+  // 중복 호출 방지
+  if (isLoadingProduct && currentLoadingProductId === productId) {
+    console.log("⚠️ ProductDetailPage: 중복 호출 감지, 건너뛰기", { productId });
+    return;
+  }
+
+  // 로딩 상태 설정
+  isLoadingProduct = true;
+  currentLoadingProductId = productId;
+
   try {
     // 상품 데이터 fetch
+    console.log("🔍 ProductDetailPage: 상품 상세 API 호출", { productId });
     const product = await getProduct(productId);
 
     // 관련 상품 데이터 fetch (같은 category2, 현재 상품 제외)
+    console.log("🔍 ProductDetailPage: 관련 상품 API 호출", { category2: product.category2 });
     const relatedProductsResponse = await getProducts({
       page: 1,
       limit: 20,
@@ -20,6 +84,11 @@ export async function ProductDetailPage({ productId }) {
 
     // 현재 상품을 제외한 관련 상품들 (전체 호출)
     const relatedProducts = relatedProductsResponse.products.filter((p) => p.productId !== product.productId);
+
+    console.log("✅ ProductDetailPage: 모든 API 호출 완료", {
+      productId,
+      relatedCount: relatedProducts.length,
+    });
 
     // 페이지 렌더링
     document.getElementById("root").innerHTML = `
@@ -50,17 +119,17 @@ export async function ProductDetailPage({ productId }) {
           <!-- 브레드크럼 -->
           <nav class="mb-4">
             <div class="flex items-center space-x-2 text-sm text-gray-600">
-              <a href="/" data-link="" class="hover:text-blue-600 transition-colors">홈</a>
+              <a href="${getFullPath("/")}" data-link="" class="hover:text-blue-600 transition-colors">홈</a>
               <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
               </svg>
-              <button class="breadcrumb-link" data-category1="${product.category1}">
+              <button class="breadcrumb-link hover:text-blue-600 transition-colors" data-category1="${product.category1}">
                 ${product.category1}
               </button>
               <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
               </svg>
-              <button class="breadcrumb-link" data-category2="${product.category2}">
+              <button class="breadcrumb-link hover:text-blue-600 transition-colors" data-category2="${product.category2}">
                 ${product.category2}
               </button>
             </div>
@@ -287,6 +356,9 @@ export async function ProductDetailPage({ productId }) {
 
     // 페이지 로드 시 장바구니 뱃지 업데이트
     updateCartCountBadge();
+
+    // 브레드크럼 이벤트 바인딩
+    bindBreadcrumbEvents(product);
   } catch (error) {
     console.error("상품 상세 페이지 로딩 오류:", error);
     document.getElementById("root").innerHTML = `
@@ -324,5 +396,14 @@ export async function ProductDetailPage({ productId }) {
         ${Footer()}
       </div>
     `;
+  } finally {
+    // 로딩 상태 초기화
+    isLoadingProduct = false;
+    currentLoadingProductId = null;
+
+    // 렌더링 다시 활성화 (상세 페이지 로딩 완료 후, render() 호출하지 않음)
+    if (window.enableRendering) {
+      window.enableRendering();
+    }
   }
 }
