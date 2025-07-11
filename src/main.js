@@ -7,10 +7,6 @@ function main() {
   const router = Router();
   window.router = router;
 
-  // Object.entries(routes).forEach(([path, component]) => {
-  //   router.addRoute(path, component);
-  // });
-
   router.init();
 }
 
