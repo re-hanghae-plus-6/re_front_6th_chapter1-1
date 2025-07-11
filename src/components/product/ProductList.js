@@ -2,13 +2,17 @@ import { getProducts } from "../../api/productApi";
 import { DEFAULT_PAGE } from "../../constants.js";
 import { useNavigate } from "../../hook/useRouter.js";
 import Component from "../../lib/Component";
-import { homeStore } from "../../store/homeStore";
+import { homeStore, PRODUCT_LIST_MODE } from "../../store/homeStore";
 import getFilter from "../../utils/getFilter.js";
 import ProductItem from "./ProductItem";
+
+const INFINITE_SCROLL_THRESHOLD = 10;
 
 export default class ProductList extends Component {
   setup() {
     this.prevFilterState = null;
+
+    this.handleInfiniteScroll = this.handleInfiniteScroll.bind(this);
 
     // ! 이벤트 핸들러를 미리 바인딩해서 보관
     // ! this.handleClick이 항상 같은 함수 객체가 되도록
@@ -16,10 +20,9 @@ export default class ProductList extends Component {
     this.handleProductClick = this.handleProductClick.bind(this);
     this.handleQueryParamsChange = this.handleQueryParamsChange.bind(this);
 
-    // 쿼리 파라미터 변경 이벤트 리스너 추가
-    window.addEventListener("queryParamsChange", this.handleQueryParamsChange);
-
     this.unsubscribe = homeStore.subscribe(() => {
+      console.log("homeState changed");
+
       const { limit, sort, search, category1, category2 } = getFilter();
 
       const currentState = homeStore.getState();
@@ -32,8 +35,8 @@ export default class ProductList extends Component {
         sort,
       };
 
-      if (this.shouldFetchProducts(currentParams)) {
-        this.fetchProducts();
+      if (this.shouldFetchInitialProducts(currentParams)) {
+        this.fetchInitialProducts();
       }
 
       this.render();
@@ -62,6 +65,9 @@ export default class ProductList extends Component {
       img.addEventListener("click", this.handleProductClick);
     });
     this.handleAddToCart();
+
+    window.addEventListener("queryParamsChange", this.handleQueryParamsChange);
+    window.addEventListener("scroll", this.handleInfiniteScroll);
   }
 
   cleanup() {
@@ -71,12 +77,13 @@ export default class ProductList extends Component {
 
     // 쿼리 파라미터 변경 이벤트 리스너 제거
     window.removeEventListener("queryParamsChange", this.handleQueryParamsChange);
+    window.removeEventListener("scroll", this.handleInfiniteScroll);
 
     // 상태 구독 해제
     if (this.unsubscribe) this.unsubscribe();
   }
 
-  shouldFetchProducts(currentParams) {
+  shouldFetchInitialProducts(currentParams) {
     // 첫 번째 로드인 경우
     if (!this.prevFilterState) {
       return true;
@@ -99,12 +106,49 @@ export default class ProductList extends Component {
     }
   }
 
-  async fetchProducts() {
+  async fetchMoreProducts() {
     const homeState = homeStore.getState();
     const {
-      isProductsLoading,
+      isMoreProductsLoading,
       pagination: { page },
     } = homeState.products;
+    const { limit, sort, search, category1, category2 } = getFilter();
+
+    if (isMoreProductsLoading) return;
+
+    homeStore.setState({
+      products: {
+        ...homeState.products,
+        isMoreProductsLoading: true,
+      },
+    });
+
+    const params = {
+      page: page + 1,
+      limit,
+      search,
+      category1,
+      category2,
+      sort,
+    };
+
+    const { products, pagination } = await getProducts(params);
+
+    homeStore.setState({
+      products: {
+        isMoreProductsLoading: false,
+        list: [...homeState.products.list, ...products],
+        pagination: {
+          ...pagination,
+          page: page + 1,
+        },
+      },
+    });
+  }
+
+  async fetchInitialProducts() {
+    const homeState = homeStore.getState();
+    const { isProductsLoading } = homeState.products;
     const { limit, sort, search, category1, category2 } = getFilter();
 
     if (isProductsLoading) return;
@@ -117,7 +161,7 @@ export default class ProductList extends Component {
     });
 
     const params = {
-      page,
+      page: DEFAULT_PAGE,
       limit,
       search,
       category1,
@@ -135,6 +179,42 @@ export default class ProductList extends Component {
         pagination,
       },
     });
+  }
+
+  async handleInfiniteScroll() {
+    const { isProductsLoading, pagination } = homeStore.getState().products;
+
+    if (isProductsLoading) return;
+
+    const scrollTop = window.scrollY;
+    const scrollHeight = document.body.scrollHeight;
+    const clientHeight = window.innerHeight;
+    console.log("scrollTop", scrollTop);
+    // 이미 로딩 중이면 중복 호출 방지
+
+    // 스크롤이 바닥에 도달했는지 확인
+    if (scrollTop + clientHeight >= scrollHeight - INFINITE_SCROLL_THRESHOLD) {
+      // 다음 페이지가 있는지 확인
+      const { page, total, limit } = pagination;
+      const maxPage = Math.ceil(total / limit);
+
+      if (page >= maxPage) return;
+
+      // 다음 페이지로 이동
+      homeStore.setState({
+        products: {
+          ...homeStore.getState().products,
+          pagination: {
+            ...pagination,
+            page: page + 1,
+          },
+          productListMode: PRODUCT_LIST_MODE.INFINITE_SCROLL,
+        },
+      });
+
+      // 추가 상품 불러오기
+      await this.fetchMoreProducts();
+    }
   }
 
   handleAddToCart() {
@@ -159,6 +239,27 @@ export default class ProductList extends Component {
         });
       });
     });
+  }
+
+  // DOM에 직접 상품 추가
+  appendProductsToDOM(products) {
+    const $productsGrid = document.querySelector("#products-grid");
+    if (!$productsGrid) return;
+
+    products.forEach((product) => {
+      const productHTML = ProductItem(product);
+      const $productElement = document.createElement("div");
+      $productElement.innerHTML = productHTML;
+
+      // 첫 번째 자식 요소 (실제 상품 카드)를 추가
+      const $productCard = $productElement.firstElementChild;
+      if ($productCard) {
+        $productsGrid.appendChild($productCard);
+      }
+    });
+
+    // 새로 추가된 상품들에 이벤트 리스너 추가
+    this.setEvent();
   }
 
   loadingTemplate() {
