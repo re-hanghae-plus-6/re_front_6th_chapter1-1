@@ -11,7 +11,6 @@ export default defineConfig({
   base: isProd ? "/front_6th_chapter1-1/" : undefined,
   build: {
     outDir: "dist",
-    assetsDir: "assets",
     sourcemap: false,
     rollupOptions: {
       input: path.resolve(__dirname, "src/main.js"),
