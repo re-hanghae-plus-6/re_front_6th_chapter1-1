@@ -3,19 +3,17 @@ import { Header } from "../components/Header";
 import { Layouy } from "../components/Layout";
 import { ProductDetail } from "../components/ProductDetail";
 import { Component } from "../core/Component";
-import { productDetailStore } from "../store/product-detail";
+import { createProductDetailStore } from "../store/product-detail";
 import { html } from "../utils/html";
 
 export function ProductDetailPage($root) {
+  const productDetailStore = createProductDetailStore();
   productDetailStore.initSearchParams();
-  productDetailStore.loadProduct().then(async () => {
-    await new Promise((r) => setTimeout(r, 800));
-    productDetailStore.loadRelatedProducts();
-  });
+  productDetailStore.loadProduct();
 
   const layout = new Layouy({
     header: new Header({ nav: new Nav() }),
-    main: new ProductDetail(),
+    main: new ProductDetail({ productDetailStore }),
     footer: new Footer(),
   });
   document.querySelector($root).innerHTML = html`${layout}`;

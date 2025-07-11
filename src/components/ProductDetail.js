@@ -1,7 +1,6 @@
 import { Component } from "../core/Component";
 import { router } from "../core/router";
 import { cartStore } from "../store/cart";
-import { productDetailStore } from "../store/product-detail";
 import { priceFormat } from "../utils/format";
 import { html } from "../utils/html";
 
@@ -19,18 +18,15 @@ export class ProductDetail extends Component {
 
   render() {
     const {
-      category1,
-      category2,
-      image,
-      title,
-      description,
-      rating,
-      reviewCount,
-      lprice,
-      stock,
-      productId,
       relatedProducts,
-    } = productDetailStore;
+      product: { category1, category2, image, title, description, rating, reviewCount, lprice, stock, productId },
+    } = this.props.productDetailStore;
+
+    console.log(
+      "render",
+      `category1: ${category1}`,
+      `category2: ${category2} relatedProducts: ${relatedProducts.length}`,
+    );
 
     this.$el.innerHTML = html`${this.#Breadcrumb({ category1, category2 })}
       <div class="bg-white rounded-lg shadow-sm mb-6">
@@ -86,18 +82,20 @@ export class ProductDetail extends Component {
 
       const $category1 = target.closest("[data-category1]");
       if ($category1) {
+        const { category1, category2 } = this.props.productDetailStore.product;
         router.push({
           pathname: "/",
-          params: { category1: productDetailStore.category1, category2: "" },
+          params: { category1, category2 },
         });
         return;
       }
 
       const $category2 = target.closest("[data-category2]");
       if ($category2) {
+        const { category1, category2 } = this.props.productDetailStore.product;
         router.push({
           pathname: "/",
-          params: { category1: productDetailStore.category1, category2: productDetailStore.category2 },
+          params: { category1, category2 },
         });
         return;
       }
@@ -113,7 +111,7 @@ export class ProductDetail extends Component {
       } else if ($quantityIncrease) {
         $quantityInput.value = this.#clamp(quantity + 1, $quantityInput.max);
       } else if ($addToCartBtn) {
-        const { image, title, lprice, productId } = productDetailStore;
+        const { image, title, lprice, productId } = this.props.productDetailStore.product;
 
         cartStore.addItem({
           productId,
