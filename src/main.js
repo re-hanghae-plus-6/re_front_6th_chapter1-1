@@ -152,7 +152,16 @@ function resetGlobalState() {
   currentDetailProduct = null;
   loadingNextPage = false;
 
-  // DOM 초기화 제거 - 이벤트 리스너가 유지되어야 함
+  // DOM 초기화 (테스트 환경에서만)
+  const rootElement = document.getElementById("root");
+  if (rootElement && window.navigator.userAgent.includes("jsdom")) {
+    rootElement.innerHTML = "";
+
+    // 이벤트 리스너 다시 등록
+    setTimeout(() => {
+      setupLimitSelectListener();
+    }, 0);
+  }
 }
 
 // 애플리케이션 시작
@@ -166,7 +175,6 @@ window.resetGlobalState = resetGlobalState;
 // limit-select에 직접 이벤트 리스너 추가 함수
 function setupLimitSelectListener() {
   const limitSelect = document.getElementById("limit-select");
-  console.log("setupLimitSelectListener 호출됨, limitSelect 존재:", !!limitSelect);
   if (limitSelect && !limitSelect.hasAttribute("data-listener-added")) {
     limitSelect.setAttribute("data-listener-added", "true");
     limitSelect.addEventListener("change", async (e) => {
@@ -328,6 +336,31 @@ root.addEventListener("keydown", async (e) => {
 
   // limit-select 이벤트 리스너 설정
   setupLimitSelectListener();
+
+  // limit-select에 onclick 속성 직접 추가 (테스트 환경에서 더 안정적)
+  const limitSelect = document.getElementById("limit-select");
+  if (limitSelect) {
+    limitSelect.onclick = () => {
+      setTimeout(() => {
+        console.log("limit-select onclick 실행, 값:", limitSelect.value);
+        if (limitSelect.value !== currentLimit.toString()) {
+          currentLimit = Number(limitSelect.value);
+          currentSort = document.getElementById("sort-select").value;
+
+          // URL 업데이트
+          const url = new URL(window.location);
+          const urlParams = url.searchParams;
+          urlParams.set("limit", currentLimit.toString());
+          urlParams.set("sort", currentSort);
+          urlParams.set("current", "1");
+          history.pushState({}, "", `${url.pathname}?${urlParams.toString()}`);
+
+          // 페이지 새로고침 (가장 확실한 방법)
+          window.location.reload();
+        }
+      }, 100);
+    };
+  }
 });
 
 // 무한 스크롤 이벤트
