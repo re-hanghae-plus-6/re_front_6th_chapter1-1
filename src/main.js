@@ -5,7 +5,10 @@ const enableMocking = () =>
     worker.start({
       onUnhandledRequest: "bypass",
       serviceWorker: {
-        url: "/front_6th_chapter1-1/mockServiceWorker.js",
+        url:
+          import.meta.env.MODE === "production"
+            ? "/front_6th_chapter1-1/mockServiceWorker.js"
+            : "/mockServiceWorker.js",
       },
     }),
   );
