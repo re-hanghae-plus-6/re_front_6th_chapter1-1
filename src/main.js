@@ -5,7 +5,7 @@ import Cart from "./components/Cart.js";
 import { cartStore } from "./store/store.js";
 
 const enableMocking = () =>
-  import("./mocks/browser.js").then(({ worker }) => worker.start({ onUnhandledRequest: "bypass" }));
+  import("./mocks/browser.js").then(({ worker, workerOptions }) => worker.start(workerOptions));
 
 const cartInstance = new Cart();
 const headerInstance = new Header();
