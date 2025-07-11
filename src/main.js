@@ -56,6 +56,9 @@ function renderProductDetail(productId) {
 async function main() {
   // 초기값 - 로딩 상태 렌더링
   state.loading = true;
+
+  // 라우터 설정을 먼저 해야 테스트에서 라우팅이 작동함
+  setupRouter();
   render();
 
   // data fetch
@@ -80,9 +83,6 @@ async function main() {
   // 값 가져왔으니 로딩 상태 해제
   state.loading = false;
 
-  // 라우터 설정
-  setupRouter();
-
   // 현재 URL에 따라 적절한 페이지 렌더링
   router.handleRouteChange(location.pathname, false);
 }
@@ -90,6 +90,10 @@ async function main() {
 function setupRouter() {
   // 홈 페이지 라우트
   router.addRoute("/", () => {
+    // 데이터가 이미 로드된 경우 로딩 상태를 false로 설정
+    if (state.products.length > 0) {
+      state.loading = false;
+    }
     render();
   });
 
