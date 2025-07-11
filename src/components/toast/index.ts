@@ -20,8 +20,9 @@ export function 토스트(message: string, variant: ToastVariant = "success", du
     // Always attach the toast container to `document.body` so that it remains
     // independent from the application root. This ensures toasts persist even
     // if the root element is re-rendered or replaced.
-    const rootEl = document.getElementById("root");
-    rootEl?.appendChild(container);
+    // 루트(#root)의 innerHTML 갱신 시에도 토스트가 사라지지 않도록
+    // document.body에 직접 부착한다.
+    document.body.appendChild(container);
   }
 
   const wrapper = document.createElement("div");

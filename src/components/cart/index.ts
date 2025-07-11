@@ -64,18 +64,25 @@ export async function 장바구니() {
   rootEl?.appendChild(overlay);
 
   const closeBtnEl = overlay.querySelector<HTMLButtonElement>("#cart-modal-close-btn");
-  const cleanup = () => {
+  // 모달과 관련된 리스너/DOM 요소를 제거하는 헬퍼
+  const removeModal = () => {
     overlay.remove();
     window.removeEventListener("keydown", handleEsc);
   };
 
   const handleEsc = (e: KeyboardEvent) => {
-    if (e.key === "Escape") cleanup();
+    if (e.key === "Escape") removeModal();
   };
 
-  if (closeBtnEl) closeBtnEl.addEventListener("click", cleanup);
+  if (closeBtnEl) closeBtnEl.addEventListener("click", removeModal);
+  // 오버레이 바깥 영역 클릭 -> 모달 닫기
   overlay.addEventListener("click", (e) => {
-    if (e.target === overlay) cleanup();
+    const target = e.target as HTMLElement;
+    // 클릭한 요소가 .cart-modal 안에 포함되지 않았다면 오버레이 영역으로 간주함
+    if (!target.closest(".cart-modal")) {
+      removeModal();
+      return;
+    }
   });
   window.addEventListener("keydown", handleEsc);
 
