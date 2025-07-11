@@ -2,6 +2,7 @@ import Component from '../../core/Component.js';
 import ProductContainer from './components/product/product-container/ProductContainer.js';
 import FilterContainer from './components/filter/filter-container/FilterContainer.js';
 import { getCategories, getProducts } from '../../api/productApi.js';
+import { paramsUtils } from '../../utils/paramsUtils.js';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
@@ -58,6 +59,7 @@ class HomePage extends Component {
   handleLimitChange = async (value) => {
     const newLimitValue = Number(value);
     const newProducts = await this.fetchProducts({
+      ...this.state.query,
       page: this.state.query.page,
       limit: newLimitValue,
     });
@@ -70,11 +72,15 @@ class HomePage extends Component {
         limit: newLimitValue,
       },
     });
+    paramsUtils.updateUrlParams({
+      limit: value,
+    });
   };
 
   handleSortChange = async (value) => {
     const newSortValue = value;
     const newProducts = await this.fetchProducts({
+      ...this.state.query,
       page: DEFAULT_PAGE,
       sort: newSortValue,
     });
@@ -88,11 +94,15 @@ class HomePage extends Component {
         sort: newSortValue,
       },
     });
+    paramsUtils.updateUrlParams({
+      limit: newSortValue,
+    });
   };
 
   handleSearchChange = async (value) => {
     const newSearchValue = value;
     const newProducts = await this.fetchProducts({
+      ...this.state.query,
       page: DEFAULT_PAGE,
       search: newSearchValue,
     });
@@ -106,10 +116,15 @@ class HomePage extends Component {
         search: newSearchValue,
       },
     });
+    paramsUtils.updateUrlParams({
+      search: newSearchValue,
+      page: DEFAULT_PAGE,
+    });
   };
 
   handleCategoryChange = async (category1 = '', category2 = '') => {
     const newProducts = await this.fetchProducts({
+      ...this.state.query,
       page: DEFAULT_PAGE,
       category1,
       category2,
@@ -125,6 +140,11 @@ class HomePage extends Component {
         category2,
       },
     });
+    paramsUtils.updateUrlParams({
+      category1,
+      category2,
+      page: DEFAULT_PAGE,
+    });
   };
 
   fetchNextPageProducts = async () => {
@@ -134,6 +154,7 @@ class HomePage extends Component {
 
     const nextPage = this.state.query.page + 1;
     const newProducts = await this.fetchProducts({
+      ...this.state.query,
       page: nextPage,
       limit: this.state.query.limit,
       sort: this.state.query.sort,
