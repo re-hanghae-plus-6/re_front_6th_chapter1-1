@@ -5,7 +5,7 @@ import createStore from "../core/store.js";
 import { getCartCount, updateCartBadge } from "../core/cart.js";
 import { getAppPath } from "../core/router.js";
 
-// 상품 상세 페이지 초기 상태
+// 상품 상세 페이지 초기 상태.
 const initialState = {
   product: null,
   relatedProducts: [],
