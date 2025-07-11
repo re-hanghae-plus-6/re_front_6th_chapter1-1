@@ -2,9 +2,7 @@ import { getProducts } from "../api/productApi.js";
 import { store } from "../store/store.js";
 
 // 상태 변수들
-let currentPage = 1;
-let isLoading = false;
-let hasMoreData = true;
+
 let scrollHandler = null;
 
 // URL에서 쿼리 파라미터를 가져오는 헬퍼 함수
@@ -26,48 +24,53 @@ function getQueryParams() {
 }
 
 async function loadMoreProducts() {
-  if (isLoading || !hasMoreData) return;
+  const { state } = store;
+  if (state.isLoadingMore) return;
+
+  store.setLoadingMore(true);
 
   const loadingEl = document.getElementById("loading-text");
+  if (loadingEl) loadingEl.textContent = "상품을 불러오는 중...";
 
   try {
-    isLoading = true;
-    currentPage++;
-
     const params = getQueryParams();
-    const response = await getProducts({ page: currentPage, ...params });
-
+    console.log(state.pagination);
+    const currentPage = state.pagination?.page || 1;
+    const response = await getProducts({ page: currentPage + 1, ...params });
+    if (loadingEl) loadingEl.textContent = "상품을 불러오는 중...";
     if (!response.products || response.products.length === 0) {
-      hasMoreData = false;
-      if (loadingEl) loadingEl.textContent = "모든 상품을 확인했습니다.";
+      store.setPagination({ ...store.state.pagination, hasNext: false });
       return;
     }
+    // const existingProducts = store.state.products;
+    // const newProducts = response.products;
+    // const combinedProducts = [...existingProducts, ...newProducts];
 
-    const existingProducts = store.state.products;
-    const newProducts = response.products;
-    const combinedProducts = [...existingProducts, ...newProducts];
-
-    store.setProducts(combinedProducts);
+    store.addProducts(response.products);
+    store.setPagination(response.pagination);
+    if (loadingEl) {
+      loadingEl.textContent = response.pagination?.hasNext ? "" : "모든 상품을 불러왔습니다.";
+    }
   } catch (error) {
     console.error("무한스크롤 에러:", error);
-    hasMoreData = false; // 에러 발생 시 더 이상 시도하지 않음
+
     if (loadingEl) loadingEl.textContent = "상품을 불러오는데 실패했습니다.";
   } finally {
-    isLoading = false;
+    store.setLoadingMore(false);
   }
 }
 
 function handleScroll() {
-  if (isLoading || !hasMoreData) return;
+  if (store.state.isLoadingMore) return;
 
-  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  const scrollTop = document.documentElement.scrollTop;
   const windowHeight = window.innerHeight;
   const documentHeight = document.documentElement.scrollHeight;
-  const threshold = 100;
+  const threshold = 500;
 
+  // const loadingEl = document.getElementById("loading-text");
+  // if (loadingEl) loadingEl.textContent = "상품을 불러오는 중...";
   if (scrollTop + windowHeight >= documentHeight - threshold) {
-    const loadingEl = document.getElementById("loading-text");
-    if (loadingEl) loadingEl.textContent = "상품을 불러오는 중...";
     loadMoreProducts();
   }
 }
@@ -76,10 +79,19 @@ function createThrottledScrollHandler() {
   let ticking = false;
   return () => {
     if (!ticking) {
-      window.requestAnimationFrame(() => {
-        handleScroll();
-        ticking = false;
-      });
+      const isPlaywright = window.navigator && window.navigator.webdriver;
+
+      if (isPlaywright) {
+        setTimeout(() => {
+          handleScroll();
+          ticking = false;
+        }, 16);
+      } else {
+        window.requestAnimationFrame(() => {
+          handleScroll();
+          ticking = false;
+        });
+      }
       ticking = true;
     }
   };
@@ -91,12 +103,10 @@ export function infiniteScroll() {
   }
   scrollHandler = createThrottledScrollHandler();
   window.addEventListener("scroll", scrollHandler);
+  console.log("스크롤 이벤트 리스너 등록됨"); // ← 이 로그도 확인
 }
 
 export function resetInfiniteScroll() {
-  currentPage = 1;
-  hasMoreData = true;
-  isLoading = false;
   const loadingEl = document.getElementById("loading-text");
   if (loadingEl) {
     loadingEl.textContent = "스크롤하여 더 많은 상품 보기";
@@ -108,7 +118,15 @@ export function cleanupInfiniteScroll() {
     window.removeEventListener("scroll", scrollHandler);
     scrollHandler = null;
   }
-  currentPage = 1;
-  hasMoreData = true;
-  isLoading = false;
+
+  // 🔥 Playwright 관련 정리
+  if (window.infiniteScrollInterval) {
+    clearInterval(window.infiniteScrollInterval);
+    window.infiniteScrollInterval = null;
+  }
+
+  // 🔥 전역 함수들 정리
+  delete window.loadMoreProducts;
+  delete window.triggerInfiniteScroll;
+  delete window.forceLoadMore;
 }

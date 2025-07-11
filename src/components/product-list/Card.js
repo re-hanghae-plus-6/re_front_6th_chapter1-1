@@ -1,3 +1,5 @@
+import cartStore from "../../store/cartStore.js";
+
 function Card({ product }) {
   return /* HTML */ `
     <div
@@ -17,8 +19,8 @@ function Card({ product }) {
       <div class="p-3">
         <div class="cursor-pointer product-info mb-3">
           <h3 class="text-sm font-medium text-gray-900 line-clamp-2 mb-1">${product.title}</h3>
-          <p class="text-xs text-gray-500 mb-2">${product.maker}</p>
-          <p class="text-lg font-bold text-gray-900">${product.lprice}원</p>
+          <p class="text-xs text-gray-500 mb-2">${product.brand}</p>
+          <p class="text-lg font-bold text-gray-900">${parseInt(product.lprice).toLocaleString("ko-KR")}원</p>
         </div>
         <!-- 장바구니 버튼 -->
         <button
@@ -32,5 +34,39 @@ function Card({ product }) {
     </div>
   `;
 }
+function handleAddToCart(productId) {
+  // CartStore를 통해 장바구니에 추가
+  cartStore.addToCart(parseInt(productId));
 
+  // 시각적 피드백
+  showAddToCartFeedback(productId);
+}
+
+function showAddToCartFeedback(productId) {
+  const button = document.querySelector(`[data-product-id="${productId}"] .add-to-cart-btn`);
+  if (button) {
+    const originalText = button.textContent;
+
+    setTimeout(() => {
+      button.textContent = originalText;
+      button.classList.remove("bg-green-600", "bg-gray-500");
+      button.classList.add("bg-blue-600");
+    }, 1000);
+  }
+}
+
+function eventCartButtons() {
+  document.addEventListener("click", (event) => {
+    if (event.target.classList.contains("add-to-cart-btn")) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const productId = event.target.dataset.productId;
+      handleAddToCart(productId);
+    }
+  });
+}
+window.handleAddToCart = handleAddToCart;
+
+export { eventCartButtons, handleAddToCart };
 export default Card;

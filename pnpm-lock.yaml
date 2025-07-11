@@ -12,7 +12,7 @@ importers:
         specifier: ^9.16.0
         version: 9.23.0
       '@playwright/test':
-        specifier: latest
+        specifier: ^1.53.2
         version: 1.53.2
       '@testing-library/dom':
         specifier: ^10.4.0

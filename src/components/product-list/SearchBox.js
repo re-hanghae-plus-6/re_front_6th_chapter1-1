@@ -80,7 +80,7 @@ function renderUI() {
 // SearchBox UI 업데이트
 function updateSearchBoxUI(state) {
   // 검색창 관련 UI 업데이트가 필요한 경우 여기에 추가
-  console.log("SearchBox UI 업데이트:", state);
+  console.log(state);
 }
 
 // 구독 해제
@@ -102,8 +102,21 @@ export function setupSearchBox() {
   const params = new URLSearchParams(url.search);
   const limitParam = params.get("limit");
   const sortParam = params.get("sort");
+  const searchParam = params.get("search");
+
+  // const searchInput = document.querySelector("#search-input");
+  // const limitSelect = document.querySelector("#limit-select");
+  // const sortSelect = document.querySelector("#sort-select");
+
+  if (searchParam) {
+    const searchInput = document.querySelector("#search-input");
+    if (searchInput) {
+      searchInput.value = searchParam;
+    }
+  }
 
   // limit select 기본값 설정
+
   if (limitParam) {
     const limitSelect = document.querySelector("#limit-select");
     if (limitSelect) {

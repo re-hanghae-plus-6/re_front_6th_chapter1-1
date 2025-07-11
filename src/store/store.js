@@ -11,6 +11,7 @@ class Store {
       pagination: {},
       filters: {},
       loading: false,
+      isLoadingMore: false,
       error: null,
     };
     this.listeners = [];
@@ -55,16 +56,69 @@ class Store {
     this.setState({ categories, loading: false, error: null });
   }
 
+  setLoadingMore(isLoadingMore) {
+    this.setState({ isLoadingMore });
+  }
+
+  addProducts(newProducts) {
+    const currentProducts = this.state.products;
+    const combinedProducts = [...currentProducts, ...newProducts];
+    this.setState({ products: combinedProducts, isLoadingMore: false, error: null });
+  }
+
+  canMoreData() {
+    const { pagination, isLoadingMore } = this.state;
+    return pagination.hasNext && !isLoadingMore;
+  }
   // 에러 설정
   setError(error) {
     this.setState({ error, loading: false });
+  }
+
+  getFiltersFromURL() {
+    const url = new URL(window.location.href);
+    return {
+      search: url.searchParams.get("search") || "",
+      limit: parseInt(url.searchParams.get("limit")) || 20,
+      sort: url.searchParams.get("sort") || "price_asc",
+      category1: url.searchParams.get("category1") || "",
+      category2: url.searchParams.get("category2") || "",
+      current: parseInt(url.searchParams.get("current")) || 1,
+    };
+  }
+
+  updateFilter(key, value) {
+    const newFilters = {
+      ...this.state.filters,
+      [key]: value,
+    };
+    if (key !== "current") {
+      newFilters.current = 1;
+    }
+
+    const url = new URL(window.location.href);
+    Object.keys(newFilters).forEach((key) => {
+      if (newFilters[key]) {
+        url.searchParams.set(key, newFilters[key]);
+      } else {
+        url.searchParams.delete(key);
+      }
+    });
+
+    window.history.pushState({}, "", url);
+    this.setFilters(newFilters);
+    return newFilters;
   }
 
   // 상태 초기화
   reset() {
     this.state = {
       products: [],
+      categories: {},
+      pagination: {},
+      filters: {},
       loading: false,
+      isLoadingMore: false,
       error: null,
     };
     this.listeners = [];

@@ -22,7 +22,6 @@ afterEach(() => {
 
 describe.only("7. 카테고리 선택", () => {
   test("현재 선택된 카테고리 경로가 브레드크럼으로 표시된다", async () => {
-    screen.logTestingPlaygroundURL();
     await screen.findByText(/총 의 상품/i);
     const target = screen.getByText("생활/건강");
     await userEvent.click(target);

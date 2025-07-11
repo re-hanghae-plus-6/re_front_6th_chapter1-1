@@ -1,10 +1,11 @@
 import Home from "../pages/Home.js";
 import ProductPage from "../pages/ProductPage.js";
+import NotFound from "../pages/NotFount.js";
 
 const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
 
 export const Router = () => {
-  const routes = { "/": Home, "/product/:id": ProductPage };
+  const routes = { "/": Home, "/product/:id": ProductPage, "/404": NotFound() };
 
   // 라우트 추가 함수
   function addRoute(path, component) {
@@ -30,13 +31,12 @@ export const Router = () => {
             params[param] = match[index + 1];
           });
 
-          console.log(params, component);
           return { component, params };
         }
       }
     }
 
-    return { component: routes["/"], params: {} };
+    return { component: routes["/404"], params: {} };
   };
 
   // 경로에서 BASE_PATH를 제거하는 함수
@@ -52,34 +52,54 @@ export const Router = () => {
     return BASE_PATH + path;
   };
 
-  // 페이지 이동 함수
-  function navigate(path) {
-    const fullPath = addBasePath(path);
-    window.history.pushState({}, "", fullPath);
-
+  function render(path) {
     const { component, params } = matchRoute(path);
 
     let componentInstance;
-    // 함수형 컴포넌트인지 확인
     if (typeof component === "function" && !component.render) {
       componentInstance = component();
     } else {
       componentInstance = component;
     }
-    document.getElementById("root").innerHTML = componentInstance.render(params);
+    const root = document.getElementById("root");
+    if (root) {
+      root.innerHTML = componentInstance.render(params);
 
-    if (componentInstance.setup) {
-      componentInstance.setup(params);
+      if (componentInstance.setup) {
+        componentInstance.setup(params);
+      }
     }
   }
 
+  // 페이지 이동 함수 (pushState 포함)
+  function navigate(path) {
+    const currentPath = new URL(window.location);
+    const queryParams = currentPath.search;
+
+    const fullPath = addBasePath(path) + queryParams;
+    window.history.pushState({}, "", fullPath);
+
+    render(path);
+  }
   function init() {
     window.addEventListener("popstate", () => {
       const currentPath = removeBasePath(window.location.pathname);
-      navigate(currentPath);
+      render(currentPath);
     });
+
+    const checkAndRender = () => {
+      const root = document.getElementById("root");
+      if (root && root.children.length === 0) {
+        const currentPath = removeBasePath(window.location.pathname);
+        render(currentPath);
+      }
+    };
+
+    if (import.meta.env.MODE === "test") {
+      setInterval(checkAndRender, 10);
+    }
     const currentPath = removeBasePath(window.location.pathname);
-    navigate(currentPath);
+    render(currentPath);
   }
 
   return {
