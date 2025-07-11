@@ -1,7 +1,8 @@
-import ListLayout from "../layouts/ListLayout";
+import ListLayout from "../layouts/List";
+import type { IListLayoutProps } from "../layouts/List";
 
-const ListPage = `
-  ${ListLayout}
-`;
+const ListPage = ({ products, total, loading }: IListLayoutProps) => {
+  return ListLayout({ products, total, loading });
+};
 
-export { ListPage };
+export default ListPage;
