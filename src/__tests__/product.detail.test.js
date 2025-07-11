@@ -136,42 +136,21 @@ describe("3. 관련 상품 기능", () => {
   test("상품 상세 페이지에서 현재 상품을 제외한 관련 상품들이 표시되고, 관련 상품 클릭 시 해당 상품의 상세 페이지로 이동한다", async () => {
     await 상품_상세페이지_접속();
 
-    // 관련 상품 섹션이 로드될 때까지 안정적으로 대기
-    await waitFor(
-      async () => {
-        const relatedSection = await screen.findByText("관련 상품");
-        expect(relatedSection).toBeInTheDocument();
-      },
-      { timeout: 10000 },
-    );
+    // 관련 상품 섹션이 있는지 확인
+    expect(screen.queryByText("관련 상품")).not.toBeInTheDocument();
+    expect(await screen.findByText("관련 상품")).toBeInTheDocument();
 
-    // 관련 상품 카드들이 로드될 때까지 대기
-    await waitFor(
-      () => {
-        const relatedProductCards = document.querySelectorAll(".related-product-card");
-        expect(relatedProductCards.length).toBe(19);
-      },
-      { timeout: 10000 },
-    );
-
+    // 관련 상품 카드들이 있는지 확인
     const relatedProductCards = [...document.querySelectorAll(".related-product-card")];
+    expect(relatedProductCards.length).toBe(19);
 
-    // 현재 상품이 관련 상품에서 제외되었는지 확인
     expect(document.querySelector(".related-product-card [data-product-id='85067212996']")).toBe(null);
 
     // 관련 상품 클릭
     await userEvent.click(relatedProductCards[0]);
-
-    // 새로운 상품 상세 페이지로 이동했는지 확인
-    await waitFor(
-      async () => {
-        const newProductHeading = await screen.findByRole("heading", {
-          level: 1,
-          name: "샷시 풍지판 창문 바람막이 베란다 문 틈막이 창틀 벌레 차단 샤시 방충망 틈새막이",
-        });
-        expect(newProductHeading).toBeInTheDocument();
-      },
-      { timeout: 10000 },
-    );
+    await screen.findByRole("heading", {
+      level: 1,
+      name: "샷시 풍지판 창문 바람막이 베란다 문 틈막이 창틀 벌레 차단 샤시 방충망 틈새막이",
+    });
   });
 });
