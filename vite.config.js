@@ -1,7 +1,7 @@
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-  base: "/front_6th_chapter1-1/",
+  base: process.env.NODE_ENV === "production" ? "/front_6th_chapter1-1/" : "/",
   build: {
     outDir: "dist",
     assetsDir: "assets",
