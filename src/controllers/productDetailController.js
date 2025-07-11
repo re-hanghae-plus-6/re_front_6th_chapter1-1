@@ -1,6 +1,7 @@
 import { store } from "../store.js";
 import { actions } from "../actions/index.js";
 import { getProduct, getProducts } from "../api/productApi.js";
+import { navigateTo } from "../utils/urlUtils.js";
 
 export class ProductDetailController {
   #productId;
@@ -194,13 +195,11 @@ export class ProductDetailController {
     if (category2) queryParams.push(`category2=${encodeURIComponent(category2)}`);
 
     const queryString = queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
-    window.history.pushState(null, "", `/${queryString}`);
-    window.dispatchEvent(new PopStateEvent("popstate"));
+    navigateTo(`/${queryString}`);
   }
 
   #handleGoToProductList() {
-    window.history.pushState(null, "", "/");
-    window.dispatchEvent(new PopStateEvent("popstate"));
+    navigateTo("/");
   }
 
   #handleCartIconClick() {
@@ -210,8 +209,7 @@ export class ProductDetailController {
   #handleRelatedProductClick(card) {
     const productId = card.dataset.productId;
     if (productId) {
-      window.history.pushState(null, "", `/product/${productId}`);
-      window.dispatchEvent(new PopStateEvent("popstate"));
+      navigateTo(`/product/${productId}`);
     }
   }
 

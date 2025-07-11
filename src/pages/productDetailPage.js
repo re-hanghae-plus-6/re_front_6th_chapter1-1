@@ -58,7 +58,7 @@ export const ProductDetailPage = () => {
           ${
             product.category2
               ? `
-            <button class="breadcrumb-link" data-category2="${product.category2}">
+            <button class="breadcrumb-link" data-category1="${product.category1}" data-category2="${product.category2}">
               ${product.category2}
             </button>
           `

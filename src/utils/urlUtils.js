@@ -29,3 +29,9 @@ export const updateQueryParams = (params) => {
   });
   window.history.replaceState({}, "", url.toString());
 };
+
+export const navigateTo = (path) => {
+  const basePath = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
+  window.history.pushState(null, "", `${basePath}${path}`);
+  window.dispatchEvent(new PopStateEvent("popstate"));
+};

@@ -4,7 +4,13 @@ export const routeReducer = (state, action) => {
   switch (action.type) {
     case ROUTE_ACTIONS.NAVIGATE: {
       const basePath = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
-      const fullPath = basePath + action.payload;
+
+      let fullPath;
+      if (basePath && action.payload.startsWith(basePath)) {
+        fullPath = action.payload;
+      } else {
+        fullPath = basePath + action.payload;
+      }
 
       if (location.pathname !== fullPath) {
         window.history.pushState(null, "", fullPath);

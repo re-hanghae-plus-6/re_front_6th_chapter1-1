@@ -40,7 +40,14 @@ class Controller {
     };
 
     const popstateHandler = () => {
-      store.dispatch(actions.navigate(location.pathname));
+      const basePath = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
+      let currentPath = location.pathname;
+
+      if (basePath && currentPath.startsWith(basePath)) {
+        currentPath = currentPath.slice(basePath.length) || "/";
+      }
+
+      store.dispatch(actions.navigate(currentPath));
     };
 
     document.addEventListener("click", clickHandler);
