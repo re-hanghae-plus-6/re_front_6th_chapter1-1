@@ -9,7 +9,8 @@ export const Home = () => {
   // 새로고침해도 유지되게 URL 쿼리에서 상태 초기화
   const params = new URLSearchParams(window.location.search);
 
-  state.selectedLimit = params.get("limit") || "10";
+  state.selectedLimit = params.get("limit") || "20";
+
   state.selectedSort = params.get("sort") || "price_asc";
   state.search = params.get("search") || "";
   state.selectedCategory1 = params.get("category1") || null;
