@@ -1,3 +1,5 @@
+import { formatPrice } from "../../utils/formatNumber";
+
 /**
  * @type {
  *    brand: string
@@ -37,7 +39,7 @@ export default function ProductItem(product) {
       <div class="cursor-pointer product-info mb-3">
         <h3 class="text-sm font-medium text-gray-900 line-clamp-2 mb-1">${title}</h3>
         <p class="text-xs text-gray-500 mb-2"></p>
-        <p class="text-lg font-bold text-gray-900">${lprice}원</p>
+        <p class="text-lg font-bold text-gray-900">${formatPrice(lprice)}원</p>
       </div>
       <!-- 장바구니 버튼 -->
       <button

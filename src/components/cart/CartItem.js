@@ -1,3 +1,5 @@
+import { formatPrice } from "../../utils/formatPrice";
+
 export default function CartItem({ product, quantity = 1, isSelected = false }) {
   // const { productId = 0, image, title, lprice } = product;
 
@@ -34,7 +36,7 @@ export default function CartItem({ product, quantity = 1, isSelected = false }) 
           ${title}
         </h4>
         <p class="text-sm text-gray-600 mt-1">
-          ${lprice}원
+          ${formatPrice(lprice)}원
         </p>
         
         <!-- 수량 조절 -->
@@ -66,7 +68,7 @@ export default function CartItem({ product, quantity = 1, isSelected = false }) 
       <!-- 가격 및 삭제 -->
       <div class="text-right ml-3">
         <p class="text-sm font-medium text-gray-900">
-          ${totalPrice.toLocaleString()}원
+          ${formatPrice(totalPrice)}원
         </p>
         <button class="cart-item-remove-btn mt-1 text-xs text-red-600 hover:text-red-800" 
                 data-product-id="${productId}">

@@ -8,6 +8,7 @@ import StarEmpty from "../components/icon/StarEmpty";
 import StarFilled from "../components/icon/StarFilled";
 import { useNavigate, useParam } from "../hook/useRouter";
 import Component from "../lib/Component";
+import { formatPrice } from "../utils/formatNumber";
 import getFilter from "../utils/getFilter";
 
 const CHILD_COMPONENT = {
@@ -116,7 +117,7 @@ export default class ProductDetailPage extends Component {
         <img src="${image}" alt="${title}" class="w-full h-full object-cover" loading="lazy" />
       </div>
       <h3 class="text-sm font-medium text-gray-900 mb-1 line-clamp-2">${title}</h3>
-      <p class="text-sm font-bold text-blue-600">${lprice}원</p>
+      <p class="text-sm font-bold text-blue-600">${formatPrice(lprice)}원</p>
     </div>`;
   }
 
@@ -171,7 +172,7 @@ export default class ProductDetailPage extends Component {
               </div>
               <!-- 가격 -->
               <div class="mb-4">
-                <span class="text-2xl font-bold text-blue-600">${lprice}원</span>
+                <span class="text-2xl font-bold text-blue-600">${formatPrice(lprice)}원</span>
               </div>
               <!-- 재고 -->
               <div class="text-sm text-gray-600 mb-4">재고 ${stock}개</div>
