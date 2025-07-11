@@ -106,17 +106,19 @@ async function renderDetail(productId) {
 // 라우트 핸들러
 function handleRoute() {
   const path = window.location.pathname;
+  console.log("path", path);
   if (path === "/") {
-    // 메인 페이지로 돌아올 때 전역 상태 초기화
-    currentPage = 1;
-    currentLimit = 20;
-    currentSort = "price_asc";
+    // URL 쿼리 파라미터에서 상태 복원
+    const params = new URL(window.location).searchParams;
+    currentSearch = params.get("search") || "";
+    currentCategory1 = params.get("category1") || "";
+    currentCategory2 = params.get("category2") || "";
+    currentSort = params.get("sort") || "price_asc";
+    currentLimit = Number(params.get("limit")) || 20;
+    currentPage = Number(params.get("current")) || 1;
     hasNext = true;
     allProducts = [];
     totalCount = 0;
-    currentCategory1 = "";
-    currentCategory2 = "";
-    currentSearch = "";
     return main();
   }
   const m = path.match(/^\/product\/(.+)$/);
@@ -178,17 +180,12 @@ root.addEventListener("keydown", async (e) => {
   // 검색어 상태 업데이트
   currentSearch = keyword;
 
-  // URL 쿼리 파라미터 업데이트 시작
-  const url = new URL(window.location);
-  if (keyword) {
-    url.searchParams.set("search", keyword);
-  } else {
-    url.searchParams.delete("search");
-  }
-  // 페이지 번호를 다시 1로 초기화
-  url.searchParams.set("current", "1");
-  // 실제 주소창에 반영
-  history.pushState({}, "", url.pathname + url.search);
+  // URL 쿼리 파라미터 업데이트 (encodeURIComponent 적용)
+  const encodedKeyword = encodeURIComponent(keyword);
+  console.log("encodedKeyword", encodedKeyword);
+  // 검색어가 있을 때만 붙이고, 없으면 current만 1로 세팅
+  const query = `?search=${encodedKeyword}`;
+  history.pushState({}, "", window.location.pathname + query);
   // URL 업데이트 끝
 
   // 로딩 표시
@@ -348,18 +345,41 @@ document.addEventListener("click", (e) => {
   if (e.target.matches('[data-breadcrumb="reset"]')) {
     currentCategory1 = "";
     currentCategory2 = "";
+    const url = new URL(window.location);
+    const params = url.searchParams;
+    params.delete("category1");
+    params.delete("category2");
+    params.delete("search");
+    params.set("current", "1");
+    history.pushState({}, "", `${url.pathname}?${params.toString()}`);
+
     currentSearch = "";
     return main();
   }
   // 1depth 카테고리 선택
   if (e.target.matches("[data-category1]") && !e.target.dataset.category2) {
     currentCategory1 = e.target.dataset.category1;
+
+    const url = new URL(window.location);
+    const params = url.searchParams;
+    params.set("category1", currentCategory1);
+    params.delete("category2"); // 2depth는 초기화
+    params.set("current", "1"); // 페이지 번호도 1로 리셋
+    history.pushState({}, "", `${url.pathname}?${params.toString()}`);
+
     currentCategory2 = "";
     return main();
   }
   // 2depth 카테고리 선택
   if (e.target.matches("[data-category2]")) {
     currentCategory2 = e.target.dataset.category2;
+
+    const url = new URL(window.location);
+    const params = url.searchParams;
+    params.set("category2", currentCategory2);
+    params.set("current", "1");
+    history.pushState({}, "", `${url.pathname}?${params.toString()}`);
+
     return main();
   }
 });
