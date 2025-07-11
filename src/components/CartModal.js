@@ -54,7 +54,8 @@ export class CartModal extends Component {
 
       const $selectAllCheckbox = target.closest("#cart-modal-select-all-checkbox");
       if ($selectAllCheckbox) {
-        cartStore.selectAllItems();
+        const isChecked = $selectAllCheckbox.checked;
+        cartStore.toggleSelectAll(isChecked);
         return;
       }
 

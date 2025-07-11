@@ -77,10 +77,10 @@ export const cartStore = observable({
     item.selected = !item.selected;
     cartStore.items = new Map([...cartStore.items]);
   },
-  selectAllItems() {
+  toggleSelectAll(selected) {
     const { items } = cartStore;
     items.forEach((item) => {
-      item.selected = true;
+      item.selected = selected;
     });
     cartStore.items = new Map([...items]);
   },
