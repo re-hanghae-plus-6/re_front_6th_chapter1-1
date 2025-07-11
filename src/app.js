@@ -9,7 +9,6 @@ import { openCartModal, addToCartById, addToCart, updateCartBadge } from "./core
  * 1. 어디서 관리해야할지 고민하기
  * 2. 또 다른 전역 유틸함수는 없는지 찾아보기
  * 3. 최대한 순수함수로 작성해보기
- * 4. 분기점
  */
 
 // 상품 목록 장바구니 버튼에서 버튼과 상품 ID 추출
