@@ -48,6 +48,11 @@ class Store {
   reset() {
     this.#state = JSON.parse(JSON.stringify(initialState));
     this.#computed.cart.clearCache();
+    if (import.meta.env.MODE === "test") {
+      this.#computed = {
+        cart: new CartComputed(this),
+      };
+    }
     this.#listeners.forEach((listener) => listener(this.#state));
   }
 }

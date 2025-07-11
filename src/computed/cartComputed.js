@@ -43,11 +43,13 @@ export class CartComputed {
   }
 
   get hasItems() {
-    return this.#store.getState().cart.items.length > 0;
+    const items = this.#store.getState().cart.items;
+    return this.#computeWithCache("hasItems", items, (items) => items.length > 0);
   }
 
   get hasSelectedItems() {
-    return this.selectedItems.length > 0;
+    const selectedItems = this.selectedItems;
+    return this.#computeWithCache("hasSelectedItems", selectedItems, (items) => items.length > 0);
   }
 
   #computeWithCache(key, dependency, computeFn) {

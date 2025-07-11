@@ -48,6 +48,12 @@ class Controller {
         currentPath = currentPath.slice(basePath.length) || "/";
       }
 
+      if (import.meta.env.MODE === "test" && currentPath === "/") {
+        clearCartStorage();
+        store.reset();
+        store.computed.cart.clearCache();
+      }
+
       store.dispatch(actions.navigate(currentPath));
     };
 
