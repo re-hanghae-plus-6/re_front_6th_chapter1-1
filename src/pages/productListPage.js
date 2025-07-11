@@ -19,12 +19,12 @@ export const ProductListPage = () => {
   const state = store.getState();
   const {
     products = [],
-    loading = false,
+    loading = true,
     error = null,
     pagination = { total: 0, limit: 20 },
     filters = { sort: "price_asc" },
     categories = [],
-    loadingCategories = false,
+    loadingCategories = true,
     categoriesError = null,
   } = state;
   const renderProductCards = () => {
