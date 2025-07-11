@@ -13,6 +13,13 @@ export const initialState = {
     hasNext: true,
     limit: 20,
   },
+  route: {
+    name: "ProductList",
+    path: "/",
+    params: {},
+  },
+  productDetail: null,
+  productDetailLoading: false,
 };
 
 // 순수 함수로 구현된 리듀서
@@ -62,6 +69,25 @@ export const appReducer = (state = initialState, action) => {
       return {
         ...state,
         categories: action.payload,
+      };
+
+    case ACTION_TYPES.SET_ROUTE:
+      return {
+        ...state,
+        route: action.payload,
+      };
+
+    case ACTION_TYPES.SET_PRODUCT_DETAIL:
+      return {
+        ...state,
+        productDetail: action.payload,
+        productDetailLoading: false,
+      };
+
+    case ACTION_TYPES.SET_PRODUCT_DETAIL_LOADING:
+      return {
+        ...state,
+        productDetailLoading: action.payload,
       };
 
     default:
