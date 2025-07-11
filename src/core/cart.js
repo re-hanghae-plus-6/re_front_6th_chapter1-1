@@ -248,12 +248,29 @@ function handleModalClick(e) {
     return;
   }
 
-  // 전체 선택 - DOM 렌더링 완료 보장
+  // 전체 선택 체크박스 클릭
   if (e.target.closest("#cart-modal-select-all-checkbox")) {
     const allChecked = e.target.checked;
-    selectAll(allChecked).catch((error) => {
-      console.error("Failed to select all items:", error);
+
+    // 1) 즉시 모든 개별 체크박스 UI 상태를 동기화하여 사용자 체감 지연 및
+    //    Playwright 테스트에서의 element detach 오류를 방지한다.
+    document.querySelectorAll(".cart-item-checkbox").forEach((cb) => {
+      cb.checked = allChecked;
     });
+
+    // 2) 다음 이벤트 루프로 카트 상태를 동기화하고 모달을 재렌더링한다.
+    //    이렇게 하면 클릭 → 체크 반영 과정이 끝난 뒤 DOM 교체가 일어나
+    //    테스트 러너가 요소를 안정적으로 참조할 수 있다.
+    setTimeout(() => {
+      selectAll(allChecked)
+        .then(() => {
+          updateCartBadge();
+        })
+        .catch((error) => {
+          console.error("Failed to select all items:", error);
+        });
+    }, 0);
+
     return;
   }
 

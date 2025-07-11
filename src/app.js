@@ -244,8 +244,3 @@ export function destroyApp() {
     appInstance = null;
   }
 }
-
-// 페이지 언로드 시 자동 정리
-window.addEventListener("beforeunload", () => {
-  destroyApp();
-});

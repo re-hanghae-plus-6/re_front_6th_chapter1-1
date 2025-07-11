@@ -1,5 +1,15 @@
+/* --------------------------------------------------------------------------
+ * Nested Router (React-Router inspired) – Vanilla JS SPA Router
+ * 기존 API(createRouter, setupRouter 등)는 유지하면서 중첩 라우트·동적 세그먼트·loader
+ * 를 지원하도록 전체 구현을 교체합니다.
+ * -------------------------------------------------------------------------- */
+
+// BASE_PATH 는 Vite 미리보기/배포 경로에 맞게 설정
 const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
 
+/* --------------------------------------------------------------------------
+ * Public URL helpers (기존 파일과 동일 시그니처 유지)
+ * -------------------------------------------------------------------------- */
 export const getAppPath = (fullPath = window.location.pathname) => {
   return fullPath.startsWith(BASE_PATH) ? fullPath.slice(BASE_PATH.length) || "/" : fullPath;
 };
@@ -8,112 +18,144 @@ export const getFullPath = (appPath) => {
   return BASE_PATH + appPath;
 };
 
-function pathToRegex(path) {
-  const regexPath = path
-    .replace(/:\w+/g, "([^/]+)") // :id -> ([^/]+)
-    .replace(/\//g, "\\/") // / -> \/
-    .replace(/\*/g, ".*"); // * -> .*
-
-  return new RegExp(`^${regexPath}$`);
+/* --------------------------------------------------------------------------
+ * Path utilities for nested matching
+ * -------------------------------------------------------------------------- */
+function splitPath(path) {
+  return path.replace(/^\/+/g, "").replace(/\/+$/g, "").split("/").filter(Boolean);
 }
 
-// ":param" 이름 추출 → ["param", ...]
-function extractParamNames(path) {
-  const matches = path.match(/:(\w+)/g);
-  return matches ? matches.map((m) => m.slice(1)) : [];
+function isDynamic(segment) {
+  return segment && segment[0] === ":";
 }
 
+/**
+ * 재귀적으로 중첩 라우트를 탐색하여 가장 먼저 매칭되는 leaf 라우트를 반환.
+ * @returns {{ node: Object, params: Object }|null}
+ */
+function matchRouteRecursive(pathSegments, routes, params = {}) {
+  for (const route of routes) {
+    const routeSegments = splitPath(route.path);
+    if (routeSegments.length > pathSegments.length) continue;
+
+    let matched = true;
+    const paramMap = { ...params };
+
+    for (let i = 0; i < routeSegments.length; i++) {
+      const seg = routeSegments[i];
+      if (isDynamic(seg)) {
+        const paramName = seg.slice(1);
+        paramMap[paramName] = pathSegments[i];
+      } else if (seg !== pathSegments[i]) {
+        matched = false;
+        break;
+      }
+    }
+
+    if (!matched) continue;
+
+    const rest = pathSegments.slice(routeSegments.length);
+
+    // leaf
+    if (rest.length === 0) {
+      return { node: route, params: paramMap };
+    }
+
+    // child 탐색
+    if (route.children && route.children.length > 0) {
+      const child = matchRouteRecursive(rest, route.children, paramMap);
+      if (child) return child;
+    }
+  }
+  return null;
+}
+
+/* --------------------------------------------------------------------------
+ * Router factory (nested-route capable, 기존 API 유지)
+ * -------------------------------------------------------------------------- */
 function createRouterInstance() {
   const routes = [];
   const listeners = new Set();
   let currentRoute = null;
   let isDestroyed = false;
 
-  const matchRoute = (pathname) => {
-    for (const route of routes) {
-      const match = pathname.match(route.regex);
-      if (match) {
-        // URL 파라미터 매핑
-        const params = {};
-        route.paramNames.forEach((name, idx) => {
-          params[name] = match[idx + 1];
-        });
-        return { route, params, pathname };
-      }
-    }
-    return null;
-  };
-
-  const notifyListeners = () => {
-    listeners.forEach((listener) => {
-      try {
-        listener(currentRoute);
-      } catch (err) {
-        console.error("Router listener error:", err);
-      }
-    });
-  };
-
-  const handleRouteChange = async () => {
-    if (isDestroyed) return;
-
-    const pathname = getAppPath();
-    const matched = matchRoute(pathname);
-
-    if (matched) {
-      let data = null;
-      if (matched.route.loader) {
-        try {
-          data = await matched.route.loader(matched.params);
-        } catch (err) {
-          console.error("Route loader error:", err);
-          navigate("/404", { replace: true });
-          return;
-        }
-      }
-      currentRoute = { ...matched, data };
-    } else {
-      // 404 대응
-      currentRoute = {
-        route: routes.find((r) => r.path === "/404") || { path: "/404", component: null },
-        params: {},
-        pathname,
-        data: null,
-      };
-    }
-
-    notifyListeners();
-  };
-
-  const onPopState = () => {
-    if (!isDestroyed) handleRouteChange();
-  };
-
-  window.addEventListener("popstate", onPopState);
-
-  const addRoute = (path, component, loader = null) => {
-    if (isDestroyed) {
-      console.warn("Router is destroyed. Cannot add route.");
-      return;
-    }
-
-    routes.push({
-      path,
-      component,
-      loader,
-      regex: pathToRegex(path),
-      paramNames: extractParamNames(path),
-    });
+  /* -------------------------------- add routes --------------------------- */
+  const addRoute = (path, component, loader = null, children = null) => {
+    routes.push({ path, component, loader, children });
   };
 
   const addRoutes = (arr) => {
     if (!Array.isArray(arr)) return;
+
+    const normalize = (r) => {
+      const { path, component, loader = null, children = null } = r;
+      return { path, component: component || r.view, loader, children };
+    };
+
     arr.forEach((r) => {
       if (!r || !r.path) return;
-      addRoute(r.path, r.component || r.view, r.loader || null);
+      const node = normalize(r);
+      addRoute(node.path, node.component, node.loader, node.children);
     });
   };
 
+  /* ---------------------------- route matching --------------------------- */
+  const matchCurrent = (pathname) => {
+    const segments = splitPath(getAppPath(pathname));
+    const result = matchRouteRecursive(segments, routes);
+    return result;
+  };
+
+  /* -------------------------- notify subscribers ------------------------- */
+  const notify = () => {
+    listeners.forEach((fn) => {
+      try {
+        fn(currentRoute);
+      } catch (err) {
+        console.error("[Router] listener error", err);
+      }
+    });
+  };
+
+  /* -------------------------- render pipeline ---------------------------- */
+  const handleRouteChange = async () => {
+    if (isDestroyed) return;
+
+    const pathname = window.location.pathname;
+    const matched = matchCurrent(pathname);
+
+    if (matched) {
+      const { node, params } = matched;
+      let data = null;
+      if (typeof node.loader === "function") {
+        try {
+          data = await node.loader(params);
+        } catch (err) {
+          console.error("[Router] loader error", err);
+          return navigate("/404", { replace: true });
+        }
+      }
+      currentRoute = {
+        route: node,
+        params,
+        pathname: getAppPath(pathname),
+        data,
+      };
+    } else {
+      // 404 fallback (동적 경로 포함 실패 시)
+      const notFound = routes.find((r) => r.path === "/404") || { path: "/404", component: null };
+      currentRoute = {
+        route: notFound,
+        params: {},
+        pathname: getAppPath(pathname),
+        data: null,
+      };
+    }
+
+    notify();
+  };
+
+  /* --------------------------- history helpers --------------------------- */
   const navigate = (path, { replace = false } = {}) => {
     if (isDestroyed) {
       console.warn("Router is destroyed. Cannot navigate.");
@@ -121,44 +163,39 @@ function createRouterInstance() {
     }
 
     const fullPath = getFullPath(path);
-
     if (replace) {
       window.history.replaceState({}, "", fullPath);
     } else {
       window.history.pushState({}, "", fullPath);
     }
-
     handleRouteChange();
   };
 
-  const subscribe = (listener) => {
-    if (isDestroyed) {
-      console.warn("Router is destroyed. Cannot subscribe.");
-      return () => {};
-    }
+  /* ------------------------------ lifecycle ------------------------------ */
+  const onPopState = () => {
+    if (!isDestroyed) handleRouteChange();
+  };
 
+  window.addEventListener("popstate", onPopState);
+
+  const subscribe = (listener) => {
+    if (isDestroyed) return () => {};
     listeners.add(listener);
     return () => listeners.delete(listener);
   };
 
-  const init = async () => {
-    if (isDestroyed) {
-      console.warn("Router is destroyed. Cannot initialize.");
-      return;
-    }
-    await handleRouteChange();
-  };
+  const init = () => handleRouteChange();
 
   const destroy = () => {
     isDestroyed = true;
-    routerApi._isDestroyed = true; // 외부 확인용 플래그 동기화
+    routerApi._isDestroyed = true;
     window.removeEventListener("popstate", onPopState);
     listeners.clear();
     routes.length = 0;
     currentRoute = null;
   };
 
-  // 외부에 노출되는 객체
+  /* ---------------------------- public object ---------------------------- */
   const routerApi = {
     addRoute,
     addRoutes,
@@ -172,18 +209,26 @@ function createRouterInstance() {
   return routerApi;
 }
 
-export function createRouter() {
-  return createRouterInstance();
+/* --------------------------------------------------------------------------
+ * createRouter (exported)
+ * -------------------------------------------------------------------------- */
+export function createRouter(initialRoutes = []) {
+  const router = createRouterInstance();
+  if (initialRoutes.length > 0) {
+    router.addRoutes(initialRoutes);
+  }
+  return router;
 }
 
+/* --------------------------------------------------------------------------
+ * Global router helpers (setup/get/cleanup)
+ * -------------------------------------------------------------------------- */
 let globalRouter = null;
 
 export function setupRouter(router) {
-  // 기존 라우터 정리
   if (globalRouter) globalRouter.destroy();
   globalRouter = router;
 
-  // window.navigateTo 헬퍼 등록
   if (!window.navigateTo) {
     window.navigateTo = (path, options) => {
       if (globalRouter && !globalRouter._isDestroyed) {
@@ -192,7 +237,6 @@ export function setupRouter(router) {
     };
   }
 
-  // 개발 편의 디버깅 노출
   if (process.env.NODE_ENV !== "production") {
     window.router = router;
   }
@@ -211,6 +255,9 @@ export function cleanupRouter() {
   if (window.router) delete window.router;
 }
 
+/* --------------------------------------------------------------------------
+ * Query-string helpers (기존 시그니처 유지)
+ * -------------------------------------------------------------------------- */
 export const getQueryParams = () => {
   const params = new URLSearchParams(window.location.search);
   const result = {};
@@ -222,13 +269,11 @@ export const getQueryParams = () => {
 
 export const updateQueryParams = (params, { replace = false } = {}) => {
   const current = new URLSearchParams();
-
   Object.entries(params).forEach(([key, v]) => {
     if (v !== "" && v !== null && v !== undefined) {
       current.set(key, v);
     }
   });
-
   const newUrl = `${window.location.pathname}${current.toString() ? `?${current.toString()}` : ""}`;
   if (replace) window.history.replaceState({}, "", newUrl);
   else window.history.pushState({}, "", newUrl);
