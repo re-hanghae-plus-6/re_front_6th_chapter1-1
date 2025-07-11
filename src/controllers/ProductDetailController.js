@@ -45,7 +45,7 @@ class ProductDetailController {
     });
 
     document.querySelector(".go-to-product-list")?.addEventListener("click", () => {
-      router.navigate("/");
+      router.navigate(router.BASE_PATH);
     });
   }
 }

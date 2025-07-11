@@ -1,5 +1,6 @@
 import ProductCard from "../components/ProductCard.js";
 import { LoadingCardList } from "../components/LoadingCard.js";
+import router from "../router/Router.js";
 
 export default function HomePage({
   products = [],
@@ -19,7 +20,7 @@ const 상품목록_레이아웃_로딩 = (products, total, loading, loadingMore,
         <div class="max-w-md mx-auto px-4 py-4">
           <div class="flex items-center justify-between">
             <h1 class="text-xl font-bold text-gray-900">
-              <a href="/" data-link="">쇼핑몰</a>
+              <a href="${router.BASE_PATH}" data-link="">쇼핑몰</a>
             </h1>
             <div class="flex items-center space-x-2">
               <!-- 장바구니 아이콘 -->

@@ -48,7 +48,7 @@ class HomePageController {
     if (this.state.category2) params.set("category2", this.state.category2);
 
     const qs = params.toString();
-    const newUrl = qs ? `/?${qs}` : "/";
+    const newUrl = qs ? `${router.BASE_PATH}/?${qs}` : router.BASE_PATH;
     let method = replace ? "replaceState" : "pushState";
     // limit 가 기본값(20)으로 돌아가는 경우 히스토리 덮어쓰기
     if (!replace && this.state.limit === 20 && params.size === 1 && params.has("limit")) {
