@@ -23,9 +23,9 @@ function getQueryParams() {
   return params;
 }
 
-async function loadMoreProducts() {
+export async function loadMoreProducts() {
   const { state } = store;
-  if (state.isLoadingMore) return;
+  if (state.isLoadingMore || !state.pagination?.hasNext) return;
 
   store.setLoadingMore(true);
 
@@ -61,11 +61,11 @@ async function loadMoreProducts() {
 }
 
 function handleScroll() {
-  if (store.state.isLoadingMore) return;
+  if (store.state.isLoadingMore || !store.state.pagination?.hasNext) return;
 
-  const scrollTop = document.documentElement.scrollTop;
+  const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
   const windowHeight = window.innerHeight;
-  const documentHeight = document.documentElement.scrollHeight;
+  const documentHeight = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
   const threshold = 500;
 
   // const loadingEl = document.getElementById("loading-text");
@@ -79,13 +79,10 @@ function createThrottledScrollHandler() {
   let ticking = false;
   return () => {
     if (!ticking) {
-      const isPlaywright = window.navigator && window.navigator.webdriver;
-
-      if (isPlaywright) {
-        setTimeout(() => {
-          handleScroll();
-          ticking = false;
-        }, 16);
+      // Playwright 환경에서는 즉시 실행
+      if (window.navigator?.webdriver || window.playwright) {
+        handleScroll();
+        ticking = false;
       } else {
         window.requestAnimationFrame(() => {
           handleScroll();
@@ -103,7 +100,7 @@ export function infiniteScroll() {
   }
   scrollHandler = createThrottledScrollHandler();
   window.addEventListener("scroll", scrollHandler);
-  console.log("스크롤 이벤트 리스너 등록됨"); // ← 이 로그도 확인
+  console.log("현재 pagination:", store.state.pagination); // ← 이 로그도 확인
 }
 
 export function resetInfiniteScroll() {

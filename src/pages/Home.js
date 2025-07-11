@@ -6,7 +6,12 @@ import SearchBox, { cleanupSearchBox, setupSearchBox } from "../components/produ
 import { Header, initHeader } from "../components/layout/Header.js";
 import Footer from "../components/layout/Footer.js";
 import { getQueryParam } from "../utils/getQueryParam.js";
-import { infiniteScroll, resetInfiniteScroll, cleanupInfiniteScroll } from "../utils/infiniteScroll.js";
+import {
+  infiniteScroll,
+  resetInfiniteScroll,
+  loadMoreProducts,
+  cleanupInfiniteScroll,
+} from "../utils/infiniteScroll.js";
 import { eventCartButtons } from "../components/product-list/Card.js";
 // 모듈 스코프 변수들
 const listStore = store;
@@ -181,9 +186,9 @@ function Home() {
       // 초기 데이터 로딩
       await loadInitialData();
 
+      window.loadMoreProducts = loadMoreProducts;
       // 이벤트 리스너 설정
       setupEventListeners();
-
       // DOM 렌더링 완료 후 무한 스크롤 초기화
       setTimeout(() => {
         infiniteScroll();
