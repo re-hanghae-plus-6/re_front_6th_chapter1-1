@@ -222,9 +222,9 @@ function setupRouter() {
 
   router.addRoute("/", homeHandler);
 
-  // Production 환경에서 base path 라우트도 홈으로 처리
-  if (import.meta.env.PROD) {
-    router.addRoute("/front_6th_chapter1-1/", homeHandler);
+  // base path가 있는 환경에서 base path 라우트도 홈으로 처리
+  if (router.basePath) {
+    router.addRoute(router.basePath + "/", homeHandler);
   }
 
   // 검색 페이지 라우트
