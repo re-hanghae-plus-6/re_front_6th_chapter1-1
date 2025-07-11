@@ -17,6 +17,9 @@ afterEach(() => {
   goTo("/");
   document.getElementById("root").innerHTML = "";
   localStorage.clear();
+
+  // 4. 마지막에 라우터 실행
+  goTo("/");
 });
 
 const 상품_상세페이지_접속 = async () => {

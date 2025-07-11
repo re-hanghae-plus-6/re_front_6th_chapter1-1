@@ -158,6 +158,9 @@ async function renderProductDetail(productId) {
     cart: state.cart,
     relatedProducts,
   });
+
+  // 이벤트 핸들러 설정 (마지막에 한 번만)
+  setupProductDetailEventListeners();
 }
 
 async function main() {
@@ -311,7 +314,27 @@ function navigateToProductDetail(productId) {
   router.navigate(`/product/${productId}`);
 }
 
+// 상품 상세 페이지 이벤트 핸들러가 이미 설정되었는지 추적
+let productDetailEventListenersSetup = false;
+
+// 테스트 환경에서 플래그 접근 가능하도록 노출
+if (import.meta.env.MODE === "test") {
+  window.productDetailEventListenersSetup = productDetailEventListenersSetup;
+}
+
 function setupProductDetailEventListeners() {
+  // 이미 설정되었다면 중복 설정 방지
+  if (productDetailEventListenersSetup) {
+    return;
+  }
+
+  productDetailEventListenersSetup = true;
+
+  // 테스트 환경에서 플래그 동기화
+  if (import.meta.env.MODE === "test") {
+    window.productDetailEventListenersSetup = productDetailEventListenersSetup;
+  }
+
   document.addEventListener("click", (event) => {
     // 장바구니 버튼 클릭은 무시
     if (event.target.matches(".add-to-cart-btn") || event.target.closest(".add-to-cart-btn")) {
