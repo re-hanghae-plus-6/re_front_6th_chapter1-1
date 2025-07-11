@@ -2,6 +2,7 @@ import Component from '../../../core/Component.js';
 import { getProduct } from '../../../api/productApi.js';
 import { numberUtils } from '../../../utils/numberUtils.js';
 import { router } from '../../../utils/router.js';
+import cartLocalStorage from '../../../store/cartLocalStorage.js';
 
 class DetailPage extends Component {
   constructor(element, props) {
@@ -9,7 +10,9 @@ class DetailPage extends Component {
     this.state = {
       loading: true,
       product: null,
+      quantity: 1,
     };
+    this.unsubscribeCartStorage = null;
   }
 
   async onMount() {
@@ -18,13 +21,84 @@ class DetailPage extends Component {
       loading: false,
       product: product,
     });
+
+    // 장바구니 데이터 변경시 자동 리렌더
+    this.unsubscribeCartStorage = cartLocalStorage.subscribe('cartProducts', () => {
+      this.render();
+    });
+  }
+
+  onUnmount() {
+    // 구독 해제
+    if (this.unsubscribeCartStorage) this.unsubscribeCartStorage();
+  }
+
+  handleChangeQuantity(action) {
+    if (action === 'increase') {
+      this.setState({
+        ...this.state,
+        quantity: this.state.quantity + 1,
+      });
+    } else if (action === 'decrease') {
+      this.setState({
+        ...this.state,
+        quantity: Math.max(1, this.state.quantity - 1),
+      });
+    }
+  }
+
+  handleAddCartItem(items, product) {
+    const { quantity } = this.state;
+    const existingItem = items.find((item) => item.productId === product.productId);
+
+    let updatedCart;
+    if (existingItem) {
+      updatedCart = items.map((item) => {
+        return item.productId === product.productId
+          ? { ...item, quantity: item.quantity + quantity }
+          : item;
+      });
+    } else {
+      const newItem = {
+        ...product,
+        quantity,
+        isSelected: false,
+      };
+      updatedCart = [...items, newItem];
+    }
+
+    cartLocalStorage.set('cartProducts', updatedCart);
   }
 
   attachEventListeners() {
     this.addEventListener(this.element, 'click', (event) => {
-      const goToProductListBtn = event.target.classList.contains('go-to-product-list');
+      const goToProductListBtn = event.target.closest('.go-to-product-list');
       if (goToProductListBtn) {
         router.push('/');
+        return;
+      }
+
+      const decreaseBtn = event.target.closest('#quantity-decrease');
+      if (decreaseBtn) {
+        this.handleChangeQuantity('decrease');
+        return;
+      }
+
+      const increaseBtn = event.target.closest('#quantity-increase');
+      if (increaseBtn) {
+        this.handleChangeQuantity('increase');
+        return;
+      }
+
+      const products = cartLocalStorage.get('cartProducts') || [];
+      const addToCartBtn = event.target.closest('#add-to-cart-btn');
+      if (addToCartBtn) {
+        this.handleAddCartItem(products, {
+          productId: this.state.product.productId,
+          title: this.state.product.title,
+          image: this.state.product.image,
+          lprice: this.state.product.lprice,
+        });
       }
     });
   }
@@ -164,7 +238,7 @@ class DetailPage extends Component {
                     <input
                       type="number"
                       id="quantity-input"
-                      value="1"
+                      value="${this.state.quantity}"
                       min="1"
                       max="107"
                       class="w-16 h-8 text-center text-sm border-t border-b border-gray-300 
@@ -189,7 +263,7 @@ class DetailPage extends Component {
                 <!-- 액션 버튼 -->
                 <button
                   id="add-to-cart-btn"
-                  data-product-id="85067212996"
+                  data-product-id="${product.productId}"
                   class="w-full bg-blue-600 text-white py-3 px-4 rounded-md 
                  hover:bg-blue-700 transition-colors font-medium"
                 >
