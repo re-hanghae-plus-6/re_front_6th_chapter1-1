@@ -1,4 +1,5 @@
 import { cartManager } from "../utils/cart";
+import { formatPrice } from "../utils/format.js";
 
 export const Cart = (items = []) => {
   // dimmed + Cart 모달 구조
@@ -122,7 +123,7 @@ function CartItem({ productId, title, lprice, image, quantity }) {
         >
           ${title}
         </h4>
-        <p class="text-sm text-gray-600 mt-1">${lprice}원</p>
+        <p class="text-sm text-gray-600 mt-1">${formatPrice(lprice)}</p>
         <!-- 수량 조절 -->
         <div class="flex items-center mt-2">
           <button
@@ -156,7 +157,7 @@ function CartItem({ productId, title, lprice, image, quantity }) {
       </div>
       <!-- 가격 및 삭제 -->
       <div class="text-right ml-3">
-        <p class="text-sm font-medium text-gray-900">${lprice * quantity}원</p>
+        <p class="text-sm font-medium text-gray-900">${formatPrice(lprice * quantity)}</p>
         <button class="cart-item-remove-btn mt-1 text-xs text-red-600 hover:text-red-800" data-product-id=${productId}>
           삭제
         </button>
@@ -176,12 +177,12 @@ function CartFooter() {
       <!-- 선택된 아이템 정보 -->
       <div class="flex justify-between items-center mb-3 text-sm">
         <span class="text-gray-600">선택한 상품 (${selectedItems.length}개)</span>
-        <span class="font-medium">${totalSelectedPrice}원</span>
+        <span class="font-medium">${formatPrice(totalSelectedPrice)}</span>
       </div>
       <!-- 총 금액 -->
       <div class="flex justify-between items-center mb-4">
         <span class="text-lg font-bold text-gray-900">총 금액</span>
-        <span class="text-xl font-bold text-blue-600">${totalPrice}원</span>
+        <span class="text-xl font-bold text-blue-600">${formatPrice(totalPrice)}</span>
       </div>
       <!-- 액션 버튼들 -->
       <div class="space-y-2">

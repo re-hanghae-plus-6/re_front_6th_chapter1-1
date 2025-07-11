@@ -1,4 +1,5 @@
 import { cartManager } from "../../utils/cart";
+import { formatPrice } from "../../utils/format.js";
 
 export const ItemDetail = ({ product, related, loading = false } = {}) => {
   return `
@@ -84,7 +85,7 @@ function DetailContent(loading, product, related) {
           ${DetailRating(product.rating, product.reviewCount)}
           <!-- 가격 -->
           <div class="mb-4">
-            <span class="text-2xl font-bold text-blue-600">${product.lprice}원</span>
+            <span class="text-2xl font-bold text-blue-600">${formatPrice(product.lprice)}</span>
           </div>
           <!-- 재고 -->
           <div class="text-sm text-gray-600 mb-4">재고 ${product.stock}개</div>
@@ -101,7 +102,8 @@ function DetailContent(loading, product, related) {
           <div class="flex items-center">
             <button
               id="quantity-decrease"
-              class="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-l-md bg-gray-50 hover:bg-gray-100"
+              class="w-8 h-8 flex items-center justify-center border border-gray-300
+                   rounded-l-md bg-gray-50 hover:bg-gray-100"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
@@ -112,7 +114,7 @@ function DetailContent(loading, product, related) {
               id="quantity-input"
               value="1"
               min="1"
-              max="107"
+              max="${product.stock}"
               class="w-16 h-8 text-center text-sm border-t border-b border-gray-300
                   focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
             />
@@ -130,7 +132,7 @@ function DetailContent(loading, product, related) {
         <!-- 액션 버튼 -->
         <button
           id="add-to-cart-btn"
-          data-product-id=${product.productId}
+          data-product-id="${product.productId}"
           class="w-full bg-blue-600 text-white py-3 px-4 rounded-md
                  hover:bg-blue-700 transition-colors font-medium"
         >
@@ -142,14 +144,27 @@ function DetailContent(loading, product, related) {
     <div class="mb-6">
       <button
         class="block w-full text-center bg-gray-100 text-gray-700 py-3 px-4 rounded-md
-            hover:bg-gray-200 transition-colors go-to-product-list"
+          hover:bg-gray-200 transition-colors go-to-product-list"
       >
         상품 목록으로 돌아가기
       </button>
     </div>
     <!-- 관련 상품 -->
-    ${relatedProducts.length > 0 ? DetailRelated(relatedProducts) : ""}
-    `;
+    <div class="bg-white rounded-lg shadow-sm">
+      <div class="p-4 border-b border-gray-200">
+        <h2 class="text-lg font-bold text-gray-900">관련 상품</h2>
+        <p class="text-sm text-gray-600">같은 카테고리의 다른 상품들</p>
+      </div>
+      <div class="p-4">
+        <div class="grid grid-cols-2 gap-3 responsive-grid">
+          ${relatedProducts
+            .slice(0, 4)
+            .map((item) => RelatedItemCard(item))
+            .join("")}
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 function DetailBreadcrumb(product) {
@@ -210,21 +225,6 @@ function DetailRating(rating, reviewCount) {
   </div>`;
 }
 
-function DetailRelated(related) {
-  return `
-  <div class="bg-white rounded-lg shadow-sm">
-    <div class="p-4 border-b border-gray-200">
-      <h2 class="text-lg font-bold text-gray-900">관련 상품</h2>
-      <p class="text-sm text-gray-600">같은 카테고리의 다른 상품들</p>
-    </div>
-    <div class="p-4">
-      <div class="grid grid-cols-2 gap-3 responsive-grid">
-        ${related.map((item) => RelatedItemCard(item)).join("")}
-      </div>
-    </div>
-  </div>`;
-}
-
 function RelatedItemCard({ productId, image, title, lprice }) {
   return `
   <div class="bg-gray-50 rounded-lg p-3 related-product-card cursor-pointer" data-product-id=${productId}>
@@ -239,7 +239,7 @@ function RelatedItemCard({ productId, image, title, lprice }) {
     <h3 class="text-sm font-medium text-gray-900 mb-1 line-clamp-2">
       ${title}
     </h3>
-    <p class="text-sm font-bold text-blue-600">${lprice}원</p>
+    <p class="text-sm font-bold text-blue-600">${formatPrice(lprice)}</p>
   </div>
   `;
 }

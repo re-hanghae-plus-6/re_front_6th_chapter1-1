@@ -5,6 +5,7 @@ import { Cart } from "./components/Cart.js";
 import { Toast } from "./components/common/Toast.js";
 import { ItemDetail } from "./components/pages/ItemDetail.js";
 import { NotFound } from "./components/pages/NotFound.js";
+import { formatPrice } from "./utils/format.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -139,6 +140,15 @@ root.addEventListener("change", async (e) => {
   if (e.target.id === "limit-select" || e.target.id === "sort-select") {
     currentLimit = Number(document.getElementById("limit-select").value);
     currentSort = document.getElementById("sort-select").value;
+
+    // URL 업데이트 추가
+    const url = new URL(window.location);
+    const urlParams = url.searchParams;
+    urlParams.set("limit", currentLimit.toString());
+    urlParams.set("sort", currentSort);
+    urlParams.set("current", "1"); // 페이지 번호도 1로 리셋
+    history.pushState({}, "", `${url.pathname}?${urlParams.toString()}`);
+
     // 로딩 화면
     root.innerHTML = MainList({
       loading: true,
@@ -427,11 +437,11 @@ function setupModalEvents(modalRoot) {
         input.value = item.quantity;
         // 개별 아이템 총액 업데이트
         const priceEl = modalRoot.querySelector(`.cart-item[data-product-id="${pid}"] p.text-sm.font-medium`);
-        priceEl.textContent = `${item.lprice * item.quantity}원`;
+        priceEl.textContent = formatPrice(item.lprice * item.quantity);
         // footer 총 금액 업데이트
         const totalEl = modalRoot.querySelector(".sticky.bottom-0 .text-xl.font-bold.text-blue-600");
         const total = cartManager.getCart().reduce((sum, i) => sum + i.lprice * i.quantity, 0);
-        totalEl.textContent = `${total.toLocaleString()}원`;
+        totalEl.textContent = formatPrice(total);
         return;
       }
 
@@ -448,7 +458,7 @@ function setupModalEvents(modalRoot) {
           const input = modalRoot.querySelector(`.quantity-input[data-product-id="${pid}"]`);
           input.value = item.quantity;
           const priceEl = modalRoot.querySelector(`.cart-item[data-product-id="${pid}"] p.text-sm.font-medium`);
-          priceEl.textContent = `${item.lprice * item.quantity}원`;
+          priceEl.textContent = formatPrice(item.lprice * item.quantity);
         } else {
           // quantity 1→0 으로 삭제된 경우 DOM에서 제거
           modalRoot.querySelector(`.cart-item[data-product-id="${pid}"]`).remove();
@@ -457,7 +467,7 @@ function setupModalEvents(modalRoot) {
         // footer 총 금액 업데이트
         const totalEl = modalRoot.querySelector(".sticky.bottom-0 .text-xl.font-bold.text-blue-600");
         const total = cart.reduce((sum, i) => sum + i.lprice * i.quantity, 0);
-        totalEl.textContent = `${total.toLocaleString()}원`;
+        totalEl.textContent = formatPrice(total);
         return;
       }
 
