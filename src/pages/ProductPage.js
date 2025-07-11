@@ -39,9 +39,11 @@ export class ProductPage extends Component {
 
   bindEvents(element) {
     element.addEventListener("click", (e) => {
-      const route = e.target.dataset.route;
-      if (route) {
+      const targetElement = e.target.closest("[data-route]");
+      if (targetElement) {
+        const route = targetElement.dataset.route;
         this.props.router.navigate(route);
+        return;
       }
 
       if (e.target.classList.contains("cart-modal-overlay")) {
@@ -56,6 +58,22 @@ export class ProductPage extends Component {
         case "cart-modal-close-btn":
           this.setState({ isOpenCartModal: false });
           break;
+        case "quantity-decrease":
+        case "quantity-increase": {
+          const input = document.getElementById("quantity-input");
+          if (!input) break;
+
+          const current = Number(input.value);
+          const delta = e.target.id === "quantity-increase" ? 1 : -1;
+          const next = current + delta;
+
+          // min/max 제한 적용
+          const min = Number(input.min) || 1;
+          const max = Number(input.max) || Infinity;
+          input.value = Math.max(min, Math.min(max, next));
+
+          break;
+        }
       }
     });
 
@@ -149,6 +167,7 @@ export class ProductPage extends Component {
                     <div class="grid grid-cols-2 gap-3 responsive-grid">
                       <div
                         class="bg-gray-50 rounded-lg p-3 related-product-card cursor-pointer"
+                        data-route="/product/86940857379"
                         data-product-id="86940857379"
                       >
                         <div class="aspect-square bg-white rounded-md overflow-hidden mb-2">
@@ -166,6 +185,7 @@ export class ProductPage extends Component {
                       </div>
                       <div
                         class="bg-gray-50 rounded-lg p-3 related-product-card cursor-pointer"
+                        data-route="/product/82094468339"
                         data-product-id="82094468339"
                       >
                         <div class="aspect-square bg-white rounded-md overflow-hidden mb-2">

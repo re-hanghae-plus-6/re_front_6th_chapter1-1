@@ -1,7 +1,8 @@
 import { StarRating } from "./StarRating";
 
 export function ProductDetailInfo(props) {
-  const { title, image, lprice, description, rating, reviewCount, stock } = props;
+  const { title, image, lprice, description, rating, reviewCount, stock, brand } = props;
+  const formattedPrice = Number(lprice).toLocaleString("ko-KR") + "원";
 
   return /* HTML */ `
     <!-- 상품 이미지 -->
@@ -11,7 +12,7 @@ export function ProductDetailInfo(props) {
       </div>
       <!-- 상품 정보 -->
       <div>
-        <p class="text-sm text-gray-600 mb-1"></p>
+        <p class="text-sm text-gray-600 mb-1">${brand}</p>
         <h1 class="text-xl font-bold text-gray-900 mb-3">${title}</h1>
 
         <!-- 평점 및 리뷰 -->
@@ -22,7 +23,7 @@ export function ProductDetailInfo(props) {
 
         <!-- 가격 -->
         <div class="mb-4">
-          <span class="text-2xl font-bold text-blue-600">${lprice}원</span>
+          <span class="text-2xl font-bold text-blue-600">${formattedPrice}</span>
         </div>
 
         <!-- 재고 -->
