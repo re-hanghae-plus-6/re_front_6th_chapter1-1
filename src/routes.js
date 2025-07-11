@@ -7,12 +7,7 @@ export const ROUTES = {
     path: "/",
     component: ProductListPage,
     headerType: "main",
-    loadingAction: () => ({
-      loading: true,
-      loadingCategories: true,
-      error: null,
-      categoriesError: null,
-    }),
+    loadingAction: null,
   },
   PRODUCT_DETAIL: {
     path: "/product/:id",
