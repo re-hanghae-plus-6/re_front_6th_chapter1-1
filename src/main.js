@@ -1,9 +1,10 @@
 import FilterSection from "./components/filter/FilterSection.js";
 import MainLayout from "./components/layout/MainLayout.js";
 import ProductGrid from "./components/product/ProductGrid.js";
-import { getProducts, getCategories } from "./api/productApi.js";
+import { getProduct, getProducts, getCategories } from "./api/productApi.js";
 import store from "./store/store.js";
 import router from "./utils/router.js";
+import ProductDetail from "./components/detail/ProductDetail.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -30,13 +31,13 @@ const state = {
   cartCount: 0,
 };
 
-export let render = function (state) {
+export let render = async function (state) {
   const rootDOM = document.body.querySelector("#root");
   const path = window.location.pathname;
   const detailPage = path.match(/^\/product=(.+)$/);
   let html;
 
-  if (path === "/" || path === "") {
+  if (path === "/" || path === "" || path.includes("limit") || path.includes("sort") || path.includes("searchValue")) {
     html = MainLayout({
       content: `
         ${FilterSection({
@@ -60,9 +61,12 @@ export let render = function (state) {
         title: "쇼핑몰",
     });
   } else if (detailPage) {
-  
+    const productId = path.split("=")[1];
+    const product = await getProduct(productId);
+    state.productDetail = product;
+
     html = MainLayout({
-      content: "",
+      content: `${ProductDetail({ productInfo: product })}`,
       cartCount: state.cartCount,
       showBackButton: true,
       title: "상품 상세",
