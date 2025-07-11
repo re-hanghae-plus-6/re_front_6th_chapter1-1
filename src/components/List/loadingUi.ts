@@ -1,7 +1,10 @@
-import LoadingListItem from "./ListItem/loadingUi";
+import { LoadingListItem } from "./ListItem";
+import { LoadingListSearchBox } from "./ListSearchBox";
 
 const LoadingList = `
   <main class="max-w-md mx-auto px-4 py-4">
+  <!-- 검색 및 필터 -->
+  ${LoadingListSearchBox}
     <!-- 상품 목록 -->
     <div class="mb-6">
       <div>
