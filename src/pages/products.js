@@ -4,10 +4,12 @@ import { Header } from "../components/Header";
 import { Layouy } from "../components/Layout";
 import { Products } from "../components/Products";
 import { Component } from "../core/Component";
+import { cartStore } from "../store/cart";
 import { productsStore } from "../store/products";
 import { html } from "../utils/html";
 
 export function ProductsPage($root) {
+  cartStore.init();
   productsStore.initSearchParams();
   productsStore.loadCategories().then(() => {
     productsStore.loadProducts();
