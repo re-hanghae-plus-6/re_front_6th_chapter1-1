@@ -1,3 +1,6 @@
+import { MinusIcon } from "../icons/MinusIcon";
+import { PlusIcon } from "../icons/PlusIcon";
+
 export function CartItem(props) {
   const { id, image, price, quantity, selected, title } = props;
 
@@ -36,9 +39,7 @@ export function CartItem(props) {
             class="quantity-decrease-btn w-7 h-7 flex items-center justify-center border border-gray-300 rounded-l-md bg-gray-50 hover:bg-gray-100"
             data-product-id="${id}"
           >
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
-            </svg>
+            ${MinusIcon({ className: "w-3 h-3 pointer-events-none" })}
           </button>
           <input
             type="number"
@@ -52,9 +53,7 @@ export function CartItem(props) {
             class="quantity-increase-btn w-7 h-7 flex items-center justify-center border border-gray-300 rounded-r-md bg-gray-50 hover:bg-gray-100"
             data-product-id="${id}"
           >
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-            </svg>
+            ${PlusIcon({ className: "w-3 h-3 pointer-events-none" })}
           </button>
         </div>
       </div>

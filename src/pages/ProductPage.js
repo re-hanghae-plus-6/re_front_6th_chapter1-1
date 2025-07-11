@@ -117,7 +117,7 @@ export class ProductPage extends Component {
                           id="quantity-decrease"
                           class="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-l-md bg-gray-50 hover:bg-gray-100"
                         >
-                          ${MinusIcon()}
+                          ${MinusIcon({ className: "w-4 h-4 pointer-events-none" })}
                         </button>
                         <input
                           type="number"
@@ -131,7 +131,7 @@ export class ProductPage extends Component {
                           id="quantity-increase"
                           class="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-r-md bg-gray-50 hover:bg-gray-100"
                         >
-                          ${PlusIcon()}
+                          ${PlusIcon({ className: "w-4 h-4 pointer-events-none" })}
                         </button>
                       </div>
                     </div>
