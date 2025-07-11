@@ -4,18 +4,18 @@ import useRender from "./core/useRender.js";
 import useStore from "./core/useStore.js";
 
 const enableMocking = () =>
-  import("./mocks/browser.js").then(({ worker }) =>
-    worker.start({
-      onUnhandledRequest: "bypass",
-      serviceWorker: {
-        url: `${import.meta.env.BASE_URL}mockServiceWorker.js`,
-      },
-    }),
-  );
+  import("./mocks/browser.js").then(({ worker, workerOptions }) => worker.start(workerOptions));
+
+if (import.meta.env.MODE !== "test") {
+  enableMocking().then(main);
+} else {
+  main();
+}
 
 export const render = useRender();
 export const navigate = useNavigate();
 export const store = useStore();
+export const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
 
 function main() {
   // #root Element에 Layout HTML 삽입
