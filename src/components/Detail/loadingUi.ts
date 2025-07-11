@@ -1,4 +1,4 @@
-const 상세페이지_로딩 = `
+const DetailLoading = `
   <main class="max-w-md mx-auto px-4 py-4">
     <div class="py-20 bg-gray-50 flex items-center justify-center">
       <div class="text-center">
@@ -8,3 +8,5 @@ const 상세페이지_로딩 = `
     </div>
   </main>
 `;
+
+export default DetailLoading;
