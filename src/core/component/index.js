@@ -30,9 +30,14 @@ class Component {
     this.render();
   }
 
+  createBoxlessContainer(name) {
+    return `<div data-component=${name} style='display: contents;'></div>`;
+  }
+
   mountChildren() {
     Object.entries(this.children).forEach(([name, config]) => {
       const target = this.$target.querySelector(`[data-component="${name}"]`);
+
       if (!target) return;
 
       const ChildrenClass = config.component;
@@ -45,7 +50,7 @@ class Component {
         prevInstance.props = props;
         prevInstance.render();
       } else {
-        const instance = new ChildrenClass({ target });
+        const instance = new ChildrenClass({ target, props });
         this.childrenInstance.set(name, instance);
       }
     });
