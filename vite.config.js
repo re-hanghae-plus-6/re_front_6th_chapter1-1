@@ -1,10 +1,9 @@
 import { defineConfig } from "vitest/config";
 
-export default defineConfig(() => {
-  const isCI = !!process.env.GITHUB_ACTIONS;
+export default defineConfig(({ mode }) => {
   const repo = process.env.GITHUB_REPOSITORY?.split("/")[1] ?? "";
   return {
-    base: isCI ? `/${repo}/` : "/",
+    base: mode === "pages" ? `/${repo}/` : "/",
     test: {
       globals: true,
       environment: "jsdom",
