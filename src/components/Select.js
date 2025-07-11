@@ -31,7 +31,9 @@ class SelectFilter extends Component {
     super.setEvent();
     this.addEvent("change", (e) => {
       if (e.target.closest("select")) {
-        this.props.setValue(e.target.value);
+        const newValue = e.target.value;
+        e.target.value = this.props.initValue();
+        this.props.setValue(newValue);
       }
     });
   }
