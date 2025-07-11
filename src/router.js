@@ -76,7 +76,7 @@ class Router {
   async cleanupCurrentPage() {
     if (this.currentPage) {
       // 현재 페이지의 모든 진행 중인 작업을 취소
-      if (typeof this.currentPage.cleanup === 'function') {
+      if (typeof this.currentPage.cleanup === "function") {
         await this.currentPage.cleanup();
       }
       // unmounted 호출
@@ -86,7 +86,7 @@ class Router {
       // DOM에서 페이지 컨텐츠 제거
       const pageContent = document.getElementById("page-content");
       if (pageContent) {
-        pageContent.innerHTML = '';
+        pageContent.innerHTML = "";
       }
       this.currentPage = null;
     }
