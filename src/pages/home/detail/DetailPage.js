@@ -1,6 +1,7 @@
 import Component from '../../../core/Component.js';
 import { getProduct } from '../../../api/productApi.js';
 import { numberUtils } from '../../../utils/numberUtils.js';
+import { router } from '../../../utils/router.js';
 
 class DetailPage extends Component {
   constructor(element, props) {
@@ -16,6 +17,15 @@ class DetailPage extends Component {
     this.setState({
       loading: false,
       product: product,
+    });
+  }
+
+  attachEventListeners() {
+    this.addEventListener(this.element, 'click', (event) => {
+      const goToProductListBtn = event.target.classList.contains('go-to-product-list');
+      if (goToProductListBtn) {
+        router.push('/');
+      }
     });
   }
 
