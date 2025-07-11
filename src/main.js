@@ -39,6 +39,8 @@ const enableMocking = () =>
 
 if (import.meta.env.MODE !== "test") {
   enableMocking().then(main);
+  console.log("Test환경인가요");
 } else {
   main();
+  // alert("hello!");
 }
