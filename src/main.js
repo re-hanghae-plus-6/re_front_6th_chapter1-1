@@ -1,5 +1,5 @@
 import Footer from "./shared/ui/footer";
-import Header from "./components/Header";
+import Header from "./shared/ui/Header";
 import { ListPageController, updateListPageUI, createListPageContainer } from "./pages/ListPage";
 
 const enableMocking = () => {
