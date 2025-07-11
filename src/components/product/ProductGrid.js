@@ -24,9 +24,6 @@ export default function ProductGrid({ products = [], total = 0, loading = false,
   };
 
   const renderLoadMore = () => {
-    console.log('a');
-    console.log(loading);
-    console.log(products.length);
     if (loading && products.length > 0) {
       return LoadingSpinner();
     }
