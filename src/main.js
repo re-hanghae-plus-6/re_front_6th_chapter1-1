@@ -29,7 +29,8 @@ export let render = async function (state) {
   const detailPage = path.match(/^\/product=(.+)$/);
   let html;
 
-  if (path === "/" || path === "" ||
+  if (path === "/" || 
+      path === "" ||
       path.includes("limit") ||
       path.includes("sort") || 
       path.includes("searchValue") || 
