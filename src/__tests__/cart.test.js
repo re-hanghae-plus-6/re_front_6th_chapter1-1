@@ -26,7 +26,14 @@ beforeEach(() => goTo("/"));
 afterEach(() => {
   // 각 테스트 후 상태 초기화
   document.getElementById("root").innerHTML = "";
+  document.getElementById("modal-root").innerHTML = "";
   localStorage.clear();
+
+  // window 객체에서 state 접근해서 초기화
+  if (window.state) {
+    window.state.cart = [];
+    window.state.selectedCartItems = [];
+  }
 });
 
 describe("1. 장바구니 모달", () => {

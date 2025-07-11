@@ -118,6 +118,11 @@ export let state = {
   selectedCategory2: null,
 };
 
+// 테스트 환경에서 state 접근 가능하도록 노출
+if (import.meta.env.MODE === "test") {
+  window.state = state;
+}
+
 function render() {
   document.body.querySelector("#root").innerHTML = HomePage(state);
   setupInfiniteScroll();

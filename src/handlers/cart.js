@@ -18,7 +18,7 @@ function updateTotalPrice(state) {
   // DOM에서 총 금액 업데이트
   const totalPriceElement = document.querySelector(".text-xl.font-bold.text-blue-600");
   if (totalPriceElement) {
-    totalPriceElement.textContent = `${totalPrice.toLocaleString()}원`;
+    totalPriceElement.textContent = `${totalPrice}원`;
   }
 }
 
@@ -139,7 +139,7 @@ export function increaseCartItemQuantity(productId, state) {
       const priceElement = cartItem.querySelector(".text-right .text-sm.font-medium");
       if (priceElement) {
         const unitPrice = parseInt(product.lprice);
-        priceElement.textContent = `${(unitPrice * newQuantity).toLocaleString()}원`;
+        priceElement.textContent = `${unitPrice * newQuantity}원`;
       }
 
       // 총 금액 업데이트
@@ -177,7 +177,7 @@ export function decreaseCartItemQuantity(productId, state, { renderCartModal, sh
         const priceElement = cartItem.querySelector(".text-right .text-sm.font-medium");
         if (priceElement) {
           const unitPrice = parseInt(product.lprice);
-          priceElement.textContent = `${(unitPrice * newQuantity).toLocaleString()}원`;
+          priceElement.textContent = `${unitPrice * newQuantity}원`;
         }
 
         // 총 금액 업데이트
