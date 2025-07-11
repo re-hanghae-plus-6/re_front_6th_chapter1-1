@@ -109,42 +109,17 @@ window.addEventListener("scroll", async () => {
 
 // 카트 관련 이벤트 위임
 root.addEventListener("click", (e) => {
+  console.log("e.target.id", e.target);
   // 장바구니 담기 버튼 클릭
   if (e.target.classList.contains("add-to-cart-btn")) {
     const productId = e.target.dataset.productId;
     const product = allProducts.find((p) => p.productId === productId);
     if (product) {
       cartManager.addToCart(product);
+      window.openCartModal(cartManager.getCart());
       // 토스트 메시지 표시
       showToast("success");
     }
-  }
-
-  // 장바구니에서 삭제 버튼 클릭
-  if (e.target.classList.contains("cart-item-remove-btn")) {
-    const productId = e.target.dataset.productId;
-    cartManager.removeFromCart(productId);
-    // 모달 다시 렌더링
-    const modalRoot = document.getElementById("modal-root");
-    if (modalRoot) {
-      modalRoot.innerHTML = Cart(cartManager.getCart());
-    }
-    // 토스트 메시지 표시
-    showToast("info");
-  }
-
-  // 전체 비우기 버튼 클릭
-  if (e.target.id === "cart-modal-clear-cart-btn") {
-    cartManager.resetCart();
-    // 모달 다시 렌더링
-    const modalRoot = document.getElementById("modal-root");
-    if (modalRoot) {
-      modalRoot.innerHTML = Cart(cartManager.getCart());
-      // 모달 이벤트 리스너 다시 연결
-      setupModalEvents(modalRoot);
-    }
-    // 토스트 메시지 표시
-    showToast("info");
   }
 });
 
@@ -168,13 +143,47 @@ function setupModalEvents(modalRoot) {
 
   // 모달 전체 클릭 이벤트 (dimmed 배경 클릭 시에만 닫기)
   modalRoot.addEventListener("click", (e) => {
+    console.log("modal clicked, target:", e.target.className, "id:", e.target.id);
     if (e.target.classList.contains("modal-dimmed")) {
+      console.log("dimmed clicked");
       closeModal();
     }
   });
 
   // ESC 키 이벤트
   window.addEventListener("keydown", handleEsc);
+
+  // 모달 내용에 직접 이벤트 리스너 추가
+  const modalInner = modalRoot.querySelector('[style*="pointer-events: auto"]');
+  if (modalInner) {
+    modalInner.addEventListener("click", (e) => {
+      console.log("modal inner clicked:", e.target.className, e.target.id);
+
+      // 장바구니에서 삭제 버튼 클릭
+      if (e.target.classList.contains("cart-item-remove-btn")) {
+        const productId = e.target.dataset.productId;
+        cartManager.removeFromCart(productId);
+        // 모달 다시 렌더링
+        modalRoot.innerHTML = Cart(cartManager.getCart());
+        // 모달 이벤트 리스너 다시 연결
+        setupModalEvents(modalRoot);
+        // 토스트 메시지 표시
+        showToast("info");
+      }
+
+      // 전체 비우기 버튼 클릭
+      if (e.target.id === "cart-modal-clear-cart-btn") {
+        console.log("전체 비우기 버튼 클릭");
+        cartManager.resetCart();
+        // 모달 다시 렌더링
+        modalRoot.innerHTML = Cart(cartManager.getCart());
+        // 모달 이벤트 리스너 다시 연결
+        setupModalEvents(modalRoot);
+        // 토스트 메시지 표시
+        showToast("info");
+      }
+    });
+  }
 }
 
 // 전역에서 사용할 수 있도록 window 객체에 추가
