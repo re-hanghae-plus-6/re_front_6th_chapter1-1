@@ -1,5 +1,5 @@
-import { Footer } from "./Footer";
-import { Navbar } from "./Navbar";
+import { Footer } from "./Footer.js";
+import { Navbar } from "./Navbar.js";
 import { ToastContainer } from "../common/Toast.js";
 
 export const Layout = (content, navbarOptions = {}) => /* html */ `
