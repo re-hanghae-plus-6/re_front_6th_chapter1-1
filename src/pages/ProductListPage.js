@@ -16,6 +16,8 @@ export class ProductListPage extends Component {
   constructor(props) {
     super(props);
 
+    this.cartService = createCartService();
+
     const params = new URLSearchParams(window.location.search);
     this.state = {
       loading: true,
@@ -29,9 +31,9 @@ export class ProductListPage extends Component {
       },
       categories: {},
       isOpenCartModal: false,
+      cartItemCount: this.cartService.itemCount,
+      cartItems: this.cartService.items,
     };
-
-    this.cartService = createCartService();
 
     const infinite = new InfiniteScroll({
       threshold: 200,
@@ -158,6 +160,7 @@ export class ProductListPage extends Component {
       if (e.target.classList.contains("add-to-cart-btn")) {
         const productId = e.target.dataset.productId;
         const product = this.state.products.find((item) => item.productId === productId);
+
         this.cartService.addItem({
           id: productId,
           image: product.image,
@@ -165,7 +168,11 @@ export class ProductListPage extends Component {
           selected: false,
           title: product.title,
         });
-        this.setState({ cartItemCount: this.cartService.itemCount });
+
+        this.setState({
+          cartItemCount: this.cartService.itemCount,
+          cartItems: this.cartService.items,
+        });
 
         return;
       }
@@ -315,7 +322,7 @@ export class ProductListPage extends Component {
         </main>
 
         <!-- 장바구니 모달 -->
-        ${this.state.isOpenCartModal ? CartModal() : ""}
+        ${this.state.isOpenCartModal ? CartModal({ cartItems: this.state.cartItems }) : ""}
 
         <!-- 하단 푸터 -->
         ${Footer()}
