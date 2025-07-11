@@ -111,6 +111,12 @@ export function useRouter(container) {
 
   const navigate = (path) => {
     const fullPath = getFullPath(path);
+
+    // 현재 URL과 같은 경우 히스토리에 추가하지 않음
+    if (window.location.pathname === fullPath) {
+      return;
+    }
+
     history.pushState(null, "", fullPath);
     render(path);
   };
@@ -131,12 +137,22 @@ export function useRouter(container) {
     }
   };
 
+  let popstateHandler = null;
+
   const init = () => {
     initRoutes();
 
-    window.addEventListener("popstate", () => {
+    // 기존 이벤트 리스너 제거
+    if (popstateHandler) {
+      window.removeEventListener("popstate", popstateHandler);
+    }
+
+    // 새로운 이벤트 리스너 등록
+    popstateHandler = () => {
       render(getAppPath(window.location.pathname));
-    });
+    };
+
+    window.addEventListener("popstate", popstateHandler);
 
     render(getAppPath(window.location.pathname));
   };
