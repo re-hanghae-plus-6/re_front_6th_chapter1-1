@@ -346,7 +346,7 @@ function CartFooter() {
           class="w-full bg-red-600 text-white py-2 px-4 rounded-md
                         hover:bg-red-700 transition-colors text-sm"
         >
-          선택한 상품 삭제 (1개)
+          선택한 상품 삭제 (${selectedItems.length}개)
         </button>
         <div class="flex gap-2">
           <button

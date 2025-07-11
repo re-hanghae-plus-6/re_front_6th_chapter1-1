@@ -57,6 +57,13 @@ export const cartManager = {
     localStorage.setItem("cart", JSON.stringify(cart));
   },
 
+  removeSelectedItems() {
+    const cart = this.getCart();
+    const updatedCart = cart.filter((item) => !item.selected);
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
+    this.updateCartCount();
+  },
+
   resetCart() {
     localStorage.removeItem("cart");
     this.updateCartCount();

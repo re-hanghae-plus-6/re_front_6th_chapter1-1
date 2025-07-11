@@ -196,6 +196,14 @@ function setupModalEvents(modalRoot) {
         setupModalEvents(modalRoot);
       }
 
+      // 선택한 상품 삭제 버튼 클릭
+      if (e.target.id === "cart-modal-remove-selected-btn") {
+        cartManager.removeSelectedItems();
+        modalRoot.innerHTML = Cart(cartManager.getCart());
+        setupModalEvents(modalRoot);
+        showToast("info");
+      }
+
       // 전체 비우기 버튼 클릭
       if (e.target.id === "cart-modal-clear-cart-btn") {
         cartManager.resetCart();
