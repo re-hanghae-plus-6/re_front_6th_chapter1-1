@@ -110,7 +110,6 @@ async function renderDetail(productId) {
 // 라우트 핸들러
 function handleRoute() {
   const path = window.location.pathname;
-  console.log("path", path);
 
   // 테스트 환경에서는 매번 전역 상태 초기화
   if (window.navigator.userAgent.includes("jsdom")) {
@@ -165,8 +164,17 @@ function resetGlobalState() {
 }
 
 // 애플리케이션 시작
-// 초기 실행 및 popstate 라우팅
-enableMocking().then(handleRoute);
+// if (import.meta.env.MODE === "test") {
+//   handleRoute();
+// } else {
+//   enableMocking().then(handleRoute);
+// }
+
+if (import.meta.env.MODE !== "test") {
+  enableMocking().then(handleRoute);
+}
+
+// popstate 이벤트는 무조건 등록
 window.addEventListener("popstate", handleRoute);
 
 // 테스트 환경에서 전역 상태 초기화를 위한 전역 함수
@@ -178,7 +186,6 @@ function setupLimitSelectListener() {
   if (limitSelect && !limitSelect.hasAttribute("data-listener-added")) {
     limitSelect.setAttribute("data-listener-added", "true");
     limitSelect.addEventListener("change", async (e) => {
-      console.log("limit-select 직접 이벤트 발생:", e.target.value);
       currentLimit = Number(e.target.value);
       currentSort = document.getElementById("sort-select").value;
 
@@ -230,17 +237,9 @@ const root = document.getElementById("root");
 
 // limit, sort change 이벤트 위임 (카테고리, 검색 유지) - window에 등록
 window.addEventListener("change", async (e) => {
-  console.log("change 이벤트 발생:", e.target.id, "값:", e.target.value, "타임스탬프:", Date.now());
   if (e.target.id === "limit-select" || e.target.id === "sort-select") {
-    console.log("limit/sort 변경 감지:", e.target.value);
-
     // limit-select 요소 상태 확인
-    const limitSelect = document.getElementById("limit-select");
-    console.log("limit-select 요소 존재:", !!limitSelect);
-    if (limitSelect) {
-      console.log("limit-select 값:", limitSelect.value);
-      console.log("limit-select 비활성화:", limitSelect.disabled);
-    }
+
     currentLimit = Number(document.getElementById("limit-select").value);
     currentSort = document.getElementById("sort-select").value;
 
@@ -296,7 +295,6 @@ root.addEventListener("keydown", async (e) => {
 
   // URL 쿼리 파라미터 업데이트 (encodeURIComponent 적용)
   const encodedKeyword = encodeURIComponent(keyword);
-  console.log("encodedKeyword", encodedKeyword);
   // 검색어가 있을 때만 붙이고, 없으면 current만 1로 세팅
   const query = `?search=${encodedKeyword}`;
   history.pushState({}, "", window.location.pathname + query);
@@ -342,7 +340,6 @@ root.addEventListener("keydown", async (e) => {
   if (limitSelect) {
     limitSelect.onclick = () => {
       setTimeout(() => {
-        console.log("limit-select onclick 실행, 값:", limitSelect.value);
         if (limitSelect.value !== currentLimit.toString()) {
           currentLimit = Number(limitSelect.value);
           currentSort = document.getElementById("sort-select").value;
@@ -428,32 +425,24 @@ document.addEventListener("click", (e) => {
   }
   // 상세 페이지 수량 증가 (이벤트 위임으로 처리)
   if (e.target.matches("#quantity-increase") || e.target.closest("#quantity-increase")) {
-    console.log("수량 증가 버튼 클릭됨 (이벤트 위임)");
     const input = document.querySelector("#quantity-input");
-    console.log("input 요소:", input);
     if (input) {
       const currentValue = parseInt(input.value) || 1;
       const maxValue = parseInt(input.max) || 999;
-      console.log("현재 값:", currentValue, "최대값:", maxValue);
       const newValue = Math.min(currentValue + 1, maxValue);
-      console.log("새로운 값:", newValue);
       input.value = String(newValue);
-      console.log("input.value 설정 후:", input.value);
-    } else {
-      console.log("input 요소를 찾을 수 없음");
     }
+
     return;
   }
   // 상세 페이지 수량 감소 (이벤트 위임으로 처리)
   if (e.target.matches("#quantity-decrease") || e.target.closest("#quantity-decrease")) {
-    console.log("수량 감소 버튼 클릭됨 (이벤트 위임)");
     const input = document.querySelector("#quantity-input");
     if (input) {
       const currentValue = parseInt(input.value) || 1;
       const minValue = parseInt(input.min) || 1;
       const newValue = Math.max(currentValue - 1, minValue);
       input.value = String(newValue);
-      console.log("수량 감소 완료:", newValue);
     }
     return;
   }
@@ -569,27 +558,23 @@ function setupDetailQuantityEvents() {
 
 // 수량 증가 핸들러
 function handleQuantityIncrease() {
-  console.log("수량 증가 버튼 클릭됨 (직접 이벤트)");
   const quantityInput = document.querySelector("#quantity-input");
   if (quantityInput) {
     const currentValue = parseInt(quantityInput.value) || 1;
     const maxValue = parseInt(quantityInput.max) || 999;
     const newValue = Math.min(currentValue + 1, maxValue);
     quantityInput.value = String(newValue);
-    console.log("수량 증가 완료:", newValue);
   }
 }
 
 // 수량 감소 핸들러
 function handleQuantityDecrease() {
-  console.log("수량 감소 버튼 클릭됨 (직접 이벤트)");
   const quantityInput = document.querySelector("#quantity-input");
   if (quantityInput) {
     const currentValue = parseInt(quantityInput.value) || 1;
     const minValue = parseInt(quantityInput.min) || 1;
     const newValue = Math.max(currentValue - 1, minValue);
     quantityInput.value = String(newValue);
-    console.log("수량 감소 완료:", newValue);
   }
 }
 
