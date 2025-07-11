@@ -205,24 +205,11 @@ async function fetchProducts() {
 // popstate 이벤트 핸들러..
 function handlePopState() {
   if (getAppPath() === "/") {
-    // 홈페이지로 돌아올 때는 기본 상태로 초기화
-    const cleanState = {
-      searchValue: "",
-      selectedCategory1: "",
-      selectedCategory2: "",
-      selectedSort: "price_asc",
-      selectedLimit: "20",
-      currentPage: 1,
-      loading: false,
-    };
-    store.setState(cleanState);
+    const urlState = queryParamsToState(getQueryParams());
+    store.setState({ ...urlState, loading: false });
 
-    // URL도 정리
-    updateQueryParams({}, { replace: true });
-
-    // 검색 입력 필드 값 동기화
     const searchInput = document.querySelector("#search-input");
-    if (searchInput) searchInput.value = "";
+    if (searchInput) searchInput.value = urlState.searchValue;
   }
 }
 
