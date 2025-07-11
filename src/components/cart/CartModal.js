@@ -1,7 +1,7 @@
 export const CartModal = ({ items = [], selectedItems = [] } = {}) => {
   if (items.length === 0) {
     return /* html */ `
-      <div class="flex min-h-full items-center justify-center p-4">
+      <div class="cart-modal flex min-h-full items-center justify-center p-4">
         <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-hidden">
           <!-- 헤더 -->
           <div class="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
@@ -34,15 +34,14 @@ export const CartModal = ({ items = [], selectedItems = [] } = {}) => {
     `;
   }
 
-  // 아이템이 있는 경우
   const selectedCount = selectedItems.length;
-  const totalAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const totalAmount = items.reduce((sum, item) => sum + item.lprice * item.quantity, 0);
   const selectedAmount = items
     .filter((item) => selectedItems.includes(item.id))
-    .reduce((sum, item) => sum + item.price * item.quantity, 0);
+    .reduce((sum, item) => sum + item.lprice * item.quantity, 0);
 
   return /* html */ `
-    <div class="flex min-h-full items-center justify-center p-4">
+    <div class="cart-modal flex min-h-full items-center justify-center p-4">
       <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-hidden">
         <!-- 헤더 -->
         <div class="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
@@ -90,7 +89,7 @@ export const CartModal = ({ items = [], selectedItems = [] } = {}) => {
                       ${item.title}
                     </h4>
                     <p class="text-sm text-gray-600 mt-1">
-                      ${item.price}원
+                      ${item.lprice.toLocaleString()}원
                     </p>
                     <!-- 수량 조절 -->
                     <div class="flex items-center mt-2">
@@ -113,7 +112,7 @@ export const CartModal = ({ items = [], selectedItems = [] } = {}) => {
                   <!-- 가격 및 삭제 -->
                   <div class="text-right ml-3">
                     <p class="text-sm font-medium text-gray-900">
-                      ${item.price * item.quantity}원
+                      ${(item.lprice * item.quantity).toLocaleString()}원
                     </p>
                     <button class="cart-item-remove-btn mt-1 text-xs text-red-600 hover:text-red-800" data-product-id="${item.id}">
                       삭제
@@ -134,7 +133,7 @@ export const CartModal = ({ items = [], selectedItems = [] } = {}) => {
             <!-- 선택된 아이템 정보 -->
             <div class="flex justify-between items-center mb-3 text-sm">
               <span class="text-gray-600">선택한 상품 (${selectedCount}개)</span>
-              <span class="font-medium">${selectedAmount}원</span>
+              <span class="font-medium">${selectedAmount.toLocaleString()}원</span>
             </div>
           `
               : ""
@@ -142,7 +141,7 @@ export const CartModal = ({ items = [], selectedItems = [] } = {}) => {
           <!-- 총 금액 -->
           <div class="flex justify-between items-center mb-4">
             <span class="text-lg font-bold text-gray-900">총 금액</span>
-            <span class="text-xl font-bold text-blue-600">${totalAmount}원</span>
+            <span class="text-xl font-bold text-blue-600">${totalAmount.toLocaleString()}원</span>
           </div>
           <!-- 액션 버튼들 -->
           <div class="space-y-2">
