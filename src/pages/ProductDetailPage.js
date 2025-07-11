@@ -139,7 +139,6 @@ export const ProductDetailPage = ({ product, cart = [], relatedProducts = [] }) 
             <div class="p-4">
               <div class="grid grid-cols-2 gap-3 responsive-grid">
                 ${relatedProducts
-                  .slice(0, 4)
                   .map(
                     (relatedProduct) => `
                   <div class="bg-gray-50 rounded-lg p-3 related-product-card cursor-pointer" 
@@ -150,7 +149,7 @@ export const ProductDetailPage = ({ product, cart = [], relatedProducts = [] }) 
                            class="w-full h-full object-cover" loading="lazy">
                     </div>
                     <h3 class="text-sm font-medium text-gray-900 mb-1 line-clamp-2">${relatedProduct.title}</h3>
-                    <p class="text-sm font-bold text-blue-600">${relatedProduct.lprice}원</p>
+                    <p class="text-sm font-bold text-blue-600">${Number(relatedProduct.lprice).toLocaleString()}원</p>
                   </div>
                 `,
                   )

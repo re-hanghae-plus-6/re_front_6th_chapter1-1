@@ -1,4 +1,4 @@
-import { getCategories, getProducts } from "./api/productApi.js";
+import { getCategories, getProducts, getProduct, getRelatedProducts } from "./api/productApi.js";
 import { HomePage } from "./pages/HomePage.js";
 import { ProductDetailPage } from "./pages/ProductDetailPage.js";
 import { showCartModal, renderCartModal } from "./handlers/cart.js";
@@ -77,19 +77,31 @@ function render() {
   setupInfiniteScroll();
 }
 
-function renderProductDetail(productId) {
-  const product = state.products.find((p) => p.productId === productId);
+async function renderProductDetail(productId) {
+  let product = state.products.find((p) => p.productId === productId);
 
   if (!product) {
-    // 상품을 찾을 수 없으면 API에서 가져오기 시도
-    console.warn("Product not found in state, redirecting to home");
-    router.navigate("/");
-    return;
+    try {
+      // 상품을 찾을 수 없으면 API에서 가져오기 시도
+      product = await getProduct(productId);
+    } catch (error) {
+      console.warn("Product not found, redirecting to home, error: ", error);
+      router.navigate("/");
+      return;
+    }
   }
 
-  // 관련 상품 (같은 카테고리의 다른 상품들)
-  const relatedProducts = state.products.filter((p) => p.productId !== productId).slice(0, 4);
+  // 먼저 관련 상품 없이 렌더링
+  document.body.querySelector("#root").innerHTML = ProductDetailPage({
+    product,
+    cart: state.cart,
+    relatedProducts: [],
+  });
 
+  // 관련 상품을 API에서 가져오기
+  const relatedProducts = await getRelatedProducts(product, 20);
+
+  // 관련 상품과 함께 다시 렌더링
   document.body.querySelector("#root").innerHTML = ProductDetailPage({
     product,
     cart: state.cart,
@@ -160,8 +172,8 @@ function setupRouter() {
   });
 
   // 상품 상세 페이지 라우트
-  router.addRoute("/product/:productId", (params) => {
-    renderProductDetail(params.productId);
+  router.addRoute("/product/:productId", async (params) => {
+    await renderProductDetail(params.productId);
   });
 }
 
