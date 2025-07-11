@@ -5,6 +5,9 @@ export class Router {
     this.routes = {};
     this.currentPath = '';
 
+    // GitHub Pages base path 처리 (프로덕션에서만 적용)
+    this.basePath = import.meta.env.PROD ? '/front_6th_chapter1-1' : '';
+
     // 히스토리 변경 이벤트 리스너 (일반 URL 라우팅)
     window.addEventListener('popstate', () => this.render());
     window.addEventListener('load', () => this.render());
@@ -29,14 +32,21 @@ export class Router {
   }
 
   navigate(path) {
-    if (path !== this.getCurrentPath()) {
-      window.history.pushState(null, '', path);
+    const fullPath = this.basePath + path;
+    if (fullPath !== window.location.pathname) {
+      window.history.pushState(null, '', fullPath);
       this.render();
     }
   }
 
   getCurrentPath() {
-    return window.location.pathname;
+    const pathname = window.location.pathname;
+    // basePath가 있고 pathname이 basePath로 시작하는 경우 제거
+    if (this.basePath && pathname.startsWith(this.basePath)) {
+      const relativePath = pathname.slice(this.basePath.length);
+      return relativePath || '/';
+    }
+    return pathname;
   }
 
   getParams() {
