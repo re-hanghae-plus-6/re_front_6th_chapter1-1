@@ -3,6 +3,7 @@ import { header } from "../components/header.js";
 import { footer } from "../components/footer.js";
 import { NotFound } from "./NotFound.js";
 import { ProductCard } from "../components/ProductCard.js";
+import { formatPrice } from "../utils/commonFunc.js";
 
 // 상품 상세 정보를 렌더링하는 함수
 export const ProductDetail = (props) => {
@@ -93,7 +94,7 @@ export const ProductDetail = (props) => {
                 </div>
                 <!-- 가격 -->
                 <div class="mb-4">
-                  <span class="text-2xl font-bold text-blue-600">${product.lprice}원</span>
+                  <span class="text-2xl font-bold text-blue-600">${formatPrice(product.lprice)}</span>
                 </div>
                 <!-- 재고 -->
                 <div class="text-sm text-gray-600 mb-4">
