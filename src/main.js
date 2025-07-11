@@ -9,14 +9,6 @@ const enableMocking = () =>
     }),
   );
 
-let currentPage = 1;
-let currentLimit = 20;
-let currentSort = "price_asc";
-let currentSearch = "";
-
-let selectedCategory1 = null;
-let selectedCategory2 = null;
-
 let state = {
   categories: {},
   products: [],
@@ -26,6 +18,11 @@ let state = {
   hasMore: true,
   selectedCategory1: null,
   selectedCategory2: null,
+  cartItemCount: 0,
+  currentLimit: 20,
+  currentSort: "price_asc",
+  currentSearch: "",
+  currentPage: 1,
 };
 
 let isThrottled = false;
@@ -36,30 +33,26 @@ const fetchAndRenderHomepage = async (isInfiniteScroll = false) => {
       return;
     }
     state.isFetchingMore = true;
-    currentPage++;
+    state.currentPage++;
   } else {
     state.loading = true;
-    currentPage = 1;
+    state.currentPage = 1;
     state.products = [];
     state.hasMore = true;
   }
-
-  state.selectedCategory1 = selectedCategory1;
-  state.selectedCategory2 = selectedCategory2;
 
   render();
 
   try {
     const [{ products, pagination }, categories] = await Promise.all([
       getProducts({
-        limit: currentLimit,
-        sort: currentSort,
-        search: currentSearch,
-        page: currentPage,
-        category1: selectedCategory1,
-        category2: selectedCategory2,
+        limit: state.currentLimit,
+        sort: state.currentSort,
+        search: state.currentSearch,
+        page: state.currentPage,
+        category1: state.selectedCategory1,
+        category2: state.selectedCategory2,
       }),
-      // 카테고리 한 번만 불러오거나, 변경될 때만 불러오도록 최적화 하기
       getCategories(),
     ]);
 
@@ -124,14 +117,14 @@ const handleCategoryFilter = (event) => {
   if (!targetButton) return;
 
   if (targetButton.dataset.breadcrumb === "reset") {
-    selectedCategory1 = null;
-    selectedCategory2 = null;
+    state.selectedCategory1 = null;
+    state.selectedCategory2 = null;
   } else if (targetButton.dataset.breadcrumb === "category1") {
-    selectedCategory1 = targetButton.dataset.category1;
-    selectedCategory2 = null;
+    state.selectedCategory1 = targetButton.dataset.category1;
+    state.selectedCategory2 = null;
   } else if (targetButton.classList.contains("category2-filter-btn")) {
-    selectedCategory1 = targetButton.dataset.category1;
-    selectedCategory2 = targetButton.dataset.category2;
+    state.selectedCategory1 = targetButton.dataset.category1;
+    state.selectedCategory2 = targetButton.dataset.category2;
   } else {
     return;
   }
@@ -143,28 +136,28 @@ const attachEventListeners = () => {
   const limitSelect = document.getElementById("limit-select");
 
   if (limitSelect) {
-    limitSelect.value = currentLimit.toString();
+    limitSelect.value = state.currentLimit.toString();
 
     limitSelect.onchange = (event) => {
-      currentLimit = parseInt(event.target.value);
+      state.currentLimit = parseInt(event.target.value);
       fetchAndRenderHomepage();
     };
   }
 
   const sortSelect = document.getElementById("sort-select");
   if (sortSelect) {
-    sortSelect.value = currentSort;
+    sortSelect.value = state.currentSort;
     sortSelect.onchange = (event) => {
-      currentSort = event.target.value;
+      state.currentSort = event.target.value;
       fetchAndRenderHomepage();
     };
   }
 
   const searchInput = document.getElementById("search-input");
   if (searchInput) {
-    searchInput.value = currentSearch;
+    searchInput.value = state.currentSearch;
     searchInput.oninput = (event) => {
-      currentSearch = event.target.value;
+      state.currentSearch = event.target.value;
     };
   }
   searchInput.onkeydown = (event) => {
