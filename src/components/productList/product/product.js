@@ -2,7 +2,7 @@ export const Product = (product) => {
   const { image, title, lprice, productId, brand } = product;
 
   return `
- <div id="product-card" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
+ <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
         data-product-id="${productId}">
     <!-- 상품 이미지 -->
     <div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer product-image">
@@ -23,7 +23,7 @@ export const Product = (product) => {
         </p>
         </div>
         <!-- 장바구니 버튼 -->
-        <button id="add-to-cart-btn" class="w-full bg-blue-600 text-white text-sm py-2 px-3 rounded-md
+        <button class="w-full bg-blue-600 text-white text-sm py-2 px-3 rounded-md
                 hover:bg-blue-700 transition-colors add-to-cart-btn" data-product-id="${productId}">
         장바구니 담기
         </button>

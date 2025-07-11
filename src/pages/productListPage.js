@@ -18,6 +18,7 @@ import { CartModal } from "../components/cart/modal/cartModal.js";
 import { ModalContents } from "../components/cart/modalContents/modalContents.js";
 import { findParentByTag } from "../utils/dom.js";
 import { localeStringToNumber } from "../utils/number.js";
+import { InfoToast } from "../components/toast/infoToast.js";
 
 const state = {
   products: [],
@@ -94,9 +95,10 @@ export const ProductListPage = () => {
       </main>
       ${Footer}
 </div>
-${SuccessToast({ message: "장바구니에 추가되었습니다" })}
 ${store.getState("isCartModalOpen") ? CartModal({ children: ModalContents({ cartItems: store.getState("cartItems") }) }) : ""}
-  `;
+${SuccessToast({ message: "장바구니에 추가되었습니다" })}
+${InfoToast({ message: "장바구니에서 삭제되었습니다" })}
+`;
 };
 
 ProductListPage.state = state;
@@ -106,7 +108,7 @@ ProductListPage.registerEvent = () => {
   const sortSelect = document.getElementById("sort-select");
   const searchInput = document.getElementById("search-input");
   const productCards = document.querySelectorAll(".product-card");
-  const addToCartButtons = document.querySelectorAll("#add-to-cart-btn");
+  const addToCartButtons = document.querySelectorAll(".add-to-cart-btn");
   const cartIconBtn = document.getElementById("cart-icon-btn");
   const cartModalCloseBtn = document.getElementById("cart-modal-close-btn");
   const cartModalOverlay = document.getElementById("cart-modal-overlay");
@@ -116,12 +118,20 @@ ProductListPage.registerEvent = () => {
   const cartModalTotalPrice = document.getElementById("cart-modal-total-price");
   const cartItemPrices = document.querySelectorAll(".cart-item-price");
   const cartItemLprices = document.querySelectorAll(".cart-item-lprice");
+  const cartItemRemoveBtns = document.querySelectorAll(".cart-item-remove-btn");
 
-  cartItemPrices.forEach((cartItemPrice) => {
-    cartItemPrice.addEventListener("change", () => {
-      // const productId = cartItemPrice.dataset.productId;
-      // const currentInput = Array.from(cartQuantityInputs).find((input) => input.dataset.productId === productId);
-      // cartModalTotalPrice.textContent = Number(cartModalTotalPrice.textContent) + Number(cartItemPrice.textContent);
+  cartItemRemoveBtns.forEach((cartItemRemoveBtn) => {
+    cartItemRemoveBtn.addEventListener("click", (event) => {
+      const button = findParentByTag(event.target, "BUTTON");
+      const productId = button.dataset.productId;
+      console.log(productId);
+
+      let cartItems = store.getState("cartItems");
+      cartItems = cartItems.filter((cartItem) => cartItem.productId !== productId);
+      store.setState("cartItems", cartItems, { persist: true });
+
+      render();
+      openToast({ message: "장바구니에서 삭제되었습니다", type: "info" });
     });
   });
 
@@ -196,15 +206,19 @@ ProductListPage.registerEvent = () => {
     render();
   });
 
-  cartModalCloseBtn.addEventListener("click", () => {
-    store.setState("isCartModalOpen", false);
-    render();
-  });
+  if (cartModalCloseBtn) {
+    cartModalCloseBtn.addEventListener("click", () => {
+      store.setState("isCartModalOpen", false);
+      render();
+    });
+  }
 
-  cartModalOverlay.addEventListener("click", () => {
-    store.setState("isCartModalOpen", false);
-    render();
-  });
+  if (cartModalOverlay) {
+    cartModalOverlay.addEventListener("click", () => {
+      store.setState("isCartModalOpen", false);
+      render();
+    });
+  }
 
   window.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
@@ -224,7 +238,7 @@ ProductListPage.registerEvent = () => {
       event.stopPropagation();
       const product = state.products.find((product) => product.productId === event.target.dataset.productId);
       addToCart(product, 1);
-      openToast({ message: "장바구니에 추가되었습니다" });
+      openToast({ message: "장바구니에 추가되었습니다", type: "success" });
     });
   });
 
