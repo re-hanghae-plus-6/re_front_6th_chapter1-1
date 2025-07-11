@@ -12,7 +12,11 @@ export async function renderRoute() {
   const path = window.location.pathname;
   const root = document.getElementById("root");
 
-  if (path === "/" || path === "/list") {
+  if (path === "/list" || path === "/") {
+    // "/" 접근 시 "/list"로 리다이렉트
+    if (path === "/") {
+      window.history.replaceState(null, "", "/list" + window.location.search);
+    }
     // 리스트 페이지 렌더링 및 마운트
     const ListPage = await import("./pages/list.js").then((m) => m.default);
     root.innerHTML = ListPage({ isLoading: true });

@@ -9,8 +9,6 @@ const enableMocking = () =>
 
 function main() {
   renderRoute();
-
-  // popstate 이벤트 시에도 이전 페이지 정리
   window.addEventListener("popstate", renderRoute);
 
   // 전역 이벤트 위임 (한 번만 등록)
@@ -43,11 +41,6 @@ function main() {
       const search = event.target.value;
       window.dispatchEvent(new CustomEvent("changeSearch", { detail: { search } }));
     }
-  });
-
-  // 브라우저 종료 시 정리 (선택사항)
-  window.addEventListener("beforeunload", () => {
-    // 필요한 경우 마지막 정리 작업
   });
 }
 // 애플리케이션 시작

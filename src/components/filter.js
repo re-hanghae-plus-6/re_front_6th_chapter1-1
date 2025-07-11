@@ -1,4 +1,4 @@
-export default function Filter({ limit = 20, sort = "price_asc" }) {
+export default function Filter({ limit = 20, sort = "price_asc", search = "" }) {
   return /* HTML */ `
     <!-- 검색 및 필터 -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
@@ -9,7 +9,7 @@ export default function Filter({ limit = 20, sort = "price_asc" }) {
             type="text"
             id="search-input"
             placeholder="상품명을 검색해보세요..."
-            value=""
+            value="${search}"
             class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg
                       focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
@@ -74,7 +74,6 @@ export default function Filter({ limit = 20, sort = "price_asc" }) {
   `;
 }
 
-// 이벤트 등록 함수들 제거하고 값 설정 함수들만 유지
 export function setLimitValue(limit) {
   const select = document.getElementById("limit-select");
   if (select) select.value = limit;
