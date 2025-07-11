@@ -4,36 +4,53 @@ import toast from "./Toast.js";
 class Cart {
   constructor() {
     this.el = null;
-    this.state = {
-      items: [],
-      total: 0,
-      isOpen: false,
-    };
 
+    // cartStore 구독 - 상태 변화를 감지하여 동기화
     cartStore.subscribe((storeState) => {
-      this.setState(storeState);
-    });
-  }
+      console.log("Cart component received store state:", storeState);
 
-  setState(nextState) {
-    const prevStateIsOpen = this.state.isOpen;
-    this.state = { ...this.state, ...nextState };
-    const currentIs = this.state.isOpen;
+      const prevIsOpen = this.state?.isOpen || false;
+      const currentIsOpen = storeState.isOpen || false;
 
-    if (currentIs && !prevStateIsOpen) {
-      // Cart is opening
-      if (this.el) {
-        this.el.remove();
-        this.el = null;
+      // this.state를 storeState로 동기화
+      this.state = { ...storeState };
+
+      console.log("Cart component state updated:", this.state);
+
+      // 모달 열기/닫기 상태 변화 처리
+      if (currentIsOpen && !prevIsOpen) {
+        // 모달 열기
+        console.log("Opening cart modal");
+        this.hide(); // 기존 모달 제거
+        this.render(); // 새 모달 생성
+        const root = document.getElementById("root");
+        if (root) {
+          root.appendChild(this.el);
+        } else {
+          document.body.appendChild(this.el);
+        }
+        this.show();
+      } else if (!currentIsOpen && prevIsOpen) {
+        // 모달 닫기
+        console.log("Closing cart modal");
+        this.hide();
+      } else if (currentIsOpen && prevIsOpen && this.el) {
+        // 모달이 이미 열려있을 때는 항상 전체 모달을 다시 렌더링
+        console.log("Updating cart modal - re-rendering entire modal");
+        this.hide();
+        this.render();
+        const root = document.getElementById("root");
+        if (root) {
+          root.appendChild(this.el);
+        } else {
+          document.body.appendChild(this.el);
+        }
+        this.show();
+      } else if (!currentIsOpen && !prevIsOpen) {
+        // 모달이 닫혀있을 때는 상태만 업데이트 (렌더링하지 않음)
+        console.log("Cart modal closed, updating state only");
       }
-      this.render();
-      document.body.appendChild(this.el);
-      this.show();
-    } else if (!currentIs && prevStateIsOpen) {
-      this.hide();
-    } else if (currentIs && prevStateIsOpen) {
-      this.update();
-    }
+    });
   }
 
   update() {
@@ -47,13 +64,12 @@ class Cart {
   }
 
   show() {
-    this.el?.classList.remove("hidden");
-    this.el?.classList.add("flex");
+    if (this.el) {
+      this.el.style.display = "block";
+    }
   }
 
   hide() {
-    this.el?.classList.remove("flex");
-    this.el?.classList.add("hidden");
     if (this.el && this.el.parentNode) {
       this.el.parentNode.removeChild(this.el);
     }
@@ -119,15 +135,16 @@ class Cart {
 
   // 장바구니 콘텐츠 부분 템플릿
   templateContent() {
-    if (this.state.items.length === 0) {
+    const items = this.state?.items || [];
+    if (items.length === 0) {
       return this.templateEmpty();
     }
 
-    const total = this.state.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const selectedItems = this.state.items.filter((item) => item.isSelected);
+    const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const selectedItems = items.filter((item) => item.isSelected);
     const selectedItemCount = selectedItems.length;
     const selectedTotal = selectedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const allItemsSelected = this.state.items.length > 0 && selectedItemCount === this.state.items.length;
+    const allItemsSelected = items.length > 0 && selectedItemCount === items.length;
 
     return `
       <div class="flex flex-col max-h-[calc(90vh-120px)]">
@@ -135,13 +152,13 @@ class Cart {
         <div class="p-4 border-b border-gray-200 bg-gray-50">
           <label class="flex items-center text-sm text-gray-700">
             <input type="checkbox" id="cart-modal-select-all-checkbox" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-2" ${allItemsSelected ? "checked" : ""}>
-            전체선택 (${this.state.items.length}개)
+            전체선택 (${items.length}개)
           </label>
         </div>
         <!-- 아이템 목록 -->
         <div class="flex-1 overflow-y-auto">
           <div class="p-4 space-y-4">
-            ${this.state.items.map(this.templateCartItem).join("")}
+            ${items.map(this.templateCartItem).join("")}
           </div>
         </div>
       </div>
@@ -185,9 +202,14 @@ class Cart {
 
   // 전체 모달의 기본 틀
   templateShell() {
-    const itemCount = this.state.items.length;
+    const items = this.state?.items || [];
+    const itemCount = items.length;
+    console.log("Cart itemCount", itemCount);
     return `
-      <div class="cart-modal-overlay fixed inset-0 z-50 hidden min-h-full items-center justify-center bg-gray-900 bg-opacity-50 transition-opacity sm:items-start sm:p-4">
+      <div class="fixed inset-0 z-50 overflow-y-auto cart-modal" style="display: none;">
+        <!-- 배경 오버레이 -->
+        <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity cart-modal-overlay"></div>
+        <!-- 모달 컨테이너 -->
         <div class="flex min-h-full items-end justify-center p-0 sm:items-center sm:p-4">
           <div class="relative bg-white rounded-t-lg sm:rounded-lg shadow-xl w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-hidden">
             <!-- 헤더 -->
