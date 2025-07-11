@@ -2,7 +2,7 @@ import FilterSection from "./components/filter/FilterSection.js";
 import MainLayout from "./components/layout/MainLayout.js";
 import ProductGrid from "./components/product/ProductGrid.js";
 import { getProduct, getProducts, getCategories } from "./api/productApi.js";
-import router from "./utils/router.js";
+import router, { getAppPath } from "./utils/router.js";
 import ProductDetail from "./components/detail/ProductDetail.js";
 import { setupInfiniteScroll } from "./utils/infiniteScroll.js";
 import { Errorpage } from "./components/Errorpage.js";
@@ -28,9 +28,11 @@ export const state = {
 
 export let render = async function (state) {
   const rootDOM = document.body.querySelector("#root");
-  const path = window.location.pathname;
+  // const path = window.location.pathname;
+  const path = getAppPath(window.location.pathname);
   // 정규식: /product/... 또는 /front_6th_chapter1-1/product/... 모두 매치
-  const detailPage = path.match(/(?:\/front_6th_chapter1-1)?\/product\/([^/]+)/);
+  const detailPage = path.match(/^\/product\/(.+)$/);
+  
   let html;
 
   if (
@@ -39,7 +41,6 @@ export let render = async function (state) {
     path.includes("limit") ||
     path.includes("sort") ||
     path.includes("search") ||
-    (path.includes("front_6th_chapter1") && detailPage === null) ||
     path.includes("category")
   ) {
     html = MainLayout({

@@ -17,5 +17,7 @@ const router = {
     triggerRender();
   },
 };
-
+export const getAppPath = (fullPath = window.location.pathname) => {
+  return fullPath.startsWith(BASE_PATH) ? fullPath.slice(BASE_PATH.length) || "/" : fullPath;
+};
 export default router;
