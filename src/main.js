@@ -14,11 +14,11 @@ const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker, workerOptions }) => worker.start(workerOptions));
 
 // 애플리케이션 시작
-if (import.meta.env.MODE !== "test") {
+if (import.meta.env.MODE === "development") {
   enableMocking().then(() => {
     initializeApp();
   });
 } else {
-  // 테스트 환경에서는 즉시 초기화
+  // 프로덕션 또는 테스트 환경에서는 MSW 비활성화
   initializeApp();
 }
