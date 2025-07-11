@@ -17,7 +17,7 @@ class DefaultLayout extends Component {
     this.element.innerHTML = `
       <div class="min-h-screen bg-gray-50">
         <div id="header"></div>
-        <main id="content"></main>
+        <div id="content"></div>
         <div id="footer"></div>
         <div id="cart"></div>
         <div id="toast"></div>
