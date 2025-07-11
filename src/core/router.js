@@ -1,5 +1,5 @@
-// const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
-const BASE_PATH = "/front_6th_chapter1-1";
+const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
+// const BASE_PATH = "/front_6th_chapter1-1";
 
 class Router {
   #pagesMap = new Map();
