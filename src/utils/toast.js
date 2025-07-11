@@ -22,7 +22,7 @@ function getToastStyle(type) {
   }[type];
 }
 
-export function toast(type, message, delay = 300_000) {
+export function toast(type, message, delay = 3_000) {
   clearToast();
 
   const { style } = getToastStyle(type);
@@ -69,7 +69,7 @@ export function toast(type, message, delay = 300_000) {
     </button>
   </div> `;
 
-  insertAfter(toastContainer);
+  insertBefore(toastContainer);
 
   return () => {
     if (timer) {
@@ -98,13 +98,8 @@ function removeToast(toastId, timer, abortController) {
   clearTimeout?.(timer);
 }
 
-function insertAfter(newElement, targetSelector = "main") {
+function insertBefore(newElement, targetSelector = "footer") {
   const $targetElement = document.querySelector(targetSelector);
   const $parentElement = $targetElement.parentNode;
-
-  if ($targetElement.nextSibling) {
-    $parentElement.insertBefore(newElement, $targetElement.nextSibling);
-  } else {
-    $parentElement.appendChild(newElement);
-  }
+  $parentElement.insertBefore(newElement, $targetElement);
 }
