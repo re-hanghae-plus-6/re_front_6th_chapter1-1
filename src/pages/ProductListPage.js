@@ -9,6 +9,7 @@ import { ProductSkeleton } from "../components/productList/ProductSkeleton";
 import { ScrollLoader } from "../components/productList/ScrollLoader";
 import { Component } from "../core/Component";
 import { InfiniteScroll } from "../core/InfiniteScroll";
+import { createCartService } from "../services/CartService";
 import { updateURLParams } from "../utils/url";
 
 export class ProductListPage extends Component {
@@ -29,6 +30,8 @@ export class ProductListPage extends Component {
       categories: {},
       isOpenCartModal: false,
     };
+
+    this.cartService = createCartService();
 
     const infinite = new InfiniteScroll({
       threshold: 200,
@@ -139,10 +142,26 @@ export class ProductListPage extends Component {
       const route = e.target.dataset.route;
       if (route) {
         this.props.router.navigate(route);
+        return;
       }
 
       if (e.target.classList.contains("cart-modal-overlay")) {
         this.setState({ isOpenCartModal: false });
+        return;
+      }
+
+      if (e.target.classList.contains("add-to-cart-btn")) {
+        const productId = e.target.dataset.productId;
+        const product = this.state.products.find((item) => item.productId === productId);
+        this.cartService.addItem({
+          id: productId,
+          image: product.image,
+          price: product.lprice,
+          selected: false,
+          title: product.title,
+        });
+        this.setState({ cartItemCount: this.cartService.itemCount });
+
         return;
       }
 
@@ -194,6 +213,7 @@ export class ProductListPage extends Component {
           leftContent: /* HTML */ `<h1 class="text-xl font-bold text-gray-900">
             ${HomeLink({ path: "/", text: "쇼핑몰" })}
           </h1>`,
+          cartItemCount: this.state.cartItemCount,
         })}
 
         <main class="max-w-md mx-auto px-4 py-4">
