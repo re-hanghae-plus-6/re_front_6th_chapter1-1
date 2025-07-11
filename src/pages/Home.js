@@ -2,11 +2,13 @@ import { getProducts } from "../api/productApi.js";
 import SearchFilter from "../components/list/SearchFilter.js";
 import { cartStore } from "../store/store.js";
 import { router } from "../router/router.js";
+import toast from "../components/Toast.js";
 
 const initialState = {
   products: [],
   pagination: {},
   loading: true,
+  loadingMore: false,
   filters: {
     page: 1,
     limit: 20,
@@ -26,6 +28,9 @@ class Home {
       this.setState({ filters: e.state || initialState.filters, loading: true });
       this.fetchProducts();
     });
+
+    // 스크롤 이벤트 리스너 추가
+    this.handleScroll = this.handleScroll.bind(this);
   }
 
   handleFilterChange(newFilters) {
@@ -40,12 +45,58 @@ class Home {
     this.setState({ filters: updatedFilters, loading: true });
     this.fetchProducts();
   }
+
   debounce(func, delay) {
     let timeout;
     return (...args) => {
       clearTimeout(timeout);
       timeout = setTimeout(() => func.apply(this, args), delay);
     };
+  }
+
+  // 스크롤 이벤트 핸들러
+  handleScroll() {
+    if (this.state.loadingMore || this.state.loading) return;
+
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+
+    // 페이지 하단에 도달했는지 확인 (100px 여유)
+    if (scrollTop + windowHeight >= documentHeight - 100) {
+      this.loadMoreProducts();
+    }
+  }
+
+  // 추가 상품 로딩
+  async loadMoreProducts() {
+    if (this.state.loadingMore) return;
+
+    const nextPage = this.state.filters.page + 1;
+    const totalPages = Math.ceil((this.state.pagination.total || 0) / this.state.filters.limit);
+
+    // 마지막 페이지인지 확인
+    if (nextPage > totalPages) return;
+
+    this.setState({ loadingMore: true });
+
+    try {
+      const nextFilters = { ...this.state.filters, page: nextPage };
+      const data = await getProducts(nextFilters);
+
+      // 기존 상품에 새 상품 추가
+      const newProducts = [...this.state.products, ...data.products];
+
+      this.setState({
+        products: newProducts,
+        pagination: data.pagination,
+        filters: nextFilters,
+        loadingMore: false,
+      });
+    } catch (error) {
+      console.error("추가 상품 로딩 실패:", error);
+      this.setState({ loadingMore: false });
+    }
   }
 
   async fetchProducts() {
@@ -83,6 +134,9 @@ class Home {
 
   templateProducts() {
     const totalCount = (this.state.pagination || {}).total || 0;
+    const currentPage = this.state.filters.page;
+    const totalPages = Math.ceil(totalCount / this.state.filters.limit);
+    const hasMorePages = currentPage < totalPages;
 
     if (this.state.loading) {
       return `<!-- 로딩 스켈레톤 --> <div class="grid grid-cols-2 gap-4 mb-6"> ${Array(4)
@@ -110,7 +164,7 @@ class Home {
             </div>
             <div class="p-3">
               <h3 class="text-sm font-medium text-gray-900 line-clamp-2 mb-1">${item.title}</h3>
-              <p class="text-sm text-gray-500">${item.brand}</p>
+              <p class="text-xs text-gray-500 mb-2">${item.brand}</p>
               <p class="text-lg font-bold text-gray-900">${parseInt(item.lprice).toLocaleString()}원</p>
               <button class="w-full mt-2 bg-blue-600 text-white text-sm py-2 px-3 rounded-md hover:bg-blue-700 transition-colors add-to-cart-btn" data-product-id="${item.productId}">장바구니 담기</button>
             </div>
@@ -119,6 +173,28 @@ class Home {
           )
           .join("")}
       </div>
+      ${
+        this.state.loadingMore
+          ? `
+        <div class="text-center py-4">
+          <div class="inline-flex items-center">
+            <svg class="animate-spin h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" 
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span class="text-sm text-gray-600">상품을 불러오는 중...</span>
+          </div>
+        </div>
+      `
+          : !hasMorePages && this.state.products.length > 0
+            ? `
+        <div class="text-center py-4 text-sm text-gray-500">
+          모든 상품을 확인했습니다
+        </div>
+      `
+            : ""
+      }
     `;
   }
 
@@ -148,6 +224,9 @@ class Home {
         const product = this.state.products.find((p) => p.productId === productId);
         if (product) {
           cartStore.addItem(product);
+
+          // Toast 컴포넌트를 사용하여 성공 메시지 표시
+          toast.showSuccess("장바구니에 추가되었습니다");
         }
       });
     });
@@ -180,7 +259,16 @@ class Home {
 
     this.fetchProducts();
     this.searchFilter.fetchCategories();
+
+    // 스크롤 이벤트 리스너 등록
+    window.addEventListener("scroll", this.handleScroll);
+
     return this.el;
+  }
+
+  // 컴포넌트 정리 시 스크롤 이벤트 리스너 제거
+  destroy() {
+    window.removeEventListener("scroll", this.handleScroll);
   }
 }
 

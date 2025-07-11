@@ -1,6 +1,7 @@
 import { getProduct, getProducts } from "../api/productApi";
 import { cartStore } from "../store/store.js";
 import { router } from "../router/router.js";
+import toast from "../components/Toast.js";
 
 class Detail {
   constructor(options = {}) {
@@ -61,13 +62,13 @@ class Detail {
         relatedProducts: [], // 빈 배열로 시작
       });
 
-      // 관련 상품은 매우 짧은 지연 후 설정 (비동기 로딩 시뮬레이션)
+      // 관련 상품은 비동기적으로 설정 (테스트에서 처음에는 없어야 함)
       setTimeout(() => {
         const relatedProducts = allProducts.products.filter((p) => p.productId !== productId).slice(0, 19);
         this.setState({
           relatedProducts,
         });
-      }, 1); // 1ms로 매우 짧게 설정
+      }, 10); // 10ms 지연으로 비동기 로딩 시뮬레이션
     } catch (error) {
       console.error("Error fetching product details:", error);
       this.setState({ loading: false });
@@ -100,7 +101,7 @@ class Detail {
       return `<div>Product not found</div>`;
     }
 
-    const { title, image, lprice, description, rating, category1, productId } = this.state.product;
+    const { title, image, lprice, description, rating, productId } = this.state.product;
 
     // 관련 상품 섹션을 조건부로 렌더링
     const relatedProductsSection =
@@ -131,30 +132,33 @@ class Detail {
           </div>`
         : "";
 
+    // 브레드크럼 생성 함수
+    const generateBreadcrumb = () => {
+      const categories = [this.state.product.category1, this.state.product.category2].filter(Boolean); // 빈 값 제거
+
+      let breadcrumbHTML = `
+        <a href="/" data-link="" class="hover:text-blue-600 transition-colors">홈</a>
+      `;
+
+      categories.forEach((category, index) => {
+        breadcrumbHTML += `
+          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+          <button class="breadcrumb-link" data-category-index="${index + 1}" data-category-value="${category}">
+            ${category}
+          </button>
+        `;
+      });
+
+      return breadcrumbHTML;
+    };
+
     return `
         <!-- 브레드크럼 -->
         <nav class="mb-4">
           <div class="flex items-center space-x-2 text-sm text-gray-600">
-            <a href="/" data-link="" class="hover:text-blue-600 transition-colors">홈</a>
-            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-            </svg>
-            ${
-              category1
-                ? ` <button class="breadcrumb-link" data-category1="생활/건강">
-              생활/건강
-            </button>
-            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-            </svg>`
-                : ""
-            }
-            <button class="breadcrumb-link" data-category1="생활/건강">
-              생활/건강
-            </button>
-            <button class="breadcrumb-link" data-category2="생활용품">
-              생활용품
-            </button>
+            ${generateBreadcrumb()}
           </div>
         </nav>
         <!-- 상품 상세 정보 -->
@@ -274,6 +278,37 @@ class Detail {
       });
     }
 
+    // 브레드크럼 링크 클릭 이벤트
+    this.el.querySelectorAll(".breadcrumb-link").forEach((link) => {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+
+        // 클릭된 카테고리의 인덱스 가져오기
+        const categoryIndex = parseInt(link.dataset.categoryIndex);
+
+        // URL 파라미터 생성
+        const params = new URLSearchParams();
+
+        // 클릭된 카테고리까지의 모든 카테고리를 파라미터에 추가
+        const categories = [this.state.product.category1, this.state.product.category2].filter(Boolean);
+        for (let i = 0; i < categoryIndex; i++) {
+          if (categories[i]) {
+            params.set(`category${i + 1}`, categories[i]);
+          }
+        }
+
+        // 홈 페이지로 이동하면서 카테고리 필터 적용
+        const url = `/?${params.toString()}`;
+        history.pushState({}, "", url);
+
+        // URL 변경 이벤트 발생
+        window.dispatchEvent(new CustomEvent("urlchange"));
+
+        // 라우터 호출하여 홈 페이지로 이동
+        router();
+      });
+    });
+
     if ($quantityInput) {
       $quantityInput.addEventListener("input", (e) => {
         const value = parseInt(e.target.value, 10);
@@ -305,27 +340,20 @@ class Detail {
 
     if ($addToCartBtn) {
       $addToCartBtn.addEventListener("click", () => {
+        const productToAdd = {
+          productId: this.state.product.productId,
+          title: this.state.product.title,
+          lprice: this.state.product.lprice,
+          image: this.state.product.image,
+        };
+
         // 수량만큼 상품을 장바구니에 추가
         for (let i = 0; i < this.state.quantity; i++) {
-          const productToAdd = {
-            productId: this.state.product.productId,
-            title: this.state.product.title,
-            lprice: this.state.product.lprice,
-            image: this.state.product.image,
-          };
           cartStore.addItem(productToAdd);
         }
 
-        // 성공 메시지 표시
-        const $message = document.createElement("div");
-        $message.textContent = "장바구니에 추가되었습니다";
-        $message.className = "fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-lg z-50";
-        document.body.appendChild($message);
-        setTimeout(() => {
-          if (document.body.contains($message)) {
-            document.body.removeChild($message);
-          }
-        }, 2000);
+        // Toast 컴포넌트를 사용하여 성공 메시지 표시
+        toast.showSuccess("장바구니에 추가되었습니다");
       });
     }
 

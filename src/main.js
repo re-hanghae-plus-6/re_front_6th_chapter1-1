@@ -2,6 +2,7 @@ import { router } from "./router/router.js";
 import Header from "./components/Header.js";
 import Footer from "./components/Footer.js";
 import Cart from "./components/Cart.js";
+import { cartStore } from "./store/store.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) => worker.start({ onUnhandledRequest: "bypass" }));
@@ -13,7 +14,6 @@ function renderLayout() {
 
   // 초기화
   root.innerHTML = "";
-  root.className = "min-h-screen bg-gray-50";
 
   // 공통 요소 렌더링
   const header = new Header().render();
@@ -32,6 +32,8 @@ function renderLayout() {
 }
 
 export const app = () => {
+  cartStore.initialize();
+
   renderLayout();
   router();
 };

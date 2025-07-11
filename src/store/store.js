@@ -16,6 +16,8 @@ export const cartStore = {
 
   notify() {
     this.subscribers.forEach((callback) => callback(this.state));
+
+    this.saveToLocalStorage();
   },
 
   setState(nextState) {
@@ -23,12 +25,30 @@ export const cartStore = {
     this.notify();
   },
 
-  open() {
-    this.setState({ isOpen: true });
+  saveToLocalStorage() {
+    try {
+      localStorage.setItem("shopping_cart", JSON.stringify(this.state.items));
+    } catch (error) {
+      console.error("장바구니 저장 실패:", error);
+    }
   },
 
-  close() {
-    this.setState({ isOpen: false });
+  // localStorage에서 복원
+  loadFromLocalStorage() {
+    try {
+      const savedCart = localStorage.getItem("shopping_cart");
+      if (savedCart) {
+        const items = JSON.parse(savedCart);
+        this.setState({ items });
+      }
+    } catch (error) {
+      console.error("장바구니 복원 실패:", error);
+    }
+  },
+
+  // 앱 초기화 시 호출할 함수
+  initialize() {
+    this.loadFromLocalStorage();
   },
 
   addItem(product) {
@@ -67,8 +87,8 @@ export const cartStore = {
     this.setState({ items: newItems });
   },
 
-  toggleAllSelection(checked) {
-    const newItems = this.state.items.map((item) => ({ ...item, isSelected: checked }));
+  toggleAllSelection(selected) {
+    const newItems = this.state.items.map((item) => ({ ...item, isSelected: selected }));
     this.setState({ items: newItems });
   },
 
@@ -93,6 +113,14 @@ export const cartStore = {
       .map((item) => (item.id === productId && item.quantity > 1 ? { ...item, quantity: item.quantity - 1 } : item))
       .filter(Boolean);
     this.setState({ items: newItems });
+  },
+
+  open() {
+    this.setState({ isOpen: true });
+  },
+
+  close() {
+    this.setState({ isOpen: false });
   },
 
   reset() {
