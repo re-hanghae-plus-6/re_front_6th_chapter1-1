@@ -8,7 +8,7 @@ const defaultParams = {
   items: new Map(),
 };
 
-const storage = new WebStorage("cart");
+const storage = new WebStorage("shopping_cart");
 let disposeObserveCard = null;
 
 const observeCart = () => {
@@ -21,7 +21,7 @@ const observeCart = () => {
         currentData[key] = cartStore[key];
       }
     });
-    storage.setItem("cart", currentData);
+    storage.setItem(currentData);
   });
 };
 
