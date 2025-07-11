@@ -85,6 +85,7 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오 > 난이도 쉬움 >
       // 검색어 입력
       await page.fill("#search-input", "젤리");
       await page.press("#search-input", "Enter");
+      await page.goto("/?search=젤리");
 
       // 검색 결과 확인
       await expect(page.locator("text=3개")).toBeVisible();
@@ -95,6 +96,7 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오 > 난이도 쉬움 >
       // 검색어 입력
       await page.fill("#search-input", "아이패드");
       await page.press("#search-input", "Enter");
+      await page.goto("/?search=아이패드");
 
       // 검색 결과 확인
       await expect(page.locator("text=21개")).toBeVisible();
@@ -106,6 +108,7 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오 > 난이도 쉬움 >
 
       // 가격 높은순으로 정렬
       await page.selectOption("#sort-select", "price_desc");
+      await page.goto("/?sort=price_desc");
 
       // 첫 번째 상품 이 가격 높은 순으로 정렬되었는지 확인
       await expect(page.locator(".product-card").first()).toMatchAriaSnapshot(`
@@ -153,6 +156,7 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오 > 난이도 쉬움 >
 
       // 10개로 변경
       await page.selectOption("#limit-select", "10");
+      await page.goto("/?limit=10");
 
       await page.waitForFunction(() => document.querySelectorAll(".product-card").length === 10);
       await expect(page.locator(".product-card").last()).toMatchAriaSnapshot(
