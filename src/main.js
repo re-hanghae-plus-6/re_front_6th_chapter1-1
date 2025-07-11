@@ -188,6 +188,14 @@ function setupModalEvents(modalRoot) {
         showToast("info");
       }
 
+      // 장바구니 항목 선택 체크박스 클릭
+      if (e.target.classList.contains("cart-item-checkbox")) {
+        const productId = e.target.dataset.productId;
+        cartManager.toggleSelected(productId);
+        modalRoot.innerHTML = Cart(cartManager.getCart());
+        setupModalEvents(modalRoot);
+      }
+
       // 전체 비우기 버튼 클릭
       if (e.target.id === "cart-modal-clear-cart-btn") {
         cartManager.resetCart();

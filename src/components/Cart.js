@@ -246,8 +246,8 @@ function CartContents(cartItems) {
   `;
 }
 
-function CartItem(item) {
-  const { productId, title, lprice, image, quantity } = item;
+function CartItem({ productId, title, lprice, image, quantity }) {
+  const isSelected = cartManager.getSelectedItems().some((item) => item.productId === productId);
 
   return `
     <div class="flex items-center py-3 border-b border-gray-100 cart-item" data-product-id=${productId}>
@@ -258,6 +258,7 @@ function CartItem(item) {
           class="cart-item-checkbox w-4 h-4 text-blue-600 border-gray-300 rounded
                 focus:ring-blue-500"
           data-product-id=${productId}
+          ${isSelected ? "checked" : ""}
         />
       </label>
       <!-- 상품 이미지 -->
@@ -322,10 +323,17 @@ function CartItem(item) {
 
 function CartFooter() {
   const cart = cartManager.getCart();
+  const selectedItems = cartManager.getSelectedItems();
+  const totalSelectedPrice = selectedItems.reduce((acc, item) => acc + item.lprice * item.quantity, 0);
   const totalPrice = cart.reduce((acc, item) => acc + item.lprice * item.quantity, 0);
+
   return `
     <div class="sticky bottom-0 bg-white border-t border-gray-200 p-4">
       <!-- 선택된 아이템 정보 -->
+      <div class="flex justify-between items-center mb-3 text-sm">
+        <span class="text-gray-600">선택한 상품 (${selectedItems.length}개)</span>
+        <span class="font-medium">${totalSelectedPrice}원</span>
+      </div>
       <!-- 총 금액 -->
       <div class="flex justify-between items-center mb-4">
         <span class="text-lg font-bold text-gray-900">총 금액</span>
@@ -333,6 +341,13 @@ function CartFooter() {
       </div>
       <!-- 액션 버튼들 -->
       <div class="space-y-2">
+        <button
+          id="cart-modal-remove-selected-btn"
+          class="w-full bg-red-600 text-white py-2 px-4 rounded-md
+                        hover:bg-red-700 transition-colors text-sm"
+        >
+          선택한 상품 삭제 (1개)
+        </button>
         <div class="flex gap-2">
           <button
             id="cart-modal-clear-cart-btn"

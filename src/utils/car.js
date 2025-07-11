@@ -10,7 +10,7 @@ export const cartManager = {
     if (existingItem) {
       existingItem.quantity += 1;
     } else {
-      cart.push({ ...product, quantity: 1 });
+      cart.push({ ...product, quantity: 1, selected: false });
     }
 
     localStorage.setItem("cart", JSON.stringify(cart));
@@ -43,6 +43,18 @@ export const cartManager = {
       localStorage.setItem("cart", JSON.stringify(cart));
       this.updateCartCount();
     }
+  },
+
+  getSelectedItems() {
+    const cart = this.getCart();
+    return cart.filter((item) => item.selected);
+  },
+
+  toggleSelected(productId) {
+    const cart = this.getCart();
+    const targetItem = cart.find((item) => item.productId === productId);
+    targetItem.selected = !targetItem.selected;
+    localStorage.setItem("cart", JSON.stringify(cart));
   },
 
   resetCart() {
