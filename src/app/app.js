@@ -7,22 +7,16 @@ import { cartService } from "../services/index.js";
  * 모킹 활성화
  */
 const enableMocking = () =>
-  import("../mocks/browser.js").then(({ worker }) =>
-    worker.start({
-      onUnhandledRequest: "bypass",
-    }),
-  );
+  import("../mocks/browser.js").then(({ worker, workerOptions }) => worker.start(workerOptions));
 
 /**
  * 메인 애플리케이션 클래스
  */
 export class App {
   async init() {
-    // 개발 환경에서만 모킹 활성화
     if (import.meta.env.MODE !== "test") {
       await enableMocking();
     }
-
     await this.initialize();
   }
 
