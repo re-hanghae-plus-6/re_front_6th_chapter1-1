@@ -61,8 +61,20 @@ function render(urlStr: string) {
   navigate("/404", true);
 }
 
+// GitHub Pages 하위 경로 배포를 위해 BASE 경로를 추출합니다.
+const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+function normalize(pathname: string) {
+  if (BASE && pathname.startsWith(BASE)) {
+    const sliced = pathname.slice(BASE.length);
+    return sliced.startsWith("/") ? sliced : "/" + sliced;
+  }
+  return pathname;
+}
+
 function navigate(path: string, replace = false) {
-  history[replace ? "replaceState" : "pushState"](null, "", path);
+  const url = BASE + path;
+  history[replace ? "replaceState" : "pushState"](null, "", url);
   render(path);
 }
 
@@ -74,14 +86,15 @@ function initRouter(routeMap: Record<string, PageModule>) {
     const a = (e.target as HTMLElement).closest("a[data-link]") as HTMLAnchorElement | null;
     if (!a) return;
     e.preventDefault();
-    navigate(a.pathname + a.search);
+    const path = normalize(a.pathname) + a.search;
+    navigate(path);
   });
 
   // 앞으로/뒤로 가기 동작 시에도 SPA처럼 동작하기 위해 렌더 함수를 popstate에 등록
-  window.addEventListener("popstate", () => render(location.pathname + location.search));
+  window.addEventListener("popstate", () => render(normalize(location.pathname) + location.search));
 
   // 최초 페이지 유입 시 페이지를 그려줌 (쿼리 포함)
-  render(location.pathname + location.search);
+  render(normalize(location.pathname) + location.search);
 }
 
 export { initRouter, navigate };

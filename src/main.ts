@@ -6,12 +6,15 @@ import { detailPage } from "./pages/product-detail.ts";
 import { notFoundPage } from "./pages/not-found.ts";
 import { bindCartBadge } from "./utils/bindCartBadge.ts";
 
-const enableMocking = () =>
-  import("./mocks/browser.js").then(({ worker }) =>
+const enableMocking = () => {
+  const base = import.meta.env.BASE_URL;
+  return import("./mocks/browser.js").then(({ worker }) =>
     worker.start({
+      serviceWorker: { url: `${base}mockServiceWorker.js` },
       onUnhandledRequest: "bypass",
     }),
   );
+};
 
 async function bootstrap() {
   // 헤더 장바구니 배지는 전역에서 사용되기때문에 라우터 초기화와 함께바인딩
