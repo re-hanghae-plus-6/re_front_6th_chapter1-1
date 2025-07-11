@@ -19,11 +19,13 @@ export class Header extends Component {
                   d="M3 3h2l.4 2M7 13h10l4-8H5.4m2.6 8L6 2H3m4 11v6a1 1 0 001 1h1a1 1 0 001-1v-6M13 13v6a1 1 0 001 1h1a1 1 0 001-1v-6"
                 ></path>
               </svg>
-              <span
-                data-id="cart-count"
-                class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"
-                >${cartStore.count > 0 ? cartStore.count : ""}</span
-              >
+              ${cartStore.count > 0
+                ? html`<span
+                    data-id="cart-count"
+                    class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"
+                    >${cartStore.count}</span
+                  >`
+                : ""}
             </button>
           </div>
         </div>
@@ -33,9 +35,27 @@ export class Header extends Component {
 
   render() {
     const { count } = cartStore;
-    const $cartCount = this.$el.querySelector(`[data-id="cart-count"]`);
-    $cartCount.innerHTML = count > 0 ? count : "";
-    $cartCount.classList.toggle("hidden", count === 0);
+    const $cartCount = this.$el.querySelector("#cart-icon-btn > span");
+
+    if (count <= 0) {
+      this.$el.querySelector("#cart-icon-btn > span")?.remove();
+      return;
+    }
+
+    if ($cartCount) {
+      $cartCount.textContent = count;
+      return;
+    }
+
+    this.$el.querySelector("#cart-icon-btn").appendChild(this.#createCartCountSpan({ count }));
+  }
+
+  #createCartCountSpan({ count }) {
+    const $span = document.createElement("span");
+    $span.className =
+      "absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center";
+    $span.textContent = count;
+    return $span;
   }
 
   setEvent() {
