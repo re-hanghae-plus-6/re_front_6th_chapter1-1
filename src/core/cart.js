@@ -103,19 +103,6 @@ export function removeItem(productId) {
   renderModalContent(); // 비동기 처리하지만 대기하지 않음
 }
 
-export async function clearCart() {
-  syncFromStorage();
-  cart = [];
-  persist();
-
-  // 장바구니 비우기 후 안정적으로 빈 상태 렌더링
-  // 모달을 닫지 않고 빈 장바구니 상태를 표시하여 테스트 기대와 일치
-  await renderModalContent();
-
-  // 장바구니 비우기 완료 토스트 메시지 표시
-  showToast("장바구니가 비워졌습니다", "info");
-}
-
 export function toggleSelect(productId) {
   syncFromStorage();
   const item = cart.find((i) => i.product.productId === productId);
@@ -248,37 +235,39 @@ async function handleModalClick(e) {
     return;
   }
 
-  // 전체 선택 체크박스 클릭
-  if (e.target.closest("#cart-modal-select-all-checkbox")) {
-    const allChecked = e.target.checked;
-    await selectAll(allChecked);
-    updateCartBadge();
+  // 전체 선택 체크박스
+  const selectAllCheckbox = e.target.closest("#cart-modal-select-all-checkbox");
+  if (selectAllCheckbox) {
+    selectAll(selectAllCheckbox.checked);
     return;
   }
 
-  // 선택 삭제 - 배치 처리로 DOM 렌더링 최적화
-  if (e.target.closest("#cart-modal-remove-selected-btn")) {
-    const selectedIds = getSelectedIds();
-    if (selectedIds.length > 0) {
+  // 선택 삭제 버튼
+  const removeSelectedBtn = e.target.closest("#cart-modal-remove-selected-btn");
+  if (removeSelectedBtn) {
+    Promise.resolve().then(() => {
       syncFromStorage();
-      // 배치로 삭제하여 DOM 렌더링을 한 번만 수행
-      cart = cart.filter((item) => !selectedIds.includes(item.product.productId));
+      if (getSelectedIds().length === 0) return;
+      cart = cart.filter((item) => !item.selected);
       persist();
-
-      // 선택 삭제 완료 토스트 메시지 표시
-      showToast("선택한 상품들이 삭제되었습니다", "info");
-
-      // 모든 상품이 삭제되어도 모달을 유지하고 빈 상태 표시
-      await renderModalContent();
+      renderModalContent();
       updateCartBadge();
-    }
+      showToast("선택한 상품들이 삭제되었습니다", "info");
+    });
     return;
   }
 
-  // 전체 비우기 - 장바구니 비우기 후 모달 자동 닫기로 DOM 안정성 보장
-  if (e.target.closest("#cart-modal-clear-cart-btn")) {
-    await clearCart();
-    updateCartBadge();
+  // 전체 비우기 버튼
+  const clearCartBtn = e.target.closest("#cart-modal-clear-cart-btn");
+  if (clearCartBtn) {
+    Promise.resolve().then(() => {
+      syncFromStorage();
+      cart = [];
+      persist();
+      renderModalContent();
+      showToast("장바구니가 비워졌습니다", "info");
+      updateCartBadge();
+    });
     return;
   }
 }
