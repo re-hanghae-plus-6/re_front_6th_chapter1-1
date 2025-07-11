@@ -5,13 +5,13 @@ export const cartManager = {
     return JSON.parse(storage.getItem("cart") || "[]");
   },
 
-  addToCart(product) {
+  addToCart(product, cnt = 1) {
     const cart = this.getCart();
     const existingItem = cart.find((item) => item.productId === product.productId);
     if (existingItem) {
-      existingItem.quantity += 1;
+      existingItem.quantity += cnt;
     } else {
-      cart.push({ ...product, quantity: 1, selected: false });
+      cart.push({ ...product, quantity: cnt, selected: false });
     }
 
     storage.setItem("cart", JSON.stringify(cart));

@@ -28,6 +28,9 @@ let currentSearch = "";
 // 다음 페이지 로딩 중복 방지 플래그
 let loadingNextPage = false;
 
+// 현재 상세 페이지 상품 저장용 변수
+let currentDetailProduct = null;
+
 async function main() {
   // 1) 로딩 표시 (카테고리, 필터 상태 포함)
   document.getElementById("root").innerHTML = MainList({
@@ -82,6 +85,8 @@ async function renderDetail(productId) {
   try {
     // 2) 상품 상세 데이터 로드 및 렌더 (관련 상품 제외)
     const product = await getProduct(productId);
+    // 현재 상세 상품 저장
+    currentDetailProduct = product;
     root.innerHTML = ItemDetail({ loading: false, product, related: [] });
 
     // 3) 관련 상품 로드 및 렌더 (현재 상품 제외)
@@ -283,9 +288,16 @@ document.addEventListener("click", (e) => {
   // 상세 페이지 장바구니 담기 버튼 클릭
   if (e.target.matches("#add-to-cart-btn")) {
     const pid = e.target.dataset.productId;
-    const prod = allProducts.find((p) => p.productId === pid);
+    // 상세 페이지 상품일 경우 currentDetailProduct 사용
+    const prod =
+      currentDetailProduct && currentDetailProduct.productId === pid
+        ? currentDetailProduct
+        : allProducts.find((p) => p.productId === pid);
+    // 수량 입력값 읽기
+    const quantityInput = document.querySelector("#quantity-input");
+    const cnt = quantityInput ? parseInt(quantityInput.value, 10) : 1;
     if (prod) {
-      cartManager.addToCart(prod);
+      cartManager.addToCart(prod, cnt);
       showToast("success");
     }
     return;
