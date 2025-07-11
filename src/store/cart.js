@@ -1,12 +1,12 @@
 import { getFromLocalStorage, setToLocalStorage } from "../utils/localStorage.js";
 import { useState } from "../hooks/useState.js";
 
-export const SHOPPING_CART_KEY = "@hanghae99/shopping-cart";
+export const SHOPPING_CART_KEY = "shopping_cart";
 
 const initialCartState = getFromLocalStorage(SHOPPING_CART_KEY, {
   items: [],
   selectedItems: [],
-  totalCount: 0,
+  itemCount: 0,
   isModalOpen: false,
 });
 
@@ -38,12 +38,12 @@ export const addToCart = (product, quantity = 1) => {
     ];
   }
 
-  const newTotalCount = newItems.reduce((total, item) => total + item.quantity, 0);
+  const newItemCount = newItems.length;
 
   const newState = {
     ...currentState,
     items: newItems,
-    totalCount: newTotalCount,
+    itemCount: newItemCount,
   };
 
   cartStore.setState(newState);
@@ -53,12 +53,12 @@ export const addToCart = (product, quantity = 1) => {
 export const removeFromCart = (productId) => {
   const currentState = cartStore.getState();
   const newItems = currentState.items.filter((item) => item.productId !== productId);
-  const newTotalCount = newItems.reduce((total, item) => total + item.quantity, 0);
+  const newItemCount = newItems.length;
 
   const newState = {
     ...currentState,
     items: newItems,
-    totalCount: newTotalCount,
+    itemCount: newItemCount,
   };
 
   cartStore.setState(newState);
@@ -73,12 +73,12 @@ export const updateCartItemQuantity = (productId, quantity) => {
 
   const currentState = cartStore.getState();
   const newItems = currentState.items.map((item) => (item.productId === productId ? { ...item, quantity } : item));
-  const newTotalCount = newItems.reduce((total, item) => total + item.quantity, 0);
+  const newItemCount = newItems.length;
 
   const newState = {
     ...currentState,
     items: newItems,
-    totalCount: newTotalCount,
+    itemCount: newItemCount,
   };
 
   cartStore.setState(newState);
@@ -89,7 +89,7 @@ export const clearCart = () => {
   const newState = {
     items: [],
     selectedItems: [],
-    totalCount: 0,
+    itemCount: 0,
     isModalOpen: false,
   };
 
