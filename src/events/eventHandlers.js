@@ -3,6 +3,7 @@ import { addCart, updateHeaderCartCount } from "../utils/cart.js";
 import { showToast } from "../template/toast.js";
 
 export function setupCommonEventListeners(mainStatus, appRouter) {
+  const currentMainStatus = appRouter.getCurrentState(); // 항상 최신 mainStatus 가져오기
   /** change */
   document.body.addEventListener("change", (e) => {
     const target = e.target;
@@ -47,7 +48,12 @@ export function setupCommonEventListeners(mainStatus, appRouter) {
     }
 
     // --- 상세 페이지 버튼 처리 ---
-    const quantityInput = document.body.querySelector("#quantity-input");
+    let quantityInput;
+    let quantity;
+    if (Object.keys(currentMainStatus.urlParams).length) {
+      quantityInput = document.body.querySelector("#quantity-input");
+      quantity = parseInt(quantityInput.value, 10);
+    }
 
     // 수량 증가
     if (increaseQuantyBtn && quantityInput) {
@@ -66,9 +72,6 @@ export function setupCommonEventListeners(mainStatus, appRouter) {
 
     // 장바구니 담기
     if (addToCartBtn) {
-      if (!quantityInput) return; // quantityInput이 없으면 로직 중단
-
-      const quantity = parseInt(quantityInput.value, 10);
       const productId = addToCartBtn.dataset.productId;
       const product = mainStatus.products.find((p) => p.productId === productId);
 
@@ -79,7 +82,6 @@ export function setupCommonEventListeners(mainStatus, appRouter) {
       }
       return;
     }
-    
   });
   // TODO: 그 외 다른 이벤트 설정.....
 }
