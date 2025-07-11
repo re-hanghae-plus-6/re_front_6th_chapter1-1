@@ -172,7 +172,7 @@ describe("4. 상품 정렬 기능", () => {
 
     console.log("여기5");
 
-    // DOM이 안정화될 때까지 대기
+    // ! DOM이 안정화될 때까지 대기
     await waitFor(() => {
       const productCards = document.querySelectorAll(".product-card");
       return productCards.length > 0;
