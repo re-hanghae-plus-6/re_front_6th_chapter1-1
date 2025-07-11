@@ -1,4 +1,4 @@
-const BASE = process.env.NODE_ENV === "production" ? "/front_6th_chapter1-1/" : "/";
+import { BASE } from "../main";
 
 export class Router {
   constructor(routes, rootElement) {
@@ -29,6 +29,9 @@ export class Router {
   }
 
   render() {
+    console.log("BASE", BASE);
+    console.log("currentPath", this.getCurrentPath());
+
     const route = this.getCurrentRoute();
 
     // 기존 인스턴스가 있으면 unmount
