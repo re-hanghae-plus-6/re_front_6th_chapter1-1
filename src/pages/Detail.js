@@ -1,6 +1,6 @@
 import { getProduct, getProducts } from "../api/productApi";
 import { cartStore } from "../store/store.js";
-import { BASE_PATH, router } from "../router/router.js";
+import { navigate, router } from "../router/router.js";
 import toast from "../components/Toast.js";
 
 class Detail {
@@ -347,9 +347,7 @@ class Detail {
       card.addEventListener("click", (e) => {
         e.preventDefault();
         const productId = card.dataset.productId;
-        history.pushState({}, "", `${BASE_PATH}/product/${productId}`);
-        window.dispatchEvent(new CustomEvent("urlchange"));
-
+        navigate(`/product/${productId}`);
         router();
       });
     });

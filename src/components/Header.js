@@ -1,5 +1,5 @@
 import { cartStore } from "../store/store.js";
-import { BASE_PATH, navigate } from "../router/router.js";
+import { navigate } from "../router/router.js";
 
 class Header {
   constructor() {
@@ -80,7 +80,7 @@ class Header {
             `
                 : `
               <h1 class="text-xl font-bold text-gray-900">
-                <a href="${BASE_PATH}/" id="home-link" data-link>쇼핑몰</a>
+                <a href="#" id="home-link" data-link>쇼핑몰</a>
               </h1>
             `
             }

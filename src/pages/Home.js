@@ -1,7 +1,7 @@
 import { getProducts } from "../api/productApi.js";
 import SearchFilter from "../components/list/SearchFilter.js";
 import { cartStore } from "../store/store.js";
-import { BASE_PATH, router } from "../router/router.js";
+import { navigate } from "../router/router.js";
 import toast from "../components/Toast.js";
 
 const initialState = {
@@ -229,12 +229,7 @@ class Home {
       img.addEventListener("click", (e) => {
         e.preventDefault();
         const productId = e.currentTarget.closest(".product-card").dataset.productId;
-        history.pushState({}, "", `${BASE_PATH}/product/${productId}`);
-
-        // URL 변경 이벤트 발생
-        window.dispatchEvent(new CustomEvent("urlchange"));
-
-        router(); // 라우터 함수 호출
+        navigate(`/product/${productId}`);
       });
     });
   }
