@@ -4,6 +4,47 @@ import { ProductDetailPage } from "./pages/ProductDetailPage.js";
 import { showCartModal, renderCartModal } from "./handlers/cart.js";
 import { router } from "./router.js";
 
+// URL 쿼리 스트링 관리 함수들
+function updateUrlParams(params) {
+  const url = new URL(window.location);
+
+  // 기존 파라미터들 제거 (상품 관련)
+  const keysToRemove = ["limit", "page", "sort", "search", "category1", "category2"];
+  keysToRemove.forEach((key) => url.searchParams.delete(key));
+
+  // 새로운 파라미터들 추가 (값이 있는 경우만)
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== null && value !== undefined && value !== "") {
+      url.searchParams.set(key, value);
+    }
+  });
+
+  // URL 업데이트 (페이지 새로고침 없이)
+  window.history.pushState({}, "", url.toString());
+}
+
+function getUrlParams() {
+  const url = new URL(window.location);
+  return {
+    limit: parseInt(url.searchParams.get("limit")) || 20,
+    page: parseInt(url.searchParams.get("page")) || 1,
+    sort: url.searchParams.get("sort") || "price_asc",
+    search: url.searchParams.get("search") || "",
+    category1: url.searchParams.get("category1") || null,
+    category2: url.searchParams.get("category2") || null,
+  };
+}
+
+function syncStateWithUrl() {
+  const urlParams = getUrlParams();
+  state.productCount = urlParams.limit;
+  state.page = urlParams.page;
+  state.sort = urlParams.sort;
+  state.search = urlParams.search;
+  state.selectedCategory1 = urlParams.category1;
+  state.selectedCategory2 = urlParams.category2;
+}
+
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
     worker.start({
@@ -54,6 +95,11 @@ function renderProductDetail(productId) {
 }
 
 async function main() {
+  // URL에서 초기 상태 동기화 (테스트 환경이 아닌 경우에만)
+  if (import.meta.env.MODE !== "test") {
+    syncStateWithUrl();
+  }
+
   // 초기값 - 로딩 상태 렌더링
   state.loading = true;
 
@@ -69,7 +115,14 @@ async function main() {
     },
     categories,
   ] = await Promise.all([
-    getProducts({ limit: state.productCount, sort: state.sort, search: state.search }),
+    getProducts({
+      limit: state.productCount,
+      sort: state.sort,
+      search: state.search,
+      category1: state.selectedCategory1,
+      category2: state.selectedCategory2,
+      page: state.page,
+    }),
     getCategories(),
   ]);
 
@@ -226,27 +279,76 @@ function setupProductDetailEventListeners() {
 
 async function handleCategory1Filter(category1) {
   state.selectedCategory1 = category1;
-  const categoryDetail = state.categories[category1];
+  state.selectedCategory2 = null; // category1 변경 시 category2 리셋
+  state.page = 1; // 카테고리 변경 시 첫 페이지로 리셋
 
+  // URL 업데이트
+  updateUrlParams({
+    limit: state.productCount,
+    page: state.page,
+    sort: state.sort,
+    search: state.search,
+    category1: state.selectedCategory1,
+    category2: state.selectedCategory2,
+  });
+
+  const categoryDetail = state.categories[category1];
   state.categories = categoryDetail;
+
+  // 새로운 카테고리로 상품 데이터 재조회
+  state.loading = true;
+  const { products, pagination } = await getProducts({
+    limit: state.productCount,
+    sort: state.sort,
+    search: state.search,
+    category1: state.selectedCategory1,
+    category2: state.selectedCategory2,
+    page: state.page,
+  });
+
+  state.products = products;
+  state.page = pagination.page;
+  state.hasNext = pagination.hasNext;
+  state.hasPrev = pagination.hasPrev;
+  state.loading = false;
+  state.total = pagination.total;
+
   render();
 }
 
 async function handleCategory2Filter(category2) {
   state.selectedCategory2 = category2;
+  state.page = 1; // 카테고리 변경 시 첫 페이지로 리셋
 
+  // URL 업데이트
+  updateUrlParams({
+    limit: state.productCount,
+    page: state.page,
+    sort: state.sort,
+    search: state.search,
+    category1: state.selectedCategory1,
+    category2: state.selectedCategory2,
+  });
+
+  state.loading = true;
   const {
     products,
-    pagination: { total },
+    pagination: { total, page, hasNext, hasPrev },
   } = await getProducts({
     limit: state.productCount,
     sort: state.sort,
+    search: state.search,
     category1: state.selectedCategory1,
     category2: category2,
+    page: state.page,
   });
 
   state.products = products;
   state.total = total;
+  state.page = page;
+  state.hasNext = hasNext;
+  state.hasPrev = hasPrev;
+  state.loading = false;
 
   render();
 }
@@ -254,17 +356,63 @@ async function handleCategory2Filter(category2) {
 async function handleCategoryReset() {
   state.selectedCategory1 = null;
   state.selectedCategory2 = null;
+  state.page = 1; // 카테고리 리셋 시 첫 페이지로
+
+  // URL 업데이트
+  updateUrlParams({
+    limit: state.productCount,
+    page: state.page,
+    sort: state.sort,
+    search: state.search,
+    category1: state.selectedCategory1,
+    category2: state.selectedCategory2,
+  });
+
+  // 전체 카테고리 다시 로드
+  state.loading = true;
+  const [{ products, pagination }, categories] = await Promise.all([
+    getProducts({
+      limit: state.productCount,
+      sort: state.sort,
+      search: state.search,
+      page: state.page,
+    }),
+    getCategories(),
+  ]);
+
+  state.products = products;
+  state.categories = categories;
+  state.page = pagination.page;
+  state.hasNext = pagination.hasNext;
+  state.hasPrev = pagination.hasPrev;
+  state.total = pagination.total;
+  state.loading = false;
+
   render();
 }
 
 async function handleSearch(searchValue) {
   state.search = searchValue;
+  state.page = 1; // 검색 시 첫 페이지로 리셋
+
+  // URL 업데이트
+  updateUrlParams({
+    limit: state.productCount,
+    page: state.page,
+    sort: state.sort,
+    search: state.search,
+    category1: state.selectedCategory1,
+    category2: state.selectedCategory2,
+  });
 
   state.loading = true;
   const { products, pagination } = await getProducts({
     limit: state.productCount,
     sort: state.sort,
     search: state.search,
+    category1: state.selectedCategory1,
+    category2: state.selectedCategory2,
+    page: state.page,
   });
 
   state.products = products;
@@ -354,14 +502,33 @@ export function showToast({ type = "add" }) {
 
 async function handleLimitChange(newLimit) {
   state.productCount = newLimit;
+  state.page = 1; // limit 변경 시 첫 페이지로 리셋
   state.loading = true;
+
+  // URL 업데이트
+  updateUrlParams({
+    limit: state.productCount,
+    page: state.page,
+    sort: state.sort,
+    search: state.search,
+    category1: state.selectedCategory1,
+    category2: state.selectedCategory2,
+  });
+
   render();
 
   // 새로운 limit으로 API 재호출
   const {
     products,
     pagination: { total },
-  } = await getProducts({ limit: state.productCount, sort: state.sort });
+  } = await getProducts({
+    limit: state.productCount,
+    sort: state.sort,
+    search: state.search,
+    category1: state.selectedCategory1,
+    category2: state.selectedCategory2,
+    page: state.page,
+  });
 
   // 상태 업데이트
   state.products = products;
@@ -373,12 +540,30 @@ async function handleLimitChange(newLimit) {
 
 async function handleSortChange(newSort) {
   state.sort = newSort;
+  state.page = 1; // sort 변경 시 첫 페이지로 리셋
   state.loading = true;
+
+  // URL 업데이트
+  updateUrlParams({
+    limit: state.productCount,
+    page: state.page,
+    sort: state.sort,
+    search: state.search,
+    category1: state.selectedCategory1,
+    category2: state.selectedCategory2,
+  });
 
   const {
     products,
     pagination: { total },
-  } = await getProducts({ limit: state.productCount, sort: newSort });
+  } = await getProducts({
+    limit: state.productCount,
+    sort: newSort,
+    search: state.search,
+    category1: state.selectedCategory1,
+    category2: state.selectedCategory2,
+    page: state.page,
+  });
 
   // 상태 업데이트
   state.products = products;
@@ -397,7 +582,14 @@ async function loadMoreProducts() {
   render();
 
   // 1. 새 데이터 가져오기
-  const newData = await getProducts({ limit: state.productCount, page: state.page + 1 });
+  const newData = await getProducts({
+    limit: state.productCount,
+    page: state.page + 1,
+    sort: state.sort,
+    search: state.search,
+    category1: state.selectedCategory1,
+    category2: state.selectedCategory2,
+  });
 
   // 2. 기존 배열에 추가 및 상태 변경
   state.products = [...state.products, ...newData.products];
@@ -406,7 +598,17 @@ async function loadMoreProducts() {
   state.page = newData.pagination.page;
   state.loading = false;
 
-  // 3. 다시 그리기
+  // 3. URL 업데이트
+  updateUrlParams({
+    limit: state.productCount,
+    page: state.page,
+    sort: state.sort,
+    search: state.search,
+    category1: state.selectedCategory1,
+    category2: state.selectedCategory2,
+  });
+
+  // 4. 다시 그리기
   render();
 }
 
@@ -431,12 +633,48 @@ function setupInfiniteScroll() {
   }
 }
 
+// 브라우저 뒤로가기/앞으로가기 처리
+function setupPopstateHandler() {
+  window.addEventListener("popstate", () => {
+    // 상품 상세 페이지가 아닌 경우에만 URL 파라미터 동기화
+    if (!window.location.pathname.startsWith("/product/")) {
+      syncStateWithUrl();
+      // 동기화된 상태로 데이터 재조회
+      handleUrlStateChange();
+    }
+  });
+}
+
+async function handleUrlStateChange() {
+  state.loading = true;
+  render();
+
+  const { products, pagination } = await getProducts({
+    limit: state.productCount,
+    sort: state.sort,
+    search: state.search,
+    category1: state.selectedCategory1,
+    category2: state.selectedCategory2,
+    page: state.page,
+  });
+
+  state.products = products;
+  state.page = pagination.page;
+  state.hasNext = pagination.hasNext;
+  state.hasPrev = pagination.hasPrev;
+  state.total = pagination.total;
+  state.loading = false;
+
+  render();
+}
+
 // 애플리케이션 시작
 if (import.meta.env.MODE !== "test") {
   enableMocking().then(() => {
     main();
     setupEventListeners();
     setupProductDetailEventListeners();
+    setupPopstateHandler();
   });
 } else {
   main();
