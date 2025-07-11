@@ -298,7 +298,7 @@ root.addEventListener("keydown", async (e) => {
   // URL 쿼리 파라미터 업데이트 (encodeURIComponent 적용, 기존 params 유지)
   const url = new URL(window.location);
   const searchParams = url.searchParams;
-  searchParams.set("search", encodeURIComponent(keyword));
+  searchParams.set("search", keyword);
   searchParams.set("current", "1");
   history.pushState({}, "", `${url.pathname}?${searchParams.toString()}`);
   // URL 업데이트 끝
@@ -551,7 +551,7 @@ document.addEventListener("click", (e) => {
     const keyword = document.getElementById("search-input").value;
     currentSearch = keyword;
     const url = new URL(window.location);
-    url.searchParams.set("search", encodeURIComponent(keyword));
+    url.searchParams.set("search", keyword);
     url.searchParams.set("current", "1");
     history.pushState({}, "", url);
     return handleRoute();
