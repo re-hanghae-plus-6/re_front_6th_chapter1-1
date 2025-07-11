@@ -6,5 +6,5 @@ export const Rating = ({ rating }) => `
         ${FilledStar.repeat(rating)}
         ${EmptyStar.repeat(5 - rating)}
     </div>
-    <span class="ml-2 text-sm text-gray-600">${rating}</span>
+    <span class="ml-2 text-sm text-gray-600">${Number(rating).toFixed(1)}</span>
 `;

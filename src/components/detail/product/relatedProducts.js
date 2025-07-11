@@ -14,7 +14,7 @@ export const RelatedProducts = ({ products }) => `
               <img src="${product.image}" alt="${product.title}" class="w-full h-full object-cover" loading="lazy">
             </div>
             <h3 class="text-sm font-medium text-gray-900 mb-1 line-clamp-2">${product.title}</h3>
-            <p class="text-sm font-bold text-blue-600">${product.lprice}원</p>
+            <p class="text-sm font-bold text-blue-600">${Number(product.lprice).toLocaleString("ko-KR")}원</p>
           </div>
             `,
           )

@@ -19,7 +19,7 @@ export const ProductDetail = ({ image, name, rating, reviewCount, price, stock, 
           </div>
           <!-- 가격 -->
           <div class="mb-4">
-            <span class="text-2xl font-bold text-blue-600">${price}원</span>
+            <span class="text-2xl font-bold text-blue-600">${Number(price).toLocaleString("ko-KR")}원</span>
           </div>
           <!-- 재고 -->
           <div class="text-sm text-gray-600 mb-4">
