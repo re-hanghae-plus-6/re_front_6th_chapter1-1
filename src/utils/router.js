@@ -7,6 +7,14 @@
  * 매칭된 컴포넌트로 전달됩니다.
  */
 
+// 전역 라우터 상태
+let routerState = {
+  currentPath: '/',
+  currentParams: {},
+  currentMatch: null,
+  subscribers: [],
+};
+
 /**
  * 경로 앞뒤의 슬래시를 제거하고, 비어 있지 않은 세그먼트 배열로
  * 변환합니다.
@@ -141,6 +149,20 @@ function matchRoute(pathSegments, routes, params = {}) {
 }
 
 /**
+ * 라우터 상태를 업데이트하고 구독자들에게 알림
+ */
+function updateRouterState(path, match) {
+  routerState.currentPath = path;
+  routerState.currentParams = match ? match.params : {};
+  routerState.currentMatch = match;
+
+  // 구독자들에게 변경 알림
+  routerState.subscribers.forEach((callback) => {
+    callback(routerState);
+  });
+}
+
+/**
  * 라우터를 초기화하고 전역 네비게이션 핸들러를 등록합니다.
  *
  * @param {Array} routes - 라우트 설정 트리.
@@ -164,6 +186,9 @@ export function createRouter(routes) {
     if (currentInstance && typeof currentInstance.unmount === 'function') {
       currentInstance.unmount();
     }
+
+    // 라우터 상태 업데이트
+    updateRouterState(path, match);
 
     if (match) {
       // layout + children(page)
@@ -213,4 +238,103 @@ export function createRouter(routes) {
   renderRoute(window.location.pathname);
 
   return { renderRoute };
+}
+
+/**
+ * 편리한 네비게이션 함수들
+ */
+export const router = {
+  /**
+   * 지정된 경로로 이동
+   * @param {string} path - 이동할 경로
+   * @param {Object} options - 옵션 (replace: 히스토리 교체 여부)
+   */
+  push(path, options = {}) {
+    if (options.replace) {
+      window.history.replaceState({}, '', path);
+    } else {
+      window.history.pushState({}, '', path);
+    }
+    window.dispatchEvent(new Event('popstate'));
+  },
+
+  /**
+   * 현재 경로 교체
+   * @param {string} path - 교체할 경로
+   */
+  replace(path) {
+    this.push(path, { replace: true });
+  },
+
+  /**
+   * 뒤로 가기
+   */
+  back() {
+    window.history.back();
+  },
+
+  /**
+   * 앞으로 가기
+   */
+  forward() {
+    window.history.forward();
+  },
+
+  /**
+   * 현재 경로 정보 가져오기
+   * @returns {Object} 현재 경로 정보
+   */
+  getCurrentRoute() {
+    return {
+      path: routerState.currentPath,
+      params: routerState.currentParams,
+      match: routerState.currentMatch,
+    };
+  },
+
+  /**
+   * 현재 경로가 지정된 경로와 일치하는지 확인
+   * @param {string} path - 확인할 경로
+   * @returns {boolean} 일치 여부
+   */
+  isCurrentPath(path) {
+    return routerState.currentPath === path;
+  },
+
+  /**
+   * 현재 경로가 지정된 경로로 시작하는지 확인
+   * @param {string} path - 확인할 경로
+   * @returns {boolean} 시작 여부
+   */
+  isCurrentPathStartsWith(path) {
+    return routerState.currentPath.startsWith(path);
+  },
+
+  /**
+   * 경로 변경 이벤트 구독
+   * @param {Function} callback - 경로 변경 시 호출될 콜백
+   * @returns {Function} 구독 해제 함수
+   */
+  subscribe(callback) {
+    routerState.subscribers.push(callback);
+
+    // 구독 해제 함수 반환
+    return () => {
+      const index = routerState.subscribers.indexOf(callback);
+      if (index > -1) {
+        routerState.subscribers.splice(index, 1);
+      }
+    };
+  },
+};
+
+/**
+ * 컴포넌트에서 라우터 정보를 쉽게 사용할 수 있는 훅
+ */
+export function useRouter() {
+  return {
+    ...router,
+    // 현재 라우터 상태를 반환
+    state: routerState,
+  };
 }
