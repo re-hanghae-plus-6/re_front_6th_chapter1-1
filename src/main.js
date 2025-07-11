@@ -14,6 +14,9 @@ let currentLimit = 20;
 let currentSort = "price_asc";
 let currentSearch = "";
 
+let selectedCategory1 = null;
+let selectedCategory2 = null;
+
 let state = {
   categories: {},
   products: [],
@@ -21,6 +24,8 @@ let state = {
   loading: false,
   isFetchingMore: false,
   hasMore: true,
+  selectedCategory1: null,
+  selectedCategory2: null,
 };
 
 let isThrottled = false;
@@ -39,6 +44,9 @@ const fetchAndRenderHomepage = async (isInfiniteScroll = false) => {
     state.hasMore = true;
   }
 
+  state.selectedCategory1 = selectedCategory1;
+  state.selectedCategory2 = selectedCategory2;
+
   render();
 
   try {
@@ -48,6 +56,8 @@ const fetchAndRenderHomepage = async (isInfiniteScroll = false) => {
         sort: currentSort,
         search: currentSearch,
         page: currentPage,
+        category1: selectedCategory1,
+        category2: selectedCategory2,
       }),
       // 카테고리 한 번만 불러오거나, 변경될 때만 불러오도록 최적화 하기
       getCategories(),
@@ -109,6 +119,26 @@ const handleScroll = () => {
   }
 };
 
+const handleCategoryFilter = (event) => {
+  const targetButton = event.target.closest("[data-breadcrumb], .category2-filter-btn");
+  if (!targetButton) return;
+
+  if (targetButton.dataset.breadcrumb === "reset") {
+    selectedCategory1 = null;
+    selectedCategory2 = null;
+  } else if (targetButton.dataset.breadcrumb === "category1") {
+    selectedCategory1 = targetButton.dataset.category1;
+    selectedCategory2 = null;
+  } else if (targetButton.classList.contains("category2-filter-btn")) {
+    selectedCategory1 = targetButton.dataset.category1;
+    selectedCategory2 = targetButton.dataset.category2;
+  } else {
+    return;
+  }
+
+  fetchAndRenderHomepage(false);
+};
+
 const attachEventListeners = () => {
   const limitSelect = document.getElementById("limit-select");
 
@@ -148,6 +178,12 @@ const attachEventListeners = () => {
 
   document.body.removeEventListener("click", handleLinkClick);
   document.body.addEventListener("click", handleLinkClick);
+
+  const categoryFilterContainer = document.querySelector(".space-y-3 > .space-y-2");
+  if (categoryFilterContainer) {
+    categoryFilterContainer.removeEventListener("click", handleCategoryFilter);
+    categoryFilterContainer.addEventListener("click", handleCategoryFilter);
+  }
 };
 
 const routes = [

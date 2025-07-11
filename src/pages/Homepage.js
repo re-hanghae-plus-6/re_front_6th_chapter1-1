@@ -146,8 +146,76 @@ const ProductItem = (product) => {
   `;
 };
 
-export const HomePage = ({ categories, products, total, loading, isFetchingMore, hasMore }) => {
-  const categoryList = Object.keys(categories);
+export const HomePage = ({
+  categories,
+  products,
+  total,
+  loading,
+  isFetchingMore,
+  hasMore,
+  selectedCategory1,
+  selectedCategory2,
+}) => {
+  const category1List = Object.keys(categories);
+
+  let breadcrumbHtml = `
+    <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
+  `;
+  if (selectedCategory1) {
+    breadcrumbHtml += `
+      <span class="text-xs text-gray-500">&gt;</span>
+      <button data-breadcrumb="category1" data-category1="${selectedCategory1}" class="text-xs hover:text-blue-800 hover:underline">
+        ${selectedCategory1}
+      </button>
+    `;
+    if (selectedCategory2) {
+      breadcrumbHtml += `
+        <span class="text-xs text-gray-500">&gt;</span>
+        <span class="text-xs text-gray-600 cursor-default">${selectedCategory2}</span>
+      `;
+    }
+  }
+
+  let category1ButtonsHtml = "";
+  if (!selectedCategory1) {
+    category1ButtonsHtml = `
+      <div class="flex flex-wrap gap-2">
+        ${category1List
+          .map(
+            (cat1) => `
+          <button data-category1="${cat1}" data-breadcrumb="category1" class="text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
+            ${cat1}
+          </button>
+        `,
+          )
+          .join("")}
+      </div>
+    `;
+  }
+
+  let category2ButtonsHtml = "";
+  if (selectedCategory1 && categories[selectedCategory1] && categories[selectedCategory1].length > 0) {
+    category2ButtonsHtml = `
+      <div class="space-y-2">
+        <div class="flex flex-wrap gap-2">
+          ${categories[selectedCategory1]
+            .map((cat2) => {
+              const isActive = cat2 === selectedCategory2;
+              const buttonClass = isActive
+                ? `bg-blue-100 border-blue-300 text-blue-800`
+                : `bg-white border-gray-300 text-gray-700 hover:bg-gray-50`;
+              return `
+              <button data-category1="${selectedCategory1}" data-category2="${cat2}" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors ${buttonClass}">
+                ${cat2}
+              </button>
+            `;
+            })
+            .join("")}
+        </div>
+      </div>
+    `;
+  }
+
   return /* HTML */ `
     <div class="min-h-screen bg-gray-50">
       ${Header()}
@@ -160,17 +228,15 @@ export const HomePage = ({ categories, products, total, loading, isFetchingMore,
           <div class="space-y-3">
             <!-- 카테고리 필터 -->
             <div class="space-y-2">
+              <!-- 1depth 카테고리 -->
               <div class="flex items-center gap-2">
                 <label class="text-sm text-gray-600">카테고리:</label>
-                <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
+                ${breadcrumbHtml}
               </div>
               <!-- 1depth 카테고리 -->
-              <div class="flex flex-wrap gap-2">
-                ${loading
-                  ? `<div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>`
-                  : categoryList.map((category) => category)}
-              </div>
-              <!-- 2depth 카테고리 -->
+              ${loading ? `<div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>` : category1ButtonsHtml}
+              <!-- 2depth 카테고리  -->
+              ${category2ButtonsHtml}
             </div>
             <!-- 기존 필터들 -->
             <div class="flex gap-2 items-center justify-between">
