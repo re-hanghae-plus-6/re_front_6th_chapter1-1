@@ -1,6 +1,7 @@
 import { getProduct } from "../api/productApi.js";
 import Header from "../components/Header.js";
 import Footer from "../components/Footer";
+import { store } from "../store.js";
 
 const LoadingUI = () => {
   return /* HTML */ `
@@ -25,6 +26,7 @@ const StarImage = () => {
   `;
 };
 export const ProductPage = async (productId) => {
+  const { cartItemCount } = store.getState();
   let product = null;
   let loading = true;
 
@@ -74,6 +76,7 @@ export const ProductPage = async (productId) => {
     ${Header({
       title: "상품 상세",
       buttonType: "back",
+      cartItemCount: cartItemCount,
     })}
     <main class="max-w-md mx-auto px-4 py-4">
         <!-- 브레드크럼 -->

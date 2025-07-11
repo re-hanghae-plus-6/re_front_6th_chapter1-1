@@ -197,6 +197,9 @@ const navigateTo = (url) => {
 };
 
 const attachEventListeners = () => {
+  document.body.removeEventListener("click", handleAddToCart);
+  document.body.addEventListener("click", handleAddToCart);
+
   document.body.removeEventListener("click", handleLinkClick);
   document.body.addEventListener("click", handleLinkClick);
 
@@ -264,6 +267,37 @@ const handleLinkClick = (event) => {
     event.preventDefault();
     navigateTo(target.href);
   }
+};
+
+const handleAddToCart = (event) => {
+  const targetButton = event.target.closest(".add-to-cart-btn");
+  if (!targetButton) return;
+
+  const productId = targetButton.dataset.productId;
+  if (!productId) {
+    return;
+  }
+
+  const productToAdd = store.getState().products.find((p) => p.productId === productId);
+
+  let cart = JSON.parse(localStorage.getItem("cart") || "[]");
+
+  const existingItemIndex = cart.findIndex((item) => item.productId === productId);
+
+  if (existingItemIndex > -1) {
+    cart[existingItemIndex].quantity += 1;
+    window.alert(`${productToAdd.title} 상품의 수량이 ${cart[existingItemIndex].quantity}개로 변경되었습니다~!`);
+  } else {
+    cart.push({ ...productToAdd, quantity: 1 });
+    window.alert(`${productToAdd.title} 상품이 장바구니에 추가되었습니다!`);
+  }
+
+  localStorage.setItem("cart", JSON.stringify(cart));
+
+  store.dispatch({
+    type: "UPDATE_CART_COUNT",
+    payload: { cartItemCount: cart.length },
+  });
 };
 
 function main() {

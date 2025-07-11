@@ -26,6 +26,10 @@ const loadStateFromLocalStorage = () => {
     const serializedSort = localStorage.getItem("currentSort");
     const sort = serializedSort || "price_asc";
 
+    const serializedCart = localStorage.getItem("cart");
+    const cart = serializedCart ? JSON.parse(serializedCart) : [];
+    const cartItemCount = cart.length;
+
     return {
       categories: {},
       products: [],
@@ -35,6 +39,7 @@ const loadStateFromLocalStorage = () => {
       hasMore: true,
       selectedCategory1: null,
       selectedCategory2: null,
+      cartItemCount: cartItemCount,
       currentLimit: limit,
       currentSort: sort,
       currentSearch: "",

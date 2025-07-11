@@ -89,6 +89,7 @@ export const HomePage = ({
   hasMore,
   selectedCategory1,
   selectedCategory2,
+  cartItemCount,
 }) => {
   const category1List = Object.keys(categories);
 
@@ -155,7 +156,7 @@ export const HomePage = ({
       ${Header({
         title: "쇼핑몰",
         buttonType: "home",
-        cartItemCount: 0,
+        cartItemCount: cartItemCount,
       })}
       <main class="max-w-md mx-auto px-4 py-4">
         <!-- 검색 및 필터 -->
