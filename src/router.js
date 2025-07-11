@@ -4,6 +4,16 @@ import NotFoundPage from "./pages/NotFoundPage";
 import Header from "./components/Header.js";
 import Footer from "./components/Footer.js";
 
+const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
+
+const getAppPath = (fullPath = window.location.pathname) => {
+  return fullPath.startsWith(BASE_PATH) ? fullPath.slice(BASE_PATH.length) || "/" : fullPath;
+};
+
+const getFullPath = (appPath) => {
+  return BASE_PATH + appPath;
+};
+
 class Router {
   constructor() {
     this.routes = {};
@@ -57,7 +67,8 @@ class Router {
 
   // 페이지 이동
   navigate(path) {
-    history.pushState({ isPopState: false }, "", path);
+    const fullPath = getFullPath(path);
+    history.pushState({ isPopState: false }, "", fullPath);
     this.handleRoute();
   }
 
@@ -65,7 +76,7 @@ class Router {
   async cleanupCurrentPage() {
     if (this.currentPage) {
       // 현재 페이지의 모든 진행 중인 작업을 취소
-      if (typeof this.currentPage.cleanup === "function") {
+      if (typeof this.currentPage.cleanup === 'function') {
         await this.currentPage.cleanup();
       }
       // unmounted 호출
@@ -75,7 +86,7 @@ class Router {
       // DOM에서 페이지 컨텐츠 제거
       const pageContent = document.getElementById("page-content");
       if (pageContent) {
-        pageContent.innerHTML = "";
+        pageContent.innerHTML = '';
       }
       this.currentPage = null;
     }
@@ -86,7 +97,7 @@ class Router {
     // 이전 페이지 정리를 먼저 완료
     await this.cleanupCurrentPage();
 
-    const path = window.location.pathname;
+    const path = getAppPath();
     const searchParams = new URLSearchParams(window.location.search);
 
     let matchedHandler = null;
