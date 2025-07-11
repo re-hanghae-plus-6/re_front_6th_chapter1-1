@@ -17,7 +17,6 @@ export function useProduct() {
     });
 
     const product = await getProduct(productId);
-    console.log("product:", product);
 
     productState.setState({
       product: { ...product, price: product.lprice },
