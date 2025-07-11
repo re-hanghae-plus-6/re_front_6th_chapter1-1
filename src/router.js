@@ -3,10 +3,26 @@ export class Router {
     this.routes = new Map();
     this.currentRoute = null;
 
+    // 환경에 따른 base path 설정
+    this.basePath = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
+
     // 브라우저 뒤로가기/앞으로가기 이벤트 처리
     window.addEventListener("popstate", () => {
-      this.handleRouteChange(location.pathname, false);
+      this.handleRouteChange(this.getRelativePath(location.pathname), false);
     });
+  }
+
+  // 절대 경로에서 base path를 제거하여 상대 경로 반환
+  getRelativePath(absolutePath) {
+    if (this.basePath && absolutePath.startsWith(this.basePath)) {
+      return absolutePath.slice(this.basePath.length) || "/";
+    }
+    return absolutePath;
+  }
+
+  // 상대 경로에 base path를 추가하여 절대 경로 반환
+  getAbsolutePath(relativePath) {
+    return this.basePath + relativePath;
   }
 
   // 라우트 등록
@@ -17,7 +33,8 @@ export class Router {
   // URL 변경 및 페이지 렌더링
   navigate(path, pushState = true) {
     if (pushState) {
-      history.pushState(null, "", path);
+      const absolutePath = this.getAbsolutePath(path);
+      history.pushState(null, "", absolutePath);
     }
     this.handleRouteChange(path);
   }
@@ -44,7 +61,8 @@ export class Router {
     // 404 처리 - 404 라우트가 등록되어 있는지 확인
     if (this.routes.has("404")) {
       if (pushState) {
-        history.pushState(null, "", path);
+        const absolutePath = this.getAbsolutePath(path);
+        history.pushState(null, "", absolutePath);
       }
       this.routes.get("404")();
       return;
@@ -85,7 +103,7 @@ export class Router {
 
   // 현재 경로 반환
   getCurrentPath() {
-    return this.currentRoute || location.pathname;
+    return this.currentRoute || this.getRelativePath(location.pathname);
   }
 }
 

@@ -201,7 +201,7 @@ async function main() {
   state.loading = false;
 
   // 현재 URL에 따라 적절한 페이지 렌더링
-  router.handleRouteChange(location.pathname, false);
+  router.handleRouteChange(router.getRelativePath(location.pathname), false);
 }
 
 function setupRouter() {
