@@ -1,5 +1,6 @@
 import Layout from "../components/Layout";
 import routes from "../routes";
+import { getAppPath } from "../main";
 
 const useRender = () => {
   const init = () => {
@@ -12,7 +13,7 @@ const useRender = () => {
 
   const view = async () => {
     for (const route of routes) {
-      const match = window.location.pathname.match(route.path);
+      const match = getAppPath().match(route.path);
       if (!match) continue;
       const Page = route.component;
       Page.init?.(match?.[1]);

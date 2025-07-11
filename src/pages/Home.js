@@ -4,7 +4,7 @@ import Loading from "../components/Loading";
 import ProductCard from "../components/ProductCard";
 import ProductList from "../components/ProductList";
 import Search from "../components/Search";
-import { render, store } from "../main";
+import { render, store, getAppPath } from "../main";
 
 const state = {
   isLoading: true,
@@ -43,13 +43,13 @@ const fetchCategories = async () => {
 };
 
 const fetchMoreProductsScroll = () => {
-  const location = window.location.pathname;
+  const location = getAppPath();
   if (location !== "/") return;
   const triggerHeight = 100;
   let scrollHandler = null;
 
   const handleScroll = () => {
-    const location = window.location.pathname;
+    const location = getAppPath();
     if (location !== "/") return;
     if (state.isLoadingMore || !state.pagination?.hasNext) return;
     const currentScroll = window.scrollY;

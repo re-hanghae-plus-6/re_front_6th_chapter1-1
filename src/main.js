@@ -17,6 +17,15 @@ export const navigate = useNavigate();
 export const store = useStore();
 export const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
 
+// BASE_PATH를 제거한 앱 경로를 반환하는 유틸리티 함수
+export const getAppPath = (fullPath = window.location.pathname) => {
+  return fullPath.startsWith(BASE_PATH) ? fullPath.slice(BASE_PATH.length) || "/" : fullPath;
+};
+
+export const getFullPath = (appPath) => {
+  return BASE_PATH + appPath;
+};
+
 function main() {
   // #root Element에 Layout HTML 삽입
   render.init();

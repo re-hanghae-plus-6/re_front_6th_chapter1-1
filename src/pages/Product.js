@@ -2,7 +2,7 @@ import { getProduct, getProducts } from "../api/productApi";
 import Header from "../components/Header.js";
 import Loading from "../components/Loading";
 import { handleAddCart } from "../js/cart.js";
-import { navigate, render } from "../main.js";
+import { navigate, render, getAppPath } from "../main.js";
 
 const state = {
   isLoading: true,
@@ -60,7 +60,7 @@ Product.init = async () => {
 };
 
 Product.mount = async () => {
-  const productId = window.location.pathname.match(/\d+/)[0];
+  const productId = getAppPath().match(/\d+/)[0];
   render.draw("main", Product());
   await methods.fetchProduct(productId);
   await methods.fetchRelatedProducts(state.product.category1, state.product.category);

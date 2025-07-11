@@ -1,4 +1,4 @@
-import { render, store } from "../main";
+import { render, store, getAppPath } from "../main";
 import CartButton from "./CartButton";
 
 const state = {
@@ -6,7 +6,7 @@ const state = {
 };
 
 Header.init = () => {
-  const pathname = window.location.pathname;
+  const pathname = getAppPath();
   state.isProductDetailPage = pathname.includes("product");
 };
 
