@@ -42,6 +42,9 @@ function renderProductDetail(product, relatedProducts) {
   const { productId, title, image, lprice, brand, category1, category2, rating, reviewCount, stock, description } =
     product;
 
+  // 현재 상품을 제외한 관련 상품 필터링
+  const filteredRelatedProducts = relatedProducts.filter((relatedProduct) => relatedProduct.productId !== productId);
+
   return /* HTML */ `
     <!-- 브레드크럼 -->
     <nav class="mb-4">
@@ -145,7 +148,7 @@ function renderProductDetail(product, relatedProducts) {
       </div>
       <div class="p-4">
         <div class="grid grid-cols-2 gap-3 responsive-grid">
-          ${relatedProducts
+          ${filteredRelatedProducts
             .map((product) => {
               return /* HTML */ `
                 <div
