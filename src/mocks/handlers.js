@@ -66,7 +66,7 @@ export const handlers = [
   // 상품 목록 API
   http.get("/api/products", async ({ request }) => {
     const url = new URL(request.url);
-    const page = parseInt(url.searchParams.get("page")) || 1;
+    const page = parseInt(url.searchParams.get("page") ?? url.searchParams.get("current")) || 1;
     const limit = parseInt(url.searchParams.get("limit")) || 20;
     const search = url.searchParams.get("search") || "";
     const category1 = url.searchParams.get("category1") || "";
@@ -80,15 +80,6 @@ export const handlers = [
       category2,
       sort,
     });
-
-    // 인기순 정렬 처리
-    if (sort === "popularity") {
-      filteredProducts.forEach((item) => {
-        // 임시 인기 지표 생성
-        item.reviewCount = Math.floor(Math.random() * 1000) + 50;
-      });
-      filteredProducts.sort((a, b) => b.reviewCount - a.reviewCount);
-    }
 
     // 페이지네이션
     const startIndex = (page - 1) * limit;
