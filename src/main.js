@@ -1,5 +1,5 @@
 import { getCategories, getProduct, getProducts } from "./api/productApi.js";
-import { InfiniteScroll } from "./utils.js";
+import { CartStorage, InfiniteScroll } from "./utils.js";
 import HomPage from "./pages/HomePage/index";
 import { toast } from "./pages/HomePage/components/Toast.js";
 import { CartModal } from "./components/CartModal/index.js";
@@ -20,7 +20,7 @@ let appState = {
   total: 0,
   loading: false,
   hasNext: false,
-  cart: [],
+  cart: CartStorage.get() || [],
   cartModalOpen: false,
   page: 1,
   filters: {
@@ -160,12 +160,11 @@ async function loadProductDetail(productId) {
 }
 
 async function loadInitialData() {
-  if (!appState.loading) {
-    setAppState({ loading: true });
-  }
+  setAppState({ loading: true });
 
   try {
     const currentParams = appState.filters || getFiltersFromUrl();
+
     const productParams = {
       page: 1,
       limit: parseInt(currentParams.limit, 10),
@@ -232,7 +231,9 @@ async function loadNextPage() {
       category1: appState.filters.category1,
       category2: appState.filters.category2,
     };
+
     updateUrl(params);
+
     const data = await getProducts(params);
 
     setAppState({
@@ -376,10 +377,12 @@ async function handleRootClick(event) {
           item.productId === productId ? { ...item, quantity: item.quantity + quantity } : item,
         );
         setAppState({ cart: updatedCart });
+        CartStorage.set(updatedCart);
       } else {
         setAppState({
           cart: [...appState.cart, { ...selectedProduct, quantity, selected: false }],
         });
+        CartStorage.set([...appState.cart, { ...selectedProduct, quantity, selected: false }]);
       }
 
       toast.open("CREATE");

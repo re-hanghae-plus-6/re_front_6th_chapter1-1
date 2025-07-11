@@ -63,3 +63,23 @@ export class InfiniteScroll {
     window.removeEventListener("scroll", this.handleScroll);
   }
 }
+
+export class LocalStorage {
+  constructor(key) {
+    this.key = key;
+  }
+
+  get() {
+    return JSON.parse(localStorage.getItem(this.key));
+  }
+
+  set(value) {
+    localStorage.setItem(this.key, JSON.stringify(value));
+  }
+
+  remove() {
+    localStorage.removeItem(this.key);
+  }
+}
+
+export const CartStorage = new LocalStorage("cart");

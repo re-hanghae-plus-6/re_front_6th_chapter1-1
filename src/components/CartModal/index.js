@@ -1,4 +1,5 @@
 import { toast } from "../../pages/HomePage/components/Toast";
+import { CartStorage } from "../../utils";
 import CartItem from "./CartItem";
 import EmptyCart from "./EmptyCart";
 import ModalFooter from "./Footer";
@@ -27,7 +28,6 @@ export class CartModal {
     if (this.element) {
       this.element.remove();
       this.element = null;
-      // ESC 키 이벤트 제거
       document.removeEventListener("keydown", this.boundHandleKeydown);
     }
   }
@@ -104,7 +104,6 @@ export class CartModal {
       const productId = (cartItemImage || cartItemTitle).dataset.productId;
       if (productId) {
         this.setState({ cartModalOpen: false });
-        // 상세 페이지로 이동하는 로직 (라우터가 있다면)
         window.history.pushState({}, "", `/product/${productId}`);
         window.dispatchEvent(new Event("popstate"));
       }
@@ -154,18 +153,21 @@ export class CartModal {
       })
       .filter(Boolean);
 
+    CartStorage.set(updatedCart);
     this.setState({ cart: updatedCart });
   }
 
   removeItem(productId) {
     const state = this.getState();
     const updatedCart = state.cart.filter((item) => item.productId !== productId);
+    CartStorage.set(updatedCart);
     this.setState({ cart: updatedCart });
   }
 
   toggleSelectAll(checked) {
     const state = this.getState();
     const updatedCart = state.cart.map((item) => ({ ...item, selected: checked }));
+    CartStorage.set(updatedCart);
     this.setState({ cart: updatedCart });
   }
 
@@ -174,12 +176,14 @@ export class CartModal {
     const updatedCart = state.cart.map((item) =>
       item.productId === productId ? { ...item, selected: checked } : item,
     );
+    CartStorage.set(updatedCart);
     this.setState({ cart: updatedCart });
   }
 
   removeSelectedItems() {
     const state = this.getState();
     const updatedCart = state.cart.filter((item) => !item.selected);
+    CartStorage.set(updatedCart);
     this.setState({ cart: updatedCart });
 
     toast.open("REMOVE");
