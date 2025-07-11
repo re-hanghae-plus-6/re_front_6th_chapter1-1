@@ -1,4 +1,6 @@
 // 전역 이벤트 위임 방식 이벤트 리스너
+import { productActions } from "../store/productStore.js";
+import { loadProducts } from "../pages/Home.js";
 
 // 이벤트 위임 설정 - 앱 시작 시 한 번만 호출
 export function setupGlobalEventListeners() {
@@ -192,9 +194,12 @@ function handleSortChange(e) {
 
 function handleLimitChange(e) {
   const limitValue = parseInt(e.target.value);
-  console.log("개수 변경:", limitValue);
 
-  // TODO: 나중에 구현 - 새로운 limit으로 상품 다시 로드
+  // 필터 업데이트
+  productActions.updateFilters({ limit: limitValue });
+
+  // 새로운 조건으로 상품 다시 로드
+  loadProducts();
 }
 
 // 전역 이벤트 리스너 제거 (필요시 사용)

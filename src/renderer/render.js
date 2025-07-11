@@ -28,8 +28,6 @@ const pageConfigs = {
 
 // 메인 렌더링 함수
 export function render(pageType = "home", params = {}) {
-  console.log("렌더링 시작:", pageType, params);
-
   // 현재 상태 업데이트
   currentPageType = pageType;
   currentParams = params;
@@ -63,19 +61,15 @@ export function render(pageType = "home", params = {}) {
     ${renderCartModal()}
     ${renderToastContainer()}
   `;
-
-  console.log("렌더링 완료");
 }
 
 // 홈 페이지 콘텐츠 렌더링
 function renderHomeContent(params) {
-  console.log("renderHomeContent 호출됨", params);
-
+  console.log("홈 페이지 렌더링", params);
   // 상품 자동 로드 체크
   const state = productStore.getState();
   // 상품이 없고 에러가 없고 로딩 중이 아닐 때만 자동 로드
   if (state.products.length === 0 && !state.error && !state.isLoading) {
-    console.log("홈 페이지 진입 시 상품 자동 로드");
     loadProducts();
   }
 
@@ -86,12 +80,11 @@ function renderHomeContent(params) {
 // 상품 상세 페이지 콘텐츠 렌더링
 function renderProductDetailContent(params) {
   const { id } = params;
-  console.log("상품 상세 페이지 렌더링", id);
 
   return `
     <div class="bg-white rounded-lg shadow-sm p-6">
       <div class="text-center py-8">
-        <h1 class="text-2xl font-bold text-gray-900 mb-4">PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장</h1>
+        <h1 class="text-2xl font-bold text-gray-900 mb-4">상품 ID: ${id} - PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장</h1>
         
         <!-- 상품 이미지 -->
         <div class="mb-6">
@@ -225,9 +218,7 @@ function getCartCount() {
 
 // 상태 구독 시스템 - Store 변경 시 자동 리렌더링
 export function subscribeToStore() {
-  productStore.subscribe((newState, prevState) => {
-    console.log("Store 변경 감지 - 자동 리렌더링 시작", newState, prevState);
-
+  productStore.subscribe(() => {
     // 현재 페이지 다시 렌더링
     render(currentPageType, currentParams);
   });

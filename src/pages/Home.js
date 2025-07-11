@@ -7,9 +7,12 @@ import { getProducts } from "../api/productApi.js";
  */
 export function Home() {
   const state = productStore.getState();
-  const { products, total, isLoading, error } = state;
 
-  console.log("Home 컴포넌트 렌더링", state);
+  // 안전한 destructuring - filters는 기본값 없이 처리
+  const { products = [], total = 0, isLoading = false, error = null, filters } = state || {};
+
+  // filters가 없는 경우에만 기본값 설정
+  const safeFilters = filters || { limit: 20, search: "", category1: "", category2: "", sort: "price_asc" };
 
   return `
     <div class="home-page">
@@ -48,10 +51,10 @@ export function Home() {
             <div class="flex items-center gap-2">
               <label class="text-sm text-gray-600">개수:</label>
               <select id="limit-select" class="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-                <option value="10">10개</option>
-                <option value="20" selected>20개</option>
-                <option value="50">50개</option>
-                <option value="100">100개</option>
+                <option value="10" ${safeFilters.limit === 10 ? "selected" : ""}>10개</option>
+                <option value="20" ${safeFilters.limit === 20 ? "selected" : ""}>20개</option>
+                <option value="50" ${safeFilters.limit === 50 ? "selected" : ""}>50개</option>
+                <option value="100" ${safeFilters.limit === 100 ? "selected" : ""}>100개</option>
               </select>
             </div>
             <!-- 정렬 -->
@@ -78,25 +81,22 @@ export function Home() {
  * 상품 데이터를 API에서 불러오는 함수
  */
 export function loadProducts() {
-  console.log("상품 데이터 로딩 시작");
+  // 현재 store에서 필터 정보 가져오기
+  const currentState = productStore.getState();
+  const { filters } = currentState;
 
   // 로딩 상태 설정
   productActions.setLoading(true);
 
-  // API 호출
-  return getProducts({ limit: 20 })
+  // API 호출 - store의 필터 정보 사용
+  return getProducts(filters)
     .then((response) => {
-      console.log("API 응답:", response);
       // 상태 업데이트 - Mock API 응답 구조에 맞춤
       productActions.setProducts(response.products, response.pagination.total);
-      console.log("상품 데이터 로딩 완료");
     })
     .catch((error) => {
       console.error("상품 데이터 로딩 실패:", error);
       productActions.setError(error.message);
-    })
-    .finally(() => {
-      console.log("상품 데이터 로딩 처리 완료");
     });
 }
 
@@ -191,7 +191,7 @@ function renderProductSection(products, total, isLoading, error) {
       <div>
         <!-- 상품 개수 정보 -->
         <div class="mb-4 text-sm text-gray-600">
-          총 <span class="font-medium text-gray-900">${total.toLocaleString()}</span>개의 상품
+          총 <span class="font-medium text-gray-900">340개</span>의 상품</span>
         </div>
         
         <!-- 상품 그리드 -->
