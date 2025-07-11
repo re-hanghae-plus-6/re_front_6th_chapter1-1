@@ -177,6 +177,20 @@ root.addEventListener("keydown", async (e) => {
   const keyword = e.target.value;
   // 검색어 상태 업데이트
   currentSearch = keyword;
+
+  // URL 쿼리 파라미터 업데이트 시작
+  const url = new URL(window.location);
+  if (keyword) {
+    url.searchParams.set("search", keyword);
+  } else {
+    url.searchParams.delete("search");
+  }
+  // 페이지 번호를 다시 1로 초기화
+  url.searchParams.set("current", "1");
+  // 실제 주소창에 반영
+  history.pushState({}, "", url.pathname + url.search);
+  // URL 업데이트 끝
+
   // 로딩 표시
   root.innerHTML = MainList({
     loading: true,
