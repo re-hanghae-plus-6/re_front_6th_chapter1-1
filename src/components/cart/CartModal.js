@@ -1,8 +1,8 @@
 export const CartModal = ({ items = [], selectedItems = [] } = {}) => {
   if (items.length === 0) {
     return /* html */ `
-      <div class="flex min-h-full items-end justify-center p-0 sm:items-center sm:p-4">
-        <div class="relative bg-white rounded-t-lg sm:rounded-lg shadow-xl w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-hidden">
+      <div class="flex min-h-full items-center justify-center p-4">
+        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-hidden">
           <!-- 헤더 -->
           <div class="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
             <h2 class="text-lg font-bold text-gray-900 flex items-center">
@@ -42,8 +42,8 @@ export const CartModal = ({ items = [], selectedItems = [] } = {}) => {
     .reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return /* html */ `
-    <div class="flex min-h-full items-end justify-center p-0 sm:items-center sm:p-4">
-      <div class="relative bg-white rounded-t-lg sm:rounded-lg shadow-xl w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-hidden">
+    <div class="flex min-h-full items-center justify-center p-4">
+      <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-hidden">
         <!-- 헤더 -->
         <div class="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
           <h2 class="text-lg font-bold text-gray-900 flex items-center">
