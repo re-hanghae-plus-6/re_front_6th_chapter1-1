@@ -1,7 +1,15 @@
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-  base: './',
+  base: process.env.NODE_ENV === 'production' ? 'front_6th_chapter1-1' : '/',
+  build: {
+    outDir: 'dist',
+    rollupOptions: {
+      input: {
+        main: 'index.html',
+      },
+    },
+  },
   test: {
     globals: true,
     environment: 'jsdom',
