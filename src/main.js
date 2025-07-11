@@ -109,7 +109,6 @@ window.addEventListener("scroll", async () => {
 
 // 카트 관련 이벤트 위임
 root.addEventListener("click", (e) => {
-  console.log("e.target.id", e.target);
   // 장바구니 담기 버튼 클릭
   if (e.target.classList.contains("add-to-cart-btn")) {
     const productId = e.target.dataset.productId;
@@ -143,9 +142,7 @@ function setupModalEvents(modalRoot) {
 
   // 모달 전체 클릭 이벤트 (dimmed 배경 클릭 시에만 닫기)
   modalRoot.addEventListener("click", (e) => {
-    console.log("modal clicked, target:", e.target.className, "id:", e.target.id);
     if (e.target.classList.contains("modal-dimmed")) {
-      console.log("dimmed clicked");
       closeModal();
     }
   });
@@ -157,7 +154,27 @@ function setupModalEvents(modalRoot) {
   const modalInner = modalRoot.querySelector('[style*="pointer-events: auto"]');
   if (modalInner) {
     modalInner.addEventListener("click", (e) => {
-      console.log("modal inner clicked:", e.target.className, e.target.id);
+      // 장바구나 항목 수량 증가 버튼 클릭
+      if (e.target.classList.contains("quantity-increase-btn") || e.target.closest(".quantity-increase-btn")) {
+        const button = e.target.classList.contains("quantity-increase-btn")
+          ? e.target
+          : e.target.closest(".quantity-increase-btn");
+        const productId = button.dataset.productId;
+        cartManager.increaseQuantity(productId);
+        modalRoot.innerHTML = Cart(cartManager.getCart());
+        setupModalEvents(modalRoot);
+      }
+
+      // 장바구나 항목 수량 감소 버튼 클릭
+      if (e.target.classList.contains("quantity-decrease-btn") || e.target.closest(".quantity-decrease-btn")) {
+        const button = e.target.classList.contains("quantity-decrease-btn")
+          ? e.target
+          : e.target.closest(".quantity-decrease-btn");
+        const productId = button.dataset.productId;
+        cartManager.decreaseQuantity(productId);
+        modalRoot.innerHTML = Cart(cartManager.getCart());
+        setupModalEvents(modalRoot);
+      }
 
       // 장바구니에서 삭제 버튼 클릭
       if (e.target.classList.contains("cart-item-remove-btn")) {
@@ -173,7 +190,6 @@ function setupModalEvents(modalRoot) {
 
       // 전체 비우기 버튼 클릭
       if (e.target.id === "cart-modal-clear-cart-btn") {
-        console.log("전체 비우기 버튼 클릭");
         cartManager.resetCart();
         // 모달 다시 렌더링
         modalRoot.innerHTML = Cart(cartManager.getCart());

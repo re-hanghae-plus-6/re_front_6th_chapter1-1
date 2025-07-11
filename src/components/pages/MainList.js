@@ -233,6 +233,8 @@ function openCartModal(items = []) {
   }
 }
 
+window.openCartModal = openCartModal;
+
 document.addEventListener("click", (e) => {
   if (e.target.closest("#cart-icon-btn")) {
     // 실제 장바구니 아이템 배열을 넘겨야 함

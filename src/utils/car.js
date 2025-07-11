@@ -5,7 +5,7 @@ export const cartManager = {
 
   addToCart(product) {
     const cart = this.getCart();
-    const existingItem = cart.find((item) => item.id === product.id);
+    const existingItem = cart.find((item) => item.productId === product.productId);
 
     if (existingItem) {
       existingItem.quantity += 1;
@@ -18,9 +18,31 @@ export const cartManager = {
   },
 
   removeFromCart(productId) {
-    const cart = this.getCart().filter((item) => item.id !== productId);
+    const cart = this.getCart().filter((item) => item.productId !== productId);
     localStorage.setItem("cart", JSON.stringify(cart));
     this.updateCartCount();
+  },
+
+  increaseQuantity(productId) {
+    const cart = this.getCart();
+    const existingItem = cart.find((item) => item.productId === productId);
+
+    existingItem.quantity += 1;
+    localStorage.setItem("cart", JSON.stringify(cart));
+    this.updateCartCount();
+  },
+
+  decreaseQuantity(productId) {
+    const cart = this.getCart();
+    const existingItem = cart.find((item) => item.productId === productId);
+
+    if (existingItem.quantity === 1) {
+      this.removeFromCart(productId);
+    } else {
+      existingItem.quantity -= 1;
+      localStorage.setItem("cart", JSON.stringify(cart));
+      this.updateCartCount();
+    }
   },
 
   resetCart() {
@@ -30,11 +52,10 @@ export const cartManager = {
 
   updateCartCount() {
     const cart = this.getCart();
-    const count = cart.reduce((sum, item) => sum + item.quantity, 0);
     // 장바구니 아이콘의 숫자 업데이트
     const cartBadge = document.querySelector("#cart-icon-btn span");
     if (cartBadge) {
-      cartBadge.textContent = count;
+      cartBadge.textContent = cart.length;
     }
   },
 };

@@ -1,8 +1,6 @@
 import { cartManager } from "../utils/cart";
 
 export const Cart = (items = []) => {
-  const cart = cartManager.getCart();
-  console.log(cart);
   // if (items.length > 0) {
   //   return `
   //     <div class="flex min-h-full items-end justify-center p-0 sm:items-center sm:p-4">
@@ -236,7 +234,7 @@ function CartContents(cartItems) {
           id="cart-modal-select-all-checkbox"
           class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-2"
         />
-        전체선택 (2개)
+        전체선택 (${cartItems.length}개)
       </label>
     </div>
     <!-- 아이템 목록 -->
@@ -250,7 +248,7 @@ function CartContents(cartItems) {
 
 function CartItem(item) {
   const { productId, title, lprice, image, quantity } = item;
-  console.log(item);
+
   return `
     <div class="flex items-center py-3 border-b border-gray-100 cart-item" data-product-id=${productId}>
       <!-- 선택 체크박스 -->
