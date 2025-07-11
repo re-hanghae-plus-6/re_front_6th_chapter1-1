@@ -1,7 +1,6 @@
 import Component from "../core/Component.js";
 import { useProducts } from "../hooks/useProducts.js";
 import { BreadCrumb } from "../components/filter/BreadCrumb.js";
-import { Layout } from "../components/layout/Layout.js";
 import { SearchInput } from "../components/filter/SearchInput.js";
 import { CategoryFilter } from "../components/filter/CategoryFilter.js";
 import { SortFilter } from "../components/filter/SortFilter.js";
@@ -9,10 +8,10 @@ import { ProductList } from "../components/product/ProductList.js";
 import { showToast } from "../components/common/Toast.js";
 import { getRouter } from "../core/router.js";
 import { getCart } from "../core/cart.js";
+import { Layout } from "../components/layout/Layout.js";
 
 export default class Home extends Component {
   setup() {
-    // 싱글톤 인스턴스 가져오기
     this.router = getRouter();
     this.cart = getCart();
 
