@@ -1,4 +1,5 @@
 import { defineConfig } from "vitest/config";
+import path from "path";
 
 const isProd = process.env.NODE_ENV === "production";
 
@@ -9,7 +10,7 @@ export default defineConfig({
     assetsDir: "assets",
     sourcemap: false,
     rollupOptions: {
-      input: "/src/main.js",
+      input: path.resolve(__dirname, "src/main.js"),
       output: {
         manualChunks: undefined,
       },
