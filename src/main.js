@@ -1,10 +1,8 @@
 import { HomePage } from './pages/HomePage.js';
 import { getProducts, getCategories } from './api/productApi.js';
 const enableMocking = () =>
-  import('./mocks/browser.js').then(({ worker }) =>
-    worker.start({
-      onUnhandledRequest: 'bypass',
-    }),
+  import('./mocks/browser.js').then(({ worker, workerOptions }) =>
+    worker.start(workerOptions),
   );
 
 let state = {
