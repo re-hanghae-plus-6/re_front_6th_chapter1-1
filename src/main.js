@@ -23,26 +23,24 @@ function updateUrlParams(params) {
   window.history.pushState({}, "", url.toString());
 }
 
-function getUrlParams() {
-  const url = new URL(window.location);
-  return {
-    limit: parseInt(url.searchParams.get("limit")) || 20,
-    page: parseInt(url.searchParams.get("page")) || 1,
-    sort: url.searchParams.get("sort") || "price_asc",
-    search: url.searchParams.get("search") || "",
-    category1: url.searchParams.get("category1") || null,
-    category2: url.searchParams.get("category2") || null,
-  };
+function getSearchFromUrl() {
+  const path = window.location.pathname;
+  const searchMatch = path.match(/^\/search=(.+)$/);
+  if (searchMatch) {
+    return decodeURIComponent(searchMatch[1]);
+  }
+  return "";
 }
 
 function syncStateWithUrl() {
-  const urlParams = getUrlParams();
-  state.productCount = urlParams.limit;
-  state.page = urlParams.page;
-  state.sort = urlParams.sort;
-  state.search = urlParams.search;
-  state.selectedCategory1 = urlParams.category1;
-  state.selectedCategory2 = urlParams.category2;
+  // path에서 검색어 추출
+  const searchTerm = getSearchFromUrl();
+  if (searchTerm) {
+    state.search = searchTerm;
+  } else if (window.location.pathname === "/") {
+    // 홈페이지면 검색어 초기화
+    state.search = "";
+  }
 }
 
 const enableMocking = () =>
@@ -148,6 +146,12 @@ function setupRouter() {
       state.loading = false;
     }
     render();
+  });
+
+  // 검색 페이지 라우트
+  router.addRoute("/search=:searchTerm", (params) => {
+    const searchTerm = decodeURIComponent(params.searchTerm);
+    handleSearchFromUrl(searchTerm);
   });
 
   // 상품 상세 페이지 라우트
@@ -282,16 +286,6 @@ async function handleCategory1Filter(category1) {
   state.selectedCategory2 = null; // category1 변경 시 category2 리셋
   state.page = 1; // 카테고리 변경 시 첫 페이지로 리셋
 
-  // URL 업데이트
-  updateUrlParams({
-    limit: state.productCount,
-    page: state.page,
-    sort: state.sort,
-    search: state.search,
-    category1: state.selectedCategory1,
-    category2: state.selectedCategory2,
-  });
-
   const categoryDetail = state.categories[category1];
   state.categories = categoryDetail;
 
@@ -358,16 +352,6 @@ async function handleCategoryReset() {
   state.selectedCategory2 = null;
   state.page = 1; // 카테고리 리셋 시 첫 페이지로
 
-  // URL 업데이트
-  updateUrlParams({
-    limit: state.productCount,
-    page: state.page,
-    sort: state.sort,
-    search: state.search,
-    category1: state.selectedCategory1,
-    category2: state.selectedCategory2,
-  });
-
   // 전체 카테고리 다시 로드
   state.loading = true;
   const [{ products, pagination }, categories] = await Promise.all([
@@ -412,6 +396,30 @@ async function handleSearch(searchValue) {
     search: state.search,
     category1: state.selectedCategory1,
     category2: state.selectedCategory2,
+    page: state.page,
+  });
+
+  state.products = products;
+  state.page = pagination.page;
+  state.hasNext = pagination.hasNext;
+  state.hasPrev = pagination.hasPrev;
+  state.loading = false;
+  state.total = pagination.total;
+
+  render();
+}
+
+async function handleSearchFromUrl(searchTerm) {
+  state.search = searchTerm;
+  state.page = 1; // 검색 시 첫 페이지로 리셋
+
+  state.loading = true;
+  render();
+
+  const { products, pagination } = await getProducts({
+    limit: state.productCount,
+    sort: state.sort,
+    search: state.search,
     page: state.page,
   });
 
@@ -636,36 +644,9 @@ function setupInfiniteScroll() {
 // 브라우저 뒤로가기/앞으로가기 처리
 function setupPopstateHandler() {
   window.addEventListener("popstate", () => {
-    // 상품 상세 페이지가 아닌 경우에만 URL 파라미터 동기화
-    if (!window.location.pathname.startsWith("/product/")) {
-      syncStateWithUrl();
-      // 동기화된 상태로 데이터 재조회
-      handleUrlStateChange();
-    }
+    // 라우터가 자동으로 처리하므로 별도 작업 불필요
+    router.handleRouteChange(location.pathname, false);
   });
-}
-
-async function handleUrlStateChange() {
-  state.loading = true;
-  render();
-
-  const { products, pagination } = await getProducts({
-    limit: state.productCount,
-    sort: state.sort,
-    search: state.search,
-    category1: state.selectedCategory1,
-    category2: state.selectedCategory2,
-    page: state.page,
-  });
-
-  state.products = products;
-  state.page = pagination.page;
-  state.hasNext = pagination.hasNext;
-  state.hasPrev = pagination.hasPrev;
-  state.total = pagination.total;
-  state.loading = false;
-
-  render();
 }
 
 // 애플리케이션 시작
