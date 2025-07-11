@@ -1,9 +1,11 @@
 {
-  "name": "front-6th-chapter1-1",
+  "name": "front_6th_chapter1-1",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "homepage": "https://esoby.github.io/front_6th_chapter1-1",
   "scripts": {
+    "deploy": "gh-pages -d dist",
     "dev": "vite",
     "dev:hash": "vite --open ./index.hash.html",
     "build": "vite build",
@@ -52,5 +54,9 @@
     "workerDirectory": [
       "public"
     ]
+  },
+  "dependencies": {
+    "gh-pages": "^6.3.0",
+    "playwright": "^1.53.2"
   }
 }
