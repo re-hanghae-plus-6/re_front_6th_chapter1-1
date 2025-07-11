@@ -1,5 +1,8 @@
 import { HomePage } from './pages/HomePage.js';
+import { ProductDetail } from './pages/ProductDetail.js';
 import { getProducts, getCategories } from './api/productApi.js';
+import { cart } from './pages/Cart.js';
+
 const enableMocking = () =>
   import('./mocks/browser.js').then(({ worker, workerOptions }) =>
     worker.start(workerOptions),
@@ -44,6 +47,84 @@ function updateURL() {
 }
 
 let isEventListenerSetUp = false;
+
+let currentPage = null;
+
+function getPathInfo() {
+  const path = window.location.pathname;
+
+  const productMatch = path.match(/^\/product\/(\d+)$/);
+  if (productMatch) {
+    return {
+      type: 'product',
+      productId: productMatch[1],
+    };
+  }
+
+  if (path === '/' || path === '') {
+    return {
+      type: 'home',
+    };
+  }
+
+  return {
+    type: '404',
+  };
+}
+
+async function renderPage() {
+  const pathInfo = getPathInfo();
+
+  if (pathInfo.type === 'product') {
+    currentPage = new ProductDetail(pathInfo.productId);
+    await currentPage.render();
+  } else if (pathInfo.type === 'home') {
+    currentPage = null;
+    await renderHomePage();
+  } else {
+    document.querySelector('#root').innerHTML = `
+      <main class="max-w-md mx-auto px-4 py-4">
+        <div class="text-center my-4 py-20 shadow-md p-6 bg-white rounded-lg">
+          <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" class="mx-auto mb-4">
+            <text x="160" y="85" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="48" font-weight="600" fill="#4285f4" text-anchor="middle">404</text>
+            <text x="160" y="110" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="400" fill="#5f6368" text-anchor="middle">페이지를 찾을 수 없습니다</text>
+          </svg>
+          <a href="/" class="inline-block px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">홈으로</a>
+        </div>
+      </main>
+    `;
+  }
+}
+
+async function renderHomePage() {
+  const urlState = getStateFromURL();
+  state = { ...state, ...urlState };
+
+  state.loading = true;
+  render();
+
+  const data = await getProducts({
+    page: 1,
+    limit: state.limit,
+    search: state.search,
+    sort: state.sort,
+    category1: state.category1,
+    category2: state.category2,
+  });
+
+  const categories = await getCategories();
+
+  state.products = data.products;
+  state.categories = categories;
+  state.total = data.pagination.total;
+  state.page = 1;
+  state.hasMore = data.products.length === state.limit;
+  state.loading = false;
+  render();
+
+  setUpEventListeners();
+  cart.init();
+}
 
 function render() {
   document.body.querySelector('#root').innerHTML = HomePage(state);
@@ -114,6 +195,44 @@ function setUpEventListeners() {
     });
 
   document.body.querySelector('#root').addEventListener('click', async (e) => {
+    if (
+      e.target.matches('.product-image img') ||
+      e.target.closest('.product-image')
+    ) {
+      const productCard = e.target.closest('.product-card');
+      if (productCard) {
+        const productId = productCard.dataset.productId;
+        if (productId) {
+          window.history.pushState({}, '', `/product/${productId}`);
+          await renderPage();
+          return;
+        }
+      }
+    }
+
+    if (e.target.closest('#cart-icon-btn')) {
+      cart.openModal();
+      return;
+    }
+
+    if (e.target.classList.contains('add-to-cart-btn')) {
+      const productId = e.target.dataset.productId;
+      const product = state.products.find(
+        (p) => p.productId.toString() === productId,
+      );
+      if (product) {
+        const cartProduct = {
+          id: product.productId,
+          name: product.title,
+          price: parseInt(product.lprice),
+          image: product.image,
+          brand: product.brand || '',
+        };
+        cart.addItem(cartProduct);
+      }
+      return;
+    }
+
     // 카테고리 1depth 선택
     if (e.target.dataset.category1) {
       const selectedCategory1 = e.target.dataset.category1;
@@ -255,35 +374,14 @@ function setUpEventListeners() {
 
   window.addEventListener('scroll', handleScroll);
 
+  // popstate 이벤트 리스너 추가
+  window.addEventListener('popstate', renderPage);
+
   isEventListenerSetUp = true;
 }
 
 export async function main() {
-  const urlState = getStateFromURL();
-  state = { ...state, ...urlState };
-
-  state.loading = true;
-  render();
-  const data = await getProducts({
-    page: 1,
-    limit: state.limit,
-    search: state.search,
-    sort: state.sort,
-    category1: state.category1,
-    category2: state.category2,
-  });
-  console.log(data);
-  const categories = await getCategories();
-  console.log(categories);
-  state.products = data.products;
-  state.categories = categories;
-  state.total = data.pagination.total;
-  state.page = 1;
-  state.hasMore = data.products.length === state.limit;
-  state.loading = false;
-  render();
-
-  setUpEventListeners();
+  await renderPage();
 }
 
 // 애플리케이션 시작
