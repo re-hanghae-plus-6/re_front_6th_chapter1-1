@@ -72,7 +72,7 @@ class Router {
   async render() {
     const { component, params, isDetail } = this._matchRoute();
     this.appRoot.innerHTML = await component({ ...this.mainStatus, urlParams: params, isDetail: isDetail });
-
+    this.setCurrentState({ ...this.mainStatus, urlParams: params, isDetail: isDetail });
     if (window.location.pathname === "/") {
       addScrollListener();
     } else {
@@ -94,6 +94,10 @@ class Router {
 
   getCurrentState() {
     return this.mainStatus;
+  }
+
+  setCurrentState(newMainStatus) {
+    this.mainStatus = structuredClone(newMainStatus);
   }
 }
 

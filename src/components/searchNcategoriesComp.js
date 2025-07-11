@@ -53,7 +53,6 @@ export const searchNcategoriesComp = (props) => {
           )
           .join("")
       : "";
-  debugger;
   // map() 이용하여 부모에서 받은 params(상태) 기반 selected 속성 동적 바인딩
   const countOptionsHtml = COUNT_FILTER_OPTIONS.map(
     (item) => /*html*/ `

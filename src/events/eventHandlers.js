@@ -3,36 +3,30 @@ import { addCart, updateHeaderCartCount } from "../utils/cart.js";
 import { showToast } from "../template/toast.js";
 
 export function setupCommonEventListeners(mainStatus, appRouter) {
+  const currentMainStatus = appRouter.getCurrentState(); // 항상 최신 mainStatus 가져오기
   /** change */
-  let shouldUpdate = false;
   document.body.addEventListener("change", (e) => {
     const target = e.target;
 
     if (target.id === "limit-select") {
       mainStatus.params.limit = parseInt(target.value, 10);
-      shouldUpdate = true;
     } else if (target.id === "sort-select") {
       mainStatus.params.sort = target.value;
-      mainStatus.params.limit = 20;
-      shouldUpdate = true;
+      mainStatus.params.limit = 20; // 정렬 변경 시 limit도 초기화
+    } else {
+      return;
     }
-
-    if (shouldUpdate) {
-      mainStatus.params.page = 1; // 필터 변경 시 첫 페이지로 초기화
-      loadProductsAndUpdateUI(mainStatus, appRouter); // mainStatus와 appRouter 전달
-    }
+    mainStatus.params.page = 1; // 필터 변경 시 첫 페이지로 초기화
+    loadProductsAndUpdateUI(mainStatus, appRouter); // mainStatus와 appRouter 전달
   });
 
   document.body.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && e.target.id === "search-input") {
       mainStatus.params.search = e.target.value;
-      shouldUpdate = true;
-    } else {
-      return;
-    }
-    if (shouldUpdate) {
       mainStatus.params.page = 1; // 필터 변경 시 첫 페이지로 초기화
       loadProductsAndUpdateUI(mainStatus, appRouter); // mainStatus와 appRouter 전달
+    } else {
+      return;
     }
   });
   // 상품 카드 클릭 이벤트 (이벤트 위임)
@@ -54,7 +48,12 @@ export function setupCommonEventListeners(mainStatus, appRouter) {
     }
 
     // --- 상세 페이지 버튼 처리 ---
-    const quantityInput = document.body.querySelector("#quantity-input");
+    let quantityInput;
+    let quantity;
+    if (Object.keys(currentMainStatus.urlParams).length) {
+      quantityInput = document.body.querySelector("#quantity-input");
+      quantity = parseInt(quantityInput.value, 10);
+    }
 
     // 수량 증가
     if (increaseQuantyBtn && quantityInput) {
@@ -73,9 +72,6 @@ export function setupCommonEventListeners(mainStatus, appRouter) {
 
     // 장바구니 담기
     if (addToCartBtn) {
-      if (!quantityInput) return; // quantityInput이 없으면 로직 중단
-
-      const quantity = parseInt(quantityInput.value, 10);
       const productId = addToCartBtn.dataset.productId;
       const product = mainStatus.products.find((p) => p.productId === productId);
 
@@ -86,7 +82,6 @@ export function setupCommonEventListeners(mainStatus, appRouter) {
       }
       return;
     }
-    
   });
   // TODO: 그 외 다른 이벤트 설정.....
 }
