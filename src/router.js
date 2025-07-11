@@ -12,7 +12,7 @@ class Router {
     this.routes = routes;
     this.mainStatus = structuredClone(initialMainStatus);
     this.appRoot = document.querySelector("#root");
-    this.BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1/" : "/";
+    this.BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "/";
     this.initEventListeners();
   }
 
@@ -89,10 +89,14 @@ class Router {
 
   navigate(path) {
     const currentPath = window.location.pathname + window.location.search;
-    const newUrl = new URL(path, window.location.origin);
+    const newUrl = new URL(this.getFullPath(path), window.location.origin);
 
     // 홈 페이지로 이동하거나, 현재 경로가 홈 페이지인 경우에만 쿼리 파라미터를 추가합니다.
-    if (newUrl.pathname === "/" || currentPath.startsWith("/?")) {
+    if (
+      newUrl.pathname === this.BASE_PATH ||
+      newUrl.pathname === this.BASE_PATH + "/" ||
+      currentPath.startsWith(this.BASE_PATH + "?")
+    ) {
       const currentParams = this.getCurrentState().params;
       for (const key in currentParams) {
         if (currentParams[key]) {
