@@ -1,40 +1,39 @@
-import SearchInput from "./SearchInput";
-import CategoryFilter from "./CategoryFilter";
-import PageCountFilter from "./PageCountFilter";
-import SortFilter from "./SortFilter";
+import SearchInput from "./SearchInput.js";
+import CategoryFilter from "./CategoryFilter.js";
+import SortFilter from "./SortFilter.js";
+import PageCountFilter from "./PageCountFilter.js";
 
 class SearchBox {
   constructor() {
     this.searchInput = new SearchInput();
     this.categoryFilter = new CategoryFilter();
-    this.pageCountFilter = new PageCountFilter();
     this.sortFilter = new SortFilter();
+    this.pageCountFilter = new PageCountFilter();
   }
 
+  /**
+   * 컴포넌트가 DOM에 마운트된 후 호출
+   */
+  mounted() {
+    // 각 컴포넌트의 mounted 메서드 호출
+    this.searchInput.mounted();
+    this.categoryFilter.mounted();
+    this.sortFilter.mounted();
+    this.pageCountFilter.mounted();
+  }
+
+  /**
+   * 컴포넌트 렌더링
+   */
   render() {
     return /*html*/ `
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
-        <!-- 검색창 -->
-        <div class="mb-4">
-          ${this.searchInput.render()}
-        </div>
-        <!-- 필터 옵션 -->
-        <div class="space-y-3">
-          <!-- 카테고리 필터 -->
-          <div class="space-y-2">
-            ${this.categoryFilter.render()}
-          </div>
-          <!-- 기존 필터들 -->
-          <div class="flex gap-2 items-center justify-between">
-            <!-- 페이지당 상품 수 -->
-            <div class="flex items-center gap-2">
-              ${this.pageCountFilter.render()}
-            </div>
-            <!-- 정렬 -->
-            <div class="flex items-center gap-2">
-              ${this.sortFilter.render()}
-            </div>
-          </div>
+        ${this.searchInput.render()}
+        ${this.categoryFilter.render()}
+        
+        <div class="flex justify-between items-center mt-4">
+          ${this.sortFilter.render()}
+          ${this.pageCountFilter.render()}
         </div>
       </div>
     `;
