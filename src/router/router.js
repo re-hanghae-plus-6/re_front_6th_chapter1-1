@@ -1,40 +1,41 @@
 import Home from "../pages/Home.js";
 import Detail from "../pages/Detail.js";
 import NotFound from "../pages/NotFound.js";
-import ExampleLayout from "../pages/ExampleLayout.js";
 
 let currentComponent = null;
-let isRouting = false; // 중복 실행 방지
+
+// 해시 라우팅 경로 추출
+function getHashPath() {
+  // #/product/1 → /product/1
+  return window.location.hash.replace(/^#/, "") || "/";
+}
 
 export async function router() {
-  // 이미 라우팅 중이면 중단
-  if (isRouting) {
-    return;
-  }
-
-  isRouting = true;
-
   const $app = document.querySelector("#app");
-  if (!$app) {
-    isRouting = false;
-    return;
-  }
+  if (!$app) return;
 
-  const path = window.location.pathname;
-  let component;
+  const path = getHashPath();
+  let component = null;
 
+  // 홈
   if (path === "/") {
     component = new Home();
-  } else if (path.startsWith("/product/")) {
+  }
+  // 상품 상세
+  else if (/^\/product\/[\w-]+$/.test(path)) {
     const productId = path.split("/")[2];
-    component = new Detail({ productId });
-  } else if (path === "/ex") {
-    component = new ExampleLayout();
-  } else {
+    if (productId) {
+      component = new Detail({ productId });
+    } else {
+      component = new NotFound();
+    }
+  }
+  // 그 외는 모두 404
+  else {
     component = new NotFound();
   }
 
-  // 이전 컴포넌트 정리
+  // 이전 컴포넌트 destroy 호출
   if (currentComponent && typeof currentComponent.destroy === "function") {
     currentComponent.destroy();
   }
@@ -47,17 +48,10 @@ export async function router() {
   $app.appendChild(component.render());
 
   currentComponent = component;
-
-  // 플래그 해제
-  setTimeout(() => {
-    isRouting = false;
-  }, 0);
 }
 
-export function resetRouter() {
-  if (currentComponent && typeof currentComponent.destroy === "function") {
-    currentComponent.destroy();
-  }
-  currentComponent = null;
-  isRouting = false;
+// 해시 변경 이벤트 리스너
+export function initRouter() {
+  window.addEventListener("hashchange", router);
+  router(); // 최초 실행
 }
