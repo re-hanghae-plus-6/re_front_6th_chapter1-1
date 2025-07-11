@@ -2,11 +2,13 @@ import cart from "./@store/cart.js";
 import { handleRoute } from "./router/router.js";
 
 const enableMocking = () =>
-  import("./mocks/browser.js").then(({ worker }) =>
-    worker.start({
-      onUnhandledRequest: "bypass",
-    }),
-  );
+  import("./mocks/browser.js").then(({ worker, workerOptions }) => worker.start(workerOptions));
+
+if (import.meta.env.MODE !== "test") {
+  enableMocking().then(main);
+} else {
+  main();
+}
 
 window.onpopstate = () => {
   handleRoute();

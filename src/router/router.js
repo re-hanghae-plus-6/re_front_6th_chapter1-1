@@ -2,6 +2,19 @@ import { Home } from "../pages/Home.js";
 import NotFound from "../pages/NotFound.js";
 import { ProductDetail } from "../pages/ProductDetail.js";
 
+// BASE PATH 설정
+const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
+
+// 유틸 함수
+const getAppPath = (fullPath = window.location.pathname) => {
+  return fullPath.startsWith(BASE_PATH) ? fullPath.slice(BASE_PATH.length) || "/" : fullPath;
+};
+
+const getFullPath = (appPath) => {
+  return BASE_PATH + appPath;
+};
+
+// 라우터 정의
 const routes = [
   {
     path: /^\/?$/,
@@ -15,29 +28,31 @@ const routes = [
 
 // 라우트 처리 함수
 export function handleRoute() {
-  const path = window.location.pathname;
+  const appPath = getAppPath();
 
   for (const route of routes) {
-    const match = path.match(route.path);
+    const match = appPath.match(route.path);
     if (match) {
       return route.render(match);
     }
   }
 
-  // 없는 경로일 경우 404 처리
+  // 없는 경로 처리
   document.querySelector("#root").innerHTML = NotFound();
 }
 
 // URL 변경 및 라우팅 실행
-export function navigateTo(url, { replace = false } = {}) {
+export function navigateTo(appPath, { replace = false } = {}) {
+  const fullPath = getFullPath(appPath);
+
   if (replace) {
-    window.history.replaceState({}, "", url);
+    window.history.replaceState({}, "", fullPath);
   } else {
-    window.history.pushState({}, "", url);
+    window.history.pushState({}, "", fullPath);
   }
 
-  handleRoute(); // ✅ URL 바꾼 후 렌더링 실행
+  handleRoute();
 }
 
-// 뒤로가기/앞으로가기 시에도 라우트 다시 실행
+// 뒤로/앞으로 가기 대응
 window.onpopstate = handleRoute;
