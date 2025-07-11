@@ -78,12 +78,8 @@ function updateURLParams(updates) {
   const filterParams = ['category1', 'category2', 'search', 'sort', 'limit'];
   filterParams.forEach((param) => {
     if (updates[param] !== undefined) {
-      if (
-        updates[param] &&
-        ((param === 'limit' && updates[param] !== 20) ||
-          (param === 'sort' && updates[param] !== 'price_asc') ||
-          (param !== 'limit' && param !== 'sort' && updates[param] !== ''))
-      ) {
+      if (updates[param] !== null && updates[param] !== '') {
+        // 모든 필터 파라미터를 URL에 유지 (빈 문자열이 아닌 경우)
         url.searchParams.set(param, updates[param].toString());
       } else {
         url.searchParams.delete(param);
@@ -100,6 +96,8 @@ window.updateURLParams = updateURLParams;
 window.toastManager = toastManager;
 window.router = router;
 window.productDetailContainer = productDetailContainer;
+window.store = store;
+window.cartModal = cartModal;
 
 // 헤더의 장바구니 카운트만 업데이트하는 함수
 function updateCartCount() {
