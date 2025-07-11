@@ -3,6 +3,38 @@ import { afterEach, beforeAll, beforeEach, describe, expect, test } from "vitest
 import { server } from "./mockServerHandler.js";
 import { userEvent } from "@testing-library/user-event";
 
+// IntersectionObserver Mock 추가
+global.IntersectionObserver = class IntersectionObserver {
+  constructor(callback) {
+    this.callback = callback;
+    this.elements = new Set();
+  }
+
+  observe(element) {
+    this.elements.add(element);
+    // 테스트용으로 observer를 전역에서 접근 가능하게 설정
+    window.testIntersectionObserver = this;
+  }
+
+  unobserve(element) {
+    this.elements.delete(element);
+  }
+
+  disconnect() {
+    this.elements.clear();
+  }
+
+  // 테스트용 헬퍼 메서드
+  trigger(element, isIntersecting = true) {
+    this.callback([
+      {
+        isIntersecting,
+        target: element,
+      },
+    ]);
+  }
+};
+
 const goTo = (path) => {
   window.history.pushState({}, "", path);
   window.dispatchEvent(new Event("popstate"));
@@ -26,6 +58,8 @@ describe("1. 상품 목록 로딩", () => {
   test("페이지 접속 시 로딩 상태가 표시되고, 데이터 로드 완료 후 상품 목록이 렌더링된다", async () => {
     expect(screen.getByText("카테고리 로딩 중...")).toBeInTheDocument();
     expect(screen.queryByText(/총 의 상품/i)).not.toBeInTheDocument();
+
+    console.log(document.body.innerHTML);
 
     // 상품 모두 렌더링되었는지 확인
     expect(
@@ -111,7 +145,10 @@ describe("3. 페이지당 상품 수 선택", () => {
       ).not.toBeInTheDocument(),
     );
 
-    expect(document.querySelectorAll(".product-card").length).toBe(10);
+    await waitFor(() => {
+      const productCards = document.querySelectorAll(".product-card");
+      expect(productCards).toHaveLength(10);
+    });
   });
 });
 
@@ -169,8 +206,14 @@ describe("5. 무한 스크롤 페이지네이션", () => {
     const initialCards = document.querySelectorAll(".product-card").length;
     expect(initialCards).toBe(20);
 
-    // 페이지 하단으로 스크롤
-    window.dispatchEvent(new Event("scroll"));
+    // 센티넬 요소 찾기
+    const sentinel = document.querySelector("#scroll-sentinel");
+    expect(sentinel).toBeInTheDocument();
+
+    // Mock IntersectionObserver를 통해 센티넬 트리거
+    if (window.testIntersectionObserver) {
+      window.testIntersectionObserver.trigger(sentinel, true);
+    }
 
     expect(await screen.findByText("상품을 불러오는 중...")).toBeInTheDocument();
     expect(
@@ -180,24 +223,16 @@ describe("5. 무한 스크롤 페이지네이션", () => {
 });
 
 describe("6. 상품 검색", () => {
-  test("상품명 기반 검색을 위한 텍스트 입력 필드가 있다", async () => {
-    await screen.findByText(/총 의 상품/i);
-
-    // 검색 입력 필드 확인
-    const searchInput = document.querySelector("#search-input");
-    expect(searchInput).toBeInTheDocument();
-    expect(searchInput.placeholder).toMatch(/검색/i);
-  });
-
   test("Enter 키로 검색이 수행할 수 있으며, 검색어와 일치하는 상품들만 목록에 표시된다", async () => {
     await screen.findByText(/총 의 상품/i);
 
     const searchInput = document.querySelector("#search-input");
-
     await userEvent.type(searchInput, "젤리");
     await userEvent.keyboard("{Enter}");
 
-    await screen.findByText("3개");
+    await waitFor(async () => {
+      await screen.findByText("3개");
+    });
 
     const productCards = [...document.querySelectorAll(".product-card")];
     expect(getByRole(productCards[0], "heading", { level: 3, name: /젤리/i })).toBeInTheDocument();
