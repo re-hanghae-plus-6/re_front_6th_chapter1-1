@@ -42,6 +42,45 @@ function syncStateWithUrl() {
     // 홈페이지면 검색어 초기화
     state.search = "";
   }
+
+  // URL 쿼리 파라미터에서 필터 정보 읽기
+  const urlParams = new URLSearchParams(window.location.search);
+
+  // 정렬 정보 복원
+  const sort = urlParams.get("sort");
+  if (sort && ["price_asc", "price_desc", "name_asc", "name_desc"].includes(sort)) {
+    state.sort = sort;
+  }
+
+  // 페이지당 상품 수 복원
+  const limit = urlParams.get("limit");
+  if (limit && ["10", "20", "50", "100"].includes(limit)) {
+    state.productCount = parseInt(limit);
+  }
+
+  // 페이지 번호 복원
+  const page = urlParams.get("page");
+  if (page && parseInt(page) > 0) {
+    state.page = parseInt(page);
+  }
+
+  // 카테고리 정보 복원
+  const category1 = urlParams.get("category1");
+  if (category1) {
+    state.selectedCategory1 = category1;
+  }
+
+  const category2 = urlParams.get("category2");
+  if (category2) {
+    state.selectedCategory2 = category2;
+  }
+
+  // 검색어 복원 (쿼리 파라미터에서)
+  const searchQuery = urlParams.get("search");
+  if (searchQuery && !searchTerm) {
+    // path에서 검색어가 없는 경우에만
+    state.search = searchQuery;
+  }
 }
 
 const enableMocking = () =>
@@ -143,10 +182,19 @@ async function main() {
 
   state.total = total;
   state.products = products;
-  state.categories = categories;
   state.page = page;
   state.hasNext = hasNext;
   state.hasPrev = hasPrev;
+
+  // URL에서 복원된 카테고리 정보에 따라 categories 상태 설정
+  if (state.selectedCategory1) {
+    // category1이 선택된 경우 해당 카테고리의 서브카테고리 목록으로 설정
+    const categoryDetail = categories[state.selectedCategory1];
+    state.categories = categoryDetail || {};
+  } else {
+    // 전체 카테고리 목록 설정
+    state.categories = categories;
+  }
 
   // 값 가져왔으니 로딩 상태 해제
   state.loading = false;
@@ -209,8 +257,14 @@ function setupEventListeners() {
       handleCategory2Filter(category2);
     }
 
-    if (event.target.matches(".category-reset-btn")) {
+    if (event.target.matches(".category-reset-btn") || event.target.matches(".breadcrumb-reset-btn")) {
       handleCategoryReset();
+    }
+
+    // 브레드크럼 클릭 - category1 클릭 시 해당 카테고리로 이동
+    if (event.target.matches(".breadcrumb-category1-btn")) {
+      const category1 = event.target.dataset.category1;
+      handleBreadcrumbCategory1Click(category1);
     }
 
     const cartButton = document.querySelector("#cart-icon-btn");
@@ -303,19 +357,34 @@ async function handleCategory1Filter(category1) {
   state.selectedCategory2 = null; // category1 변경 시 category2 리셋
   state.page = 1; // 카테고리 변경 시 첫 페이지로 리셋
 
-  const categoryDetail = state.categories[category1];
-  state.categories = categoryDetail;
-
-  // 새로운 카테고리로 상품 데이터 재조회
-  state.loading = true;
-  const { products, pagination } = await getProducts({
+  // URL 업데이트
+  updateUrlParams({
     limit: state.productCount,
+    page: state.page,
     sort: state.sort,
     search: state.search,
     category1: state.selectedCategory1,
     category2: state.selectedCategory2,
-    page: state.page,
   });
+
+  state.loading = true;
+
+  // 전체 카테고리와 상품 정보를 다시 가져오기
+  const [{ products, pagination }, categories] = await Promise.all([
+    getProducts({
+      limit: state.productCount,
+      sort: state.sort,
+      search: state.search,
+      category1: state.selectedCategory1,
+      category2: state.selectedCategory2,
+      page: state.page,
+    }),
+    getCategories(),
+  ]);
+
+  // 해당 카테고리의 서브카테고리 목록으로 설정
+  const categoryDetail = categories[category1];
+  state.categories = categoryDetail;
 
   state.products = products;
   state.page = pagination.page;
@@ -369,6 +438,16 @@ async function handleCategoryReset() {
   state.selectedCategory2 = null;
   state.page = 1; // 카테고리 리셋 시 첫 페이지로
 
+  // URL 업데이트
+  updateUrlParams({
+    limit: state.productCount,
+    page: state.page,
+    sort: state.sort,
+    search: state.search,
+    category1: state.selectedCategory1,
+    category2: state.selectedCategory2,
+  });
+
   // 전체 카테고리 다시 로드
   state.loading = true;
   const [{ products, pagination }, categories] = await Promise.all([
@@ -388,6 +467,50 @@ async function handleCategoryReset() {
   state.hasPrev = pagination.hasPrev;
   state.total = pagination.total;
   state.loading = false;
+
+  render();
+}
+
+async function handleBreadcrumbCategory1Click(category1) {
+  // category2는 제거하고 category1만 유지
+  state.selectedCategory1 = category1;
+  state.selectedCategory2 = null;
+  state.page = 1; // 카테고리 변경 시 첫 페이지로 리셋
+
+  // URL 업데이트
+  updateUrlParams({
+    limit: state.productCount,
+    page: state.page,
+    sort: state.sort,
+    search: state.search,
+    category1: state.selectedCategory1,
+    category2: state.selectedCategory2,
+  });
+
+  state.loading = true;
+
+  // 전체 카테고리와 상품 정보를 다시 가져오기
+  const [{ products, pagination }, categories] = await Promise.all([
+    getProducts({
+      limit: state.productCount,
+      sort: state.sort,
+      search: state.search,
+      category1: state.selectedCategory1,
+      page: state.page,
+    }),
+    getCategories(),
+  ]);
+
+  // 해당 카테고리의 서브카테고리 목록으로 설정
+  const categoryDetail = categories[category1];
+  state.categories = categoryDetail;
+
+  state.products = products;
+  state.page = pagination.page;
+  state.hasNext = pagination.hasNext;
+  state.hasPrev = pagination.hasPrev;
+  state.loading = false;
+  state.total = pagination.total;
 
   render();
 }

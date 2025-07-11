@@ -10,8 +10,7 @@ const CategoryButton = (category) => {
 const SubCategoryButton = (category, selectedCategory2) => {
   return `
         <button data-category2="${category}" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors
-                   ${selectedCategory2 === category ? "bg-blue-100 border-blue-300 text-blue-800" : ""}
-                   bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
+                   ${selectedCategory2 === category ? "bg-blue-100 border-blue-300 text-blue-800" : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"}">
                   ${category}
                 </button>
       `;
@@ -21,17 +20,17 @@ export const CategoryFilter = ({ categoryList, selectedCategory1, selectedCatego
   return `       <div class="space-y-2">
           <div class="flex items-center gap-2">
             <label class="text-sm text-gray-600">카테고리:</label>
-            <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
+            <button data-breadcrumb="reset" class="breadcrumb-reset-btn text-xs hover:text-blue-800 hover:underline">전체</button>
              ${
                selectedCategory1
-                 ? `<span class="text-gray-400">></span>
-               <span class="text-xs ">${selectedCategory1}</span>`
+                 ? `<span class="text-xs text-gray-500">&gt;</span>
+               <button data-breadcrumb="category1" data-category1="${selectedCategory1}" class="breadcrumb-category1-btn text-xs hover:text-blue-800 hover:underline">${selectedCategory1}</button>`
                  : ""
              }
                   ${
                     selectedCategory2
-                      ? `<span class="text-gray-400">></span>
-               <span class="text-xs ">${selectedCategory2}</span>`
+                      ? `<span class="text-xs text-gray-500">&gt;</span>
+               <span class="text-xs text-gray-600 cursor-default">${selectedCategory2}</span>`
                       : ""
                   }
           </div>
@@ -42,8 +41,14 @@ export const CategoryFilter = ({ categoryList, selectedCategory1, selectedCatego
             <div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>
           </div>`
               : selectedCategory1
-                ? categoryList.map((category) => SubCategoryButton(category, selectedCategory2)).join("")
-                : categoryList.map((category) => CategoryButton(category)).join("")
+                ? `<div class="space-y-2">
+                  <div class="flex flex-wrap gap-2">
+                    ${categoryList.map((category) => SubCategoryButton(category, selectedCategory2)).join("")}
+                  </div>
+                </div>`
+                : `<div class="flex flex-wrap gap-2">
+                    ${categoryList.map((category) => CategoryButton(category)).join("")}
+                  </div>`
           }
      
         </div>
