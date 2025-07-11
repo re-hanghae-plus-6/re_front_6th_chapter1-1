@@ -152,11 +152,7 @@ function resetGlobalState() {
   currentDetailProduct = null;
   loadingNextPage = false;
 
-  // DOM 초기화 (테스트 환경에서만)
-  const rootElement = document.getElementById("root");
-  if (rootElement && window.navigator.userAgent.includes("jsdom")) {
-    rootElement.innerHTML = "";
-  }
+  // DOM 초기화 제거 - 이벤트 리스너가 유지되어야 함
 }
 
 // 애플리케이션 시작
@@ -167,10 +163,76 @@ window.addEventListener("popstate", handleRoute);
 // 테스트 환경에서 전역 상태 초기화를 위한 전역 함수
 window.resetGlobalState = resetGlobalState;
 
-// limit, sort change 이벤트 위임 (카테고리, 검색 유지)
+// limit-select에 직접 이벤트 리스너 추가 함수
+function setupLimitSelectListener() {
+  const limitSelect = document.getElementById("limit-select");
+  console.log("setupLimitSelectListener 호출됨, limitSelect 존재:", !!limitSelect);
+  if (limitSelect && !limitSelect.hasAttribute("data-listener-added")) {
+    limitSelect.setAttribute("data-listener-added", "true");
+    limitSelect.addEventListener("change", async (e) => {
+      console.log("limit-select 직접 이벤트 발생:", e.target.value);
+      currentLimit = Number(e.target.value);
+      currentSort = document.getElementById("sort-select").value;
+
+      // URL 업데이트 추가
+      const url = new URL(window.location);
+      const urlParams = url.searchParams;
+      urlParams.set("limit", currentLimit.toString());
+      urlParams.set("sort", currentSort);
+      urlParams.set("current", "1");
+      history.pushState({}, "", `${url.pathname}?${urlParams.toString()}`);
+
+      // 로딩 화면
+      const root = document.getElementById("root");
+      root.innerHTML = MainList({
+        loading: true,
+        categories,
+        category1: currentCategory1,
+        category2: currentCategory2,
+        limit: currentLimit,
+        sort: currentSort,
+        search: currentSearch,
+      });
+      const params = { page: 1, limit: currentLimit, sort: currentSort };
+      if (currentSearch) params.search = currentSearch;
+      if (currentCategory1) params.category1 = currentCategory1;
+      if (currentCategory2) params.category2 = currentCategory2;
+      const data = await getProducts(params);
+      currentPage = data.pagination.page;
+      hasNext = data.pagination.hasNext;
+      allProducts = data.products;
+      totalCount = data.pagination.total;
+      root.innerHTML = MainList({
+        loading: false,
+        categories,
+        category1: currentCategory1,
+        category2: currentCategory2,
+        products: allProducts,
+        total: totalCount,
+        limit: currentLimit,
+        sort: currentSort,
+        search: currentSearch,
+      });
+    });
+  }
+}
+
+// 전역 root 변수 정의
 const root = document.getElementById("root");
-root.addEventListener("change", async (e) => {
+
+// limit, sort change 이벤트 위임 (카테고리, 검색 유지) - window에 등록
+window.addEventListener("change", async (e) => {
+  console.log("change 이벤트 발생:", e.target.id, "값:", e.target.value, "타임스탬프:", Date.now());
   if (e.target.id === "limit-select" || e.target.id === "sort-select") {
+    console.log("limit/sort 변경 감지:", e.target.value);
+
+    // limit-select 요소 상태 확인
+    const limitSelect = document.getElementById("limit-select");
+    console.log("limit-select 요소 존재:", !!limitSelect);
+    if (limitSelect) {
+      console.log("limit-select 값:", limitSelect.value);
+      console.log("limit-select 비활성화:", limitSelect.disabled);
+    }
     currentLimit = Number(document.getElementById("limit-select").value);
     currentSort = document.getElementById("sort-select").value;
 
@@ -183,6 +245,7 @@ root.addEventListener("change", async (e) => {
     history.pushState({}, "", `${url.pathname}?${urlParams.toString()}`);
 
     // 로딩 화면
+    const root = document.getElementById("root");
     root.innerHTML = MainList({
       loading: true,
       categories,
@@ -262,6 +325,9 @@ root.addEventListener("keydown", async (e) => {
     sort: currentSort,
     search: currentSearch,
   });
+
+  // limit-select 이벤트 리스너 설정
+  setupLimitSelectListener();
 });
 
 // 무한 스크롤 이벤트
