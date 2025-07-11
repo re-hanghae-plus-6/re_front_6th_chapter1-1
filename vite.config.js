@@ -12,4 +12,14 @@ export default defineConfig({
       },
     },
   },
+  base: process.env.NODE_ENV === "production" ? "/front_6th_chapter1-1/" : "/",
+  build: {
+    outDir: "dist",
+    rollupOptions: {
+      input: {
+        main: "index.html",
+        404: "404.html",
+      },
+    },
+  },
 });

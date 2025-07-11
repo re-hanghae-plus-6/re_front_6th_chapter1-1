@@ -497,13 +497,45 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오", () => {
       await page.goto("/");
       await helpers.waitForPageLoad();
 
+      await page.addInitScript(() => {
+        if (!window.IntersectionObserver) {
+          window.IntersectionObserver = class IntersectionObserver {
+            constructor(callback, options = {}) {
+              this.callback = callback;
+              this.options = options;
+              this.entries = [];
+            }
+
+            observe(target) {
+              // 즉시 콜백 호출하여 무한 스크롤 트리거
+              this.callback([
+                {
+                  target,
+                  isIntersecting: true,
+                  intersectionRatio: 1,
+                  boundingClientRect: target.getBoundingClientRect(),
+                  rootBounds: null,
+                  time: Date.now(),
+                },
+              ]);
+            }
+
+            unobserve() {}
+            disconnect() {}
+          };
+        }
+      });
+
       // 초기 상품 카드 수 확인
       const initialCards = await page.locator(".product-card").count();
       expect(initialCards).toBe(20);
 
-      // 페이지 하단으로 스크롤
+      // 무한 스크롤 트리거 요소 찾기 및 스크롤
       await page.evaluate(() => {
-        window.scrollTo(0, document.body.scrollHeight);
+        const triggerElement = document.querySelector(".infinite-scroll-trigger");
+        if (triggerElement) {
+          triggerElement.scrollIntoView({ behavior: "instant", block: "end" });
+        }
       });
 
       // 로딩 인디케이터 확인
