@@ -9,6 +9,8 @@ import { getProduct, getProducts } from "../api/productApi.js";
 import { render } from "../render.js";
 import { SuccessToast } from "../components/toast/successToast.js";
 import { router } from "../router.js";
+import { addToCart } from "../entity/cart.js";
+import { openToast } from "../utils/toast.js";
 
 const state = {
   product: null,
@@ -37,7 +39,7 @@ export const ProductDetailPage = () => {
   }
 
   state.isRelatedProductsLoading = true;
-  if (state.product) {
+  if (state.product && state.relatedProducts.length <= 0) {
     new Promise((r) => setTimeout(r, 2_000)).then(() => {
       getProducts({
         category1: state.product.category1,
@@ -52,7 +54,7 @@ export const ProductDetailPage = () => {
 
   return `
     <div class="min-h-screen bg-gray-50">
-      ${Header({ title: "상품 상세", cartItemCount: state.cartItems.length })}
+      ${Header({ title: "상품 상세", cartItemCount: store.getState("cartItems").length })}
     <main class="max-w-md mx-auto px-4 py-4">
       ${
         state.isDetailLoading
@@ -121,35 +123,13 @@ ProductDetailPage.registerEvent = () => {
     });
   }
 
-  const addToCart = (product, quantity) => {
-    const existingItem = state.cartItems.find((item) => item.productId === product.productId);
-    if (existingItem) {
-      existingItem.quantity += quantity;
-    } else {
-      state.cartItems.push({
-        ...product,
-        quantity: quantity,
-      });
-    }
-  };
-
   if (addToCartButton) {
     addToCartButton.addEventListener("click", async () => {
       const quantity = parseInt(quantityInput.value);
+
       addToCart(state.product, quantity);
 
-      setTimeout(() => {
-        const successToast = document.querySelector("#success-toast");
-        if (successToast) {
-          successToast.classList.remove("opacity-0");
-          successToast.classList.add("opacity-100");
-
-          setTimeout(() => {
-            successToast.classList.remove("opacity-100");
-            successToast.classList.add("opacity-0");
-          }, 3000);
-        }
-      }, 0); // render() 이후 DOM이 업데이트된 다음 실행되게 타이밍 조정
+      openToast({ message: "장바구니에 추가되었습니다" });
     });
   }
 
@@ -158,6 +138,7 @@ ProductDetailPage.registerEvent = () => {
       relatedProductCard.addEventListener("click", () => {
         const productId = relatedProductCard.dataset.productId;
         router.push(`/product/${productId}`);
+        state.relatedProducts = [];
         store.setState("mounted", false);
       });
     });

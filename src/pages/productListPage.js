@@ -10,7 +10,10 @@ import { router } from "../router.js";
 import { getCategories, getProducts } from "../api/productApi.js";
 import { render } from "../render.js";
 import { store } from "../store.js";
-import { queryStringToObject, objectToQueryString } from "../utils.js";
+import { queryStringToObject, objectToQueryString } from "../utils/qs.js";
+import { addToCart } from "../entity/cart.js";
+import { openToast } from "../utils/toast.js";
+import { SuccessToast } from "../components/toast/successToast.js";
 
 const state = {
   products: [],
@@ -55,7 +58,7 @@ export const ProductListPage = () => {
 
   return `
     <div class="min-h-screen bg-gray-50">
-      ${Header({ title: "쇼핑몰", cartItemCount: 0 })}
+      ${Header({ title: "쇼핑몰", cartItemCount: store.getState("cartItems").length })}
       <main class="max-w-md mx-auto px-4 py-4">
       ${Category({ state })}
         <!-- 상품 목록 -->
@@ -75,12 +78,7 @@ export const ProductListPage = () => {
               ${
                 (state.products ?? []).length > 0
                   ? `${state.products.map((product) => Product(product)).join("")}`
-                  : `
-                    ${SkeletonProduct}
-                    ${SkeletonProduct}
-                    ${SkeletonProduct}
-                    ${SkeletonProduct}
-                    `
+                  : SkeletonProduct.repeat(4)
               }
               `,
             })}
@@ -92,6 +90,7 @@ export const ProductListPage = () => {
       </main>
       ${Footer}
 </div>
+${SuccessToast({ message: "장바구니에 추가되었습니다" })}
   `;
 };
 
@@ -102,10 +101,20 @@ ProductListPage.registerEvent = () => {
   const sortSelect = document.getElementById("sort-select");
   const searchInput = document.getElementById("search-input");
   const productCards = document.querySelectorAll(".product-card");
+  const addToCartButtons = document.querySelectorAll("#add-to-cart-btn");
 
   productCards.forEach((productCard) => {
     productCard.addEventListener("click", () => {
       router.push(`/product/${productCard.dataset.productId}`);
+    });
+  });
+
+  addToCartButtons.forEach((addToCartButton) => {
+    addToCartButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const product = state.products.find((product) => product.productId === event.target.dataset.productId);
+      addToCart(product, 1);
+      openToast({ message: "장바구니에 추가되었습니다" });
     });
   });
 

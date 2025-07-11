@@ -6,7 +6,7 @@ export const SuccessToast = ({ message }) => `
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
       </svg>
     </div>
-    <p class="text-sm font-medium">${message}</p>
+    <p id="toast-message" class="text-sm font-medium">${message}</p>
     <button id="toast-close-btn" class="flex-shrink-0 ml-2 text-white hover:text-gray-200">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
