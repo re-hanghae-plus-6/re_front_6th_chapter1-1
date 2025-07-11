@@ -42,15 +42,12 @@ export function setupDetailAndCartHandler(state) {
 
   if (!decreaseBtn || !increaseBtn || !input || !btn || !state.product) return;
 
-  // // 상세 진입 시 input을 항상 1로 초기화
-  input.value = 1;
-
   // 수량 증가
   increaseBtn.onclick = () => {
     let value = parseInt(input.value);
     if (!isNaN(value)) {
-      input.value = value + 1;
-      console.log(input.value, "증가된 수량");
+      const changevalue = value + 1;
+      input.value = changevalue;
     }
   };
 
@@ -58,8 +55,8 @@ export function setupDetailAndCartHandler(state) {
   decreaseBtn.onclick = () => {
     let value = parseInt(input.value);
     if (!isNaN(value) && value > 1) {
-      input.value = value - 1;
-      console.log(input.value, "감소된 수량");
+      const changevalue = value - 1;
+      input.value = changevalue;
     }
   };
 

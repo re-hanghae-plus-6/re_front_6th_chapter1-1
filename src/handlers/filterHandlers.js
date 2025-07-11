@@ -1,5 +1,4 @@
 import { getProducts } from "../api/productApi.js";
-import initializeHandlers from "./index.js";
 
 /** URL 파라미터를 업데이트하는 공통 함수 */
 function updateUrlParams(updater) {
@@ -16,7 +15,6 @@ async function fetchAndSetProducts(state, render, extraParams = {}) {
   state.loading = true;
   state.page = 1;
   render();
-  initializeHandlers(state, render);
 
   const data = await getProducts({
     page: state.page,

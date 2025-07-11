@@ -19,8 +19,6 @@ export function ProductDetail(productId) {
     state.relatedProducts = relatedProducts.products.filter((p) => p.productId !== product.productId);
 
     render();
-
-    initializeHandlers(state, render);
   }
 
   init();
@@ -290,4 +288,6 @@ function render() {
       <div id="modal-portal"></div>
     </div>`;
   })();
+
+  initializeHandlers(state, render);
 }
