@@ -3,7 +3,7 @@ import NotFound from "../pages/NotFound.js";
 import { ProductDetail } from "../pages/ProductDetail.js";
 
 // BASE PATH 설정 (배포 환경 대비)
-const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
+const BASE_PATH = process.env.NODE_ENV ? "/front_6th_chapter1-1" : "";
 
 //  유틸 함수: BASE_PATH와 관련된 경로 계산
 const getAppPath = (fullPath = window.location.pathname) => {
@@ -13,13 +13,14 @@ const getAppPath = (fullPath = window.location.pathname) => {
 const getFullPath = (appPath) => {
   return BASE_PATH + appPath;
 };
-
+console.log(getAppPath);
 //  라우트 정의
 const routes = [
   {
     path: /^\/?$/, // 홈
     render: () => Home(),
   },
+
   {
     path: /^\/product\/(\w+)/, // 상품 상세
     render: (match) => ProductDetail(match[1]),
