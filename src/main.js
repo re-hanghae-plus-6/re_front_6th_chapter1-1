@@ -1,6 +1,5 @@
 import { MainList } from "./components/pages/MainList.js";
 import { getProducts } from "./api/productApi.js";
-import { ItemCard } from "./components/ItemCard.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -40,16 +39,21 @@ if (import.meta.env.MODE !== "test") {
 const root = document.getElementById("root");
 
 root.addEventListener("change", async (e) => {
-  const limitSelect = document.getElementById("limit-select");
-  const sortSelect = document.getElementById("sort-select");
+  // limit 또는 sort 변경 시 전체 UI 재렌더링
   if (e.target.id === "limit-select" || e.target.id === "sort-select") {
-    const newLimit = Number(limitSelect.value);
-    const newSort = sortSelect.value;
-    // 데이터 fetch 및 grid 업데이트
+    // 새로운 limit, sort 값 가져오기
+    const newLimit = Number(document.getElementById("limit-select").value);
+    const newSort = document.getElementById("sort-select").value;
+    // 로딩 화면 표시
+    root.innerHTML = MainList({ loading: true, limit: newLimit, sort: newSort });
+    // 데이터 fetch
     const newData = await getProducts({ page: 1, limit: newLimit, sort: newSort });
-    const grid = document.getElementById("products-grid");
-    if (grid) {
-      grid.innerHTML = newData.products.map((item) => ItemCard(item)).join("");
-    }
+    // 전체 UI 렌더
+    root.innerHTML = MainList({
+      loading: false,
+      products: newData.products,
+      limit: newLimit,
+      sort: newSort,
+    });
   }
 });
