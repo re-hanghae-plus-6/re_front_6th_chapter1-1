@@ -26,6 +26,20 @@ export async function getProducts(params = {}) {
 // 상품 상세 조회
 export async function getProduct(productId) {
   const response = await fetch(`/api/products/${productId}`);
+
+  // 응답이 정상적이지 않으면 에러 발생
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  // Content-Type 확인
+  const contentType = response.headers.get('content-type');
+  if (!contentType || !contentType.includes('application/json')) {
+    const text = await response.text();
+    console.error('Expected JSON but got:', text.substring(0, 200));
+    throw new Error('Invalid response format: expected JSON');
+  }
+
   return await response.json();
 }
 

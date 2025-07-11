@@ -101,28 +101,36 @@ export function ProductList() {
               </div>
               <div class="flex flex-wrap gap-2">
                 ${
-                  !filters.category1
-                    ? `
-                  <button data-category1="생활/건강" class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50">생활/건강</button>
-                  <button data-category1="디지털/가전" class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50">디지털/가전</button>
-                `
-                    : ''
+                  loading.categories
+                    ? `<div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>`
+                    : !filters.category1
+                      ? `
+                      ${store
+                        .getAllCategory1()
+                        .map(
+                          (category1) => `
+                        <button data-category1="${category1}" class="category1-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50">${category1}</button>
+                      `,
+                        )
+                        .join('')}
+                    `
+                      : ''
                 }
                 ${
-                  filters.category1 === '생활/건강'
+                  !loading.categories && filters.category1
                     ? `
-                  <button data-category1="생활/건강" data-category2="생활용품" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50">생활용품</button>
-                  <button data-category1="생활/건강" data-category2="주방용품" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50">주방용품</button>
-                  <button data-category1="생활/건강" data-category2="문구/사무용품" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50">문구/사무용품</button>
-                `
-                    : ''
-                }
-                ${
-                  filters.category1 === '디지털/가전'
-                    ? `
-                  <button data-category1="디지털/가전" data-category2="컴퓨터/노트북" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50">컴퓨터/노트북</button>
-                  <button data-category1="디지털/가전" data-category2="태블릿" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50">태블릿</button>
-                  <button data-category1="디지털/가전" data-category2="스마트폰" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-50">스마트폰</button>
+                  ${store
+                    .getCategoriesForCategory1(filters.category1)
+                    .map(
+                      (category2) => `
+                    <button data-category1="${filters.category1}" data-category2="${category2}" class="category2-filter-btn text-left px-3 py-2 text-sm rounded-md border transition-colors ${
+                      filters.category2 === category2
+                        ? 'bg-blue-100 border-blue-300 text-blue-800'
+                        : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                    }">${category2}</button>
+                  `,
+                    )
+                    .join('')}
                 `
                     : ''
                 }
