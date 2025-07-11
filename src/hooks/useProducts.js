@@ -20,6 +20,7 @@ export function useProducts() {
   const loadProducts = async (params = {}) => {
     productsState.setState((prevState) => ({
       ...prevState,
+      products: [],
       isLoading: true,
     }));
 
@@ -104,8 +105,9 @@ export function useProducts() {
   };
 
   return {
-    ...productsState.getState(),
+    ...productsState.getState(), // 현재 상태를 직접 반환
     subscribe: productsState.subscribe,
+    getState: productsState.getState, // 현재 상태 가져오기 메서드
     loadInitialData,
     loadProducts,
     loadCategories,
