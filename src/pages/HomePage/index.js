@@ -17,19 +17,18 @@ export default function HomPage(state) {
           ${SearchInput({ state })}
           <!-- 필터 옵션 -->
           ${CategoryFilter({ state })}
-            <!-- 기존 필터들 -->
-            <div class="flex gap-2 items-center justify-between">
-              <!-- 페이지당 상품 수 -->
-              ${LimitSelect({
-                options: LIMIT_OPTIONS,
-                selectedValue: state.filters.limit,
-              })}
-              <!-- 정렬 -->
-               ${SortSelect({
-                 options: SORT_OPTIONS,
-                 selectedValue: state.filters.sort,
-               })}
-            </div>
+          <!-- 기존 필터들 -->
+          <div class="flex gap-2 items-center justify-between">
+            <!-- 페이지당 상품 수 -->
+            ${LimitSelect({
+              options: LIMIT_OPTIONS,
+              selectedValue: state.filters.limit,
+            })}
+            <!-- 정렬 -->
+            ${SortSelect({
+              options: SORT_OPTIONS,
+              selectedValue: state.filters.sort,
+            })}
           </div>
         </div>
         <!-- 상품 목록 -->
