@@ -34,7 +34,7 @@ class E2EHelpers {
   // 장바구니 모달 열기
   async openCartModal() {
     await this.page.click('#cart-icon-btn');
-    await this.page.waitForSelector('.cart-modal-overlay', { timeout: 5000 });
+    await this.page.waitForSelector('#cart-modal-backdrop', { timeout: 5000 });
   }
 }
 

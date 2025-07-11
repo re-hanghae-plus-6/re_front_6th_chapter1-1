@@ -34,7 +34,7 @@ class E2EHelpers {
   // 장바구니 모달 열기
   async openCartModal() {
     await this.page.click('#cart-icon-btn');
-    await this.page.waitForSelector('.cart-modal-overlay', { timeout: 5000 });
+    await this.page.waitForSelector('#cart-modal-backdrop', { timeout: 5000 });
   }
 }
 
@@ -351,9 +351,7 @@ test.describe('E2E: 쇼핑몰 전체 사용자 시나리오', () => {
       await expect(page.locator('#cart-icon-btn span')).toBeVisible();
 
       // localStorage에 저장되었는지 확인
-      const cartData = await page.evaluate(() =>
-        localStorage.getItem('shopping_cart'),
-      );
+      const cartData = await page.evaluate(() => localStorage.getItem('cart'));
       expect(cartData).toBeTruthy();
 
       // 페이지 새로고침
@@ -480,16 +478,18 @@ test.describe('E2E: 쇼핑몰 전체 사용자 시나리오', () => {
       await helpers.openCartModal();
 
       // 두 상품이 모두 있는지 확인
-      await expect(page.locator('.cart-modal')).toContainText(
+      await expect(page.locator('#cart-modal-container')).toContainText(
         'PVC 투명 젤리 쇼핑백',
       );
-      await expect(page.locator('.cart-modal')).toContainText('샷시 풍지판');
+      await expect(page.locator('#cart-modal-container')).toContainText(
+        '샷시 풍지판',
+      );
 
       // 첫 번째 상품 수량 증가
       await page.locator('.quantity-increase-btn').first().click();
 
       // 총 금액 업데이트 확인
-      await expect(page.locator('#root')).toMatchAriaSnapshot(`
+      await expect(page.locator('#cart-modal-container')).toMatchAriaSnapshot(`
     - text: /총 금액 670원/
     - button "전체 비우기"
     - button "구매하기"
@@ -502,10 +502,12 @@ test.describe('E2E: 쇼핑몰 전체 사용자 시나리오', () => {
       await page.click('#cart-modal-remove-selected-btn');
 
       // 첫 번째 상품만 삭제되고 두 번째 상품은 남아있는지 확인
-      await expect(page.locator('.cart-modal')).not.toContainText(
+      await expect(page.locator('#cart-modal-container')).not.toContainText(
         'PVC 투명 젤리 쇼핑백',
       );
-      await expect(page.locator('.cart-modal')).toContainText('샷시 풍지판');
+      await expect(page.locator('#cart-modal-container')).toContainText(
+        '샷시 풍지판',
+      );
 
       // 장바구니 아이콘 개수 업데이트 확인 (1개)
       await expect(page.locator('#cart-icon-btn span')).toHaveText('1');
@@ -587,29 +589,29 @@ test.describe('E2E: 쇼핑몰 전체 사용자 시나리오', () => {
 
       // 모달 열기
       await page.click('#cart-icon-btn');
-      await expect(page.locator('.cart-modal-overlay')).toBeVisible();
+      await expect(page.locator('#cart-modal-backdrop')).toBeVisible();
 
       // ESC 키로 닫기
       await page.keyboard.press('Escape');
-      await expect(page.locator('.cart-modal-overlay')).not.toBeVisible();
+      await expect(page.locator('#cart-modal-backdrop')).not.toBeVisible();
 
       // 다시 열기
       await page.click('#cart-icon-btn');
-      await expect(page.locator('.cart-modal-overlay')).toBeVisible();
+      await expect(page.locator('#cart-modal-backdrop')).toBeVisible();
 
       // X 버튼으로 닫기
       await page.click('#cart-modal-close-btn');
-      await expect(page.locator('.cart-modal-overlay')).not.toBeVisible();
+      await expect(page.locator('#cart-modal-backdrop')).not.toBeVisible();
 
       // 다시 열기
       await page.click('#cart-icon-btn');
-      await expect(page.locator('.cart-modal-overlay')).toBeVisible();
+      await expect(page.locator('#cart-modal-backdrop')).toBeVisible();
 
       // 배경 클릭으로 닫기 (모달 내용이 아닌 오버레이 영역 클릭)
       await page
-        .locator('.cart-modal-overlay')
+        .locator('#cart-modal-backdrop')
         .click({ position: { x: 10, y: 10 } });
-      await expect(page.locator('.cart-modal-overlay')).not.toBeVisible();
+      await expect(page.locator('#cart-modal-backdrop')).not.toBeVisible();
     });
 
     test('토스트 메시지 시스템이 올바르게 작동한다', async ({ page }) => {
