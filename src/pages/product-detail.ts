@@ -85,12 +85,17 @@ export const detailPage: PageModule = {
       navigate(`/product/${productId}`);
     };
 
+    const handleGoToProductList = () => {
+      navigate("/");
+    };
+
     const bindEvents = () => {
       const decButtonEl = root.querySelector("#quantity-decrease") as HTMLButtonElement | null;
       const incButtonEl = root.querySelector("#quantity-increase") as HTMLButtonElement | null;
       const addButtonEl = root.querySelector("#add-to-cart-btn") as HTMLButtonElement | null;
       const relatedProductEls = root.querySelectorAll(".related-product-card");
       const cartIconEl = root.querySelector("#cart-icon-btn") as HTMLButtonElement | null;
+      const goToListButtonEl = root.querySelector(".go-to-product-list") as HTMLButtonElement | null;
 
       if (decButtonEl) decButtonEl.addEventListener("click", handleQuantityDecrease);
       if (incButtonEl) incButtonEl.addEventListener("click", handleQuantityIncrease);
@@ -102,6 +107,7 @@ export const detailPage: PageModule = {
         }),
       );
       if (cartIconEl) cartIconEl.addEventListener("click", 장바구니);
+      if (goToListButtonEl) goToListButtonEl.addEventListener("click", handleGoToProductList);
     };
 
     const initData = async () => {
