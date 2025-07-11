@@ -9,7 +9,7 @@ export const productStore = createStore({
   total: 0,
 
   // UI 상태
-  isLoading: false,
+  isLoading: true,
   error: null,
 
   // 필터 상태 (URL과 동기화)
@@ -92,5 +92,3 @@ export const productActions = {
     });
   },
 };
-
-console.log("🔧 ProductActions 등록 완료");
