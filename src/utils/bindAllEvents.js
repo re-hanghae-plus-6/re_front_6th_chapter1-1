@@ -183,4 +183,30 @@ export const bindAllEvents = () => {
       });
     });
   }
+
+  // 카테고리1 필터 이벤트
+  const categoryFilter1Elements = document.querySelectorAll(".category1-filter-btn");
+  if (categoryFilter1Elements) {
+    categoryFilter1Elements.forEach((element) => {
+      element.addEventListener("click", () => {
+        const category1 = element.dataset.category1;
+        params.set("category1", category1);
+        window.history.replaceState({}, "", `${window.location.pathname}?${params.toString()}`);
+        fetchProducts({ category1, page: 1 });
+      });
+    });
+  }
+
+  // 카테고리2 필터 이벤트
+  const categoryFilter2Elements = document.querySelectorAll(".category2-filter-btn");
+  if (categoryFilter2Elements) {
+    categoryFilter2Elements.forEach((element) => {
+      element.addEventListener("click", () => {
+        const category2 = element.dataset.category2;
+        params.set("category2", category2);
+        window.history.replaceState({}, "", `${window.location.pathname}?${params.toString()}`);
+        fetchProducts({ category2, page: 1 });
+      });
+    });
+  }
 };

@@ -1,3 +1,4 @@
+import { PageNotFound } from "../pages/_404_.js";
 import { MainPage } from "../pages/MainPage.js";
 import { ProductPage } from "../pages/ProductPage.js";
 
@@ -12,5 +13,5 @@ export async function Router() {
     return await ProductPage();
   }
 
-  return "<h1>404 Not Found</h1>";
+  return PageNotFound();
 }
