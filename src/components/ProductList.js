@@ -1,8 +1,8 @@
 import ProductCard from "./ProductCard";
 
-export default function ProductList(products, pagination) {
+export default function ProductList({ products, pagination }) {
   return /* html */ `
-    <div class="mb-6">
+    <div class="mb-6" id="product-list">
       <div>
         <!-- 상품 개수 정보 -->
         <div class="mb-4 text-sm text-gray-600">

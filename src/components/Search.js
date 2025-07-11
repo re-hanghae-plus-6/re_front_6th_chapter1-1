@@ -1,66 +1,46 @@
 import { store } from "../main";
 import Loading from "./Loading";
 
-const events = [
-  {
-    el: window,
-    action: "keyup",
-    fn: (event) => {
-      if (event.key !== "Enter") return;
-      const searchInput = document.querySelector("#search-input");
-      store.set("params", {
-        ...store.get("params"),
-        search: searchInput.value,
-        page: 1,
-      });
-    },
-  },
-  {
-    el: "#limit-select",
-    action: "change",
-    fn: (event) => {
-      store.set("params", {
-        ...store.get("params"),
-        limit: event.target.value,
-        page: 1,
-      });
-    },
-  },
-  {
-    el: "#sort-select",
-    action: "change",
-    fn: (event) => {
-      store.set("params", {
-        ...store.get("params"),
-        sort: event.target.value,
-        page: 1,
-      });
-    },
-  },
-  {},
-];
-
-const bindEvent = (el, action, fn) => {
-  if (el === window) {
-    el?.addEventListener(action, fn);
-  } else {
-    document.querySelector(el)?.addEventListener(action, fn);
-  }
-};
-
 Search.mount = () => {
+  const limitSelect = document.querySelector("#limit-select");
+  const sortSelect = document.querySelector("#sort-select");
+  const searchInput = document.querySelector("#search-input");
   const limit = store.get("params")["limit"];
   const sort = store.get("params")["sort"];
+  const search = store.get("params")["search"];
 
-  document.querySelector("#limit-select").value = limit;
-  document.querySelector("#sort-select").value = sort;
+  limitSelect.value = limit;
+  sortSelect.value = sort;
+  searchInput.value = search;
 
-  events.forEach((e) => {
-    const { el, action, fn } = e;
-    bindEvent(el, action, fn);
+  const handleKeyup = (event) => {
+    console.log({ key: event.key, en: event.isComposing });
+    if (event.key !== "Enter") return;
+    store.set("params", {
+      ...store.get("params"),
+      search: event.target.value,
+      page: 1,
+    });
+  };
+
+  window.addEventListener("keypress", handleKeyup);
+
+  document.querySelector("#limit-select").addEventListener("change", (event) => {
+    store.set("params", {
+      ...store.get("params"),
+      limit: event.target.value,
+      page: 1,
+    });
   });
 
-  return;
+  document.querySelector("#sort-select").addEventListener("change", (event) => {
+    console.log("test");
+    store.set("params", {
+      ...store.get("params"),
+      sort: event.target.value,
+      page: 1,
+    });
+  });
 };
 
 export default function Search(categories = {}, isLoading = true) {

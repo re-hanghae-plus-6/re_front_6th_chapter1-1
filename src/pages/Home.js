@@ -41,29 +41,71 @@ const fetchCategories = async () => {
   state.isLoading = false;
 };
 
-const fetchMoreProducts = (io = null) => {
-  if (typeof IntersectionObserver === "undefined") return;
-  const trigger = document.querySelector("#scroll-trigger");
-  if (!trigger) return;
-  if (io) io.disconnect();
+// const fetchMoreProducts = async (io = null) => {
+//   if (typeof IntersectionObserver === "undefined") return;
+//   const trigger = document.querySelector("#scroll-trigger");
+//   if (!trigger) return;
+//   if (io) io.disconnect();
 
-  io = new IntersectionObserver(
-    (entries) => {
-      if (entries[0].isIntersecting) {
-        if (state.pagination && state.pagination.hasNext) {
-          const currentPage = store.get("params")["page"];
-          store.set("params.page", currentPage + 1);
-        }
-      }
-    },
-    {
-      root: null,
-      rootMargin: "0px",
-      threshold: 1.0,
-    },
-  );
+//   io = new IntersectionObserver(
+//     (entries) => {
+//       if (entries[0].isIntersecting) {
+//         if (state.pagination && state.pagination.hasNext) {
+//           const currentPage = store.get("params")["page"];
+//           store.set("params.page", currentPage + 1);
+//         }
+//       }
+//     },
+//     {
+//       root: null,
+//       rootMargin: "0px",
+//       threshold: 1.0,
+//     },
+//   );
 
-  io.observe(trigger);
+//   io.observe(trigger);
+// };
+
+const fetchMoreProductsScroll = () => {
+  const triggerHeight = 100;
+  let scrollHandler = null;
+
+  const handleScroll = () => {
+    if (state.isLoadingMore || !state.pagination?.hasNext) return;
+    const currentScroll = window.scrollY;
+    const viewHeight = document.documentElement.clientHeight;
+    const bodyHeight = document.body.scrollHeight;
+    if (currentScroll + viewHeight > bodyHeight - triggerHeight) {
+      state.isLoadingMore = true;
+      const currentPage = store.get("params")["page"];
+      store.set("params", {
+        ...store.get("params"),
+        page: currentPage + 1,
+      });
+    }
+  };
+
+  if (scrollHandler) {
+    window.removeEventListener("scroll", handleScroll);
+  }
+
+  scrollHandler = handleScroll;
+  window.addEventListener("scroll", scrollHandler);
+
+  return scrollHandler;
+
+  // window.addEventListener("scroll", () => {
+  //   if (currentScroll + viewHeight > bodyHeight - triggerHeight) {
+  //     state.isLoadingMore = true;
+
+  //     store.set("params", {
+  //       ...store.get("params"),
+  //       page: store.get("params")["page"] + 1,
+  //     });
+
+  //     return;
+  //   }
+  // });
 };
 
 const renderHome = () => {
@@ -84,14 +126,15 @@ Home.init = () => {
 };
 
 Home.mount = async () => {
-  let io;
+  // let io;
 
   await fetchProducts();
   await fetchCategories();
   renderHome();
-  fetchMoreProducts(io);
+  // fetchMoreProducts(io);
   Search.mount();
   ProductCard.mount();
+  fetchMoreProductsScroll();
 
   store.watch(async (newValue) => {
     const url = new URL(window.location);
@@ -103,10 +146,17 @@ Home.mount = async () => {
     window.history.pushState({}, "", url.toString());
 
     await fetchProducts(newValue);
-    await fetchCategories();
-    renderHome();
-    fetchMoreProducts(io);
-    Search.mount();
+    state.isLoadingMore = false;
+    // fetchMoreProducts(io);
+    render.draw(
+      "#product-list",
+      ProductList({
+        products: state.products,
+        pagination: state.pagination,
+      }),
+    );
+
+    // Search.mount();
     ProductCard.mount();
   }, "params");
 };
@@ -116,9 +166,9 @@ export default function Home({ products, pagination, isLoading, categories, isLo
     ${Search(categories, isLoading)}
     <!-- 상품 목록 -->
     <div class="mb-6 min-h-dvh">
-      <div>
+      <div >
         <!-- 상품 그리드 -->
-        ${state.isLoading ? Loading({ type: "products" }) : ProductList(products, pagination)}
+        ${state.isLoading ? Loading({ type: "products" }) : ProductList({ products, pagination })}
         ${
           isLoadingMore
             ? Loading({ type: "products" })
