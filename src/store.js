@@ -55,14 +55,18 @@ export class ListStore {
   }
 }
 
-export class DetailStore {
+export class CategoryStore {
   constructor() {
     this.state = {
-      productId: "",
+      categorys: [],
     };
   }
 
   getState = () => {
     return this.state;
   };
+
+  setCategorys(categorys) {
+    this.state.categorys = categorys;
+  }
 }

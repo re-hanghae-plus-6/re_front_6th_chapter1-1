@@ -1,7 +1,7 @@
 import ProductList from "../components/product-list.js";
 import Filter from "../components/filter.js";
-import { getProducts } from "../api/productApi.js";
-import { ListStore } from "../store.js";
+import { getProducts, getCategories } from "../api/productApi.js";
+import { ListStore, CategoryStore } from "../store.js";
 import { ListHeader } from "../components/header.js";
 import Footer from "../components/footer.js";
 
@@ -21,10 +21,11 @@ function ListPage({ isLoading = true, fetchData, limit, sort, search } = {}) {
 // mount 함수 수정
 ListPage.mount = function () {
   const store = new ListStore();
+  const categoryStore = new CategoryStore();
+  const storeState = store.getState();
   const root = document.getElementById("root");
 
-  function fetchAndRender() {
-    const storeState = store.getState();
+  function fetchListAndRender() {
     getProducts(storeState).then((data) => {
       // list 페이지 마운트 후 받아온 데이터로 list 렌더링
       root.innerHTML = ListPage({
@@ -37,22 +38,30 @@ ListPage.mount = function () {
     });
   }
 
-  fetchAndRender();
+  function fetchCategoryAndRender() {
+    getCategories().then((data) => {
+      const firstDepthKeys = Object.keys(data);
+      categoryStore.setCategorys(firstDepthKeys);
+    });
+  }
+
+  fetchListAndRender();
+  fetchCategoryAndRender();
 
   // 이벤트 리스너들
   function handleChangeLimit(e) {
     store.setLimit(e.detail.limit);
-    fetchAndRender();
+    fetchListAndRender();
   }
 
   function handleChangeSort(e) {
     store.setSort(e.detail.sort);
-    fetchAndRender();
+    fetchListAndRender();
   }
 
   function handleChangeSearch(e) {
     store.setSearch(e.detail.search);
-    fetchAndRender();
+    fetchListAndRender();
   }
 
   // 브라우저 뒤로가기/앞으로가기 이벤트 처리
@@ -60,7 +69,7 @@ ListPage.mount = function () {
     // URL이 변경되었으므로 store를 새로 초기화하여 URL 쿼리 반영
     const newStore = new ListStore();
     Object.assign(store, newStore);
-    fetchAndRender();
+    fetchListAndRender();
   }
 
   // 이벤트 리스너 등록

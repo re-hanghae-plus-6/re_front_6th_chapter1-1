@@ -22,7 +22,7 @@ DetailPage.mount = function () {
   // const storeState = store.getState();
 
   const root = document.getElementById("root");
-  function fetchAndRender() {
+  function fetchDetailAndRender() {
     getProduct(productId).then((data) => {
       // list 페이지 마운트 후 받아온 데이터로 list 렌더링
       root.innerHTML = DetailPage({
@@ -32,7 +32,7 @@ DetailPage.mount = function () {
     });
   }
 
-  fetchAndRender();
+  fetchDetailAndRender();
 
   // cleanup 함수 반환
   return function cleanup() {

@@ -1,5 +1,4 @@
 export default function ProductDetail({ isLoading, fetchData }) {
-  console.log(fetchData);
   if (isLoading) {
     return /* HTML */ `
       <div class="py-20 bg-gray-50 flex items-center justify-center">

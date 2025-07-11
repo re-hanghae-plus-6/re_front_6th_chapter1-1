@@ -1,4 +1,7 @@
-export default function Filter({ limit = 20, sort = "price_asc", search = "" }) {
+import Categorys from "./categorys";
+
+export default function Filter({ limit = 20, sort = "price_asc", search = "", categorys = [] }) {
+  console.log("categorys", categorys);
   return /* HTML */ `
     <!-- 검색 및 필터 -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
@@ -28,17 +31,7 @@ export default function Filter({ limit = 20, sort = "price_asc", search = "" }) 
       <!-- 필터 옵션 -->
       <div class="space-y-3">
         <!-- 카테고리 필터 -->
-        <div class="space-y-2">
-          <div class="flex items-center gap-2">
-            <label class="text-sm text-gray-600">카테고리:</label>
-            <button data-breadcrumb="reset" class="text-xs hover:text-blue-800 hover:underline">전체</button>
-          </div>
-          <!-- 1depth 카테고리 -->
-          <div class="flex flex-wrap gap-2">
-            <div class="text-sm text-gray-500 italic">카테고리 로딩 중...</div>
-          </div>
-          <!-- 2depth 카테고리 -->
-        </div>
+        <div class="space-y-2" id="category-filter">${Categorys({ categorys })}</div>
         <!-- 기존 필터들 -->
         <div class="flex gap-2 items-center justify-between">
           <!-- 페이지당 상품 수 -->
