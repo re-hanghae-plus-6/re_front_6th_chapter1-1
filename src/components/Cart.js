@@ -3,7 +3,7 @@ import { cartManager } from "../utils/cart";
 export const Cart = (items = []) => {
   // dimmed + Cart 모달 구조
   return `
-    <div class="modal-dimmed"></div>
+    <div class="cart-modal-overlay"></div>
     <div class="modal-content">
       <div
         class="relative bg-white rounded-t-lg sm:rounded-lg shadow-xl w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-hidden"

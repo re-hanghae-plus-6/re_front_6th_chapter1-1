@@ -1,5 +1,5 @@
 /* 추가 CSS 스타일 */
-.modal-dimmed {
+.cart-modal-overlay {
   position: fixed;
   z-index: 998;
   inset: 0;

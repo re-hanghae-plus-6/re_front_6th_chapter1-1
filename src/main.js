@@ -142,7 +142,7 @@ function setupModalEvents(modalRoot) {
 
   // 모달 전체 클릭 이벤트 (dimmed 배경 클릭 시에만 닫기)
   modalRoot.addEventListener("click", (e) => {
-    if (e.target.classList.contains("modal-dimmed")) {
+    if (e.target.classList.contains("cart-modal-overlay")) {
       closeModal();
     }
   });
