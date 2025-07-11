@@ -8,6 +8,8 @@ class Router {
   constructor() {
     this.routes = {};
     this.currentPage = null;
+    this.header = null;
+    this.footer = null;
   }
 
   // 라우트 등록
@@ -22,6 +24,7 @@ class Router {
 
     this.handleRoute();
     window.addEventListener("popstate", () => {
+      history.replaceState({ isPopState: true }, "");
       this.handleRoute();
     });
   }
@@ -31,35 +34,57 @@ class Router {
     const root = document.getElementById("root");
     if (!root) return;
 
-    const header = new Header();
-    const footer = new Footer();
+    // 기존 컴포넌트 정리
+    if (this.header) this.header.unmounted();
+    if (this.footer) this.footer.unmounted();
+
+    this.header = new Header();
+    this.footer = new Footer();
 
     root.innerHTML = /*html*/ `
       <div class="min-h-screen bg-gray-50">
-        ${header.render()}
+        ${this.header.render()}
         <main id="page-content" class="max-w-md mx-auto px-4 py-4"></main>
-        ${footer.render()}
+        <div id="toast-container"></div>
+        ${this.footer.render()}
       </div>
     `;
+
+    // 컴포넌트 mounted 호출
+    if (this.header.mounted) this.header.mounted();
+    if (this.footer.mounted) this.footer.mounted();
   }
 
   // 페이지 이동
   navigate(path) {
-    history.pushState({}, "", path);
+    history.pushState({ isPopState: false }, "", path);
     this.handleRoute();
   }
 
   // 이전 페이지 정리
-  cleanupCurrentPage() {
-    if (this.currentPage && typeof this.currentPage.unmounted === "function") {
-      this.currentPage.unmounted();
+  async cleanupCurrentPage() {
+    if (this.currentPage) {
+      // 현재 페이지의 모든 진행 중인 작업을 취소
+      if (typeof this.currentPage.cleanup === "function") {
+        await this.currentPage.cleanup();
+      }
+      // unmounted 호출
+      if (typeof this.currentPage.unmounted === "function") {
+        await this.currentPage.unmounted();
+      }
+      // DOM에서 페이지 컨텐츠 제거
+      const pageContent = document.getElementById("page-content");
+      if (pageContent) {
+        pageContent.innerHTML = "";
+      }
+      this.currentPage = null;
     }
-    this.currentPage = null;
   }
 
   // 현재 경로 처리
-  handleRoute() {
-    this.cleanupCurrentPage();
+  async handleRoute() {
+    // 이전 페이지 정리를 먼저 완료
+    await this.cleanupCurrentPage();
 
     const path = window.location.pathname;
     const searchParams = new URLSearchParams(window.location.search);
@@ -75,33 +100,39 @@ class Router {
         return "([^/]+)";
       });
 
-      const match = path.match(new RegExp(`^${regexPath}$`));
-      if (match) {
-        matchedHandler = this.routes[routePath];
+      let match = null;
+      try {
+        match = path.match(new RegExp(`^${regexPath}$`));
+      } catch {
+        continue; // 정규식 에러 시 다음 라우트로
+      }
 
-        // path params 추출
+      if (match) {
+        // 필수 param이 비어있으면 매칭 실패로 간주
+        if (paramNames.some((_, idx) => !match[idx + 1])) {
+          continue;
+        }
+        matchedHandler = this.routes[routePath];
         paramNames.forEach((name, index) => {
           params[name] = match[index + 1];
         });
-
         // query params 추출
         for (const [key, value] of searchParams.entries()) {
           params[key] = value;
         }
-
         break;
       }
     }
 
     if (matchedHandler) {
-      matchedHandler(params);
+      await matchedHandler(params);
     } else if (this.routes["*"]) {
-      this.routes["*"]();
+      await this.routes["*"]();
     }
   }
 
   // 페이지 렌더링
-  renderPage(page) {
+  async renderPage(page) {
     let pageContent = document.getElementById("page-content");
 
     // pageContent가 없다면 앱 구조를 다시 생성
@@ -111,12 +142,20 @@ class Router {
     }
 
     if (pageContent) {
+      // 렌더링 전에 로딩 상태 표시
+      pageContent.innerHTML = `
+        <div class="flex justify-center items-center min-h-screen">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        </div>
+      `;
+
+      // 페이지 렌더링
       pageContent.innerHTML = page.render();
       this.currentPage = page;
 
       // DOM이 삽입된 후 mounted 호출
       if (page.mounted) {
-        page.mounted();
+        await page.mounted();
       }
     }
   }
@@ -124,23 +163,30 @@ class Router {
 
 const router = new Router();
 
-// 라우트 등록
+/* ================================================
+ * 라우트 등록
+ * ================================================ */
 // 상품 목록 페이지 핸들러
-router.addRoute("/", () => {
+router.addRoute("/", async () => {
   const page = new ProductListPage();
-  router.renderPage(page);
+  await router.renderPage(page);
 });
 
 // 상품 상세 페이지 핸들러
-router.addRoute("/product/:productId", (params) => {
+router.addRoute("/product/:productId", async (params) => {
+  if (!params.productId) {
+    const page = new NotFoundPage();
+    await router.renderPage(page);
+    return;
+  }
   const page = new ProductDetailPage(params.productId);
-  router.renderPage(page);
+  await router.renderPage(page);
 });
 
 // 404 페이지 핸들러
-router.addRoute("*", () => {
+router.addRoute("*", async () => {
   const page = new NotFoundPage();
-  router.renderPage(page);
+  await router.renderPage(page);
 });
 
 export default router;
