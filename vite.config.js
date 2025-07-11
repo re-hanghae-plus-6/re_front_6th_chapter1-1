@@ -13,8 +13,9 @@ export default defineConfig({
     outDir: "dist",
     sourcemap: false,
     rollupOptions: {
-      input: path.resolve(__dirname, "src/main.js"),
+      input: path.resolve(__dirname, "index.html"),
       output: {
+        entryFileNames: "assets/main-[hash].js",
         manualChunks: undefined,
       },
     },
