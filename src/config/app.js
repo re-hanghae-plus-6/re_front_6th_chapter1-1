@@ -1,8 +1,8 @@
 // mock 설정
 async function enableMocking() {
   try {
-    const { worker } = await import("../mocks/browser.js");
-    await worker.start({ onUnhandledRequest: "bypass" });
+    const { worker, workerOptions } = await import("../mocks/browser.js");
+    await worker.start(workerOptions);
     console.info("[MSW] Mock service worker started");
   } catch (error) {
     console.warn("[MSW] Failed to start mock service worker", error);

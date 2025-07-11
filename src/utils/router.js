@@ -1,3 +1,6 @@
+// BASE_PATH 설정
+export const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
+
 // 간결한 라우터
 class Router {
   constructor() {
@@ -7,18 +10,24 @@ class Router {
   }
 
   register(path, handler) {
-    this.routes.set(path, handler);
+    // BASE_PATH를 제외한 경로로 등록
+    const cleanPath = this.removeBasePath(path);
+    this.routes.set(cleanPath, handler);
     return this;
   }
 
   navigate(path, updateHistory = true) {
-    this.currentPath = path || "/";
+    // BASE_PATH를 제외한 경로로 처리
+    const cleanPath = this.removeBasePath(path);
+    this.currentPath = cleanPath || "/";
 
     if (updateHistory) {
-      history.pushState({}, "", path);
+      // 전체 경로(BASE_PATH 포함)로 history 업데이트
+      const fullPath = this.addBasePath(cleanPath);
+      history.pushState({}, "", fullPath);
     }
 
-    const match = this.matchRoute(path);
+    const match = this.matchRoute(cleanPath);
     if (match) {
       this.currentParams = match.params;
       match.handler(match.params);
@@ -81,10 +90,27 @@ class Router {
     return this.currentParams;
   }
 
+  // BASE_PATH 제거 함수
+  removeBasePath(path) {
+    if (BASE_PATH && path.startsWith(BASE_PATH)) {
+      return path.slice(BASE_PATH.length) || "/";
+    }
+    return path;
+  }
+
+  // BASE_PATH 추가 함수
+  addBasePath(path) {
+    if (BASE_PATH && path !== "/") {
+      return `${BASE_PATH}${path}`;
+    }
+    return BASE_PATH + path;
+  }
+
   init() {
     // 브라우저 뒤로가기/앞으로가기 처리
     window.addEventListener("popstate", () => {
-      this.navigate(location.pathname, false);
+      const currentPath = this.removeBasePath(location.pathname);
+      this.navigate(currentPath, false);
     });
 
     // a 태그 클릭 이벤트 처리
@@ -92,13 +118,29 @@ class Router {
       const link = e.target.closest("a");
       if (link && this.shouldHandleLink(link)) {
         e.preventDefault();
-        this.navigate(link.getAttribute("href"));
+        const href = link.getAttribute("href");
+        this.navigate(href);
       }
     });
 
-    // 초기 경로 처리
-    this.navigate(location.pathname, false);
+    // 초기 경로 처리 (BASE_PATH 제거 후)
+    const initialPath = this.removeBasePath(location.pathname);
+    this.navigate(initialPath, false);
     return this;
+  }
+
+  // 링크 처리 여부를 결정하는 메서드
+  shouldHandleLink(link) {
+    const href = link.getAttribute("href");
+    if (!href) return false;
+
+    // 외부 링크는 처리하지 않음
+    if (href.startsWith("http") || href.startsWith("mailto:") || href.startsWith("tel:")) {
+      return false;
+    }
+
+    // 현재 도메인의 링크만 처리
+    return href.startsWith("/") || href.startsWith("./") || href.startsWith("../");
   }
 }
 
