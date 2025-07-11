@@ -31,7 +31,17 @@ async function main() {
     render();
   });
 
-  const initialPath = location.pathname;
+  const urlParams = new URLSearchParams(window.location.search);
+  const redirectPath = urlParams.get("redirect");
+
+  let initialPath;
+  if (redirectPath) {
+    initialPath = redirectPath;
+    window.history.replaceState({}, "", redirectPath);
+  } else {
+    initialPath = location.pathname;
+  }
+
   store.dispatch(actions.navigate(initialPath));
 }
 
