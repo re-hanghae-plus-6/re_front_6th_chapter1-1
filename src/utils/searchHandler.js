@@ -13,8 +13,8 @@ export const performSearch = async (searchTerm, renderCallback) => {
       products: [],
     });
 
-    // URL 쿼리 파라미터 업데이트
-    updateQueryParams({ search: searchTerm, page: 1 });
+    // URL 쿼리 파라미터 업데이트 (히스토리에 쌓이지 않도록 replace=true)
+    updateQueryParams({ search: searchTerm, page: 1 }, true);
 
     const state = productListStore.getState();
 
@@ -48,6 +48,9 @@ export const clearSearch = async (renderCallback) => {
   productListStore.resetSearch();
 
   try {
+    // URL 쿼리 파라미터 업데이트 (히스토리에 쌓이지 않도록 replace=true)
+    updateQueryParams({ search: "", page: 1 }, true);
+
     const state = productListStore.getState();
     const { products, pagination } = await getProducts({
       page: state.page,

@@ -1,6 +1,7 @@
 import { getProduct, getRelatedProducts } from "../api/productApi";
 import { setupCartEventListeners, updateCartCount, addToCart } from "../utils/cartHandler.js";
 import { renderProductDetailLoading } from "../utils/loadingHandler.js";
+import { goBack, navigateToHome, navigateTo, navigateToProduct } from "../utils/router.js";
 
 const root = document.getElementById("root");
 
@@ -84,7 +85,7 @@ const renderProductDetail = (product, relatedProducts = []) => {
         <div class="max-w-md mx-auto px-4 py-4">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-3">
-              <button onclick="window.history.back()" class="p-2 text-gray-700 hover:text-gray-900 transition-colors">
+              <button id="back-button" class="p-2 text-gray-700 hover:text-gray-900 transition-colors">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
@@ -196,8 +197,8 @@ const renderProductDetail = (product, relatedProducts = []) => {
         </div>
         <!-- 상품 목록으로 이동 -->
         <div class="mb-6">
-          <button class="block w-full text-center bg-gray-100 text-gray-700 py-3 px-4 rounded-md 
-            hover:bg-gray-200 transition-colors go-to-product-list">
+          <button id="go-to-product-list" class="block w-full text-center bg-gray-100 text-gray-700 py-3 px-4 rounded-md 
+            hover:bg-gray-200 transition-colors">
             상품 목록으로 돌아가기
           </button>
         </div>
@@ -230,6 +231,14 @@ const renderProductDetail = (product, relatedProducts = []) => {
 
 // 이벤트 리스너 설정
 const setupEventListeners = (product) => {
+  // 뒤로가기 버튼
+  const backButton = document.getElementById("back-button");
+  if (backButton) {
+    backButton.addEventListener("click", async () => {
+      await goBack();
+    });
+  }
+
   // 수량 증가 버튼
   const increaseBtn = document.getElementById("quantity-increase");
   const decreaseBtn = document.getElementById("quantity-decrease");
@@ -283,39 +292,36 @@ const setupEventListeners = (product) => {
   }
 
   // 상품 목록으로 돌아가기 버튼
-  const goToListBtn = document.querySelector(".go-to-product-list");
+  const goToListBtn = document.getElementById("go-to-product-list");
   if (goToListBtn) {
-    goToListBtn.addEventListener("click", () => {
-      window.history.pushState({}, "", "/");
-      window.dispatchEvent(new PopStateEvent("popstate"));
+    goToListBtn.addEventListener("click", async () => {
+      await navigateToHome();
     });
   }
 
   // 브레드크럼 링크
   const breadcrumbLinks = document.querySelectorAll(".breadcrumb-link");
   breadcrumbLinks.forEach((link) => {
-    link.addEventListener("click", (e) => {
+    link.addEventListener("click", async (e) => {
       e.preventDefault();
       const category1 = link.getAttribute("data-category1");
       const category2 = link.getAttribute("data-category2");
 
       if (category1) {
-        window.history.pushState({}, "", `/?category1=${category1}`);
+        await navigateTo(`/?category1=${category1}`);
       } else if (category2) {
-        window.history.pushState({}, "", `/?category2=${category2}`);
+        await navigateTo(`/?category2=${category2}`);
       }
-      window.dispatchEvent(new PopStateEvent("popstate"));
     });
   });
 
   // 관련 상품 클릭 이벤트
   const relatedProductCards = document.querySelectorAll(".related-product-card");
   relatedProductCards.forEach((card) => {
-    card.addEventListener("click", () => {
+    card.addEventListener("click", async () => {
       const productId = card.getAttribute("data-product-id");
       if (productId) {
-        window.history.pushState({}, "", `/product/${productId}`);
-        window.dispatchEvent(new PopStateEvent("popstate"));
+        await navigateToProduct(productId);
       }
     });
   });
@@ -351,11 +357,19 @@ export const productDetailPage = async (productId) => {
         <div class="text-center">
           <h2 class="text-xl font-bold text-gray-900 mb-4">상품을 찾을 수 없습니다</h2>
           <p class="text-gray-600 mb-6">요청하신 상품이 존재하지 않거나 삭제되었습니다.</p>
-          <button onclick="window.history.back()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+          <button id="error-back-button" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
             이전 페이지로 돌아가기
           </button>
         </div>
       </div>
     `;
+
+    // 에러 페이지의 뒤로가기 버튼 이벤트 리스너
+    const errorBackButton = document.getElementById("error-back-button");
+    if (errorBackButton) {
+      errorBackButton.addEventListener("click", async () => {
+        await goBack();
+      });
+    }
   }
 };

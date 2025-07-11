@@ -30,6 +30,7 @@ export const initializeRouter = async () => {
 
   // 브라우저 뒤로가기/앞으로가기 처리
   window.addEventListener("popstate", async () => {
+    // popstate 이벤트가 발생하면 항상 현재 경로로 라우팅
     await handleRoute(window.location.pathname);
   });
 
@@ -47,16 +48,42 @@ export const initializeRouter = async () => {
 
 // 프로그래매틱 네비게이션 함수들
 export const navigateTo = async (path) => {
+  // 현재 경로와 같다면 네비게이션하지 않음
+  if (window.location.pathname === path) {
+    return;
+  }
   window.history.pushState({}, "", path);
   await handleRoute(path);
 };
 
 export const navigateToProduct = async (productId) => {
-  await navigateTo(`/product/${productId}`);
+  const productPath = `/product/${productId}`;
+  // 현재 경로와 같다면 네비게이션하지 않음
+  if (window.location.pathname === productPath) {
+    return;
+  }
+  window.history.pushState({}, "", productPath);
+  await handleRoute(productPath);
 };
 
 export const navigateToHome = async () => {
-  await navigateTo("/");
+  const homePath = "/";
+  // 현재 경로와 같다면 네비게이션하지 않음
+  if (window.location.pathname === homePath) {
+    return;
+  }
+  window.history.pushState({}, "", homePath);
+  await handleRoute(homePath);
+};
+
+// 뒤로가기 함수
+export const goBack = async () => {
+  if (window.history.length > 1) {
+    window.history.back();
+  } else {
+    // 히스토리가 없으면 홈으로 이동
+    await navigateToHome();
+  }
 };
 
 // 현재 경로 확인 함수

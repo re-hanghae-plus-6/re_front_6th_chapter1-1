@@ -30,13 +30,13 @@ const setupCategoryEventListeners = (renderInitialContent) => {
         productListStore.setSelectedCategories({});
         productListStore.setCategory1("");
         productListStore.setCategory2("");
-        updateQueryParams({ category1: "", category2: "" });
+        updateQueryParams({ category1: "", category2: "" }, true);
       } else {
         // 새로운 카테고리 선택
         productListStore.setSelectedCategories({ category1 });
         productListStore.setCategory1(category1);
         productListStore.setCategory2("");
-        updateQueryParams({ category1, category2: "" });
+        updateQueryParams({ category1, category2: "" }, true);
       }
 
       await renderInitialContent();
@@ -54,7 +54,7 @@ const setupCategoryEventListeners = (renderInitialContent) => {
       if (state.selectedCategories.category2 === category2) {
         productListStore.setSelectedCategories({ category1: state.selectedCategories.category1 });
         productListStore.setCategory2("");
-        updateQueryParams({ category2: "" });
+        updateQueryParams({ category2: "" }, true);
       } else {
         // 새로운 카테고리 선택
         productListStore.setSelectedCategories({
@@ -62,7 +62,7 @@ const setupCategoryEventListeners = (renderInitialContent) => {
           category2,
         });
         productListStore.setCategory2(category2);
-        updateQueryParams({ category2 });
+        updateQueryParams({ category2 }, true);
       }
 
       await renderInitialContent();
@@ -80,7 +80,7 @@ const setupCategoryEventListeners = (renderInitialContent) => {
         productListStore.setSelectedCategories({});
         productListStore.setCategory1("");
         productListStore.setCategory2("");
-        updateQueryParams({ category1: "", category2: "" });
+        updateQueryParams({ category1: "", category2: "" }, true);
       } else {
         // 해당 단계까지만 유지
         const index = parseInt(breadcrumbIndex);
@@ -90,7 +90,7 @@ const setupCategoryEventListeners = (renderInitialContent) => {
           // 1단계까지만 유지 (2단계 선택 해제)
           productListStore.setSelectedCategories({ category1: state.selectedCategories.category1 });
           productListStore.setCategory2("");
-          updateQueryParams({ category2: "" });
+          updateQueryParams({ category2: "" }, true);
         }
       }
 
@@ -113,7 +113,7 @@ const setupSortControl = (renderInitialContent) => {
     const newSort = e.target.value;
     if (newSort !== state.sort) {
       productListStore.setSort(newSort);
-      updateQueryParams({ sort: newSort });
+      updateQueryParams({ sort: newSort }, true);
       await renderInitialContent();
     }
   });
@@ -133,7 +133,7 @@ const setupProductLimitControl = (renderInitialContent) => {
     const newLimit = parseInt(e.target.value, 10);
     if (!isNaN(newLimit) && newLimit !== state.limit) {
       productListStore.setLimit(newLimit);
-      updateQueryParams({ limit: newLimit });
+      updateQueryParams({ limit: newLimit }, true);
       await renderInitialContent();
     }
   });
