@@ -1,9 +1,11 @@
 export default class Component {
   $target;
   state;
+  params;
 
-  constructor($target) {
+  constructor($target, params = {}) {
     this.$target = $target;
+    this.params = params;
     this.setup();
     this.render();
   }
