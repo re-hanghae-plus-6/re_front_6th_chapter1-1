@@ -103,7 +103,7 @@ describe('2. 상품 상세 - 장바구니 담기', () => {
 describe('3. 관련 상품 기능', () => {
   test('상품 상세 페이지에서 현재 상품을 제외한 관련 상품들이 표시되고, 관련 상품 클릭 시 해당 상품의 상세 페이지로 이동한다', async () => {
     await 상품_상세페이지_접속();
-    console.log(document.body.innerHTML);
+
     // 관련 상품 섹션이 있는지 확인
     // 테스트 제거: 화면상에서는 fetch 가 끝난 후 관련 상품이 뜨는게 맞으나, 테스트 환경에서 마운트 후 비동기 -> 렌더가 빨라서 인식을 못하는 것 같음
     // expect(screen.queryByText('관련 상품')).not.toBeInTheDocument();
