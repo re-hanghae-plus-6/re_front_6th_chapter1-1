@@ -26,7 +26,7 @@ export default class ProductDetail extends Component {
   template() {
     const { product, isLoading, quantity, relatedProducts } = this.productHook.getState();
 
-    if (isLoading) {
+    if (isLoading || !product) {
       return Layout(
         `
         <div class="py-20 bg-gray-50 flex items-center justify-center">
@@ -95,7 +95,7 @@ export default class ProductDetail extends Component {
             </button>
           </div>
         </div>
-        ${RelatedProducts({ relatedProducts })}
+        ${relatedProducts && relatedProducts.length > 0 ? RelatedProducts({ relatedProducts }) : ""}
       </div>
     `,
       {
@@ -134,6 +134,17 @@ export default class ProductDetail extends Component {
       if (product) {
         addToCart(product, quantity);
         showToast("장바구니에 추가되었습니다", "success");
+      }
+    });
+
+    // 관련 상품 클릭 이벤트
+    this.addEvent("click", ".related-product-card", (e) => {
+      const productCard = e.target.closest(".related-product-card");
+      const productId = productCard?.getAttribute("data-product-id");
+
+      if (productId) {
+        // 라우터를 통해 상품 상세 페이지로 이동
+        window.router.navigate(`/product/${productId}`);
       }
     });
 
