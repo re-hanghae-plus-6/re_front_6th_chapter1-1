@@ -173,10 +173,10 @@ function navigate(path) {
 }
 
 // 라우트 등록 (컨트롤러 활용)
-router.add("/", () => {
+router.add(router.BASE_PATH, () => {
   homePageController.init();
 });
-router.add("/product/:id", async ({ id }) => {
+router.add(router.BASE_PATH + "/product/:id", async ({ id }) => {
   await productDetailController.show(id);
 });
 router.setNotFound(() => {
