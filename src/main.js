@@ -85,11 +85,17 @@ function syncStateWithUrl() {
 }
 
 const enableMocking = () =>
-  import("./mocks/browser.js").then(({ worker }) =>
-    worker.start({
+  import("./mocks/browser.js").then(({ worker }) => {
+    const basePath = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
+    const serviceWorkerUrl = `${basePath}/mockServiceWorker.js`;
+
+    return worker.start({
+      serviceWorker: {
+        url: serviceWorkerUrl,
+      },
       onUnhandledRequest: "bypass",
-    }),
-  );
+    });
+  });
 
 // localStorage에서 장바구니 데이터 로드 (테스트 환경이 아닌 경우에만)
 const { cart, selectedCartItems } =
