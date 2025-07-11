@@ -56,6 +56,22 @@ export class ProductPage extends Component {
         case "cart-modal-close-btn":
           this.setState({ isOpenCartModal: false });
           break;
+        case "quantity-decrease":
+        case "quantity-increase": {
+          const input = document.getElementById("quantity-input");
+          if (!input) break;
+
+          const current = Number(input.value);
+          const delta = e.target.id === "quantity-increase" ? 1 : -1;
+          const next = current + delta;
+
+          // min/max 제한 적용
+          const min = Number(input.min) || 1;
+          const max = Number(input.max) || Infinity;
+          input.value = Math.max(min, Math.min(max, next));
+
+          break;
+        }
       }
     });
 
