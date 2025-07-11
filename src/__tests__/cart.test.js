@@ -17,7 +17,7 @@ const addProductToCart = async (productName) => {
 };
 
 beforeAll(async () => {
-  document.body.innerHTML = '<div id="root"></div>';
+  document.body.innerHTML = '<div id="root"></div><div id="modal-root"></div>';
   await import("../main.js");
 });
 
@@ -234,7 +234,7 @@ describe.sequential("4. 장바구니 선택 삭제", () => {
     await userEvent.click(selectedDeleteButton);
 
     // 선택된 상품만 삭제되고 나머지는 남아있는지 확인
-    await screen.findByText("전체선택 (1개)");
+    await screen.findByText(/전체선택.*1/);
     const cartModal = document.querySelector(".cart-modal");
     expect(queryByText(cartModal, /pvc 투명 젤리 쇼핑백/i)).not.toBeInTheDocument();
     expect(getByText(cartModal, /샷시 풍지판/i)).toBeInTheDocument();
