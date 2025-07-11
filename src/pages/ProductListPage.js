@@ -1,5 +1,6 @@
 import { getCategories, getProducts } from "../api/productApi";
 import { CartModal } from "../components/cart/CartModal";
+import { HomeLink } from "../components/common/HomeLink";
 import { SearchIcon } from "../components/icons/SearchIcon";
 import { Footer } from "../components/layouts/Footer";
 import { Header } from "../components/layouts/Header";
@@ -191,7 +192,7 @@ export class ProductListPage extends Component {
       <div class="min-h-screen bg-gray-50">
         ${Header({
           leftContent: /* HTML */ `<h1 class="text-xl font-bold text-gray-900">
-            <a href="/" data-link="">쇼핑몰</a>
+            ${HomeLink({ path: "/", text: "쇼핑몰" })}
           </h1>`,
         })}
 
