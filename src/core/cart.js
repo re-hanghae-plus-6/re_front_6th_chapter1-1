@@ -139,10 +139,20 @@ export function showToast(message, type = "success") {
   const el = document.createElement("div");
   el.className = "toast-message fixed top-4 left-1/2 -translate-x-1/2 z-50";
 
-  // Toast 컴포넌트 사용
-  el.innerHTML = Toast({ type, message, showCloseButton: false });
+  // Toast 컴포넌트 사용 - 닫기 버튼 활성화
+  el.innerHTML = Toast({ type, message, showCloseButton: true });
 
   document.body.appendChild(el);
+
+  // 닫기 버튼 클릭 시 토스트 제거
+  const closeBtn = el.querySelector("#toast-close-btn");
+  if (closeBtn) {
+    closeBtn.addEventListener("click", () => {
+      el.remove();
+    });
+  }
+
+  // 지정된 시간 이후 자동 제거
   setTimeout(() => {
     el.remove();
   }, 3000);
@@ -232,7 +242,7 @@ async function handleModalClick(e) {
   if (checkbox) {
     const pid = checkbox.getAttribute("data-product-id");
     toggleSelect(pid);
-    await renderModalContent(); // DOM 안정화 대기
+    renderModalContent(); // DOM 업데이트를 비동기로 처리하여 원본 노드가 즉시 파괴되지 않도록 함
     return;
   }
 
@@ -240,7 +250,7 @@ async function handleModalClick(e) {
   const selectAllCheckbox = e.target.closest("#cart-modal-select-all-checkbox");
   if (selectAllCheckbox) {
     selectAll(selectAllCheckbox.checked);
-    await renderModalContent(); // DOM 안정화 대기
+    renderModalContent(); // DOM 업데이트를 비동기로 처리하여 테스트 중 page.check 지연을 방지
     return;
   }
 
