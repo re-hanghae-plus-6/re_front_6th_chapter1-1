@@ -4,11 +4,7 @@ import { ProductListPage } from "./pages/ProductListPage.js";
 import { ProductPage } from "./pages/ProductPage.js";
 
 const enableMocking = () =>
-  import("./mocks/browser.js").then(({ worker }) =>
-    worker.start({
-      onUnhandledRequest: "bypass",
-    }),
-  );
+  import("./mocks/browser.js").then(({ worker, workerOptions }) => worker.start(workerOptions));
 
 class SPAService {
   constructor() {
