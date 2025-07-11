@@ -39,7 +39,7 @@ export const CartModal = ({ cart, selectedCartItems = [] }) => {
             </h2>
 
             
-            <button class="modal-close-btn text-gray-400 hover:text-gray-600 p-1">
+            <button id='cart-modal-close-btn' class="modal-close-btn text-gray-400 hover:text-gray-600 p-1">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
               </svg>
