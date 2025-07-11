@@ -139,7 +139,7 @@ export function showToast(message, type = "success") {
   const el = document.createElement("div");
   el.className = "toast-message fixed top-4 left-1/2 -translate-x-1/2 z-50";
 
-  // Toast 컴포넌트 사용 - 닫기 버튼 활성화
+  // Toast 컴포넌트 사용 - 닫기 버튼 활성화.
   el.innerHTML = Toast({ type, message, showCloseButton: true });
 
   document.body.appendChild(el);
