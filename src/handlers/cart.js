@@ -1,4 +1,26 @@
 import { CartModal } from "../components/CartModal.js";
+import { saveCartToStorage } from "../utils/cartStorage.js";
+
+// 총 금액을 계산하고 DOM에 업데이트하는 함수
+function updateTotalPrice(state) {
+  const cartItemsWithCount = state.cart.reduce((acc, product) => {
+    const existingItem = acc.find((item) => item.productId === product.productId);
+    if (existingItem) {
+      existingItem.count++;
+    } else {
+      acc.push({ ...product, count: 1 });
+    }
+    return acc;
+  }, []);
+
+  const totalPrice = cartItemsWithCount.reduce((sum, item) => sum + Number(item.lprice) * item.count, 0);
+
+  // DOM에서 총 금액 업데이트
+  const totalPriceElement = document.querySelector(".text-xl.font-bold.text-blue-600");
+  if (totalPriceElement) {
+    totalPriceElement.textContent = `${totalPrice.toLocaleString()}원`;
+  }
+}
 
 export function renderCartModal(state, showToast) {
   // 기존 이벤트 리스너 정리
@@ -51,12 +73,87 @@ export function removeFromCart(productId, state, { renderCartModal, showToast })
     // 선택된 아이템에서도 제거
     state.selectedCartItems = state.selectedCartItems.filter((id) => id !== productId);
 
+    // localStorage에 저장 (테스트 환경이 아닌 경우에만)
+    if (import.meta.env.MODE !== "test") {
+      saveCartToStorage(state.cart, state.selectedCartItems);
+    }
+
     // 모달이 열려있다면 모달만 다시 렌더링
     if (document.querySelector(".cart-modal")) {
       renderCartModal(state, showToast);
     }
 
     showToast({ type: "delete" });
+  }
+}
+
+export function increaseCartItemQuantity(productId, state) {
+  // 해당 상품을 장바구니에 추가 (동일한 상품 추가)
+  const product = state.cart.find((item) => item.productId === productId);
+  if (product) {
+    state.cart.push({ ...product });
+
+    // localStorage에 저장 (테스트 환경이 아닌 경우에만)
+    if (import.meta.env.MODE !== "test") {
+      saveCartToStorage(state.cart, state.selectedCartItems);
+    }
+
+    // DOM에서 해당 상품의 수량과 가격을 직접 업데이트
+    const quantityInput = document.querySelector(`.quantity-input[data-product-id="${productId}"]`);
+    if (quantityInput) {
+      const newQuantity = parseInt(quantityInput.value) + 1;
+      quantityInput.value = newQuantity;
+
+      // 해당 상품의 가격도 업데이트
+      const cartItem = quantityInput.closest(".cart-item");
+      const priceElement = cartItem.querySelector(".text-right .text-sm.font-medium");
+      if (priceElement) {
+        const unitPrice = parseInt(product.lprice);
+        priceElement.textContent = `${(unitPrice * newQuantity).toLocaleString()}원`;
+      }
+
+      // 총 금액 업데이트
+      updateTotalPrice(state);
+    }
+  }
+}
+
+export function decreaseCartItemQuantity(productId, state, { renderCartModal, showToast }) {
+  // 해당 상품의 수량을 하나 감소 (첫 번째 인스턴스 제거)
+  const index = state.cart.findIndex((item) => item.productId === productId);
+
+  if (index !== -1) {
+    const product = state.cart[index];
+    state.cart.splice(index, 1);
+
+    // localStorage에 저장 (테스트 환경이 아닌 경우에만)
+    if (import.meta.env.MODE !== "test") {
+      saveCartToStorage(state.cart, state.selectedCartItems);
+    }
+
+    // DOM에서 해당 상품의 수량과 가격을 직접 업데이트
+    const quantityInput = document.querySelector(`.quantity-input[data-product-id="${productId}"]`);
+    if (quantityInput) {
+      const newQuantity = parseInt(quantityInput.value) - 1;
+
+      if (newQuantity > 0) {
+        quantityInput.value = newQuantity;
+
+        // 해당 상품의 가격도 업데이트
+        const cartItem = quantityInput.closest(".cart-item");
+        const priceElement = cartItem.querySelector(".text-right .text-sm.font-medium");
+        if (priceElement) {
+          const unitPrice = parseInt(product.lprice);
+          priceElement.textContent = `${(unitPrice * newQuantity).toLocaleString()}원`;
+        }
+
+        // 총 금액 업데이트
+        updateTotalPrice(state);
+      } else {
+        // 수량이 0이 되면 전체 모달 다시 렌더링 (상품 제거)
+        renderCartModal(state, showToast);
+      }
+    }
   }
 }
 
@@ -69,6 +166,11 @@ export function toggleCartItemSelection(productId, state, { renderCartModal, sho
   } else {
     // 이미 선택되었다면 제거
     state.selectedCartItems.splice(index, 1);
+  }
+
+  // localStorage에 저장 (테스트 환경이 아닌 경우에만)
+  if (import.meta.env.MODE !== "test") {
+    saveCartToStorage(state.cart, state.selectedCartItems);
   }
 
   // 모달만 다시 렌더링
@@ -131,7 +233,33 @@ export function setupModalEvents(state, { renderCartModal, showToast }) {
         state.selectedCartItems = uniqueCartItems;
       }
 
+      // localStorage에 저장 (테스트 환경이 아닌 경우에만)
+      if (import.meta.env.MODE !== "test") {
+        saveCartToStorage(state.cart, state.selectedCartItems);
+      }
+
       renderCartModal(state, showToast);
+      return;
+    }
+
+    /** 수량 조절 이벤트 */
+    // 수량 증가 (버튼 또는 내부 SVG 클릭)
+    if (event.target.matches(".quantity-increase-btn") || event.target.closest(".quantity-increase-btn")) {
+      const button = event.target.matches(".quantity-increase-btn")
+        ? event.target
+        : event.target.closest(".quantity-increase-btn");
+      const productId = button.dataset.productId;
+      increaseCartItemQuantity(productId, state);
+      return;
+    }
+
+    // 수량 감소 (버튼 또는 내부 SVG 클릭)
+    if (event.target.matches(".quantity-decrease-btn") || event.target.closest(".quantity-decrease-btn")) {
+      const button = event.target.matches(".quantity-decrease-btn")
+        ? event.target
+        : event.target.closest(".quantity-decrease-btn");
+      const productId = button.dataset.productId;
+      decreaseCartItemQuantity(productId, state, { renderCartModal, showToast });
       return;
     }
 
@@ -156,6 +284,12 @@ export function setupModalEvents(state, { renderCartModal, showToast }) {
     if (event.target.matches("#cart-modal-clear-cart-btn")) {
       state.cart = [];
       state.selectedCartItems = [];
+
+      // localStorage에 저장 (테스트 환경이 아닌 경우에만)
+      if (import.meta.env.MODE !== "test") {
+        saveCartToStorage(state.cart, state.selectedCartItems);
+      }
+
       renderCartModal(state, showToast);
       return;
     }

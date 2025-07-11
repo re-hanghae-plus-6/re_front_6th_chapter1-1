@@ -3,6 +3,7 @@ import { HomePage } from "./pages/HomePage.js";
 import { ProductDetailPage } from "./pages/ProductDetailPage.js";
 import { showCartModal, renderCartModal } from "./handlers/cart.js";
 import { router } from "./router.js";
+import { loadCartFromStorage, saveCartToStorage } from "./utils/cartStorage.js";
 
 // URL 쿼리 스트링 관리 함수들
 function updateUrlParams(params) {
@@ -50,6 +51,10 @@ const enableMocking = () =>
     }),
   );
 
+// localStorage에서 장바구니 데이터 로드 (테스트 환경이 아닌 경우에만)
+const { cart, selectedCartItems } =
+  import.meta.env.MODE !== "test" ? loadCartFromStorage() : { cart: [], selectedCartItems: [] };
+
 export let state = {
   products: [],
   total: 0,
@@ -60,8 +65,8 @@ export let state = {
   hasNext: false,
   hasPrev: false,
   sort: "price_asc",
-  cart: [],
-  selectedCartItems: [], // 선택된 장바구니 아이템 ID들
+  cart: cart,
+  selectedCartItems: selectedCartItems, // 선택된 장바구니 아이템 ID들
   search: "",
   selectedCategory1: null,
   selectedCategory2: null,
@@ -440,6 +445,11 @@ function addToCart(productId, quantity = 1) {
     // 수량만큼 장바구니에 추가
     for (let i = 0; i < quantity; i++) {
       state.cart.push(product);
+    }
+
+    // localStorage에 저장 (테스트 환경이 아닌 경우에만)
+    if (import.meta.env.MODE !== "test") {
+      saveCartToStorage(state.cart, state.selectedCartItems);
     }
   }
 
