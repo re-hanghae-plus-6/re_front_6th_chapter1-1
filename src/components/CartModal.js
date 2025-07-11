@@ -99,6 +99,9 @@ export class CartModal extends Component {
   #CartList({ count, items }) {
     const arrItems = Array.from(items.values());
     const totalPrice = arrItems.reduce((acc, item) => {
+      return acc + item.lprice * item.quantity;
+    }, 0);
+    const selectedPrice = arrItems.reduce((acc, item) => {
       return item.selected ? acc + item.lprice * item.quantity : acc;
     }, 0);
     const selectedCount = arrItems.reduce((acc, item) => {
@@ -157,6 +160,10 @@ export class CartModal extends Component {
                   <!-- 하단 액션 -->
                   <div class="sticky bottom-0 bg-white border-t border-gray-200 p-4">
                     <!-- 선택된 아이템 정보 -->
+                    <div class="flex justify-between items-center mb-3 text-sm">
+                      <span class="text-gray-600">선택한 상품 (${selectedCount}개)</span>
+                      <span class="font-medium">${priceFormat(selectedPrice)}원</span>
+                    </div>
                     <!-- 총 금액 -->
                     <div class="flex justify-between items-center mb-4">
                       <span class="text-lg font-bold text-gray-900">총 금액</span>
