@@ -3,6 +3,7 @@ import { getProduct } from '../../../api/productApi.js';
 import { numberUtils } from '../../../utils/numberUtils.js';
 import { router } from '../../../utils/router.js';
 import cartLocalStorage from '../../../store/cartLocalStorage.js';
+import { toastSuccess } from '../../../store/toastStore.js';
 
 class DetailPage extends Component {
   constructor(element, props) {
@@ -68,6 +69,7 @@ class DetailPage extends Component {
     }
 
     cartLocalStorage.set('cartProducts', updatedCart);
+    toastSuccess('장바구니에 추가되었습니다');
   }
 
   attachEventListeners() {
