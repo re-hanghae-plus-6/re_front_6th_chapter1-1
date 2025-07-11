@@ -55,6 +55,24 @@ class Cart {
   update() {
     if (!this.el) return;
 
+    // 헤더의 아이템 개수 업데이트
+    const headerTitle = this.el.querySelector("h2");
+    if (headerTitle) {
+      const items = this.state?.items || [];
+      const itemCount = items.length;
+      const itemCountText =
+        itemCount > 0 ? `<span class="text-sm font-normal text-gray-600 ml-1">(${itemCount})</span>` : "";
+
+      // SVG 아이콘과 "장바구니" 텍스트는 유지하고 아이템 개수만 업데이트
+      headerTitle.innerHTML = `
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m2.6 8L6 2H3m4 11v6a1 1 0 001 1h1a1 1 0 001-1v-6M13 13v6a1 1 0 001 1h1a1 1 0 001-1v-6"></path>
+        </svg>
+        장바구니
+        ${itemCountText}
+      `;
+    }
+
     const contentContainer = this.el.querySelector(".cart-content");
     if (contentContainer) {
       contentContainer.innerHTML = this.templateContent();
@@ -227,12 +245,14 @@ class Cart {
       </div>
     `;
   }
-
-  // 전체 모달의 기본 틀
-  templateShell() {
+  itemCountText() {
     const items = this.state?.items || [];
     const itemCount = items.length;
     console.log("Cart itemCount", itemCount);
+    return itemCount > 0 ? `<span class="text-sm font-normal text-gray-600 ml-1">(${itemCount})</span>` : "";
+  }
+  // 전체 모달의 기본 틀
+  templateShell() {
     return `
       <div class="fixed inset-0 z-50 overflow-y-auto cart-modal" style="display: none;">
         <!-- 배경 오버레이 -->
@@ -247,7 +267,7 @@ class Cart {
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m2.6 8L6 2H3m4 11v6a1 1 0 001 1h1a1 1 0 001-1v-6M13 13v6a1 1 0 001 1h1a1 1 0 001-1v-6"></path>
                 </svg>
                 장바구니
-                ${itemCount > 0 ? `<span class="text-sm font-normal text-gray-600 ml-1">(${itemCount})</span>` : ""}
+                ${this.itemCountText()}
               </h2>
               <button id="cart-modal-close-btn" class="text-gray-400 hover:text-gray-600 p-1">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

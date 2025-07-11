@@ -118,13 +118,13 @@ class Detail {
                   ${this.state.relatedProducts
                     .map(
                       (p) => `
-                       <div class="related-product-card border p-2 rounded-md" data-product-id="${p.productId}">
-                          <a href="/product/${p.productId}">
-                              <img src="${p.image}" alt="${p.title}" class="w-full h-32 object-cover">
-                              <h3 class="mt-2 text-sm font-bold">${p.title}</h3>
-                              <p class="text-xs">${parseInt(p.lprice).toLocaleString()}원</p>
-                          </a>
-                      </div>
+              <div class="bg-gray-50 rounded-lg p-3 related-product-card cursor-pointer" data-product-id="${p.productId}">
+                <div class="aspect-square bg-white rounded-md overflow-hidden mb-2">
+                  <img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover" loading="lazy">
+                </div>
+                <h3 class="text-sm font-medium text-gray-900 mb-1 line-clamp-2">${p.title}</h3>
+                <p class="text-sm font-bold text-blue-600">${parseInt(p.lprice).toLocaleString()}원</p>
+              </div>
                   `,
                     )
                     .join("")}
@@ -374,6 +374,11 @@ class Detail {
   }
 
   async init() {
+    // 이전의 타임아웃을 정리하여 테스트 간섭을 방지
+    if (this.relatedProductsTimeout) {
+      clearTimeout(this.relatedProductsTimeout);
+      this.relatedProductsTimeout = null;
+    }
     // 컴포넌트 재사용 시 상태 완전 초기화
     this.resetState();
     await this.fetchProductDetails();
