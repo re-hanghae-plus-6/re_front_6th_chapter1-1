@@ -34,6 +34,8 @@ export class ProductListController {
         actions.changeFilters({
           sort: queryParams.sort,
           search: queryParams.search,
+          category1: queryParams.category1,
+          category2: queryParams.category2,
         }),
       );
       store.dispatch(actions.changeLimit(parseInt(queryParams.limit)));
@@ -45,6 +47,8 @@ export class ProductListController {
           limit: parseInt(queryParams.limit),
           sort: queryParams.sort,
           search: queryParams.search,
+          category1: queryParams.category1,
+          category2: queryParams.category2,
         }),
       ]);
 
@@ -176,6 +180,7 @@ export class ProductListController {
         category2: "",
       }),
     );
+    updateQueryParams({ category1, category2: "" });
     this.fetchProducts();
   }
 
@@ -183,6 +188,7 @@ export class ProductListController {
     const category1 = event.target.dataset.category1;
     const category2 = event.target.dataset.category2;
     store.dispatch(actions.changeFilters({ category1, category2 }));
+    updateQueryParams({ category1, category2 });
     this.fetchProducts();
   }
 
@@ -194,6 +200,7 @@ export class ProductListController {
         category2: "",
       }),
     );
+    updateQueryParams({ category1: "", category2: "" });
     this.fetchProducts();
   }
 
@@ -204,6 +211,7 @@ export class ProductListController {
         category2: "",
       }),
     );
+    updateQueryParams({ category2: "" });
     this.fetchProducts();
   }
 
