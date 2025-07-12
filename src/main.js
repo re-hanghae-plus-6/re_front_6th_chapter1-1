@@ -2,6 +2,7 @@ import { HomePage } from './pages/HomePage.js';
 import { ProductDetail } from './pages/ProductDetail.js';
 import { getProducts, getCategories } from './api/productApi.js';
 import { cart } from './pages/Cart.js';
+import { getAppPath, getFullPath } from './utils/router.js';
 
 const enableMocking = () =>
   import('./mocks/browser.js').then(({ worker, workerOptions }) =>
@@ -51,7 +52,7 @@ let isEventListenerSetUp = false;
 let currentPage = null;
 
 function getPathInfo() {
-  const path = window.location.pathname;
+  const path = getAppPath();
 
   const productMatch = path.match(/^\/product\/(\d+)$/);
   if (productMatch) {
@@ -89,7 +90,7 @@ async function renderPage() {
             <text x="160" y="85" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="48" font-weight="600" fill="#4285f4" text-anchor="middle">404</text>
             <text x="160" y="110" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="400" fill="#5f6368" text-anchor="middle">페이지를 찾을 수 없습니다</text>
           </svg>
-          <a href="/" class="inline-block px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">홈으로</a>
+          <a href="${getFullPath('/')}" class="inline-block px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">홈으로</a>
         </div>
       </main>
     `;
@@ -203,7 +204,11 @@ function setUpEventListeners() {
       if (productCard) {
         const productId = productCard.dataset.productId;
         if (productId) {
-          window.history.pushState({}, '', `/product/${productId}`);
+          window.history.pushState(
+            {},
+            '',
+            getFullPath(`/product/${productId}`),
+          );
           await renderPage();
           return;
         }
