@@ -1,6 +1,7 @@
 import { getCategories, getProducts } from "../api/productApi";
 import { CartModal } from "../components/cart/CartModal";
 import { HomeLink } from "../components/common/HomeLink";
+import { ToastMessage } from "../components/common/ToastMessage";
 import { SearchIcon } from "../components/icons/SearchIcon";
 import { Footer } from "../components/layouts/Footer";
 import { Header } from "../components/layouts/Header";
@@ -31,7 +32,12 @@ export class ProductListPage extends Component {
       isOpenCartModal: false,
       cartItemCount: cartService.itemCount,
       cartItems: cartService.items,
+      showToast: false,
+      toastMessage: "",
+      toastType: "success",
     };
+
+    this.toastTimer = null;
 
     const infinite = new InfiniteScroll({
       threshold: 200,
@@ -58,7 +64,38 @@ export class ProductListPage extends Component {
 
     this.on(Component.EVENTS.UNMOUNT, () => {
       infinite.destroy();
+      // 컴포넌트 언마운트 시 토스트 타이머 정리
+      this.#clearToastTimer();
     });
+  }
+
+  #showToast(message, type = "success", duration = 2000) {
+    // 기존 타이머가 있다면 정리
+    this.#clearToastTimer();
+
+    // 토스트 표시
+    this.setState({
+      showToast: true,
+      toastMessage: message,
+      toastType: type,
+    });
+
+    // 지정된 시간 후 토스트 숨기기
+    this.toastTimer = setTimeout(() => {
+      this.setState({
+        showToast: false,
+        toastMessage: "",
+        toastType: "success",
+      });
+      this.toastTimer = null;
+    }, duration);
+  }
+
+  #clearToastTimer() {
+    if (this.toastTimer) {
+      clearTimeout(this.toastTimer);
+      this.toastTimer = null;
+    }
   }
 
   // 초기 데이터 로드 (상품 + 카테고리)
@@ -178,6 +215,8 @@ export class ProductListPage extends Component {
           cartItems: cartService.items,
         });
 
+        this.#showToast("장바구니에 추가되었습니다", "success");
+
         return;
       }
 
@@ -193,6 +232,12 @@ export class ProductListPage extends Component {
 
         // 수량 업데이트
         isIncrease ? cartService.increaseQuantity(productId) : cartService.decreaseQuantity(productId);
+
+        // 장바구니 상태 업데이트
+        this.setState({
+          cartItemCount: cartService.itemCount,
+          cartItems: cartService.items,
+        });
 
         const input = document.querySelector(`.quantity-input[data-product-id="${productId}"]`);
         if (!input) return;
@@ -357,6 +402,13 @@ export class ProductListPage extends Component {
 
         <!-- 하단 푸터 -->
         ${Footer()}
+
+        <!-- 토스트 메시지 -->
+        ${this.state.showToast
+          ? /* HTML */ `<div class="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 toast-container">
+              ${ToastMessage({ type: this.state.toastType, message: this.state.toastMessage })}
+            </div>`
+          : ""}
       </div>`;
   }
 }
