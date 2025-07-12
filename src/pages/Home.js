@@ -52,7 +52,7 @@ const loadInitialData = async () => {
   if (isLoading) {
     return;
   }
-  // listStore.setLoading(true);
+
   isLoading = true;
   updateUI(); // 로딩 상태 UI 업데이트
   try {
@@ -63,7 +63,6 @@ const loadInitialData = async () => {
   } catch (e) {
     listStore.setError(e.message);
   } finally {
-    // listStore.setLoading(false);
     isLoading = false;
     updateUI(); // 로딩 완료 UI 업데이트
   }
@@ -108,7 +107,7 @@ const updateUI = () => {
     return;
   }
 
-  if (isLoading) {
+  if (listStore.state.loading) {
     gridEl.innerHTML = Skeleton({ count: 10 });
     loadingEl.textContent = "상품을 불러오는 중...";
 
@@ -116,8 +115,8 @@ const updateUI = () => {
     const countEl = document.getElementById("product-count");
     if (countEl) {
       countEl.remove();
-      return;
     }
+    return;
   } else {
     // products가 배열인지 확인하고, 아니면 빈 배열로 초기화
     const products = Array.isArray(state.products) ? state.products : [];
@@ -138,7 +137,7 @@ const updateUI = () => {
     countEl.innerHTML = `총 <span class="font-medium text-gray-900">${state.pagination.total}개</span>의 상품`;
   }
 
-  if (window.loadFlag && !isLoading) {
+  if (window.loadFlag && !listStore.state.isLoading) {
     const products = Array.isArray(state.products) ? state.products : [];
     if (products.length === 20) {
       setTimeout(() => {

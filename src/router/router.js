@@ -5,7 +5,7 @@ import NotFound from "../pages/NotFount.js";
 const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
 
 export const Router = () => {
-  const routes = { "/": Home, "/product/:id": ProductPage, "/404": NotFound() };
+  const routes = { "/": Home, "/product/:id": ProductPage, "/404": NotFound };
 
   // 라우트 추가 함수
   function addRoute(path, component) {
@@ -55,13 +55,13 @@ export const Router = () => {
   function render(path) {
     const { component, params } = matchRoute(path);
 
+    const root = document.getElementById("root");
     let componentInstance;
     if (typeof component === "function" && !component.render) {
       componentInstance = component();
     } else {
       componentInstance = component;
     }
-    const root = document.getElementById("root");
     if (root) {
       root.innerHTML = componentInstance.render(params);
 
