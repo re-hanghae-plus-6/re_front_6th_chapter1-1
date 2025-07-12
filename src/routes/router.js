@@ -11,11 +11,11 @@ const getFullPath = (appPath) => {
   return BASE_PATH + appPath;
 };
 export const ROUTES = {
-  MAIN: "/",
-  PRODUCT: "/product",
-  PRODUCT_DETAIL: "/product/detail",
-  CART: "/cart",
-  ERROR: "/error",
+  MAIN: `${BASE_PATH}/`,
+  PRODUCT: `${BASE_PATH}/product`,
+  PRODUCT_DETAIL: `${BASE_PATH}/product/detail`,
+  CART: `${BASE_PATH}/cart`,
+  ERROR: `${BASE_PATH}/error`,
 };
 const URL_MAP = {
   [ROUTES.MAIN]: productPage,
@@ -32,10 +32,10 @@ export async function navigate(pathname, replace = false) {
 
 export async function render() {
   const root = document.querySelector("#root");
-  let { pathname } = location;
-  pathname = getFullPath(pathname);
+  const { pathname } = location;
   // 경로만 사용하도록 쿼리스트링 제거
   const cleanPath = pathname.split("?")[0];
+  console.log(cleanPath);
   const pageFn = URL_MAP[cleanPath] || notFoundPage;
   // 페이지를 그냥 async로 만들어서 사용
   const content = await pageFn();
