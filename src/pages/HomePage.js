@@ -131,66 +131,53 @@ function bindCardClickHandlers() {
 
 let lastScrollY = window.scrollY;
 
-function debounce(func, delay) {
-  let timeoutId;
-  return function (...args) {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => func.apply(this, args), delay);
-  };
-}
-
-document.addEventListener(
+window.addEventListener(
   "scroll",
-  debounce(
-    async () => {
-      const [, link] = location.pathname.split("/");
+  async () => {
+    const [, link] = location.pathname.split("/");
 
-      if (link === "") {
-        const currentScrollY = window.scrollY;
+    if (link === "") {
+      const currentScrollY = window.scrollY;
 
-        if (currentScrollY > lastScrollY) {
-          console.log("↓ 아래로 스크롤 중");
-          const docHeight = document.documentElement.scrollHeight;
-          // scrollY + window.innerHeight
-          const scrollPos = currentScrollY + window.innerHeight;
+      if (currentScrollY > lastScrollY) {
+        console.log("↓ 아래로 스크롤 중");
+        const docHeight = document.documentElement.scrollHeight;
+        // scrollY + window.innerHeight
+        const scrollPos = currentScrollY + window.innerHeight;
 
-          if (!state.isLoading && state.pagination.hasNext && scrollPos + 100 >= docHeight) {
-            state.isLoading = true;
-            document.body.querySelector("#root").innerHTML = Main({ ...state });
+        if (!state.isLoading && state.pagination.hasNext && scrollPos + 200 >= docHeight) {
+          state.isLoading = true;
+          document.body.querySelector("#root").innerHTML = Main({ ...state });
 
-            const projectData = await getProducts({
-              sort: state.filters.sort,
-              limit: state.pagination.limit,
-              search: state.filters.search,
-              category1: state.filters.category1,
-              category2: state.filters.category2,
-              page: state.pagination.page + 1,
-            });
+          const projectData = await getProducts({
+            sort: state.filters.sort,
+            limit: state.pagination.limit,
+            search: state.filters.search,
+            category1: state.filters.category1,
+            category2: state.filters.category2,
+            page: state.pagination.page + 1,
+          });
 
-            if (projectData) {
-              state.pagination = projectData.pagination;
-              state.filters = projectData.filters;
-              state.products = [...state.products, ...projectData.products];
-            }
-
-            document.body.querySelector("#root").innerHTML = Main(state);
-
-            if (state.pagination.hasNext) {
-              state.isLoading = false;
-            }
+          if (projectData) {
+            state.pagination = projectData.pagination;
+            state.filters = projectData.filters;
+            state.products = [...state.products, ...projectData.products];
           }
-        } else if (currentScrollY < lastScrollY) {
-          if (state.isLoading) {
-            state.isLoading = false;
-          }
+
+          state.isLoading = false;
+
+          document.body.querySelector("#root").innerHTML = Main(state);
         }
-
-        lastScrollY = currentScrollY;
+      } else if (currentScrollY < lastScrollY) {
+        if (state.isLoading) {
+          state.isLoading = false;
+        }
       }
-    },
-    { passive: true },
-  ),
-  300,
+
+      lastScrollY = currentScrollY;
+    }
+  },
+  { passive: true },
 );
 
 document.addEventListener("DOMContentLoaded", () => {
