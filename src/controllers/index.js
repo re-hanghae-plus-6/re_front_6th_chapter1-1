@@ -23,6 +23,7 @@ class Controller {
       this.controllers.cartModal = new CartModalController();
       this.controllers.cartModal.setupEventListeners();
     }
+    await new Promise((resolve) => requestAnimationFrame(resolve));
   }
 
   setupGlobalEventListeners() {
@@ -43,6 +44,10 @@ class Controller {
         event.preventDefault();
         store.dispatch(actions.hideToast());
       }
+
+      if (event.target.id === "cart-icon-btn" || event.target.closest("#cart-icon-btn")) {
+        this.#handleCartIconClick(event);
+      }
     };
 
     const popstateHandler = () => {
@@ -60,15 +65,18 @@ class Controller {
       store.dispatch(actions.navigate(currentPath));
     };
 
-    document.addEventListener("click", clickHandler, true);
-    document.addEventListener("click", clickHandler, false);
+    document.addEventListener("click", clickHandler);
     window.addEventListener("popstate", popstateHandler);
 
     this.globalEventListeners.push(
-      { element: document, type: "click", handler: clickHandler, useCapture: true },
       { element: document, type: "click", handler: clickHandler, useCapture: false },
       { element: window, type: "popstate", handler: popstateHandler },
     );
+  }
+
+  #handleCartIconClick(event) {
+    event.preventDefault();
+    store.dispatch(actions.showCartModal());
   }
 
   cleanupGlobalEventListeners() {
@@ -107,7 +115,10 @@ class Controller {
       }
       this.controllers.productList = new ProductListController();
       this.controllers.productList.setupEventListeners();
-      await this.controllers.productList.loadData();
+
+      requestAnimationFrame(() => {
+        this.controllers.productList.loadData();
+      });
     } else if (currentRoute.startsWith("/product/")) {
       const productId = getProductId(currentRoute);
       if (productId) {
@@ -115,7 +126,11 @@ class Controller {
           this.controllers.productDetail = new ProductDetailController();
           this.controllers.productDetail.setupEventListeners();
         }
-        await this.controllers.productDetail.loadProduct(productId);
+
+        // 화면 렌더링 후 데이터 로드
+        requestAnimationFrame(() => {
+          this.controllers.productDetail.loadProduct(productId);
+        });
       }
     }
 

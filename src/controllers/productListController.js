@@ -106,12 +106,6 @@ export class ProductListController {
         return;
       }
 
-      if (event.target.closest("#cart-icon-btn")) {
-        this.#handleOpenCartModal();
-        return;
-      }
-
-      // 카트 모달 내부 이벤트는 CartModalController에서 처리하도록 제외
       if (event.target.closest(".cart-modal")) {
         return;
       }
@@ -270,10 +264,6 @@ export class ProductListController {
     if (!productId) return;
     store.dispatch(actions.addToCart(productId, 1));
     store.dispatch(actions.showToast("장바구니에 추가되었습니다"));
-  }
-
-  #handleOpenCartModal() {
-    store.dispatch(actions.showCartModal());
   }
 
   cleanup() {

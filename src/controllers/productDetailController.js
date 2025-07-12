@@ -106,11 +106,6 @@ export class ProductDetailController {
         return;
       }
 
-      if (event.target.closest("#cart-icon-btn")) {
-        this.#handleCartIconClick();
-        return;
-      }
-
       const relatedProductCard = event.target.closest(".related-product-card");
       if (relatedProductCard) {
         this.#handleRelatedProductClick(relatedProductCard);
@@ -200,10 +195,6 @@ export class ProductDetailController {
 
   #handleGoToProductList() {
     navigateTo("/");
-  }
-
-  #handleCartIconClick() {
-    store.dispatch(actions.showCartModal());
   }
 
   #handleRelatedProductClick(card) {
