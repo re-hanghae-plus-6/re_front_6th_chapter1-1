@@ -19,7 +19,7 @@ export const Breadcrumb = ({ items = [{ label: "홈", href: "/", isLink: true }]
           <a href="${item.href}" data-link="" class="hover:text-blue-600 transition-colors">${item.label}</a>
         `
             : `
-          <button class="breadcrumb-link ${item.category1 ? `data-category1="${item.category1}"` : ""} ${item.category2 ? `data-category2="${item.category2}"` : ""}">${item.label}</button>
+          <button type="button" class="breadcrumb-link"${item.category1 ? ` data-category1="${item.category1}"` : ""}${item.category2 ? ` data-category2="${item.category2}"` : ""}>${item.label}</button>
         `
         }
       `,

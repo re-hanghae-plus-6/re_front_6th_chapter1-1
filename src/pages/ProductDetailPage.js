@@ -45,12 +45,14 @@ const renderBreadcrumb = (product) => {
       { label: "홈", href: "/", isLink: true },
       {
         label: product.category1 || "생활/건강",
-        isLink: false,
+        isLink: true,
+        href: `/?category1=${encodeURIComponent(product.category1 || "생활/건강")}`,
         category1: product.category1 || "생활/건강",
       },
       {
         label: product.category2 || "생활용품",
-        isLink: false,
+        isLink: true,
+        href: `/?category1=${encodeURIComponent(product.category1 || "생활/건강")}&category2=${encodeURIComponent(product.category2 || "생활용품")}`,
         category2: product.category2 || "생활용품",
       },
     ],
@@ -312,17 +314,6 @@ const setupEventHandlers = () => {
   addEvent("click", ".related-product-card", (event) => {
     const productId = event.target.closest(".related-product-card").dataset.productId;
     router.get().push(`/product/${productId}`);
-  });
-
-  addEvent("click", ".breadcrumb-link", (event) => {
-    const category1 = event.target.dataset.category1;
-    const category2 = event.target.dataset.category2;
-
-    if (category1) {
-      router.get().push(`/?category1=${category1}`);
-    } else if (category2) {
-      router.get().push(`/?category2=${category2}`);
-    }
   });
 
   addEvent("click", "#add-to-cart-btn", () => {
