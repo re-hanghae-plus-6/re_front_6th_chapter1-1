@@ -2,14 +2,13 @@ import { cartPage } from "../pages/cartPage";
 import { notFoundPage } from "../pages/notFoundPage";
 import { productDetailPage } from "../pages/productDetailPage";
 import { productPage } from "../pages/productPage";
+
 const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
-// const getAppPath = (fullPath = window.location.pathname) => {
-//   return fullPath.startsWith(BASE_PATH) ? fullPath.slice(BASE_PATH.length) || "/" : fullPath;
-// };
 
 const getFullPath = (appPath) => {
   return BASE_PATH + appPath;
 };
+
 export const ROUTES = {
   MAIN: `${BASE_PATH}/`,
   PRODUCT: `${BASE_PATH}/product`,
@@ -17,6 +16,7 @@ export const ROUTES = {
   CART: `${BASE_PATH}/cart`,
   ERROR: `${BASE_PATH}/error`,
 };
+
 const URL_MAP = {
   [ROUTES.MAIN]: productPage,
   [ROUTES.PRODUCT]: productPage,
