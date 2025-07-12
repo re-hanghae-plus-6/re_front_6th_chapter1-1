@@ -11,15 +11,21 @@ if (import.meta.env.MODE !== "test") {
 } else {
   main();
 }
-
 export const render = useRender();
 export const navigate = useNavigate();
 export const store = useStore();
+
+// gh-pages 배포를 위한 BASE_PATH 설정
 export const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
 
 // BASE_PATH를 제거한 앱 경로를 반환하는 유틸리티 함수
 export const getAppPath = (fullPath = window.location.pathname) => {
-  return fullPath.startsWith(BASE_PATH) ? fullPath.slice(BASE_PATH.length) || "/" : fullPath;
+  const path = fullPath.startsWith(BASE_PATH) ? fullPath.slice(BASE_PATH.length) || "/" : fullPath;
+  // 해시 기반 라우팅을 위한 처리
+  if (path === "/" && window.location.hash) {
+    return window.location.hash.slice(1) || "/";
+  }
+  return path;
 };
 
 export const getFullPath = (appPath) => {
@@ -29,6 +35,12 @@ export const getFullPath = (appPath) => {
 function main() {
   // #root Element에 Layout HTML 삽입
   render.init();
+
+  // gh-pages에서 404.html 리다이렉트 처리
+  if (import.meta.env.PROD && window.location.pathname.includes("404.html")) {
+    window.location.href = BASE_PATH + "/";
+    return;
+  }
 
   // Page에 init, mount 실행
   render.view();
