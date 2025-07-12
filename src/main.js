@@ -1,3 +1,6 @@
+// 스타일 import
+import "../src/styles.css";
+
 // 라우터 import 추가
 import { createRouter } from "./router/Router.js";
 import { render, subscribeToStore } from "./renderer/render.js";

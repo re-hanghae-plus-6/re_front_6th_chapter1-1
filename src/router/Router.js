@@ -1,8 +1,7 @@
 // URL 변화를 감지하고 라우팅을 처리하는 함수형 라우터
 
 // GitHub Pages 배포를 위한 BASE_PATH 설정
-const BASE_PATH =
-  typeof import.meta.env !== "undefined" && import.meta.env.PROD === true ? "/front_6th_chapter1-1" : "";
+const BASE_PATH = window.location.hostname === "elli-lee.github.io" ? "/front_6th_chapter1-1" : "";
 
 /**
  * 전체 경로에서 앱 경로를 추출하는 함수

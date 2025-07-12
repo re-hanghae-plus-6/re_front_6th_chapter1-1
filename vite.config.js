@@ -13,7 +13,11 @@ export default defineConfig({
     },
   },
 
-  base: process.env.NODE_ENV === "production" || process.env.VITE_PROD === "true" ? "/front_6th_chapter1-1/" : "/",
+  define: {
+    "import.meta.env.PROD": JSON.stringify(process.env.NODE_ENV === "production"),
+  },
+
+  base: process.env.NODE_ENV === "production" ? "/front_6th_chapter1-1/" : "/",
 
   build: {
     outDir: "dist",
