@@ -1,4 +1,5 @@
 import { HomePage } from "./pages/HomePage.js";
+import { _404_ } from "./pages/NotFoundPage.js";
 import { ProjectDetailPage } from "./pages/ProjectDetailPage.js";
 
 const enableMocking = () =>
@@ -17,9 +18,13 @@ export function router() {
   if (route === "product" && id) {
     console.log("project detail page");
     return ProjectDetailPage(id);
-  } else {
+  }
+
+  if (!route) {
     return HomePage();
   }
+
+  document.body.querySelector("#root").innerHTML = _404_();
 }
 
 // 애플리케이션 시작
