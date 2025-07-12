@@ -297,9 +297,9 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오", () => {
 
       // 404 페이지 확인
       await expect(page.getByRole("main")).toMatchAriaSnapshot(`
-    - img: /404 페이지를 찾을 수 없습니다/
+    - img "404 페이지를 찾을 수 없습니다"
     - link "홈으로"
-    `);
+  `);
     });
   });
 });

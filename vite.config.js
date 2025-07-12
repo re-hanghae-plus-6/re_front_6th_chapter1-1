@@ -1,4 +1,4 @@
-import { defineConfig } from "vitest/config";
+import { defineConfig } from "vite";
 
 export default defineConfig({
   test: {
@@ -11,5 +11,10 @@ export default defineConfig({
         singleThread: true,
       },
     },
+  },
+  base: process.env.NODE_ENV === "production" ? "/front_6th_chapter1-1/" : "/",
+  build: {
+    outDir: "dist",
+    assetsDir: "assets",
   },
 });
