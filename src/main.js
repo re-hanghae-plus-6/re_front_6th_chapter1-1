@@ -5,7 +5,9 @@ import { NotFoundPage } from "./pages/NotFoundPage.js";
 import { showCartModal, renderCartModal } from "./handlers/cart.js";
 import { router } from "./router.js";
 import { loadCartFromStorage, saveCartToStorage } from "./utils/cartStorage.js";
+import { createHomePageHandlers } from "./handlers/homepage.js";
 import { getSearchFromUrl, updateUrlParams } from "./handlers/url.js";
+import { setupItemFilterEvents } from "./events/itemFilterEvents.js";
 
 function syncStateWithUrl() {
   // path에서 검색어 추출
@@ -100,6 +102,14 @@ function render() {
   document.body.querySelector("#root").innerHTML = HomePage(state);
   setupInfiniteScroll();
 }
+
+// 상태 업데이트 함수
+function updateState(updates) {
+  Object.assign(state, updates);
+}
+
+// 핸들러 생성
+const handlers = createHomePageHandlers(state, updateState, render);
 
 async function renderProductDetail(productId) {
   let product = state.products.find((p) => p.productId === productId);
@@ -228,14 +238,8 @@ function setupRouter() {
 }
 
 function setupEventListeners() {
-  document.addEventListener("change", async (event) => {
-    if (event.target.matches("#limit-select")) {
-      handleLimitChange(Number(event.target.value));
-    }
-    if (event.target.matches("#sort-select")) {
-      handleSortChange(event.target.value);
-    }
-  });
+  // 필터 관련 이벤트 리스너 설정
+  setupItemFilterEvents(handlers);
 
   document.addEventListener("click", (event) => {
     if (event.target.matches(".add-to-cart-btn")) {
@@ -249,26 +253,6 @@ function setupEventListeners() {
       showToast({ type: "add" });
     }
 
-    if (event.target.matches(".category1-filter-btn")) {
-      const category1 = event.target.dataset.category1;
-      handleCategory1Filter(category1);
-    }
-
-    if (event.target.matches(".category2-filter-btn")) {
-      const category2 = event.target.dataset.category2;
-      handleCategory2Filter(category2);
-    }
-
-    if (event.target.matches(".category-reset-btn") || event.target.matches(".breadcrumb-reset-btn")) {
-      handleCategoryReset();
-    }
-
-    // 브레드크럼 클릭 - category1 클릭 시 해당 카테고리로 이동
-    if (event.target.matches(".breadcrumb-category1-btn")) {
-      const category1 = event.target.dataset.category1;
-      handleBreadcrumbCategory1Click(category1);
-    }
-
     const cartButton = document.querySelector("#cart-icon-btn");
     if (cartButton && (event.target === cartButton || cartButton.contains(event.target))) {
       showCartModal(state, { renderCartModal, showToast });
@@ -278,7 +262,7 @@ function setupEventListeners() {
   document.addEventListener("keydown", (event) => {
     if (event.key === "Enter" && event.target.matches("#search-input")) {
       const searchValue = event.target.value;
-      handleSearch(searchValue);
+      handlers.handleSearch(searchValue);
     }
   });
 }
@@ -379,203 +363,6 @@ function setupProductDetailEventListeners() {
       return;
     }
   });
-}
-
-async function handleCategory1Filter(category1) {
-  state.selectedCategory1 = category1;
-  state.selectedCategory2 = null; // category1 변경 시 category2 리셋
-  state.page = 1; // 카테고리 변경 시 첫 페이지로 리셋
-
-  // URL 업데이트
-  updateUrlParams({
-    limit: state.productCount,
-    page: state.page,
-    sort: state.sort,
-    search: state.search,
-    category1: state.selectedCategory1,
-    category2: state.selectedCategory2,
-  });
-
-  state.loading = true;
-
-  // 전체 카테고리와 상품 정보를 다시 가져오기
-  const [{ products, pagination }, categories] = await Promise.all([
-    getProducts({
-      limit: state.productCount,
-      sort: state.sort,
-      search: state.search,
-      category1: state.selectedCategory1,
-      category2: state.selectedCategory2,
-      page: state.page,
-    }),
-    getCategories(),
-  ]);
-
-  // 해당 카테고리의 서브카테고리 목록으로 설정
-  const categoryDetail = categories[category1];
-  state.categories = categoryDetail;
-
-  state.products = products;
-  state.page = pagination.page;
-  state.hasNext = pagination.hasNext;
-  state.hasPrev = pagination.hasPrev;
-  state.loading = false;
-  state.total = pagination.total;
-
-  render();
-}
-
-async function handleCategory2Filter(category2) {
-  state.selectedCategory2 = category2;
-  state.page = 1; // 카테고리 변경 시 첫 페이지로 리셋
-
-  // URL 업데이트
-  updateUrlParams({
-    limit: state.productCount,
-    page: state.page,
-    sort: state.sort,
-    search: state.search,
-    category1: state.selectedCategory1,
-    category2: state.selectedCategory2,
-  });
-
-  state.loading = true;
-  const {
-    products,
-    pagination: { total, page, hasNext, hasPrev },
-  } = await getProducts({
-    limit: state.productCount,
-    sort: state.sort,
-    search: state.search,
-    category1: state.selectedCategory1,
-    category2: category2,
-    page: state.page,
-  });
-
-  state.products = products;
-  state.total = total;
-  state.page = page;
-  state.hasNext = hasNext;
-  state.hasPrev = hasPrev;
-  state.loading = false;
-
-  render();
-}
-
-async function handleCategoryReset() {
-  state.selectedCategory1 = null;
-  state.selectedCategory2 = null;
-  state.page = 1; // 카테고리 리셋 시 첫 페이지로
-
-  // URL 업데이트
-  updateUrlParams({
-    limit: state.productCount,
-    page: state.page,
-    sort: state.sort,
-    search: state.search,
-    category1: state.selectedCategory1,
-    category2: state.selectedCategory2,
-  });
-
-  // 전체 카테고리 다시 로드
-  state.loading = true;
-  const [{ products, pagination }, categories] = await Promise.all([
-    getProducts({
-      limit: state.productCount,
-      sort: state.sort,
-      search: state.search,
-      page: state.page,
-    }),
-    getCategories(),
-  ]);
-
-  state.products = products;
-  state.categories = categories;
-  state.page = pagination.page;
-  state.hasNext = pagination.hasNext;
-  state.hasPrev = pagination.hasPrev;
-  state.total = pagination.total;
-  state.loading = false;
-
-  render();
-}
-
-async function handleBreadcrumbCategory1Click(category1) {
-  // category2는 제거하고 category1만 유지
-  state.selectedCategory1 = category1;
-  state.selectedCategory2 = null;
-  state.page = 1; // 카테고리 변경 시 첫 페이지로 리셋
-
-  // URL 업데이트
-  updateUrlParams({
-    limit: state.productCount,
-    page: state.page,
-    sort: state.sort,
-    search: state.search,
-    category1: state.selectedCategory1,
-    category2: state.selectedCategory2,
-  });
-
-  state.loading = true;
-
-  // 전체 카테고리와 상품 정보를 다시 가져오기
-  const [{ products, pagination }, categories] = await Promise.all([
-    getProducts({
-      limit: state.productCount,
-      sort: state.sort,
-      search: state.search,
-      category1: state.selectedCategory1,
-      page: state.page,
-    }),
-    getCategories(),
-  ]);
-
-  // 해당 카테고리의 서브카테고리 목록으로 설정
-  const categoryDetail = categories[category1];
-  state.categories = categoryDetail;
-
-  state.products = products;
-  state.page = pagination.page;
-  state.hasNext = pagination.hasNext;
-  state.hasPrev = pagination.hasPrev;
-  state.loading = false;
-  state.total = pagination.total;
-
-  render();
-}
-
-async function handleSearch(searchValue) {
-  state.search = searchValue;
-  state.page = 1; // 검색 시 첫 페이지로 리셋
-
-  // URL 업데이트
-  updateUrlParams({
-    limit: state.productCount,
-    page: state.page,
-    sort: state.sort,
-    search: state.search,
-    category1: state.selectedCategory1,
-    category2: state.selectedCategory2,
-  });
-
-  state.loading = true;
-  const { products, pagination } = await getProducts({
-    limit: state.productCount,
-    sort: state.sort,
-    search: state.search,
-    category1: state.selectedCategory1,
-    category2: state.selectedCategory2,
-    page: state.page,
-  });
-
-  state.products = products;
-  state.page = pagination.page;
-  state.hasNext = pagination.hasNext;
-  state.hasPrev = pagination.hasPrev;
-  state.loading = false;
-  state.total = pagination.total;
-
-  render();
 }
 
 async function handleSearchFromUrl(searchTerm) {
@@ -682,78 +469,7 @@ export function showToast({ type = "add" }) {
   });
 }
 
-async function handleLimitChange(newLimit) {
-  state.productCount = newLimit;
-  state.page = 1; // limit 변경 시 첫 페이지로 리셋
-  state.loading = true;
-
-  // URL 업데이트
-  updateUrlParams({
-    limit: state.productCount,
-    page: state.page,
-    sort: state.sort,
-    search: state.search,
-    category1: state.selectedCategory1,
-    category2: state.selectedCategory2,
-  });
-
-  render();
-
-  // 새로운 limit으로 API 재호출
-  const {
-    products,
-    pagination: { total },
-  } = await getProducts({
-    limit: state.productCount,
-    sort: state.sort,
-    search: state.search,
-    category1: state.selectedCategory1,
-    category2: state.selectedCategory2,
-    page: state.page,
-  });
-
-  // 상태 업데이트
-  state.products = products;
-  state.total = total;
-  state.loading = false;
-
-  render();
-}
-
-async function handleSortChange(newSort) {
-  state.sort = newSort;
-  state.page = 1; // sort 변경 시 첫 페이지로 리셋
-  state.loading = true;
-
-  // URL 업데이트
-  updateUrlParams({
-    limit: state.productCount,
-    page: state.page,
-    sort: state.sort,
-    search: state.search,
-    category1: state.selectedCategory1,
-    category2: state.selectedCategory2,
-  });
-
-  const {
-    products,
-    pagination: { total },
-  } = await getProducts({
-    limit: state.productCount,
-    sort: newSort,
-    search: state.search,
-    category1: state.selectedCategory1,
-    category2: state.selectedCategory2,
-    page: state.page,
-  });
-
-  // 상태 업데이트
-  state.products = products;
-  state.total = total;
-  state.loading = false;
-
-  render();
-}
+// 핸들러 사용으로 교체됨 - handlers.handleLimitChange, handlers.handleSortChange
 
 let globalObserver = null;
 
