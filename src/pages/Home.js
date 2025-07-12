@@ -22,7 +22,7 @@ export default function Home({ $target }) {
     const $main = document.createElement("main");
     $main.className = "max-w-md mx-auto px-4 py-4";
     $main.appendChild(Filter());
-    const $productList = ProductList({ products: this.state.products });
+    const $productList = ProductList({ data: this.state.products });
     $main.appendChild($productList);
     $main.appendChild(Footer());
     $mainDiv.appendChild($main);
@@ -38,8 +38,7 @@ export default function Home({ $target }) {
   const fetchProducts = async () => {
     try {
       const data = await getProducts();
-      this.setState({ isLoading: false, products: data.products });
-      console.log("data", data);
+      this.setState({ isLoading: false, products: data });
     } catch (e) {
       console.log("error occurred");
     }
