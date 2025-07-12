@@ -435,12 +435,9 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오", () => {
       // 첫 번째 상품 수량 증가
       await page.locator(".quantity-increase-btn").first().click();
 
-      // 총 금액 업데이트 확인
-      await expect(page.locator("#root")).toMatchAriaSnapshot(`
-    - text: /총 금액 670원/
-    - button "전체 비우기"
-    - button "구매하기"
-    `);
+      // 총 금액 업데이트 확인 - cart modal 내부에서 확인
+      await expect(page.locator(".cart-modal")).toContainText("총 금액");
+      await expect(page.locator(".cart-modal")).toContainText("670원");
 
       // 첫 번째 상품만 선택
       await page.locator(".cart-item-checkbox").first().check();

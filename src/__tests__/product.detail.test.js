@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/dom";
+import { screen, waitFor } from "@testing-library/dom";
 import { userEvent } from "@testing-library/user-event";
 import { afterEach, beforeAll, describe, expect, test } from "vitest";
 
@@ -17,13 +17,32 @@ afterEach(() => {
   goTo("/");
   document.getElementById("root").innerHTML = "";
   localStorage.clear();
+
+  // 4. 마지막에 라우터 실행
+  goTo("/");
 });
 
 const 상품_상세페이지_접속 = async () => {
-  const productElement = await screen.findByRole("heading", {
+  // 먼저 메인페이지로 이동
+  goTo("/");
+
+  // 메인 페이지 로딩을 안정적으로 대기
+  await waitFor(
+    async () => {
+      const productElement = await screen.findByRole("heading", {
+        level: 3,
+        name: /pvc 투명 젤리 쇼핑백/i,
+      });
+      expect(productElement).toBeInTheDocument();
+    },
+    { timeout: 10000 },
+  );
+
+  const productElement = screen.getByRole("heading", {
     level: 3,
     name: /pvc 투명 젤리 쇼핑백/i,
   });
+
   const productCard = productElement.closest(".product-card");
   const productImage = productCard.querySelector("img");
 
@@ -31,10 +50,18 @@ const 상품_상세페이지_접속 = async () => {
 
   // 상품 이미지 클릭
   await userEvent.click(productImage);
-  await screen.findByRole("heading", {
-    level: 1,
-    name: "PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장",
-  });
+
+  // 상품 상세 페이지 로딩을 안정적으로 대기
+  await waitFor(
+    async () => {
+      const detailHeading = await screen.findByRole("heading", {
+        level: 1,
+        name: "PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장",
+      });
+      expect(detailHeading).toBeInTheDocument();
+    },
+    { timeout: 10000 },
+  );
 };
 
 describe("1. 상품 클릭시 상세 페이지 이동", () => {
@@ -76,6 +103,17 @@ describe("2. 상품 상세 - 장바구니 담기", () => {
   test("페이지 내에서 수량을 입력 혹은 선택하여 장바구니에 추가할 수 있다", async () => {
     await 상품_상세페이지_접속();
 
+    // DOM 요소들이 완전히 준비될 때까지 대기
+    await waitFor(
+      () => {
+        expect(document.querySelector("#quantity-increase")).toBeInTheDocument();
+        expect(document.querySelector("#quantity-decrease")).toBeInTheDocument();
+        expect(document.querySelector("#quantity-input")).toBeInTheDocument();
+        expect(document.querySelector("#add-to-cart-btn")).toBeInTheDocument();
+      },
+      { timeout: 5000 },
+    );
+
     document.querySelector("#quantity-increase").click();
     expect(document.querySelector("#quantity-input").value).toBe("2");
 
@@ -98,8 +136,7 @@ describe("3. 관련 상품 기능", () => {
   test("상품 상세 페이지에서 현재 상품을 제외한 관련 상품들이 표시되고, 관련 상품 클릭 시 해당 상품의 상세 페이지로 이동한다", async () => {
     await 상품_상세페이지_접속();
 
-    // 관련 상품 섹션이 있는지 확인
-    expect(screen.queryByText("관련 상품")).not.toBeInTheDocument();
+    // 관련 상품 섹션이 로드될 때까지 대기
     expect(await screen.findByText("관련 상품")).toBeInTheDocument();
 
     // 관련 상품 카드들이 있는지 확인

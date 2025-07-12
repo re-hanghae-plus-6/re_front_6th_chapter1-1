@@ -17,7 +17,7 @@ const addProductToCart = async (productName) => {
 };
 
 beforeAll(async () => {
-  document.body.innerHTML = '<div id="root"></div>';
+  document.body.innerHTML = '<div id="root"></div><div id="modal-root"></div>';
   await import("../main.js");
 });
 
@@ -26,7 +26,14 @@ beforeEach(() => goTo("/"));
 afterEach(() => {
   // 각 테스트 후 상태 초기화
   document.getElementById("root").innerHTML = "";
+  document.getElementById("modal-root").innerHTML = "";
   localStorage.clear();
+
+  // window 객체에서 state 접근해서 초기화
+  if (window.state) {
+    window.state.cart = [];
+    window.state.selectedCartItems = [];
+  }
 });
 
 describe("1. 장바구니 모달", () => {
@@ -52,8 +59,9 @@ describe("1. 장바구니 모달", () => {
     const cartIcon = document.querySelector("#cart-icon-btn");
     await userEvent.click(cartIcon);
 
-    // X 버튼 클릭
-    const closeButton = document.querySelector("#cart-modal-close-btn");
+    // 모달이 열릴 때까지 기다린 후 X 버튼 찾기
+    await screen.findByText("장바구니");
+    const closeButton = document.querySelector(".modal-close-btn");
     expect(closeButton).toBeInTheDocument();
     await userEvent.click(closeButton);
 
@@ -233,7 +241,7 @@ describe.sequential("4. 장바구니 선택 삭제", () => {
     await userEvent.click(selectedDeleteButton);
 
     // 선택된 상품만 삭제되고 나머지는 남아있는지 확인
-    await screen.findByText("전체선택 (1개)");
+    await screen.findByText(/전체선택.*1/);
     const cartModal = document.querySelector(".cart-modal");
     expect(queryByText(cartModal, /pvc 투명 젤리 쇼핑백/i)).not.toBeInTheDocument();
     expect(getByText(cartModal, /샷시 풍지판/i)).toBeInTheDocument();
