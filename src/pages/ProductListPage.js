@@ -172,6 +172,11 @@ const renderErrorContent = (errorMessage) => `
   </div>
 `;
 
+const renderProductCount = (state) => {
+  if (state.isLoading) return "";
+  return `총 <span class="font-medium text-gray-900">${state.pagination?.total || 0}개</span>의 상품`;
+};
+
 const renderProductListPage = () => {
   const state = productStore.getState();
   const params = getURLParams(defaultParams);
@@ -247,16 +252,9 @@ const renderProductListPage = () => {
         
         <!-- 상품 목록 -->
         <div class="mb-6">
-          ${
-            state.isLoading
-              ? ""
-              : `
-          <!-- 상품 개수 정보 -->
           <div id="product-count" class="mb-4 text-sm text-gray-600">
-            총 <span class="font-medium text-gray-900">${state.pagination?.total || 0}개</span>의 상품
+            ${renderProductCount(state)}
           </div>
-          `
-          }
           
           <!-- 상품 그리드 -->
           <div class="mb-6" id="products-grid">
@@ -306,28 +304,7 @@ const setupStateSubscription = () => {
       );
     }
 
-    if (!prevState || newState.pagination !== prevState.pagination || newState.isLoading !== prevState.isLoading) {
-      const $productCount = document.querySelector("#product-count");
-
-      if (newState.isLoading) {
-        $productCount?.remove();
-      } else {
-        const content = `총 <span class="font-medium text-gray-900">${newState.pagination?.total || 0}개</span>의 상품`;
-
-        if ($productCount) {
-          updateElement("#product-count", content);
-        } else {
-          const $productsGrid = document.querySelector("#products-grid");
-          if ($productsGrid?.parentNode) {
-            const countElement = document.createElement("div");
-            countElement.id = "product-count";
-            countElement.className = "mb-4 text-sm text-gray-600";
-            countElement.innerHTML = content;
-            $productsGrid.parentNode.insertBefore(countElement, $productsGrid);
-          }
-        }
-      }
-    }
+    updateElement("#product-count", renderProductCount(newState));
 
     if (
       !prevState ||
