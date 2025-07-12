@@ -226,23 +226,35 @@ function renderProductDetailHTML(product, relatedProducts) {
 // 404 페이지 콘텐츠 렌더링
 function render404Content() {
   return `
-    <div class="text-center py-12">
-      <div class="mb-8">
-        <h1 class="text-6xl font-bold text-gray-300 mb-4">404</h1>
-        <h2 class="text-2xl font-bold text-gray-900 mb-4">페이지를 찾을 수 없습니다</h2>
-        <p class="text-gray-600 mb-2">요청하신 페이지가 존재하지 않습니다.</p>
-        <p class="text-sm text-gray-500">경로: ${window.location.pathname}</p>
-      </div>
+    <div class="text-center my-4 py-20 shadow-md p-6 bg-white rounded-lg">
+      <svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="404 페이지를 찾을 수 없습니다">
+        <defs>
+          <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#4285f4;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#1a73e8;stop-opacity:1" />
+          </linearGradient>
+          <filter id="softShadow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0" dy="2" stdDeviation="8" flood-color="#000000" flood-opacity="0.1"/>
+          </filter>
+        </defs>
+        
+        <!-- 404 Numbers -->
+        <text x="160" y="85" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="48" font-weight="600" fill="url(#blueGradient)" text-anchor="middle">404</text>
+        
+        <!-- Icon decoration -->
+        <circle cx="80" cy="60" r="3" fill="#e8f0fe" opacity="0.8"/>
+        <circle cx="240" cy="60" r="3" fill="#e8f0fe" opacity="0.8"/>
+        <circle cx="90" cy="45" r="2" fill="#4285f4" opacity="0.5"/>
+        <circle cx="230" cy="45" r="2" fill="#4285f4" opacity="0.5"/>
+        
+        <!-- Message -->
+        <text x="160" y="110" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="400" fill="#5f6368" text-anchor="middle">페이지를 찾을 수 없습니다</text>
+        
+        <!-- Subtle bottom accent -->
+        <rect x="130" y="130" width="60" height="2" rx="1" fill="url(#blueGradient)" opacity="0.3"/>
+      </svg>
       
-      <div class="space-y-3">
-        <a href="/" data-link class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
-          홈으로 돌아가기
-        </a>
-        <br>
-        <button onclick="window.history.back()" class="text-blue-600 hover:text-blue-800 hover:underline">
-          이전 페이지로 돌아가기
-        </button>
-      </div>
+      <a href="/" data-link class="inline-block px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">홈으로</a>
     </div>
   `;
 }
