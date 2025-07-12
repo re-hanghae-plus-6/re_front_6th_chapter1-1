@@ -1,5 +1,6 @@
 import { CartModal } from "../components/CartModal.js";
 import { saveCartToStorage } from "../utils/cartStorage.js";
+import { showToast } from "../components/Toast.js";
 
 // 총 금액을 계산하고 DOM에 업데이트하는 함수
 function updateTotalPrice(state) {
@@ -49,7 +50,7 @@ function updateCartCount(state) {
   }
 }
 
-export function renderCartModal(state, showToast) {
+export function renderCartModal(state) {
   // 기존 이벤트 리스너 정리
   if (modalClickHandler) {
     document.removeEventListener("click", modalClickHandler);
@@ -73,7 +74,7 @@ export function renderCartModal(state, showToast) {
   });
 
   document.querySelector("#modal-root").insertAdjacentHTML("beforeend", modalHTML);
-  setupModalEvents(state, { renderCartModal, showToast });
+  setupModalEvents(state);
 }
 
 export function closeCartModal({ modalClickHandler, modalKeydownHandler }) {
@@ -91,7 +92,7 @@ export function closeCartModal({ modalClickHandler, modalKeydownHandler }) {
   }
 }
 
-export function removeFromCart(productId, state, { renderCartModal, showToast }) {
+export function removeFromCart(productId, state) {
   // 해당 상품의 첫 번째 인스턴스만 제거
   const index = state.cart.findIndex((item) => item.productId === productId);
 
@@ -110,7 +111,7 @@ export function removeFromCart(productId, state, { renderCartModal, showToast })
 
     // 모달이 열려있다면 모달만 다시 렌더링
     if (document.querySelector(".cart-modal")) {
-      renderCartModal(state, showToast);
+      renderCartModal(state);
     }
 
     showToast({ type: "delete" });
@@ -151,7 +152,7 @@ export function increaseCartItemQuantity(productId, state) {
   }
 }
 
-export function decreaseCartItemQuantity(productId, state, { renderCartModal, showToast }) {
+export function decreaseCartItemQuantity(productId, state) {
   // 해당 상품의 수량을 하나 감소 (첫 번째 인스턴스 제거)
   const index = state.cart.findIndex((item) => item.productId === productId);
 
@@ -187,13 +188,13 @@ export function decreaseCartItemQuantity(productId, state, { renderCartModal, sh
         updateCartCount(state);
       } else {
         // 수량이 0이 되면 전체 모달 다시 렌더링 (상품 제거)
-        renderCartModal(state, showToast);
+        renderCartModal(state);
       }
     }
   }
 }
 
-export function toggleCartItemSelection(productId, state, { renderCartModal, showToast }) {
+export function toggleCartItemSelection(productId, state) {
   const index = state.selectedCartItems.indexOf(productId);
 
   if (index === -1) {
@@ -211,11 +212,11 @@ export function toggleCartItemSelection(productId, state, { renderCartModal, sho
 
   // 모달만 다시 렌더링
   if (document.querySelector(".cart-modal")) {
-    renderCartModal(state, showToast);
+    renderCartModal(state);
   }
 }
 
-export function showCartModal(state, { renderCartModal, showToast }) {
+export function showCartModal(state) {
   // 이미 모달이 열려있다면 return
   if (document.querySelector(".cart-modal")) {
     return;
@@ -229,13 +230,13 @@ export function showCartModal(state, { renderCartModal, showToast }) {
 
   // DOM에 추가
   document.querySelector("#modal-root").insertAdjacentHTML("beforeend", modalHTML);
-  setupModalEvents(state, { renderCartModal, showToast });
+  setupModalEvents(state);
 }
 
 let modalClickHandler = null;
 let modalKeydownHandler = null;
 
-export function setupModalEvents(state, { renderCartModal, showToast }) {
+export function setupModalEvents(state) {
   const modal = document.querySelector(".cart-modal");
   if (!modal) return;
 
@@ -252,7 +253,7 @@ export function setupModalEvents(state, { renderCartModal, showToast }) {
     // 체크박스 클릭
     if (event.target.matches(".cart-item-checkbox")) {
       const productId = event.target.dataset.productId;
-      toggleCartItemSelection(productId, state, { renderCartModal, showToast });
+      toggleCartItemSelection(productId, state);
       return;
     }
 
@@ -274,7 +275,7 @@ export function setupModalEvents(state, { renderCartModal, showToast }) {
         saveCartToStorage(state.cart, state.selectedCartItems);
       }
 
-      renderCartModal(state, showToast);
+      renderCartModal(state);
       return;
     }
 
@@ -295,7 +296,7 @@ export function setupModalEvents(state, { renderCartModal, showToast }) {
         ? event.target
         : event.target.closest(".quantity-decrease-btn");
       const productId = button.dataset.productId;
-      decreaseCartItemQuantity(productId, state, { renderCartModal, showToast });
+      decreaseCartItemQuantity(productId, state, { renderCartModal });
       return;
     }
 
@@ -303,7 +304,7 @@ export function setupModalEvents(state, { renderCartModal, showToast }) {
     // NOTE 개별 아이템 삭제
     if (event.target.matches(".cart-item-remove-btn")) {
       const productId = event.target.dataset.productId;
-      removeFromCart(productId, state, { renderCartModal, showToast });
+      removeFromCart(productId, state);
       return;
     }
 
@@ -329,7 +330,7 @@ export function setupModalEvents(state, { renderCartModal, showToast }) {
       updateCartCount(state);
 
       // 모달 전체 다시 렌더링
-      renderCartModal(state, showToast);
+      renderCartModal(state);
       return;
     }
 
@@ -346,7 +347,7 @@ export function setupModalEvents(state, { renderCartModal, showToast }) {
       // 헤더의 장바구니 카운트 업데이트
       updateCartCount(state);
 
-      renderCartModal(state, showToast);
+      renderCartModal(state);
       return;
     }
 
