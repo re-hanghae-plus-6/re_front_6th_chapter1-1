@@ -1,6 +1,6 @@
 import { detail } from "../components/detail";
 
-export const ProjectDetail = ({ projectDetail, loading, otherProducts }) => {
+export const ProjectDetail = ({ projectDetail, loading, otherProducts, count }) => {
   return /*html*/ `
 <div class="min-h-screen bg-gray-50">
   <header class="bg-white shadow-sm sticky top-0 z-40">
@@ -34,7 +34,7 @@ export const ProjectDetail = ({ projectDetail, loading, otherProducts }) => {
         <p class="text-gray-600">상품 정보를 불러오는 중...</p>
       </div>
     </div>`
-        : detail(projectDetail, otherProducts)
+        : detail(projectDetail, otherProducts, count)
     }
 
     </main>

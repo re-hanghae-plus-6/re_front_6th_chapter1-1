@@ -117,11 +117,13 @@ document.addEventListener("keydown", (e) => {
 function bindCardClickHandlers() {
   const cards = document.querySelectorAll(".product-card");
   cards.forEach((card) => {
-    // 기존에 붙어 있던 핸들러를 덮어씌우기 위해 onclick 직접 설정
-    card.onclick = () => {
+    card.onclick = (e) => {
+      if (e.target.closest(".add-to-cart-btn")) {
+        return;
+      }
+
       const projectId = card.dataset.productId;
       history.pushState({}, "", `/product/${projectId}`);
-      // router 호출: popstate 없이 직접
       router();
     };
   });

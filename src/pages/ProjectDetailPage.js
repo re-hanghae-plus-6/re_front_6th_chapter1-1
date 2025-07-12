@@ -6,25 +6,20 @@ let projectDetailState = {
   loading: false,
   projectDetail: {},
   otherProducts: [],
+  count: 1,
 };
 
-export const ProjectDetailPage = () => {
+export const ProjectDetailPage = async () => {
   const [, _link, id] = location.pathname.split("/");
   console.log(_link);
 
   if (!id) {
     return _404_();
   } else {
-    fetchProjectDetailData(id);
-  }
-};
+    projectDetailState.loading = true;
 
-export const fetchProjectDetailData = (id) => {
-  projectDetailState.loading = true;
+    document.body.querySelector("#root").innerHTML = ProjectDetail(projectDetailState);
 
-  document.body.querySelector("#root").innerHTML = ProjectDetail(projectDetailState);
-
-  (async () => {
     const projectData = await getProduct(id);
 
     const category = projectData.category1;
@@ -35,19 +30,40 @@ export const fetchProjectDetailData = (id) => {
     projectDetailState.projectDetail = projectData;
     projectDetailState.otherProducts = otherProducts;
     document.body.querySelector("#root").innerHTML = ProjectDetail(projectDetailState);
-  })();
+  }
 };
 
-const handleClick = (e) => {
-  const projectId = e.dataset.productId;
+function onPlusClick() {
+  projectDetailState.count += 1;
+  // UI만 부분 업데이트
+  document.body.querySelector("#root").innerHTML = ProjectDetail(projectDetailState);
+}
 
-  history.pushState(null, "", `/product/${projectId}`);
-  fetchProjectDetailData(projectId);
-};
+function onMiusClick() {
+  projectDetailState.count -= 1;
+  // UI만 부분 업데이트
+  document.body.querySelector("#root").innerHTML = ProjectDetail(projectDetailState);
+}
 
 document.addEventListener("click", (e) => {
-  if (e.target.closest(".related-product-card")) {
-    e.preventDefault();
-    handleClick(e.target.closest(".related-product-card"));
+  if (e.target.closest("#quantity-increase")) {
+    onPlusClick(e);
   }
+
+  if (e.target.closest("#quantity-decrease")) {
+    onMiusClick(e);
+  }
+});
+
+const root = document.querySelector("#root");
+root.addEventListener("click", (e) => {
+  // svg나 img 위 클릭도 카드까지 추적
+  const card = e.target.closest(".related-product-card");
+  if (!card) return;
+
+  e.preventDefault();
+  const projectId = card.dataset.productId;
+  history.pushState({}, "", `/product/${projectId}`);
+  // PopStateEvent로 날려야 라우터 popstate 핸들러 탄다
+  window.dispatchEvent(new PopStateEvent("popstate"));
 });
