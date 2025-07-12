@@ -7,12 +7,14 @@ import { ItemDetail } from "./components/pages/ItemDetail.js";
 import { NotFound } from "./components/pages/NotFound.js";
 import { formatPrice } from "./utils/format.js";
 
+// const enableMocking = () =>
+//   import("./mocks/browser.js").then(({ worker }) =>
+//     worker.start({
+//       onUnhandledRequest: "bypass",
+//     }),
+//   );
 const enableMocking = () =>
-  import("./mocks/browser.js").then(({ worker }) =>
-    worker.start({
-      onUnhandledRequest: "bypass",
-    }),
-  );
+  import("./mocks/browser.js").then(({ worker, workerOptions }) => worker.start(workerOptions));
 
 // infinite scroll 상태 관리
 let totalCount = 0;
@@ -108,7 +110,21 @@ async function renderDetail(productId) {
 
 // 라우트 핸들러
 function handleRoute() {
-  const path = window.location.pathname;
+  // const path = window.location.pathname;
+  const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
+
+  const getAppPath = (fullPath = window.location.pathname) => {
+    return fullPath.startsWith(BASE_PATH) ? fullPath.slice(BASE_PATH.length) || "/" : fullPath;
+  };
+
+  const getFullPath = (appPath) => {
+    return BASE_PATH + appPath;
+  };
+
+  const path = getAppPath();
+  const fullPath = getFullPath(path);
+
+  history.replaceState({}, "", fullPath);
 
   // 테스트 환경에서는 매번 전역 상태 초기화
   if (window.navigator.userAgent.includes("jsdom")) {
