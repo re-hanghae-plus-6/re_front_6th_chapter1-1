@@ -29,6 +29,8 @@ function render() {
 }
 
 async function main() {
+  render();
+
   await controller.initialize();
 
   let lastRoute = null;
