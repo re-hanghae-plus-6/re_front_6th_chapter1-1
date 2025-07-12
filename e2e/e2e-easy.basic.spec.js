@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 // 테스트 설정
-test.describe.configure({ mode: "serial" });
+// test.describe.configure({ mode: "serial" });
 
 // 헬퍼 함수들
 class E2EHelpers {
