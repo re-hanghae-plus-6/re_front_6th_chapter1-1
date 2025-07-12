@@ -28,6 +28,7 @@ export const HomePage = async () => {
   document.body.querySelector("#root").innerHTML = Main(state);
 
   bindCardClickHandlers();
+  // bindCartClickHandlers();
 };
 
 const handleSelect = async function (e, key) {
@@ -114,6 +115,33 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
+document.addEventListener("click", (e) => {
+  if (e.target.matches(".add-to-cart-btn")) {
+    handleAddCart(e);
+  }
+});
+
+const handleAddCart = (e) => {
+  console.dir(e.target.closest(".product-card"));
+  const card = e.target.closest(".product-card");
+  const projectId = card.dataset.productId;
+  console.log(projectId);
+
+  if (localStorage.getItem("cart") === null) {
+    localStorage.setItem("cart", String(projectId));
+    document.body.querySelector("#root").innerHTML = Main(state);
+  } else {
+    const storedValue = localStorage.getItem("cart");
+    if (!storedValue.split(",").includes(projectId)) {
+      const numValue = `${storedValue},${projectId}`;
+      localStorage.setItem("cart", String(numValue));
+      document.body.querySelector("#root").innerHTML = Main(state);
+    } else {
+      alert("이미 카트에 담겨 있습니다.");
+    }
+  }
+};
+
 function bindCardClickHandlers() {
   const cards = document.querySelectorAll(".product-card");
   cards.forEach((card) => {
@@ -140,9 +168,7 @@ window.addEventListener(
       const currentScrollY = window.scrollY;
 
       if (currentScrollY > lastScrollY) {
-        console.log("↓ 아래로 스크롤 중");
         const docHeight = document.documentElement.scrollHeight;
-        // scrollY + window.innerHeight
         const scrollPos = currentScrollY + window.innerHeight;
 
         if (!state.isLoading && state.pagination.hasNext && scrollPos + 200 >= docHeight) {

@@ -35,13 +35,11 @@ export const ProjectDetailPage = async () => {
 
 function onPlusClick() {
   projectDetailState.count += 1;
-  // UI만 부분 업데이트
   document.body.querySelector("#root").innerHTML = ProjectDetail(projectDetailState);
 }
 
 function onMiusClick() {
   projectDetailState.count -= 1;
-  // UI만 부분 업데이트
   document.body.querySelector("#root").innerHTML = ProjectDetail(projectDetailState);
 }
 
@@ -57,13 +55,11 @@ document.addEventListener("click", (e) => {
 
 const root = document.querySelector("#root");
 root.addEventListener("click", (e) => {
-  // svg나 img 위 클릭도 카드까지 추적
   const card = e.target.closest(".related-product-card");
   if (!card) return;
 
   e.preventDefault();
   const projectId = card.dataset.productId;
   history.pushState({}, "", `/product/${projectId}`);
-  // PopStateEvent로 날려야 라우터 popstate 핸들러 탄다
   window.dispatchEvent(new PopStateEvent("popstate"));
 });
