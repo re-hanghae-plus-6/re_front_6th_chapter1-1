@@ -11,6 +11,7 @@ import { updateElement, createComponent } from "../utils/domUtils.js";
 import { setupInfiniteScroll } from "../utils/infiniteScroll.js";
 import { addToCart } from "../features/cart/services/cartService.js";
 import { showSuccessToast, showErrorToast } from "../utils/toastManager.js";
+import { LoadingSpinner } from "../shared/components/LoadingSpinner.js";
 
 const defaultParams = {
   limit: 20,
@@ -146,17 +147,6 @@ const renderCategories = (categories, selectedCategory1) => {
     .join("");
 };
 
-const renderLoadingMessage = () => `
-  <div class="inline-flex items-center">
-    <svg class="animate-spin h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24">
-      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-      <path class="opacity-75" fill="currentColor" 
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-    </svg>
-    <span class="text-sm text-gray-600">상품을 불러오는 중...</span>
-  </div>
-`;
-
 const renderErrorContent = (errorMessage) => `
   <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
     <div class="text-red-500 mb-4">
@@ -265,9 +255,9 @@ const renderProductListPage = () => {
           <div class="text-center py-4 bottom-message">
             ${
               state.isLoading
-                ? renderLoadingMessage()
+                ? LoadingSpinner({ message: "상품을 불러오는 중..." })
                 : state.isLoadingMore
-                  ? renderLoadingMessage()
+                  ? LoadingSpinner({ message: "상품을 불러오는 중..." })
                   : state.pagination?.hasNext
                     ? '<div class="text-sm text-gray-500">더 많은 상품을 보려면 스크롤하세요</div>'
                     : '<div class="text-sm text-gray-500">모든 상품을 확인했습니다</div>'
@@ -313,9 +303,9 @@ const setupStateSubscription = () => {
       newState.pagination !== prevState.pagination
     ) {
       const bottomMessage = newState.isLoading
-        ? renderLoadingMessage()
+        ? LoadingSpinner({ message: "상품을 불러오는 중..." })
         : newState.isLoadingMore
-          ? renderLoadingMessage()
+          ? LoadingSpinner({ message: "상품을 불러오는 중..." })
           : newState.pagination?.hasNext
             ? '<div class="text-sm text-gray-500">더 많은 상품을 보려면 스크롤하세요</div>'
             : '<div class="text-sm text-gray-500">모든 상품을 확인했습니다</div>';
