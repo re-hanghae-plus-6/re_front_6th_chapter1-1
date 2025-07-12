@@ -12,7 +12,8 @@ export default defineConfig({
       },
     },
   },
-  base: process.env.NODE_ENV === "production" ? "/front_6th_chapter1-1/" : "/",
+
+  base: "/front_6th_chapter1-1/",
 
   build: {
     outDir: "dist",
