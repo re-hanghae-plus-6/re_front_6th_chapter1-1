@@ -105,7 +105,7 @@ export default class HomePage extends Component {
       <div class="bg-gray-50">
         <div id="header-container"></div>
 
-        <main class="maxProductList-w-md mx-auto px-4 py-4">
+        <main class="max-w-md mx-auto px-4 py-4">
           <!-- 검색 및 필터 -->
           <div id="filter-container"></div>
 
