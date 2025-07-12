@@ -151,15 +151,36 @@ export default class ProductDetailPage extends Component {
   }
 
   cleanup() {
+    // 기존 이벤트 리스너 제거
     this.$target.querySelectorAll(".related-product-card").forEach((card) => {
       card.removeEventListener("click", this.handleRelatedProductClick);
     });
-    this.$target
-      .querySelector("#add-to-cart-btn")
-      .removeEventListener("click", this.handleAddToCart);
-    this.$target
-      .querySelector(".go-to-product-list")
-      .removeEventListener("click", this.handleGoToProductList);
+
+    const addToCartBtn = this.$target.querySelector("#add-to-cart-btn");
+    if (addToCartBtn) {
+      addToCartBtn.removeEventListener("click", this.handleAddToCart);
+    }
+
+    const goToProductListBtn = this.$target.querySelector(".go-to-product-list");
+    if (goToProductListBtn) {
+      goToProductListBtn.removeEventListener("click", this.handleGoToProductList);
+    }
+
+    // 수량 조절 버튼 이벤트 리스너 제거
+    const increaseBtn = this.$target.querySelector("#quantity-increase");
+    const decreaseBtn = this.$target.querySelector("#quantity-decrease");
+
+    if (increaseBtn && this.increaseHandler) {
+      increaseBtn.removeEventListener("click", this.increaseHandler);
+    }
+    if (decreaseBtn && this.decreaseHandler) {
+      decreaseBtn.removeEventListener("click", this.decreaseHandler);
+    }
+
+    if (this.unsubscribe) {
+      this.unsubscribe();
+      this.unsubscribe = null;
+    }
   }
 
   starTemplate() {

@@ -24,8 +24,8 @@ export default class Filter extends Component {
 
       if (currentPath === "/") {
         this.render();
-        this.setEvent();
-        this.mounted();
+        // this.setEvent();
+        // this.mounted();
       }
     });
 

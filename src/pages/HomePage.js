@@ -93,6 +93,13 @@ export default class HomePage extends Component {
     }
   }
 
+  cleanup() {
+    if (this.unsubscribe) {
+      this.unsubscribe();
+      this.unsubscribe = null;
+    }
+  }
+
   template() {
     return /* HTML */ `
       <div class="bg-gray-50">
