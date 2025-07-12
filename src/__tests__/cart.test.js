@@ -23,10 +23,18 @@ beforeAll(async () => {
 
 beforeEach(() => goTo("/"));
 
-afterEach(() => {
+afterEach(async () => {
   // 각 테스트 후 상태 초기화
   document.getElementById("root").innerHTML = "";
   localStorage.clear();
+
+  const { cartStore } = await import("../features/cart/store/cartStore.js");
+  cartStore.setState({
+    items: [],
+    selectedItems: [],
+    itemCount: 0,
+    isModalOpen: false,
+  });
 });
 
 describe("1. 장바구니 모달", () => {
@@ -105,7 +113,7 @@ describe.sequential("2. 장바구니 수량 조절", () => {
     const cartIcon = document.querySelector("#cart-icon-btn");
     await userEvent.click(cartIcon);
 
-    // 수량 증가 버튼 클릭
+    // 수량 증가 버튼 찾기
     const increaseButton = document.querySelector(".quantity-increase-btn");
     expect(increaseButton).toBeInTheDocument();
 
@@ -113,10 +121,11 @@ describe.sequential("2. 장바구니 수량 조절", () => {
     const quantityInput = document.querySelector(".quantity-input");
     expect(quantityInput.value).toBe("1");
 
+    // 수량 증가 버튼 클릭
     await userEvent.click(increaseButton);
 
     // 수량이 증가했는지 확인
-    expect(quantityInput.value).toBe("2");
+    expect(document.querySelector(".quantity-input").value).toBe("2");
   });
 
   test("각 장바구니 상품의 수량을 감소할 수 있다", async () => {
@@ -144,7 +153,7 @@ describe.sequential("2. 장바구니 수량 조절", () => {
     await userEvent.click(decreaseButton);
 
     // 수량이 감소했는지 확인
-    expect(quantityInput.value).toBe("1");
+    expect(document.querySelector(".quantity-input").value).toBe("1");
   });
 
   test("수량 변경 시 총 금액이 실시간으로 업데이트된다", async () => {
