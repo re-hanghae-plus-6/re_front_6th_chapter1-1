@@ -2,6 +2,7 @@ import { getByRole, screen, waitFor } from "@testing-library/dom";
 import { afterEach, beforeAll, beforeEach, describe, expect, test } from "vitest";
 import { server } from "./mockServerHandler.js";
 import { userEvent } from "@testing-library/user-event";
+import { loadProductData } from "../pages/HomePage.js";
 
 const goTo = (path) => {
   window.history.pushState({}, "", path);
@@ -118,7 +119,6 @@ describe("3. 페이지당 상품 수 선택", () => {
 describe("4. 상품 정렬 기능", () => {
   test("상품을 가격순/인기순으로 정렬할 수 있다", async () => {
     await screen.findByText(/총 의 상품/i);
-
     // 정렬 드롭다운 찾기
     const sortSelect = document.querySelector("#sort-select");
     expect(sortSelect).toBeInTheDocument();
@@ -133,7 +133,7 @@ describe("4. 상품 정렬 기능", () => {
 
   test("정렬 변경 시 목록에 반영된다", async () => {
     await screen.findByText(/총 의 상품/i);
-
+    await loadProductData();
     const expectProduct = (name, index = 0) => {
       const product = [...document.querySelectorAll(".product-card")][index];
       expect(getByRole(product, "heading", { level: 3, name })).toBeInTheDocument();
@@ -164,7 +164,7 @@ describe("4. 상품 정렬 기능", () => {
 describe("5. 무한 스크롤 페이지네이션", () => {
   test("페이지 하단 스크롤 시 추가 상품이 로드된다", async () => {
     await screen.findByText(/총 의 상품/i);
-
+    await loadProductData();
     // 초기 상품 카드 수 확인
     const initialCards = document.querySelectorAll(".product-card").length;
     expect(initialCards).toBe(20);
@@ -182,7 +182,6 @@ describe("5. 무한 스크롤 페이지네이션", () => {
 describe("6. 상품 검색", () => {
   test("상품명 기반 검색을 위한 텍스트 입력 필드가 있다", async () => {
     await screen.findByText(/총 의 상품/i);
-
     // 검색 입력 필드 확인
     const searchInput = document.querySelector("#search-input");
     expect(searchInput).toBeInTheDocument();
@@ -191,7 +190,6 @@ describe("6. 상품 검색", () => {
 
   test("Enter 키로 검색이 수행할 수 있으며, 검색어와 일치하는 상품들만 목록에 표시된다", async () => {
     await screen.findByText(/총 의 상품/i);
-
     const searchInput = document.querySelector("#search-input");
 
     await userEvent.type(searchInput, "젤리");
