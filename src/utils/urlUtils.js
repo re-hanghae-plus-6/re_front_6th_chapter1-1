@@ -6,7 +6,7 @@ const actions = { UPDATE_URL: "UPDATE_URL" };
 export default function navigateTo(to, qs) {
   const currentUrl = new URL(`${location.href}${BASE_PATH}`);
   if (to.startsWith("/")) {
-    currentUrl.pathname = to;
+    currentUrl.pathname = `${BASE_PATH}${to}`;
   } else {
     currentUrl.pathname += to;
   }
