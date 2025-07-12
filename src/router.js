@@ -142,8 +142,6 @@ class Router {
     }
 
     this.appRoot.innerHTML = renderedHtml;
-
-    this.appRoot.innerHTML = renderedHtml;
     this.setCurrentState({ ...this.mainStatus, urlParams: params, isDetail: isDetail });
 
     if (window.location.pathname === "/") {
