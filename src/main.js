@@ -13,7 +13,7 @@ window.addEventListener("popstate", router);
 window.addEventListener("hashchange", router);
 
 export function router() {
-  const [, route, id] = location.pathname.split("/");
+  const [, route, id] = location.pathname.replace("/front_6th_chapter1-1", "").split("/");
 
   if (route === "product" && id) {
     console.log("project detail page");
