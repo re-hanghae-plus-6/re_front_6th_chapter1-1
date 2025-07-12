@@ -11,10 +11,23 @@ class E2EHelpers {
 
   // 페이지 로딩 대기
   async waitForPageLoad() {
-    await this.page.waitForSelector('[data-testid="products-grid"], #products-grid', { timeout: 10000 });
+    await this.page.waitForSelector('[data-testid="products-grid"], #products-grid', {
+      timeout: 10000,
+    });
     await this.page.waitForFunction(() => {
       const text = document.body.textContent;
       return text.includes("총") && text.includes("개");
+    });
+  }
+
+  // ! 상세 페이지 로딩 대기
+  async waitForProductDetailLoad() {
+    await this.page.waitForSelector("#detail-header-container", {
+      timeout: 10000,
+    });
+    await this.page.waitForFunction(() => {
+      const text = document.body.textContent;
+      return text.includes("상품 상세");
     });
   }
 
@@ -37,7 +50,9 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오 > 난이도 쉬움 >
   });
 
   test.describe("1. 애플리케이션 초기화 및 기본 기능", () => {
-    test("페이지 접속 시 로딩 상태가 표시되고 상품 목록이 정상적으로 로드된다", async ({ page }) => {
+    test("페이지 접속 시 로딩 상태가 표시되고 상품 목록이 정상적으로 로드된다", async ({
+      page,
+    }) => {
       const helpers = new E2EHelpers(page);
 
       // 로딩 상태 확인
@@ -218,12 +233,15 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오 > 난이도 쉬움 >
         .locator('xpath=ancestor::*[contains(@class, "product-card")]');
       await productCard.locator("img").click();
 
-      // 상세 페이지 로딩 확인
+      // ! 상세 페이지 로딩 확인
+      await helpers.waitForProductDetailLoad();
       await expect(page.locator("text=상품 상세")).toBeVisible();
 
       // h1 태그에 상품명 확인
       await expect(
-        page.locator('h1:text("PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장")'),
+        page.locator(
+          'h1:text("PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장")',
+        ),
       ).toBeVisible();
 
       // 수량 조절 후 장바구니 담기
@@ -243,7 +261,9 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오 > 난이도 쉬움 >
 
       // 다른 상품의 상세 페이지로 이동했는지 확인
       await expect(
-        page.locator('h1:text("샷시 풍지판 창문 바람막이 베란다 문 틈막이 창틀 벌레 차단 샤시 방충망 틈새막이")'),
+        page.locator(
+          'h1:text("샷시 풍지판 창문 바람막이 베란다 문 틈막이 창틀 벌레 차단 샤시 방충망 틈새막이")',
+        ),
       ).toBeVisible();
 
       await expect(await page.evaluate(() => window.loadFlag)).toBe(true);

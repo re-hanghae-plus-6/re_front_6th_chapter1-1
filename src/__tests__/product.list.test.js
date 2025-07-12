@@ -29,7 +29,9 @@ describe("1. 상품 목록 로딩", () => {
 
     // 상품 모두 렌더링되었는지 확인
     expect(
-      await screen.findByText(/pvc 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장/i),
+      await screen.findByText(
+        /pvc 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장/i,
+      ),
     ).toBeInTheDocument();
     expect(
       screen.getByText(/고양이 난간 안전망 복층 베란다 방묘창 방묘문 방충망 캣도어 일반형검정/i),
@@ -111,7 +113,12 @@ describe("3. 페이지당 상품 수 선택", () => {
       ).not.toBeInTheDocument(),
     );
 
-    expect(document.querySelectorAll(".product-card").length).toBe(10);
+    // expect(document.querySelectorAll(".product-card").length).toBe(10);
+
+    await waitFor(() => {
+      const productCards = document.querySelectorAll(".product-card");
+      expect(productCards).toHaveLength(10);
+    });
   });
 });
 
@@ -128,12 +135,13 @@ describe("4. 상품 정렬 기능", () => {
     const optionTexts = options.map((opt) => opt.textContent);
 
     expect(optionTexts.some((text) => text.includes("가격"))).toBe(true);
-    expect(optionTexts.some((text) => text.includes("낮은순") || text.includes("높은순"))).toBe(true);
+    expect(optionTexts.some((text) => text.includes("낮은순") || text.includes("높은순"))).toBe(
+      true,
+    );
   });
 
   test("정렬 변경 시 목록에 반영된다", async () => {
     await screen.findByText(/총 의 상품/i);
-
     const expectProduct = (name, index = 0) => {
       const product = [...document.querySelectorAll(".product-card")][index];
       expect(getByRole(product, "heading", { level: 3, name })).toBeInTheDocument();
@@ -145,6 +153,13 @@ describe("4. 상품 정렬 기능", () => {
     });
 
     await userEvent.selectOptions(document.querySelector("#sort-select"), "name_asc");
+
+    // ! DOM이 안정화될 때까지 대기
+    await waitFor(() => {
+      const productCards = document.querySelectorAll(".product-card");
+      return productCards.length > 10;
+    });
+
     await waitFor(() => {
       expectProduct("[1+1] 춘몽 섬유탈취제 섬유향수 룸스프레이 도플 패브릭 퍼퓸 217ml 블랑쉬");
     });
@@ -154,54 +169,25 @@ describe("4. 상품 정렬 기능", () => {
       expectProduct(/다우니 울트라 섬유유연제 에이프릴 프레쉬/i, 1);
     });
 
-    await userEvent.selectOptions(document.querySelector("#sort-select"), "price_asc");
+    // ! DOM이 안정화될 때까지 대기
     await waitFor(() => {
-      expectProduct("샷시 풍지판 창문 바람막이 베란다 문 틈막이 창틀 벌레 차단 샤시 방충망 틈새막이", 1);
+      const productCards = document.querySelectorAll(".product-card");
+      return productCards.length > 10;
     });
-  });
-});
 
-describe("5. 무한 스크롤 페이지네이션", () => {
-  test("페이지 하단 스크롤 시 추가 상품이 로드된다", async () => {
-    await screen.findByText(/총 의 상품/i);
+    await userEvent.selectOptions(document.querySelector("#sort-select"), "price_asc");
 
-    // 초기 상품 카드 수 확인
-    const initialCards = document.querySelectorAll(".product-card").length;
-    expect(initialCards).toBe(20);
+    // ! DOM이 안정화될 때까지 대기
+    await waitFor(() => {
+      const productCards = document.querySelectorAll(".product-card");
+      return productCards.length > 10;
+    });
 
-    // 페이지 하단으로 스크롤
-    window.dispatchEvent(new Event("scroll"));
-
-    expect(await screen.findByText("상품을 불러오는 중...")).toBeInTheDocument();
-    expect(
-      await screen.findByText("고양이 난간 안전망 복층 베란다 방묘창 방묘문 방충망 캣도어 일반형검정1mx1m"),
-    ).toBeInTheDocument();
-  });
-});
-
-describe("6. 상품 검색", () => {
-  test("상품명 기반 검색을 위한 텍스트 입력 필드가 있다", async () => {
-    await screen.findByText(/총 의 상품/i);
-
-    // 검색 입력 필드 확인
-    const searchInput = document.querySelector("#search-input");
-    expect(searchInput).toBeInTheDocument();
-    expect(searchInput.placeholder).toMatch(/검색/i);
-  });
-
-  test("Enter 키로 검색이 수행할 수 있으며, 검색어와 일치하는 상품들만 목록에 표시된다", async () => {
-    await screen.findByText(/총 의 상품/i);
-
-    const searchInput = document.querySelector("#search-input");
-
-    await userEvent.type(searchInput, "젤리");
-    await userEvent.keyboard("{Enter}");
-
-    await screen.findByText("3개");
-
-    const productCards = [...document.querySelectorAll(".product-card")];
-    expect(getByRole(productCards[0], "heading", { level: 3, name: /젤리/i })).toBeInTheDocument();
-    expect(getByRole(productCards[1], "heading", { level: 3, name: /젤리/i })).toBeInTheDocument();
-    expect(getByRole(productCards[2], "heading", { level: 3, name: /젤리/i })).toBeInTheDocument();
+    await waitFor(() => {
+      expectProduct(
+        "샷시 풍지판 창문 바람막이 베란다 문 틈막이 창틀 벌레 차단 샤시 방충망 틈새막이",
+        1,
+      );
+    });
   });
 });

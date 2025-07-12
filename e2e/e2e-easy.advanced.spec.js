@@ -11,7 +11,9 @@ class E2EHelpers {
 
   // 페이지 로딩 대기
   async waitForPageLoad() {
-    await this.page.waitForSelector('[data-testid="products-grid"], #products-grid', { timeout: 10000 });
+    await this.page.waitForSelector('[data-testid="products-grid"], #products-grid', {
+      timeout: 10000,
+    });
     await this.page.waitForFunction(() => {
       const text = document.body.textContent;
       return text.includes("총") && text.includes("개");
@@ -204,7 +206,9 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오", () => {
 
       // h1 태그에 상품명 확인
       await expect(
-        page.locator('h1:text("PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장")'),
+        page.locator(
+          'h1:text("PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장")',
+        ),
       ).toBeVisible();
 
       // 관련 상품 섹션 확인
@@ -218,7 +222,9 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오", () => {
       // 다른 상품의 상세 페이지로 이동했는지 확인
       await expect(page).toHaveURL("/product/86940857379");
       await expect(
-        page.locator('h1:text("샷시 풍지판 창문 바람막이 베란다 문 틈막이 창틀 벌레 차단 샤시 방충망 틈새막이")'),
+        page.locator(
+          'h1:text("샷시 풍지판 창문 바람막이 베란다 문 틈막이 창틀 벌레 차단 샤시 방충망 틈새막이")',
+        ),
       ).toBeVisible();
 
       await expect(await page.evaluate(() => window.loadFlag)).toBe(true);
@@ -226,7 +232,9 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오", () => {
       await page.reload();
 
       await expect(
-        page.locator('h1:text("샷시 풍지판 창문 바람막이 베란다 문 틈막이 창틀 벌레 차단 샤시 방충망 틈새막이")'),
+        page.locator(
+          'h1:text("샷시 풍지판 창문 바람막이 베란다 문 틈막이 창틀 벌레 차단 샤시 방충망 틈새막이")',
+        ),
       ).toBeVisible();
 
       await expect(await page.evaluate(() => window.loadFlag)).toBe(undefined);
@@ -249,7 +257,9 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오", () => {
 
       await expect(page).toHaveURL("/product/85067212996");
       await expect(
-        page.locator('h1:text("PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장")'),
+        page.locator(
+          'h1:text("PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장")',
+        ),
       ).toBeVisible();
       await expect(page.locator("text=관련 상품")).toBeVisible();
       const relatedProducts = page.locator(".related-product-card");
@@ -257,21 +267,27 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오", () => {
 
       await expect(page).toHaveURL("/product/86940857379");
       await expect(
-        page.locator('h1:text("샷시 풍지판 창문 바람막이 베란다 문 틈막이 창틀 벌레 차단 샤시 방충망 틈새막이")'),
+        page.locator(
+          'h1:text("샷시 풍지판 창문 바람막이 베란다 문 틈막이 창틀 벌레 차단 샤시 방충망 틈새막이")',
+        ),
       ).toBeVisible();
 
       // 브라우저 뒤로가기
       await page.goBack();
       await expect(page).toHaveURL("/product/85067212996");
       await expect(
-        page.locator('h1:text("PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장")'),
+        page.locator(
+          'h1:text("PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장")',
+        ),
       ).toBeVisible();
 
       // 브라우저 앞으로가기
       await page.goForward();
       await expect(page).toHaveURL("/product/86940857379");
       await expect(
-        page.locator('h1:text("샷시 풍지판 창문 바람막이 베란다 문 틈막이 창틀 벌레 차단 샤시 방충망 틈새막이")'),
+        page.locator(
+          'h1:text("샷시 풍지판 창문 바람막이 베란다 문 틈막이 창틀 벌레 차단 샤시 방충망 틈새막이")',
+        ),
       ).toBeVisible();
 
       await page.goBack();

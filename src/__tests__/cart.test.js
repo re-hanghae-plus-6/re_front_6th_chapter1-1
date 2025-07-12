@@ -1,6 +1,7 @@
 import { findByText, getByText, queryByText, screen } from "@testing-library/dom";
 import { userEvent } from "@testing-library/user-event";
 import { afterEach, beforeAll, beforeEach, describe, expect, test } from "vitest";
+import { resetHomeStore } from "../store/homeStore.js";
 
 const goTo = (path) => {
   window.history.pushState({}, "", path);
@@ -9,7 +10,10 @@ const goTo = (path) => {
 
 // 장바구니에 상품을 추가하는 헬퍼 함수
 const addProductToCart = async (productName) => {
-  const productElement = await findByText(document.querySelector("#products-grid"), new RegExp(productName, "i"));
+  const productElement = await findByText(
+    document.querySelector("#products-grid"),
+    new RegExp(productName, "i"),
+  );
   const cartButton = productElement.closest(".product-card").querySelector(".add-to-cart-btn");
   await userEvent.click(cartButton);
 
@@ -27,6 +31,7 @@ afterEach(() => {
   // 각 테스트 후 상태 초기화
   document.getElementById("root").innerHTML = "";
   localStorage.clear();
+  resetHomeStore();
 });
 
 describe("1. 장바구니 모달", () => {
@@ -157,7 +162,8 @@ describe.sequential("2. 장바구니 수량 조절", () => {
     await userEvent.click(cartIcon);
 
     // 초기 총 금액 확인
-    const getTotalAmountElement = () => screen.getByText("총 금액").parentNode.querySelector("span:last-child");
+    const getTotalAmountElement = () =>
+      screen.getByText("총 금액").parentNode.querySelector("span:last-child");
     const initialAmount = getTotalAmountElement().textContent;
     expect(initialAmount).toBe("220원");
 
@@ -196,7 +202,9 @@ describe.sequential("3. 장바구니 삭제", () => {
     await userEvent.click(cartIcon);
 
     // 상품이 장바구니에 있는지 확인
-    expect(getByText(document.querySelector(".cart-modal"), /pvc 투명 젤리 쇼핑백/i)).toBeInTheDocument();
+    expect(
+      getByText(document.querySelector(".cart-modal"), /pvc 투명 젤리 쇼핑백/i),
+    ).toBeInTheDocument();
 
     // 삭제 버튼 클릭
     const deleteButton = document.querySelector(".cart-item-remove-btn");
@@ -289,10 +297,16 @@ describe.sequential("5. 장바구니 전체 선택", () => {
 
     // 전체 선택 후 전체 해제
     await userEvent.click(document.querySelector("#cart-modal-select-all-checkbox"));
-    expect([...document.querySelectorAll(".cart-item-checkbox")].map((v) => v.checked)).toEqual([true, true]);
+    expect([...document.querySelectorAll(".cart-item-checkbox")].map((v) => v.checked)).toEqual([
+      true,
+      true,
+    ]);
 
     await userEvent.click(document.querySelector("#cart-modal-select-all-checkbox"));
-    expect([...document.querySelectorAll(".cart-item-checkbox")].map((v) => v.checked)).toEqual([false, false]);
+    expect([...document.querySelectorAll(".cart-item-checkbox")].map((v) => v.checked)).toEqual([
+      false,
+      false,
+    ]);
   });
 });
 
