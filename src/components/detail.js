@@ -53,7 +53,7 @@ export const detail = (
           <!-- 상품 정보 -->
           <div>
             <p class="text-sm text-gray-600 mb-1"></p>
-            <h1 class="text-xl font-bold text-gray-900 mb-3">${title}</h1>
+            <h1 class="text-xl font-bold text-gray-900 mb-3">${title.trim()}</h1>
             <!-- 평점 및 리뷰 -->
             <div class="flex items-center mb-3">
               <div class="flex items-center">
@@ -69,7 +69,7 @@ export const detail = (
             </div>
             <!-- 가격 -->
             <div class="mb-4">
-              <span class="text-2xl font-bold text-blue-600">${lprice}원</span>
+              <span class="text-2xl font-bold text-blue-600">${Number(lprice).toLocaleString("en-US")}원</span>
             </div>
             <!-- 재고 -->
             <div class="text-sm text-gray-600 mb-4">
@@ -132,7 +132,7 @@ export const detail = (
                   <img src=${image} alt=${title} class="w-full h-full object-cover" loading="lazy">
                 </div>
                 <h3 class="text-sm font-medium text-gray-900 mb-1 line-clamp-2">${title}</h3>
-                <p class="text-sm font-bold text-blue-600">${lprice}원</p>
+                <p class="text-sm font-bold text-blue-600">${Number(lprice).toLocaleString("en-US")}원</p>
               </div>`;
             })
             .join("")}

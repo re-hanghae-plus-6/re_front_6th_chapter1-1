@@ -1,4 +1,4 @@
-export const ProductItem = ({ title, image, lprice, productId }) => {
+export const ProductItem = ({ title, image, lprice, productId, brand }) => {
   return /* HTML */ ` <div
     class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden product-card"
     data-product-id="${productId}"
@@ -15,9 +15,9 @@ export const ProductItem = ({ title, image, lprice, productId }) => {
     <!-- 상품 정보 -->
     <div class="p-3">
       <div class="cursor-pointer product-info mb-3">
-        <h3 class="text-sm font-medium text-gray-900 line-clamp-2 mb-1">${title}</h3>
-        <p class="text-xs text-gray-500 mb-2"></p>
-        <p class="text-lg font-bold text-gray-900">${lprice.toLocaleString()}원</p>
+        <h3 class="text-sm font-medium text-gray-900 line-clamp-2 mb-1">${title.trim()}</h3>
+        <p class="text-xs text-gray-500 mb-2">${brand}</p>
+        <p class="text-lg font-bold text-gray-900">${Number(lprice).toLocaleString("en-US")}원</p>
       </div>
       <!-- 장바구니 버튼 -->
       <button
