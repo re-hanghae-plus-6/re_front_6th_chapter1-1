@@ -143,6 +143,10 @@ export class ProductListPage extends Component {
     await this.#reloadProducts({ search });
   }
 
+  async #handleCloseCartModal() {
+    this.setState({ isOpenCartModal: false, cartItems: cartService.items });
+  }
+
   bindEvents(element) {
     element.addEventListener("click", (e) => {
       const targetElement = e.target.closest("[data-route]");
@@ -153,7 +157,7 @@ export class ProductListPage extends Component {
       }
 
       if (e.target.classList.contains("cart-modal-overlay")) {
-        this.setState({ isOpenCartModal: false });
+        this.#handleCloseCartModal();
         return;
       }
 
@@ -177,12 +181,29 @@ export class ProductListPage extends Component {
         return;
       }
 
-      if (e.target.classList.contains("quantity-increase-btn")) {
+      if (
+        e.target.classList.contains("quantity-decrease-btn") ||
+        e.target.classList.contains("quantity-increase-btn")
+      ) {
         const targetElement = e.target.closest("[data-product-id]");
-        if (targetElement) {
-          const productId = targetElement.dataset.productId;
-          console.log("### TEST productId:", productId);
-        }
+        if (!targetElement) return;
+
+        const productId = targetElement.dataset.productId;
+        const isIncrease = e.target.classList.contains("quantity-increase-btn");
+
+        // 수량 업데이트
+        isIncrease ? cartService.increaseQuantity(productId) : cartService.decreaseQuantity(productId);
+
+        const input = document.querySelector(`.quantity-input[data-product-id="${productId}"]`);
+        if (!input) return;
+
+        const current = Number(input.value);
+        const delta = isIncrease ? 1 : -1;
+        const next = current + delta;
+
+        const min = Number(input.min) || 1;
+        const max = Number(input.max) || Infinity;
+        input.value = Math.max(min, Math.min(max, next));
 
         return;
       }
@@ -192,7 +213,7 @@ export class ProductListPage extends Component {
           this.setState({ isOpenCartModal: true });
           break;
         case "cart-modal-close-btn":
-          this.setState({ isOpenCartModal: false });
+          this.#handleCloseCartModal();
           break;
       }
     });
@@ -222,7 +243,7 @@ export class ProductListPage extends Component {
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         if (this.state.isOpenCartModal) {
-          this.setState({ isOpenCartModal: false });
+          this.#handleCloseCartModal();
         }
       }
     });
