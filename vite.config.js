@@ -13,20 +13,10 @@ export default defineConfig({
     },
   },
 
-  define: {
-    "import.meta.env.PROD": JSON.stringify(process.env.NODE_ENV === "production"),
-  },
-
   base: process.env.NODE_ENV === "production" ? "/front_6th_chapter1-1/" : "/",
 
   build: {
     outDir: "dist",
     assetsDir: "assets",
-    sourcemap: false,
-    rollupOptions: {
-      output: {
-        manualChunks: undefined,
-      },
-    },
   },
 });
