@@ -2,6 +2,14 @@ import { cartPage } from "../pages/cartPage";
 import { notFoundPage } from "../pages/notFoundPage";
 import { productDetailPage } from "../pages/productDetailPage";
 import { productPage } from "../pages/productPage";
+const BASE_PATH = import.meta.env.PROD ? "/front_6th_chapter1-1" : "";
+// const getAppPath = (fullPath = window.location.pathname) => {
+//   return fullPath.startsWith(BASE_PATH) ? fullPath.slice(BASE_PATH.length) || "/" : fullPath;
+// };
+
+const getFullPath = (appPath) => {
+  return BASE_PATH + appPath;
+};
 export const ROUTES = {
   MAIN: "/",
   PRODUCT: "/product",
@@ -18,14 +26,14 @@ const URL_MAP = {
 };
 
 export async function navigate(pathname, replace = false) {
-  history[replace ? "replaceState" : "pushState"](null, "", pathname);
+  history[replace ? "replaceState" : "pushState"](null, "", getFullPath(pathname));
   await render();
 }
 
 export async function render() {
   const root = document.querySelector("#root");
-  const { pathname } = location;
-
+  let { pathname } = location;
+  pathname = getFullPath(pathname);
   // 경로만 사용하도록 쿼리스트링 제거
   const cleanPath = pathname.split("?")[0];
   const pageFn = URL_MAP[cleanPath] || notFoundPage;
