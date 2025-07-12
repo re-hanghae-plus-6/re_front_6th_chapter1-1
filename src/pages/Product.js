@@ -112,6 +112,48 @@ Product.mount = async () => {
   // });
 };
 
+Product.unmount = () => {
+  // 이벤트 리스너들 정리
+  const goToProductListBtn = document.querySelector(".go-to-product-list");
+  const homeLink = document.querySelector("a");
+  const quantityInput = document.querySelector("#quantity-input");
+  const quantityIncrease = document.querySelector("#quantity-increase");
+  const quantityDecrease = document.querySelector("#quantity-decrease");
+  const cartBtn = document.getElementById("add-to-cart-btn");
+  const relatedProductList = document.querySelectorAll(".related-product-card");
+
+  if (goToProductListBtn) {
+    goToProductListBtn.removeEventListener("click", methods.goToProductList);
+  }
+  if (homeLink) {
+    homeLink.removeEventListener("click", methods.goToProductList);
+  }
+  if (quantityInput) {
+    quantityInput.removeEventListener("change", (event) => {
+      if (event.target.value < 1) event.target.value = 1;
+    });
+  }
+  if (quantityIncrease) {
+    quantityIncrease.removeEventListener("click", methods.handleUpQuantity);
+  }
+  if (quantityDecrease) {
+    quantityDecrease.removeEventListener("click", methods.handleDownQuantity);
+  }
+  if (cartBtn) {
+    cartBtn.removeEventListener("click", () => {
+      methods.handleAddCard(quantityInput.value);
+    });
+  }
+  if (relatedProductList.length > 0) {
+    relatedProductList.forEach((product) => {
+      const productId = product.getAttribute("data-product-id");
+      product.removeEventListener("click", () => {
+        methods.goToRelatedProducts(productId);
+      });
+    });
+  }
+};
+
 export default function Product() {
   return /* html */ `
     ${

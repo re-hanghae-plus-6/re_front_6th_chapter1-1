@@ -8,6 +8,16 @@ NotFound.mount = () => {
   });
 };
 
+NotFound.unmount = () => {
+  const homeLink = document.querySelector("#notFound [data-link]");
+  if (homeLink) {
+    homeLink.removeEventListener("click", (event) => {
+      event.preventDefault();
+      navigate.push({}, "/");
+    });
+  }
+};
+
 export default function NotFound() {
   return /* html */ `
   <div class="text-center my-4 py-20 shadow-md p-6 bg-white rounded-lg" id="notFound">
