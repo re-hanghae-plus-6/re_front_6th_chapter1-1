@@ -233,12 +233,6 @@ export class ProductListPage extends Component {
         // 수량 업데이트
         isIncrease ? cartService.increaseQuantity(productId) : cartService.decreaseQuantity(productId);
 
-        // 장바구니 상태 업데이트
-        this.setState({
-          cartItemCount: cartService.itemCount,
-          cartItems: cartService.items,
-        });
-
         const input = document.querySelector(`.quantity-input[data-product-id="${productId}"]`);
         if (!input) return;
 
