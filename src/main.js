@@ -20,6 +20,8 @@ export function router() {
     return ProjectDetailPage(id);
   }
 
+  console.log(route);
+
   if (!route) {
     return HomePage();
   }
