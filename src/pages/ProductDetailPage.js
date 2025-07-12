@@ -91,7 +91,6 @@ export default class ProductDetailPage extends Component {
   handleAddToCart = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("add to cart");
     homeStore.setState({
       cart: {
         items: [

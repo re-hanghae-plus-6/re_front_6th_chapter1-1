@@ -29,9 +29,6 @@ export class Router {
   }
 
   render() {
-    console.log("BASE", BASE);
-    console.log("currentPath", this.getCurrentPath());
-
     const route = this.getCurrentRoute();
 
     // 기존 인스턴스가 있으면 unmount

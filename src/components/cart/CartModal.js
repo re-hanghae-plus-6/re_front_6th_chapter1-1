@@ -1,15 +1,16 @@
 import Component from "../../lib/Component";
+import { homeStore } from "../../store/homeStore";
 import CartEmptyContents from "./CartEmptyContents";
 import CartItem from "./CartItem";
 
 export default class CartModal extends Component {
   renderContents() {
+    const { items, selectedItems } = homeStore.getState().cart;
+    const isEmpty = items.length === 0;
+
     if (isEmpty) return CartEmptyContents();
 
-    const cartItems = [];
-    const cartCount = 0;
-    const selectedCount = 0;
-    const isEmpty = cartCount === 0;
+    const selectedCount = selectedItems.length;
 
     return /* HTML */ `
       <div class="flex flex-col max-h-[calc(90vh-120px)]">
@@ -20,20 +21,43 @@ export default class CartModal extends Component {
               type="checkbox"
               id="cart-modal-select-all-checkbox"
               class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-2"
+              ${selectedCount === items.length ? "checked" : ""}
             />
             전체선택 (${selectedCount}개)
           </label>
         </div>
         <!-- 아이템 목록 -->
         <div class="flex-1 overflow-y-auto">
-          <div class="p-4 space-y-4">${cartItems.map(CartItem).join("")}</div>
+          <div class="p-4 space-y-4">
+            ${items.length > 0 &&
+            items
+              .map((item) =>
+                CartItem({
+                  product: item.product,
+                  quantity: item.quantity,
+                  isSelected: selectedItems.includes(item.product.productId),
+                }),
+              )
+              .join("")}
+          </div>
+        </div>
+        <!-- 선택 삭제 버튼 -->
+        <div class="p-4 border-t border-gray-200">
+          <button
+            id="cart-modal-remove-selected-btn"
+            class="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition-colors text-sm"
+            ${selectedCount === 0 ? "disabled" : ""}
+          >
+            선택 삭제 (${selectedCount}개)
+          </button>
         </div>
       </div>
     `;
   }
 
   renderHeader() {
-    const cartCount = 0;
+    const { items } = homeStore.getState().cart;
+    const cartCount = items.length;
 
     return /* HTML */ `<div
       class="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between"
@@ -64,20 +88,33 @@ export default class CartModal extends Component {
   }
 
   renderFooter() {
-    const selectedCount = 0;
-    const selectedPrice = 0;
-    const totalPrice = 0;
+    const { items, selectedItems } = homeStore.getState().cart;
+    const selectedCount = selectedItems.length;
+
+    // 유효한 아이템만 필터링
+    const validItems = items.filter((item) => item && item.product && item.product.lprice);
+
+    // 선택된 아이템들의 총 가격 계산
+    const selectedPrice = validItems
+      .filter((item) => selectedItems.includes(item.product.productId))
+      .reduce((total, item) => total + parseInt(item.product.lprice) * item.quantity, 0);
+
+    // 전체 가격 계산
+    const totalPrice = validItems.reduce(
+      (total, item) => total + parseInt(item.product.lprice) * item.quantity,
+      0,
+    );
 
     return /* HTML */ `<div class="sticky bottom-0 bg-white border-t border-gray-200 p-4">
       <!-- 선택된 아이템 정보 -->
       <div class="flex justify-between items-center mb-3 text-sm">
         <span class="text-gray-600">선택한 상품 (${selectedCount}개)</span>
-        <span class="font-medium">${selectedPrice}원</span>
+        <span class="font-medium">${selectedPrice.toLocaleString()}원</span>
       </div>
       <!-- 총 금액 -->
       <div class="flex justify-between items-center mb-4">
         <span class="text-lg font-bold text-gray-900">총 금액</span>
-        <span class="text-xl font-bold text-blue-600">${totalPrice}원</span>
+        <span class="text-xl font-bold text-blue-600">${totalPrice.toLocaleString()}원</span>
       </div>
       <!-- 액션 버튼들 -->
       <div class="space-y-2">
@@ -102,21 +139,15 @@ export default class CartModal extends Component {
   }
 
   template() {
-    return /* HTML */ `<div
-      class="flex min-h-full items-end justify-center p-0 sm:items-center sm:p-4"
-    >
-      <div
-        class="relative bg-white rounded-t-lg sm:rounded-lg shadow-xl w-full max-w-md sm:max-w-lg max-h-[90vh] overflow-hidden"
-      >
-        <!-- 헤더 -->
-        ${this.renderHeader()}
+    return /* HTML */ `
+      <!-- 헤더 -->
+      ${this.renderHeader()}
 
-        <!-- 컨텐츠 -->
-        ${this.renderContents()}
+      <!-- 컨텐츠 -->
+      ${this.renderContents()}
 
-        <!-- 하단 액션 -->
-        ${this.renderFooter()}
-      </div>
-    </div>`;
+      <!-- 하단 액션 -->
+      ${this.renderFooter()}
+    `;
   }
 }

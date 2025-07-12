@@ -34,7 +34,6 @@ const throttle = (func, delay) => {
 
 export default class ProductList extends Component {
   setup() {
-    console.log("setup");
     this.prevFilterState = null;
 
     // throttle 적용된 스크롤 핸들러
@@ -50,8 +49,6 @@ export default class ProductList extends Component {
     this.handleQueryParamsChange = this.handleQueryParamsChange.bind(this);
 
     this.unsubscribe = homeStore.subscribe(() => {
-      console.log("homeState changed");
-
       const { limit, sort, search, category1, category2 } = getFilter();
 
       const currentState = homeStore.getState();
@@ -67,7 +64,6 @@ export default class ProductList extends Component {
 
       // 무한스크롤 모드일 때는 부분 업데이트만 수행
       if (productListMode === PRODUCT_LIST_MODE.INFINITE_SCROLL) {
-        console.log("무한스크롤 모드: 부분 업데이트만 수행");
         this.updateInfiniteScrollUI();
         this.prevFilterState = currentParams;
         return;
@@ -87,7 +83,6 @@ export default class ProductList extends Component {
 
   // 쿼리 파라미터 변경 이벤트 핸들러
   handleQueryParamsChange() {
-    console.log("handleQueryParamsChange");
     // 페이지를 1로 리셋하고 무한스크롤 모드 해제
     homeStore.setState({
       products: {
@@ -102,7 +97,6 @@ export default class ProductList extends Component {
   }
 
   setEvent() {
-    console.log("setEvent");
     // 새로운 상품들에만 이벤트 추가
     this.addEventListenersToNewProducts();
 
@@ -111,7 +105,6 @@ export default class ProductList extends Component {
   }
 
   cleanup() {
-    console.log("cleanup");
     // 무한스크롤 관련 동적 요소들 제거
     const $loadingSection = document.querySelector("#infinite-scroll-loading");
     const $completionMessage = document.querySelector("#infinite-scroll-completion");
@@ -127,7 +120,6 @@ export default class ProductList extends Component {
   }
 
   shouldFetchInitialProducts(currentParams) {
-    console.log("shouldFetchInitialProducts");
     // 첫 번째 로드인 경우
     if (!this.prevFilterState) {
       return true;
@@ -136,7 +128,6 @@ export default class ProductList extends Component {
     // 무한스크롤 모드인 경우 초기 상품 로딩 방지
     const { productListMode } = homeStore.getState().products;
     if (productListMode === PRODUCT_LIST_MODE.INFINITE_SCROLL) {
-      console.log("무한스크롤 모드: 초기 상품 로딩 건너뜀");
       return false;
     }
 
@@ -146,7 +137,6 @@ export default class ProductList extends Component {
   }
 
   handleProductClick(e) {
-    console.log("handleProductClick");
     e.stopPropagation();
 
     const { navigate } = useNavigate();
@@ -162,7 +152,6 @@ export default class ProductList extends Component {
 
   // 스크롤 위치 저장
   saveScrollPosition() {
-    console.log("saveScrollPosition");
     const scrollPosition = {
       scrollTop: window.scrollY,
       timestamp: Date.now(),
@@ -172,24 +161,18 @@ export default class ProductList extends Component {
 
   // 스크롤 위치 복원
   restoreScrollPosition() {
-    console.log("restoreScrollPosition");
     const savedPosition = sessionStorage.getItem("productListScrollPosition");
     if (savedPosition) {
-      try {
-        const { scrollTop, timestamp } = JSON.parse(savedPosition);
-        // 30분 이내의 스크롤 위치만 복원
-        if (Date.now() - timestamp < 30 * 60 * 1000) {
-          window.scrollTo(0, scrollTop);
-        }
-        sessionStorage.removeItem("productListScrollPosition");
-      } catch (error) {
-        console.error("스크롤 위치 복원 실패:", error);
+      const { scrollTop, timestamp } = JSON.parse(savedPosition);
+      // 30분 이내의 스크롤 위치만 복원
+      if (Date.now() - timestamp < 30 * 60 * 1000) {
+        window.scrollTo(0, scrollTop);
       }
+      sessionStorage.removeItem("productListScrollPosition");
     }
   }
 
   async fetchMoreProducts() {
-    console.log("fetchMoreProducts");
     const homeState = homeStore.getState();
     const {
       isMoreProductsLoading,
@@ -235,7 +218,7 @@ export default class ProductList extends Component {
         },
       });
     } catch (error) {
-      console.error("상품 추가 로딩 실패:", error);
+      // 콘솔로그 제거
       homeStore.setState({
         products: {
           ...homeStore.getState().products,
@@ -247,7 +230,6 @@ export default class ProductList extends Component {
   }
 
   async fetchInitialProducts() {
-    console.log("fetchInitialProducts");
     const homeState = homeStore.getState();
     const { isProductsLoading } = homeState.products;
     const { limit, sort, search, category1, category2 } = getFilter();
@@ -283,7 +265,6 @@ export default class ProductList extends Component {
   }
 
   async handleInfiniteScroll() {
-    console.log("handleInfiniteScroll");
     const { isProductsLoading, isMoreProductsLoading, pagination } = homeStore.getState().products;
 
     // 로딩 중이면 중복 호출 방지
@@ -306,8 +287,7 @@ export default class ProductList extends Component {
       try {
         // 추가 상품 불러오기
         await this.fetchMoreProducts();
-      } catch (error) {
-        console.error("무한스크롤 로딩 에러:", error);
+      } catch {
         // 에러 발생 시 로딩 상태 해제
         homeStore.setState({
           products: {
@@ -321,11 +301,9 @@ export default class ProductList extends Component {
 
   // 무한스크롤 전용 UI 업데이트
   updateInfiniteScrollUI() {
-    console.log("updateInfiniteScrollUI");
     const { isMoreProductsLoading, pagination, total } = homeStore.getState().products;
 
     // 로딩 상태 업데이트
-    console.log("updateInfiniteScrollUI isMoreProductsLoading:", isMoreProductsLoading);
     this.updateLoadingState(isMoreProductsLoading);
 
     // 완료 메시지 업데이트
@@ -394,7 +372,7 @@ export default class ProductList extends Component {
       const $cartBtn = $product.querySelector(".add-to-cart-btn");
       if ($cartBtn) {
         $cartBtn.addEventListener("click", (e) => {
-          console.log("addToCartButtonClick");
+          // 콘솔로그 제거
           e.stopPropagation();
           const productId = e.target.dataset.productId;
           const { cart, products } = homeStore.getState();
@@ -418,7 +396,6 @@ export default class ProductList extends Component {
 
   // 컴포넌트 마운트 시 스크롤 위치 복원
   mounted() {
-    console.log("mounted");
     // 스크롤 위치 복원
     setTimeout(() => {
       this.restoreScrollPosition();
@@ -427,7 +404,6 @@ export default class ProductList extends Component {
 
   // DOM에 직접 상품 추가
   appendProductsToDOM(products) {
-    console.log("appendProductsToDOM");
     const $productsGrid = document.querySelector("#products-grid");
     if (!$productsGrid) return;
 
@@ -448,7 +424,6 @@ export default class ProductList extends Component {
   }
 
   loadingTemplate() {
-    console.log("loadingTemplate");
     return /* HTML */ ` <div class="grid grid-cols-2 gap-4">
       <div
         class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse"
@@ -498,7 +473,6 @@ export default class ProductList extends Component {
   }
 
   template() {
-    console.log("template");
     const {
       products: { list, total, isProductsLoading },
     } = homeStore.getState();

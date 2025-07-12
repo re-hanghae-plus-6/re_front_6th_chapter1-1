@@ -3,13 +3,13 @@ import { formatPrice } from "../../utils/formatPrice";
 export default function CartItem({ product, quantity = 1, isSelected = false }) {
   // const { productId = 0, image, title, lprice } = product;
 
-  const productId = 0;
+  const productId = product.productId;
   const image = "";
   const title = "";
   const lprice = 0;
 
   const totalPrice = parseInt(lprice) * quantity;
-  console.log(product);
+
   return /*html*/ `
     <div class="flex items-center py-3 border-b border-gray-100 cart-item" data-product-id="${productId}">
       <!-- 선택 체크박스 -->

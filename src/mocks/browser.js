@@ -16,15 +16,3 @@ export const workerOptions = import.meta.env.PROD
   : {
       onUnhandledRequest: "bypass",
     };
-
-console.log("workerOptions", workerOptions);
-
-console.log("BASE", BASE);
-
-console.log("BASE.slice(0, -1)", BASE.slice(0, -1));
-
-console.log("import.meta.env.PROD", import.meta.env.PROD);
-
-console.log("import.meta.env.MODE", import.meta.env.MODE);
-
-console.log("url", `${BASE.slice(0, -1)}/mockServiceWorker.js`);
