@@ -23,6 +23,7 @@ afterEach(() => {
 });
 
 describe("1. 상품 목록 로딩", () => {
+  console.log(document.body.innerHTML);
   test("페이지 접속 시 로딩 상태가 표시되고, 데이터 로드 완료 후 상품 목록이 렌더링된다", async () => {
     expect(screen.getByText("카테고리 로딩 중...")).toBeInTheDocument();
     expect(screen.queryByText(/총 의 상품/i)).not.toBeInTheDocument();
@@ -41,6 +42,7 @@ describe("1. 상품 목록 로딩", () => {
 });
 
 describe("2. 상품 목록 조회", () => {
+  console.log(document.body.innerHTML);
   test("각 상품의 기본 정보(이미지, 상품명, 가격)가 카드 형태로 표시된다", async () => {
     // 첫 번째 상품이 로드될 때까지 대기
     await screen.findByText(/pvc 투명 젤리 쇼핑백/i);
@@ -70,6 +72,7 @@ describe("2. 상품 목록 조회", () => {
 });
 
 describe("3. 페이지당 상품 수 선택", () => {
+  //console.log(document.body.innerHTML);
   test("드롭다운에서 10, 20, 50, 100개 중 선택할 수 있으며 기본값은 20개이다", async () => {
     // 상품이 로드될 때까지 대기
     await screen.findByText(/총 의 상품/i);
@@ -90,6 +93,7 @@ describe("3. 페이지당 상품 수 선택", () => {
   });
 
   test("선택 변경 시 즉시 목록에 반영된다", async () => {
+    //console.log(document.body.innerHTML);
     await screen.findByText(/총 의 상품/i);
 
     expect(
@@ -112,11 +116,16 @@ describe("3. 페이지당 상품 수 선택", () => {
     );
 
     expect(document.querySelectorAll(".product-card").length).toBe(10);
+    // await waitFor(() => {
+    //   const productCards = document.querySelectorAll(".product-card");
+    //   expect(productCards).toHaveLength(10);
+    // });
   });
 });
 
 describe("4. 상품 정렬 기능", () => {
   test("상품을 가격순/인기순으로 정렬할 수 있다", async () => {
+    //console.log(document.body.innerHTML);
     await screen.findByText(/총 의 상품/i);
 
     // 정렬 드롭다운 찾기
@@ -132,6 +141,7 @@ describe("4. 상품 정렬 기능", () => {
   });
 
   test("정렬 변경 시 목록에 반영된다", async () => {
+    //console.log(document.body.innerHTML);
     await screen.findByText(/총 의 상품/i);
 
     const expectProduct = (name, index = 0) => {
@@ -162,6 +172,7 @@ describe("4. 상품 정렬 기능", () => {
 });
 
 describe("5. 무한 스크롤 페이지네이션", () => {
+  //console.log(document.body.innerHTML);
   test("페이지 하단 스크롤 시 추가 상품이 로드된다", async () => {
     await screen.findByText(/총 의 상품/i);
 
@@ -180,6 +191,7 @@ describe("5. 무한 스크롤 페이지네이션", () => {
 });
 
 describe("6. 상품 검색", () => {
+  //console.log(document.body.innerHTML);
   test("상품명 기반 검색을 위한 텍스트 입력 필드가 있다", async () => {
     await screen.findByText(/총 의 상품/i);
 

@@ -23,7 +23,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'pnpm'
+          cache: "pnpm"
       - run: |
           pnpm install
           pnpm run test:hard:basic
@@ -41,7 +41,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'pnpm'
+          cache: "pnpm"
       - name: Install dependencies
         run: |
           pnpm install
@@ -61,7 +61,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'pnpm'
+          cache: "pnpm"
       - name: Install dependencies
         run: |
           pnpm install
@@ -81,7 +81,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'pnpm'
+          cache: "pnpm"
       - name: Install dependencies
         run: |
           pnpm install
