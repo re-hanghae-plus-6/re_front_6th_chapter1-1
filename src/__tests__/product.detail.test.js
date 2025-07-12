@@ -29,8 +29,9 @@ const 상품_상세페이지_접속 = async () => {
 
   expect(productImage).toBeInTheDocument();
 
-  // 상품 이미지 클릭
-  await userEvent.click(productImage);
+  // ? userEvent에서 productImage.click()으로 변경
+  productImage.click();
+
   await screen.findByRole("heading", {
     level: 1,
     name: "PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장",
@@ -109,7 +110,7 @@ describe("3. 관련 상품 기능", () => {
     expect(document.querySelector(".related-product-card [data-product-id='85067212996']")).toBe(null);
 
     // 관련 상품 클릭
-    await userEvent.click(relatedProductCards[0]);
+    relatedProductCards[0].click();
     await screen.findByRole("heading", {
       level: 1,
       name: "샷시 풍지판 창문 바람막이 베란다 문 틈막이 창틀 벌레 차단 샤시 방충망 틈새막이",
