@@ -4,6 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "build:prod": "NODE_ENV=production vite build",
+    "preview:prod": "NODE_ENV=production vite preview",
+    "deploy": "pnpm build:prod && pnpm preview:prod",
     "dev": "vite",
     "dev:hash": "vite --open ./index.hash.html",
     "build": "vite build",
@@ -44,6 +47,7 @@
     "jsdom": "^25.0.1",
     "lint-staged": "^15.2.11",
     "msw": "^2.10.2",
+    "playwright": "^1.53.2",
     "prettier": "^3.4.2",
     "vite": "npm:rolldown-vite@latest",
     "vitest": "latest"
