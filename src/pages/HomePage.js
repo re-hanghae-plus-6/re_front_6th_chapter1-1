@@ -11,9 +11,15 @@ let state = {
 };
 
 export const HomePage = async () => {
+  const params = new URLSearchParams(window.location.search);
+  const limit = params.get("limit");
+  const sort = params.get("sort");
+  const search = params.get("search");
+  const allAarams = { ...(limit ? { limit } : {}), ...(sort ? { sort } : {}), ...(search ? { search } : {}) };
+
   document.body.querySelector("#root").innerHTML = Main({});
 
-  const [projectData, categoryData] = await Promise.all([getProducts(), getCategories()]);
+  const [projectData, categoryData] = await Promise.all([getProducts({ ...allAarams }), getCategories()]);
 
   if (projectData) {
     state.pagination = projectData.pagination;
@@ -38,6 +44,14 @@ const handleSelect = async function (e, key) {
 
   const value = e.target.value;
   const [otherKey, otherValue] = key === "limit" ? ["sort", state.filters.sort] : ["limit", state.pagination.limit];
+
+  const params = new URLSearchParams(window.location.search);
+  params.set(key, value);
+  params.set(otherKey, otherValue);
+  // 필요하다면 다른 필터들도 params.set('search', state.filters.search) 처럼 넣어두세요
+  // 2) 히스토리 스택에 반영 (새로고침 없이 주소만 변경)
+  history.pushState(null, "", `${window.location.pathname}?${params.toString()}`);
+
   const projectData = await getProducts({
     [key]: key === "limit" ? Number(value) : value,
     [otherKey]: otherValue,
@@ -71,6 +85,10 @@ const handleEnter = async function (e) {
   if (e.key !== "Enter") return;
 
   e.preventDefault();
+
+  const params = new URLSearchParams(window.location.search);
+  params.set("search", state.filters.search);
+  history.pushState(null, "", `${window.location.pathname}?${params.toString()}`);
 
   state.isLoading = false;
   const projectData = await getProducts({
@@ -122,10 +140,8 @@ document.addEventListener("click", (e) => {
 });
 
 const handleAddCart = (e) => {
-  console.dir(e.target.closest(".product-card"));
   const card = e.target.closest(".product-card");
   const projectId = card.dataset.productId;
-  console.log(projectId);
 
   if (localStorage.getItem("cart") === null) {
     localStorage.setItem("cart", String(projectId));
