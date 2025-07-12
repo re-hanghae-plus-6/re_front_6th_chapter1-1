@@ -26,10 +26,21 @@ class E2EHelpers {
     await this.page.waitForSelector("text=장바구니에 추가되었습니다", { timeout: 5000 });
   }
 
+  // 토스트 메시지가 사라질 때까지 대기
+  async waitForToastToDisappear() {
+    await this.page.waitForSelector("text=장바구니에 추가되었습니다", { state: "hidden", timeout: 5000 });
+  }
+
   // 장바구니 모달 열기
   async openCartModal() {
     await this.page.click("#cart-icon-btn");
     await this.page.waitForSelector(".cart-modal-overlay", { timeout: 5000 });
+  }
+
+  // 현재 상품 개수 가져오기
+  async getCurrentProductCount() {
+    const countText = await this.page.textContent('[data-testid="product-count"]');
+    return countText ? parseInt(countText.replace(/[^\d]/g, "")) : 0;
   }
 }
 
@@ -171,7 +182,6 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오", () => {
 
       // 전체 브레드크럼 클릭
       await page.click("text=전체");
-      // await expect(page.locator("text=카테고리: 전체 생활/건강 디지털/가전")).toBeVisible();
       // 라벨과 브레드크럼("전체") 버튼은 같은 컨테이너에 있으므로 부모 요소를 통해 확인
       await expect(page.locator("text=카테고리:").locator("..")).toContainText("전체");
       // 1depth 카테고리 버튼들이 다시 표시되는지 확인
@@ -181,8 +191,8 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오", () => {
 
       await page.reload();
       await helpers.waitForPageLoad();
-
       // await expect(page.locator("text=카테고리: 전체 생활/건강 디지털/가전")).toBeVisible();
+
       /** depth 카테고리 버튼들은 별도의 <div>에 렌더링되고 있어서 확인 불가하므로 테스트 코드 일부 변경 */
       // 브레드크럼에 "전체"가 표시되는지 확인
       await expect(page.locator("text=카테고리:").locator("..")).toContainText("전체");
@@ -190,7 +200,6 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오", () => {
       // Playwright의 strict 모드에서 button[data-category1='생활/건강'] 셀렉터가 여러 요소에 매칭되기 때문에 data-level 추가
       await expect(page.locator("button[data-category1='생활/건강'][data-level='1']")).toBeVisible();
       await expect(page.locator("button[data-category1='디지털/가전'][data-level='1']")).toBeVisible();
-
       await page.fill("#search-input", "");
       await page.press("#search-input", "Enter");
 
@@ -450,17 +459,17 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오", () => {
       await page.locator(".quantity-increase-btn").first().click();
 
       // 총 금액 업데이트 확인
+      /**  */
       //   await expect(page.locator("#root")).toMatchAriaSnapshot(`
       // - text: /총 금액 670원/
       // - button "전체 비우기"
       // - button "구매하기"
       // `);
-      // root가 아니라, cart-modal에서 확인하는 것으로 일부 수정
       await expect(page.locator(".cart-modal")).toMatchAriaSnapshot(`
-      - text: /총 금액 670원/
-      - button "전체 비우기"
-      - button "구매하기"
-      `);
+    - text: /총 금액 670원/
+    - button "전체 비우기"
+    - button "구매하기"
+    `);
 
       // 첫 번째 상품만 선택
       await page.locator(".cart-item-checkbox").first().check();

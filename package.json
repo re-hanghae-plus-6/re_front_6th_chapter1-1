@@ -1,9 +1,13 @@
 {
+  "homepage": "https://chb6734.github.io/front-6th-chapter1-1",
   "name": "front-6th-chapter1-1",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "build:prod": "NODE_ENV=production vite build",
+    "preview:prod": "NODE_ENV=production vite preview",
+    "deploy": "pnpm build:prod && pnpm preview:prod",
     "dev": "vite",
     "dev:hash": "vite --open ./index.hash.html",
     "build": "vite build",
@@ -39,6 +43,7 @@
     "eslint": "^9.16.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
+    "gh-pages": "^6.3.0",
     "globals": "^15.13.0",
     "husky": "^9.1.7",
     "jsdom": "^25.0.1",

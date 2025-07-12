@@ -9,4 +9,15 @@ export default [
   pluginJs.configs.recommended,
   eslintPluginPrettier,
   eslintConfigPrettier,
+  {
+    rules: {
+      "prettier/prettier": [
+        "error",
+        {
+          endOfLine: "auto", // LF/CRLF 문제 해결
+          tabWidth: 2, // Prettier 설정과 일치
+        },
+      ],
+    },
+  },
 ];

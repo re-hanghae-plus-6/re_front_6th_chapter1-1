@@ -1,4 +1,20 @@
 /* 추가 CSS 스타일 */
+.cart-modal-overlay {
+  position: fixed;
+  z-index: 998;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  position: fixed;
+  z-index: 999;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
 
 /* 상품 상세 페이지용 스타일 */
 .product-detail-container {
