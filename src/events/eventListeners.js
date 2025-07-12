@@ -228,9 +228,8 @@ function updateUrlWithFilters(filters) {
     params.set("sort", filters.sort);
   }
 
-  if (filters.limit && filters.limit !== 20) {
-    params.set("limit", filters.limit);
-  }
+  // limit는 항상 URL에 포함
+  params.set("limit", filters.limit || 20);
 
   // URL 업데이트
   const newUrl = `${url.pathname}${params.toString() ? `?${params.toString()}` : ""}`;
