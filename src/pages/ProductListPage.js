@@ -1,6 +1,7 @@
 import { getCategories, getProducts } from "../api/productApi";
 import { CartModal } from "../components/cart/CartModal";
 import { HomeLink } from "../components/common/HomeLink";
+import { ToastMessage } from "../components/common/ToastMessage";
 import { SearchIcon } from "../components/icons/SearchIcon";
 import { Footer } from "../components/layouts/Footer";
 import { Header } from "../components/layouts/Header";
@@ -9,7 +10,7 @@ import { ProductSkeleton } from "../components/productList/ProductSkeleton";
 import { ScrollLoader } from "../components/productList/ScrollLoader";
 import { Component } from "../core/Component";
 import { InfiniteScroll } from "../core/InfiniteScroll";
-import { createCartService } from "../services/CartService";
+import { cartService } from "../services/CartService";
 import { updateURLParams } from "../utils/url";
 
 export class ProductListPage extends Component {
@@ -29,9 +30,14 @@ export class ProductListPage extends Component {
       },
       categories: {},
       isOpenCartModal: false,
+      cartItemCount: cartService.itemCount,
+      cartItems: cartService.items,
+      showToast: false,
+      toastMessage: "",
+      toastType: "success",
     };
 
-    this.cartService = createCartService();
+    this.toastTimer = null;
 
     const infinite = new InfiniteScroll({
       threshold: 200,
@@ -48,6 +54,8 @@ export class ProductListPage extends Component {
     });
 
     this.on(Component.EVENTS.UPDATE, () => {
+      console.log("### TEST STATE:", this.state);
+
       // 더 이상 불러올 컨텐츠 없음, InfiniteScroll 인스턴스 정리
       if (!this.state.pagination.hasNext) {
         infinite.destroy();
@@ -56,7 +64,38 @@ export class ProductListPage extends Component {
 
     this.on(Component.EVENTS.UNMOUNT, () => {
       infinite.destroy();
+      // 컴포넌트 언마운트 시 토스트 타이머 정리
+      this.#clearToastTimer();
     });
+  }
+
+  #showToast(message, type = "success", duration = 2000) {
+    // 기존 타이머가 있다면 정리
+    this.#clearToastTimer();
+
+    // 토스트 표시
+    this.setState({
+      showToast: true,
+      toastMessage: message,
+      toastType: type,
+    });
+
+    // 지정된 시간 후 토스트 숨기기
+    this.toastTimer = setTimeout(() => {
+      this.setState({
+        showToast: false,
+        toastMessage: "",
+        toastType: "success",
+      });
+      this.toastTimer = null;
+    }, duration);
+  }
+
+  #clearToastTimer() {
+    if (this.toastTimer) {
+      clearTimeout(this.toastTimer);
+      this.toastTimer = null;
+    }
   }
 
   // 초기 데이터 로드 (상품 + 카테고리)
@@ -141,6 +180,10 @@ export class ProductListPage extends Component {
     await this.#reloadProducts({ search });
   }
 
+  async #handleCloseCartModal() {
+    this.setState({ isOpenCartModal: false, cartItems: cartService.items });
+  }
+
   bindEvents(element) {
     element.addEventListener("click", (e) => {
       const targetElement = e.target.closest("[data-route]");
@@ -151,21 +194,55 @@ export class ProductListPage extends Component {
       }
 
       if (e.target.classList.contains("cart-modal-overlay")) {
-        this.setState({ isOpenCartModal: false });
+        this.#handleCloseCartModal();
         return;
       }
 
       if (e.target.classList.contains("add-to-cart-btn")) {
         const productId = e.target.dataset.productId;
         const product = this.state.products.find((item) => item.productId === productId);
-        this.cartService.addItem({
+
+        cartService.addItem({
           id: productId,
           image: product.image,
           price: product.lprice,
           selected: false,
           title: product.title,
         });
-        this.setState({ cartItemCount: this.cartService.itemCount });
+
+        this.setState({
+          cartItemCount: cartService.itemCount,
+          cartItems: cartService.items,
+        });
+
+        this.#showToast("장바구니에 추가되었습니다", "success");
+
+        return;
+      }
+
+      if (
+        e.target.classList.contains("quantity-decrease-btn") ||
+        e.target.classList.contains("quantity-increase-btn")
+      ) {
+        const targetElement = e.target.closest("[data-product-id]");
+        if (!targetElement) return;
+
+        const productId = targetElement.dataset.productId;
+        const isIncrease = e.target.classList.contains("quantity-increase-btn");
+
+        // 수량 업데이트
+        isIncrease ? cartService.increaseQuantity(productId) : cartService.decreaseQuantity(productId);
+
+        const input = document.querySelector(`.quantity-input[data-product-id="${productId}"]`);
+        if (!input) return;
+
+        const current = Number(input.value);
+        const delta = isIncrease ? 1 : -1;
+        const next = current + delta;
+
+        const min = Number(input.min) || 1;
+        const max = Number(input.max) || Infinity;
+        input.value = Math.max(min, Math.min(max, next));
 
         return;
       }
@@ -175,7 +252,7 @@ export class ProductListPage extends Component {
           this.setState({ isOpenCartModal: true });
           break;
         case "cart-modal-close-btn":
-          this.setState({ isOpenCartModal: false });
+          this.#handleCloseCartModal();
           break;
       }
     });
@@ -205,7 +282,7 @@ export class ProductListPage extends Component {
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         if (this.state.isOpenCartModal) {
-          this.setState({ isOpenCartModal: false });
+          this.#handleCloseCartModal();
         }
       }
     });
@@ -315,10 +392,17 @@ export class ProductListPage extends Component {
         </main>
 
         <!-- 장바구니 모달 -->
-        ${this.state.isOpenCartModal ? CartModal() : ""}
+        ${this.state.isOpenCartModal ? CartModal({ cartItems: this.state.cartItems }) : ""}
 
         <!-- 하단 푸터 -->
         ${Footer()}
+
+        <!-- 토스트 메시지 -->
+        ${this.state.showToast
+          ? /* HTML */ `<div class="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 toast-container">
+              ${ToastMessage({ type: this.state.toastType, message: this.state.toastMessage })}
+            </div>`
+          : ""}
       </div>`;
   }
 }

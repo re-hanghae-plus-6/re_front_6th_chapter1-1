@@ -2,8 +2,8 @@ import { HomeLink } from "../common/HomeLink";
 import { ArrowRightIcon } from "../icons/ArrowRightIcon";
 
 export function Breadcrumb(props) {
-  const { category1, category2, category3, category4 } = props;
-  const categories = [category1, category2, category3, category4];
+  const { category1, category2 } = props;
+  const categories = [category1, category2];
 
   const categoryHtml = categories
     .filter((category) => category && category.trim() !== "")

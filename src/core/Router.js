@@ -298,7 +298,6 @@ export class Router {
       // 라우트 파라미터나 쿼리 파라미터만 업데이트
       this.#currentRouteParams = matchResult.params;
       this.#currentQueryParams = queryParams;
-      return;
     }
 
     try {
@@ -315,7 +314,6 @@ export class Router {
       this.#currentComponent = component;
 
       // 4. 새 컴포넌트 마운트
-      console.log(`마운트: ${component.constructor.name} (경로: ${routePath})`);
       component.mount(this.#container);
     } catch (error) {
       console.error("라우트 변경 중 오류 발생:", error);
