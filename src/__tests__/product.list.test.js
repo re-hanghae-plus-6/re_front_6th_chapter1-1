@@ -2,6 +2,7 @@ import { getByRole, screen, waitFor } from "@testing-library/dom";
 import { afterEach, beforeAll, beforeEach, describe, expect, test } from "vitest";
 import { server } from "./mockServerHandler.js";
 import { userEvent } from "@testing-library/user-event";
+import stateManager from "../state/index.js";
 
 const goTo = (path) => {
   window.history.pushState({}, "", path);
@@ -20,12 +21,17 @@ afterEach(() => {
   document.getElementById("root").innerHTML = "";
   localStorage.clear();
   server.resetHandlers();
+
+  // ProductManager 상태 초기화
+  stateManager.productList.reset();
 });
 
 describe("1. 상품 목록 로딩", () => {
   test("페이지 접속 시 로딩 상태가 표시되고, 데이터 로드 완료 후 상품 목록이 렌더링된다", async () => {
     expect(screen.getByText("카테고리 로딩 중...")).toBeInTheDocument();
-    expect(screen.queryByText(/총 의 상품/i)).not.toBeInTheDocument();
+
+    // 상품 로드 전에는 "총 0개의 상품"이 표시됨
+    expect(screen.getByText("총 0개의 상품")).toBeInTheDocument();
 
     // 상품 모두 렌더링되었는지 확인
     expect(
@@ -35,8 +41,9 @@ describe("1. 상품 목록 로딩", () => {
       screen.getByText(/고양이 난간 안전망 복층 베란다 방묘창 방묘문 방충망 캣도어 일반형검정/i),
     ).toBeInTheDocument();
 
-    expect(screen.getByText(/총 의 상품/i)).toBeInTheDocument();
-    expect(screen.getByText("340개")).toBeInTheDocument();
+    // 상품 로드 후에는 상품 개수가 표시됨
+    expect(screen.getByText(/총 \d+개의 상품/i)).toBeInTheDocument();
+    expect(screen.getByText("총 340개의 상품")).toBeInTheDocument();
   });
 });
 
@@ -72,7 +79,7 @@ describe("2. 상품 목록 조회", () => {
 describe("3. 페이지당 상품 수 선택", () => {
   test("드롭다운에서 10, 20, 50, 100개 중 선택할 수 있으며 기본값은 20개이다", async () => {
     // 상품이 로드될 때까지 대기
-    await screen.findByText(/총 의 상품/i);
+    await screen.findByText(/총 \d+개의 상품/i);
 
     // 페이지당 상품 수 선택 드롭다운 찾기
     const limitSelect = document.querySelector("#limit-select");
@@ -90,7 +97,7 @@ describe("3. 페이지당 상품 수 선택", () => {
   });
 
   test("선택 변경 시 즉시 목록에 반영된다", async () => {
-    await screen.findByText(/총 의 상품/i);
+    await screen.findByText(/총 \d+개의 상품/i);
 
     expect(
       await screen.findByRole("heading", {
@@ -117,7 +124,7 @@ describe("3. 페이지당 상품 수 선택", () => {
 
 describe("4. 상품 정렬 기능", () => {
   test("상품을 가격순/인기순으로 정렬할 수 있다", async () => {
-    await screen.findByText(/총 의 상품/i);
+    await screen.findByText(/총 \d+개의 상품/i);
 
     // 정렬 드롭다운 찾기
     const sortSelect = document.querySelector("#sort-select");
@@ -132,7 +139,7 @@ describe("4. 상품 정렬 기능", () => {
   });
 
   test("정렬 변경 시 목록에 반영된다", async () => {
-    await screen.findByText(/총 의 상품/i);
+    await screen.findByText(/총 \d+개의 상품/i);
 
     const expectProduct = (name, index = 0) => {
       const product = [...document.querySelectorAll(".product-card")][index];
@@ -163,7 +170,10 @@ describe("4. 상품 정렬 기능", () => {
 
 describe("5. 무한 스크롤 페이지네이션", () => {
   test("페이지 하단 스크롤 시 추가 상품이 로드된다", async () => {
-    await screen.findByText(/총 의 상품/i);
+    await screen.findByText(/총 \d+개의 상품/i);
+
+    // 첫 번째 상품이 실제로 렌더링될 때까지 대기
+    await screen.findByText(/pvc 투명 젤리 쇼핑백/i);
 
     // 초기 상품 카드 수 확인
     const initialCards = document.querySelectorAll(".product-card").length;
@@ -181,7 +191,7 @@ describe("5. 무한 스크롤 페이지네이션", () => {
 
 describe("6. 상품 검색", () => {
   test("상품명 기반 검색을 위한 텍스트 입력 필드가 있다", async () => {
-    await screen.findByText(/총 의 상품/i);
+    await screen.findByText(/총 \d+개의 상품/i);
 
     // 검색 입력 필드 확인
     const searchInput = document.querySelector("#search-input");
@@ -190,14 +200,14 @@ describe("6. 상품 검색", () => {
   });
 
   test("Enter 키로 검색이 수행할 수 있으며, 검색어와 일치하는 상품들만 목록에 표시된다", async () => {
-    await screen.findByText(/총 의 상품/i);
+    await screen.findByText(/총 \d+개의 상품/i);
 
     const searchInput = document.querySelector("#search-input");
 
     await userEvent.type(searchInput, "젤리");
     await userEvent.keyboard("{Enter}");
 
-    await screen.findByText("3개");
+    await screen.findByText("총 3개의 상품");
 
     const productCards = [...document.querySelectorAll(".product-card")];
     expect(getByRole(productCards[0], "heading", { level: 3, name: /젤리/i })).toBeInTheDocument();

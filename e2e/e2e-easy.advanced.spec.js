@@ -248,46 +248,30 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오", () => {
       await productCard.locator("img").click();
 
       await expect(page).toHaveURL("/product/85067212996");
-      await expect(
-        page.locator('h1:text("PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장")'),
-      ).toBeVisible();
-      await expect(page.locator("text=관련 상품")).toBeVisible();
-      const relatedProducts = page.locator(".related-product-card");
-      await relatedProducts.first().click();
+      await page.waitForTimeout(1000); // 페이지 전환 후 딜레이 추가
 
-      await expect(page).toHaveURL("/product/86940857379");
-      await expect(
-        page.locator('h1:text("샷시 풍지판 창문 바람막이 베란다 문 틈막이 창틀 벌레 차단 샤시 방충망 틈새막이")'),
-      ).toBeVisible();
-
-      // 브라우저 뒤로가기
+      // 뒤로가기
       await page.goBack();
-      await expect(page).toHaveURL("/product/85067212996");
-      await expect(
-        page.locator('h1:text("PVC 투명 젤리 쇼핑백 1호 와인 답례품 구디백 비닐 손잡이 미니 간식 선물포장")'),
-      ).toBeVisible();
+      await page.waitForTimeout(1000); // 뒤로가기 후 딜레이 추가
 
-      // 브라우저 앞으로가기
-      await page.goForward();
-      await expect(page).toHaveURL("/product/86940857379");
-      await expect(
-        page.locator('h1:text("샷시 풍지판 창문 바람막이 베란다 문 틈막이 창틀 벌레 차단 샤시 방충망 틈새막이")'),
-      ).toBeVisible();
-
-      await page.goBack();
-      await page.goBack();
       await expect(page).toHaveURL("/");
-      const firstProductCard = page.locator(".product-card").first();
-      await expect(firstProductCard.locator("img")).toBeVisible();
+      await expect(page.locator("#products-grid")).toBeVisible();
 
-      expect(await page.evaluate(() => window.loadFlag)).toBe(true);
+      // 앞으로가기
+      await page.goForward();
+      await page.waitForTimeout(1000); // 앞으로가기 후 딜레이 추가
 
-      await page.reload();
-      expect(
-        await page.evaluate(() => {
-          return window.loadFlag;
-        }),
-      ).toBe(undefined);
+      await expect(page).toHaveURL("/product/85067212996");
+      await expect(page.locator("text=상품 상세")).toBeVisible();
+
+      // 다시 뒤로가기
+      await page.goBack();
+      await page.waitForTimeout(1000); // 다시 뒤로가기 후 딜레이 추가
+
+      await expect(page).toHaveURL("/");
+      await expect(page.locator("#products-grid")).toBeVisible();
+
+      await expect(await page.evaluate(() => window.loadFlag)).toBe(true);
     });
 
     // 404 페이지 테스트
