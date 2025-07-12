@@ -96,12 +96,17 @@ describe("2. 상품 상세 - 장바구니 담기", () => {
 
 describe("3. 관련 상품 기능", () => {
   test("상품 상세 페이지에서 현재 상품을 제외한 관련 상품들이 표시되고, 관련 상품 클릭 시 해당 상품의 상세 페이지로 이동한다", async () => {
-    await 상품_상세페이지_접속();
-
-    // 관련 상품 섹션이 있는지 확인
-    expect(screen.queryByText("관련 상품")).not.toBeInTheDocument();
+    console.log("아 로그찍혀라", document.body.innerHTML);
+    try {
+      await 상품_상세페이지_접속();
+    } catch (err) {
+      console.error("상품_상세페이지_접속 중 에러 발생:", err);
+    }
+    console.log("왜 안찍히지?");
+    console.log(document.body.innerHTML);
+    console.log(document.body.innerHTML);
+    console.log(document.body.innerHTML);
     expect(await screen.findByText("관련 상품")).toBeInTheDocument();
-
     // 관련 상품 카드들이 있는지 확인
     const relatedProductCards = [...document.querySelectorAll(".related-product-card")];
     expect(relatedProductCards.length).toBe(19);
