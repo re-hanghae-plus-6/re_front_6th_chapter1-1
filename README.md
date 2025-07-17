@@ -503,3 +503,50 @@ innerHTML을 사용하는 것, appendChild를 사용하는 것, insertBefore를 
 
 `src/core/Component.js` 관련 질문
 - `src/pages/products.js` 를 진입점으로 홈 화면 컴포넌트들을 보았을 때 코치님이 해당 `src/core/Component.js` 컴포넌트를 사용해야 한다면 어떤 점을 개선하고 싶으신가요?
+
+
+---
+코치님 답변
+
+안녕하세요 지훈님!
+1주차 과제 잘 진행해주셨네요 ㅎㅎ 고생하셨습니다!!
+
+> 바닐라 자바스크립트로 컴포넌트를 작성한 예시들을 보면 이벤트리스너를 document가 아닌 컴포넌트 요소에 할당하는 예시를 많이 볼 수 있었다.
+
+리액트의 경우 정확히는 root component 에 등록하고 있답니다.
+대신 컴포넌트가 언마운트 될 때 현재 등록된 이벤트를 해제하는? 그런 로직을 수행하고 있을꺼에요!
+
+> queueMicrotask 를 사용하는 것을 추천 받았는데, 알맞게 사용되고 있는지 궁금합니다.
+
+지금은 그냥 실행을 지연할 뿐 모아서 처리되거나 하고 있진 않은 것 같아요!
+즉, queueMicrotask의 실행이 시작될 때 이후에 실행될 함수는 실행하지 않는 방식으로 처리되어야 하지 않을까요!? 이건 솔루션을 참고해보면 좋을 것 같아요!
+
+> observable 내부 observerMap 의 메모리를 최적화 할 수 있는 더 좋은 방법이 있는지 궁긍합니다.
+
+이미지 잘 최적화 해주신 것 같아요 ㅎㅎ
+다만 어차피 map에서 제거하면 set은 자연스럽게 제거되지 않을까!? 라고 추측이 되네요.
+
+아니면 Set 대신에 WeakSet을 사용한다거나!?
+https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/WeakSet
+
+> src/pages/products.js 를 진입점으로 홈 화면 컴포넌트들을 보았을 때 코치님이 해당 src/core/Component.js 컴포넌트를 사용해야 한다면 어떤 점을 개선하고 싶으신가요?
+
+너무 포괄적인 질문이라서요, 지훈님이 문제라고 생각하는 지점을 이야기 해주시면 제가 이에 대한 답변은 드릴 수 있을 것 같아요 ㅎㅎ
+
+https://github.com/JunilHwang/black-coffee-study-lv3/blob/main/step3/frontend/src/_core/Component.ts
+https://github.com/JunilHwang/black-coffee-study-lv3/blob/main/step3/frontend/src/pages/LinesPage.ts
+
+저는 옛날에 이런식으로 만들었답니다!
+지금은 클래스를 쓰지 않아도 충분히 잘 추상화 할 수 있다고 생각해서 아예 클래스를 쓰고 있지 않아요.
+
+Component가 쓰이는 모습을 토대로 판단해보면 지금 지훈님께서 만들어주신 모습이 더 직관적이라고 생각해요!
+
+> 생명주기를 관리할 때 꼼꼼하게 봐야할 부분은 어떤게 있을까요?
+
+이 또한 너무 포괄적인 질문이라... 지훈님의 생각을 먼저 이야기 해주시면 좋았을 것 같아요 ㅎㅎ
+저는 "정확하게 실행되는 것"이 무엇보다 중요하다고 생각합니다.
+mount 는 정말 마운트를 할 때 실행이 되는가 같은..?
+어떤 생명주기를 만들 것이고 각각의 생명주기마다 어떤 일이 일어나는지 명시하는 문서 같은게 일단 있어야 한다고 생각합니다.
+
+그리고 특히 컴포넌트가 사라지게 되면 없애야할 정보를 꼼꼼하게 없애는 과정이 필요하겠죠?
+이벤트나 상태 같은 것들이요!
