@@ -1,13 +1,13 @@
 import { http, HttpResponse } from "msw";
 import items from "./items.json";
 
-const delay = async () => await new Promise((resolve) => setTimeout(resolve, 200));
+const delay = async () => await new Promise(resolve => setTimeout(resolve, 200));
 
 // 카테고리 추출 함수
 function getUniqueCategories() {
   const categories = {};
 
-  items.forEach((item) => {
+  items.forEach(item => {
     const cat1 = item.category1;
     const cat2 = item.category2;
 
@@ -26,16 +26,16 @@ function filterProducts(products, query) {
   if (query.search) {
     const searchTerm = query.search.toLowerCase();
     filtered = filtered.filter(
-      (item) => item.title.toLowerCase().includes(searchTerm) || item.brand.toLowerCase().includes(searchTerm),
+      item => item.title.toLowerCase().includes(searchTerm) || item.brand.toLowerCase().includes(searchTerm)
     );
   }
 
   // 카테고리 필터링
   if (query.category1) {
-    filtered = filtered.filter((item) => item.category1 === query.category1);
+    filtered = filtered.filter(item => item.category1 === query.category1);
   }
   if (query.category2) {
-    filtered = filtered.filter((item) => item.category2 === query.category2);
+    filtered = filtered.filter(item => item.category2 === query.category2);
   }
 
   // 정렬
@@ -113,7 +113,7 @@ export const handlers = [
   // 상품 상세 API
   http.get("/api/products/:id", async ({ params }) => {
     const { id } = params;
-    const product = items.find((item) => item.productId === id);
+    const product = items.find(item => item.productId === id);
 
     if (!product) {
       return HttpResponse.json({ error: "Product not found" }, { status: 404 });
