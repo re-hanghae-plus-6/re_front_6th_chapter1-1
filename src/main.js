@@ -1,5 +1,5 @@
-import { getProducts } from "./api/productApi.js";
-
+import { render } from "./render.js";
+import { router } from "./router/Router.js";
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
     worker.start({
@@ -8,9 +8,8 @@ const enableMocking = () =>
   );
 
 async function main() {
-  const data = await getProducts();
-
-  console.log(data);
+  router.start();
+  render();
 }
 
 // 애플리케이션 시작
